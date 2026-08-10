@@ -1,20 +1,17 @@
-# Scene Creator Skills
+# 场景包制作技能
 
-This repository is the canonical source for coding-agent Skills used to create
-GoalfyMax scenario packages. Do not keep a second editable Skill copy in an MCP
-server repository.
+本仓库是编码 Agent 制作 GoalfyMax 场景包所用 Skills 的唯一源码仓库。不要在 MCP
+服务端仓库中维护第二份可编辑的 Skill 副本。
 
-## Skills
+## Skills 列表
 
-- [`scene-creator`](scene-creator/SKILL.md): create, validate, and
-  publish Workflow scenario packages through the audited External MCP.
+- [`scene-creator`](scene-creator/SKILL.md)：通过经过审计的外部 MCP 制作、验证并发布
+  Workflow 场景包。
 
-`scene-creator` owns the External Agent procedure and high-risk
-guardrails. Complete shared Workflow contracts, examples, and diagnosis
-documents remain server-owned MCP Knowledge and are loaded at runtime through
-`get_diagnosis_doc`.
+`scene-creator` 负责维护外部 Agent 的制作流程和高风险操作约束。完整的 Workflow 共享契约、
+正反例与诊断文档仍由服务端 MCP 知识库统一维护，运行时通过 `get_diagnosis_doc` 按需加载。
 
-## Validate
+## 校验
 
 ```bash
 uv run pytest -q
@@ -22,11 +19,10 @@ uv run ruff check tests scene-creator/release/build_platform_packages.py
 uv run python scene-creator/release/build_platform_packages.py check
 ```
 
-## Install directly from this repository
+## 直接从本仓库安装
 
-The repository root is a marketplace for both Codex and Claude Code. The
-`codex/` and `claude-code/` directories are generated, checked-in install
-trees; edit only the canonical files under `scene-creator/`.
+仓库根目录同时是 Codex 和 Claude Code 的插件市场。`codex/` 与 `claude-code/` 是自动生成并
+提交到仓库的安装目录，只能编辑 `scene-creator/` 下的唯一源文件。
 
 Codex:
 
@@ -45,36 +41,32 @@ claude plugin marketplace add \
 claude plugin install scene-creator@scene-creator
 ```
 
-Both plugins connect to the same External MCP. Configure the requested
-`SCENE_CREATOR_API_KEY` value with a GoalfyMax Personal API Key; never commit
-the key to this repository. Obtain it in GoalfyMax QA from the account menu →
-**Developer Tools** → **API Key** (`/developer/api-keys`). The plugin sends it
-as a Bearer credential; no separate user ID authentication parameter is needed.
+两个插件连接同一个外部 MCP。请将 GoalfyMax 个人 API 密钥配置到
+`SCENE_CREATOR_API_KEY`，严禁把密钥提交到本仓库。密钥获取入口为 GoalfyMax QA 账号菜单 →
+**开发者工具** → **API 密钥**（`/developer/api-keys`）。插件会把该密钥作为
+Bearer 凭证发送，不需要另行配置用户 ID 鉴权参数。
 
-## Build install packages
+## 构建安装包
 
 ```bash
 uv run python scene-creator/release/build_platform_packages.py build \
   --output-dir dist/scene-creator
 ```
 
-The build produces self-contained Codex and Claude Code local-marketplace ZIPs
-that install the Skill and External MCP together, plus a platform-neutral Skill
-ZIP. Platform-specific installation and update instructions live under
-[`scene-creator/release/platforms`](scene-creator/release/platforms/).
+构建命令会生成 Codex 和 Claude Code 的完整本地插件市场 ZIP，安装时会同时启用 Skill 与
+外部 MCP；此外还会生成一个平台无关的 Skill ZIP。各平台的安装和更新说明位于
+[`scene-creator/release/platforms`](scene-creator/release/platforms/)。
 
-When Skill content, references, or platform templates change, publish a new
-version before committing. The release command also regenerates the direct
-marketplace trees:
+修改 Skill 内容、参考资料或平台模板后，必须先发布新版本再提交。发布命令也会重新生成可直接
+安装的插件市场目录：
 
 ```bash
 uv run python scene-creator/release/build_platform_packages.py release \
   --version <MAJOR.MINOR.PATCH> \
-  --reason "<tested change>"
+  --reason "<已验证的变更说明>"
 ```
 
-Run `sync` only to restore deleted or locally edited generated files without
-changing the released content:
+只有在不改变已发布内容、仅需恢复被删除或误改的生成文件时，才运行 `sync`：
 
 ```bash
 uv run python scene-creator/release/build_platform_packages.py sync

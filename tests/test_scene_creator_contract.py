@@ -25,7 +25,7 @@ def test_skill_local_links_resolve():
 def test_skill_routes_to_server_owned_workflow_knowledge():
     content = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
 
-    assert "MCP Knowledge 是共享 Workflow 契约和示例的完整来源" in content
+    assert "MCP 知识库是共享 Workflow 契约和示例的完整来源" in content
     assert "references/contracts/" not in content
     for topic in (
         "workflow_authoring",
@@ -80,7 +80,7 @@ def test_external_tool_reference_tracks_exact_profile():
     documented_tools = set(re.findall(r"^\| `([^`]+)` \|", content, flags=re.MULTILINE))
 
     assert documented_tools == expected_tools
-    assert "External 场景包制作模式固定暴露 12 个工具" in content
+    assert "外部场景包制作模式固定暴露 12 个工具" in content
 
 
 def test_full_validation_is_optional_and_skips_are_audited():
@@ -89,7 +89,7 @@ def test_full_validation_is_optional_and_skips_are_audited():
         encoding="utf-8"
     )
 
-    assert "Preview → bubble → 语义验收 → 可选全真跑" in skill
+    assert "预览 → `bubble` → 语义验收 → 可选全真跑" in skill
     assert "### 13. 按需运行一个真实 Max 业务项目" in skill
     assert "只有用户批准所选场景路径" in skill
     assert "full_validation_skipped" in skill
@@ -123,7 +123,7 @@ def test_skill_and_agent_metadata_use_chinese():
 
     assert "name: scene-creator" in skill
     assert "# 场景包制作" in skill
-    assert "# External MCP 工具路由" in reference
+    assert "# 外部 MCP 工具路由" in reference
     assert 'display_name: "场景包制作"' in metadata
     assert "$scene-creator" in metadata
     for stale_english in (

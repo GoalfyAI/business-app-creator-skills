@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check, release, and package the scene-creator Skill."""
+"""校验、发布并打包 scene-creator Skill。"""
 
 from __future__ import annotations
 
@@ -54,7 +54,7 @@ ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 
 
 class ReleaseError(ValueError):
-    """Raised when the checked-in Skill release is invalid or stale."""
+    """仓库中的 Skill 发布信息无效或已过期。"""
 
 
 def _skill_root() -> Path:
@@ -78,15 +78,15 @@ def _repository_root(skill_root: Path) -> Path:
 
 
 def discover_platform_source_files(skill_root: Path) -> list[Path]:
-    """Return the reviewed platform install and plugin templates."""
+    """返回经过审查的平台安装文件和插件模板。"""
     platform_root = _platform_source_root(skill_root.resolve())
     if not platform_root.is_dir():
-        raise ReleaseError(f"missing platform source directory: {platform_root}")
+        raise ReleaseError(f"缺少平台源文件目录：{platform_root}")
 
     files = []
     for path in platform_root.rglob("*"):
         if path.is_symlink():
-            raise ReleaseError(f"platform release does not allow symlinks: {path}")
+            raise ReleaseError(f"平台发布文件不允许使用符号链接：{path}")
         if path.is_file():
             files.append(path)
     relative_files = {path.relative_to(platform_root).as_posix() for path in files}
@@ -94,25 +94,25 @@ def discover_platform_source_files(skill_root: Path) -> list[Path]:
         missing = sorted(PLATFORM_FILES - relative_files)
         extra = sorted(relative_files - PLATFORM_FILES)
         raise ReleaseError(
-            f"platform source files differ: missing={missing}, extra={extra}"
+            f"平台源文件不一致：缺少={missing}，多出={extra}"
         )
     return sorted(files, key=lambda path: path.relative_to(platform_root).as_posix())
 
 
 def discover_source_files(skill_root: Path) -> list[Path]:
-    """Return the one canonical set of files shipped as Skill content."""
+    """返回作为 Skill 内容发布的唯一源文件集合。"""
     skill_root = skill_root.resolve()
     entrypoint = skill_root / "SKILL.md"
     if not entrypoint.is_file():
-        raise ReleaseError(f"missing Skill entrypoint: {entrypoint}")
+        raise ReleaseError(f"缺少 Skill 入口文件：{entrypoint}")
 
     openai_metadata = skill_root / OPENAI_METADATA_RELATIVE_PATH
     if not openai_metadata.is_file():
-        raise ReleaseError(f"missing Codex metadata: {openai_metadata}")
+        raise ReleaseError(f"缺少 Codex 元数据：{openai_metadata}")
 
     references = skill_root / "references"
     if not references.is_dir():
-        raise ReleaseError(f"missing Skill directory: {references}")
+        raise ReleaseError(f"缺少 Skill 目录：{references}")
 
     files = []
     for path in skill_root.rglob("*"):
@@ -120,18 +120,18 @@ def discover_source_files(skill_root: Path) -> list[Path]:
         if relative_path.parts[0] == "release":
             continue
         if path.is_symlink():
-            raise ReleaseError(f"Skill release does not allow symlinks: {path}")
+            raise ReleaseError(f"Skill 发布文件不允许使用符号链接：{path}")
         if not path.is_file():
             continue
         if any(part.startswith(".") for part in relative_path.parts):
-            raise ReleaseError(f"unsupported hidden Skill file: {relative_path.as_posix()}")
+            raise ReleaseError(f"不支持的 Skill 隐藏文件：{relative_path.as_posix()}")
         if relative_path == Path("SKILL.md") or relative_path == OPENAI_METADATA_RELATIVE_PATH:
             files.append(path)
             continue
         if relative_path.parts[0] == "references" and path.suffix.lower() == ".md":
             files.append(path)
             continue
-        raise ReleaseError(f"unsupported Skill file: {relative_path.as_posix()}")
+        raise ReleaseError(f"不支持的 Skill 文件：{relative_path.as_posix()}")
 
     return sorted(files, key=lambda path: _relative(path, skill_root))
 
@@ -140,37 +140,37 @@ def _load_yaml_mapping(content: str, label: str) -> dict[str, Any]:
     try:
         data = yaml.safe_load(content)
     except yaml.YAMLError as exc:
-        raise ReleaseError(f"invalid {label} YAML: {exc}") from exc
+        raise ReleaseError(f"{label} 不是有效的 YAML：{exc}") from exc
     if not isinstance(data, dict):
-        raise ReleaseError(f"{label} must be a YAML object")
+        raise ReleaseError(f"{label} 必须是 YAML 对象")
     return data
 
 
 def validate_skill_metadata(skill_root: Path) -> None:
-    """Validate the required Skill and Codex metadata before release or build."""
+    """在发布或构建前校验必需的 Skill 与 Codex 元数据。"""
     skill_root = skill_root.resolve()
     skill_file = skill_root / "SKILL.md"
     try:
         content = skill_file.read_text(encoding="utf-8")
     except FileNotFoundError as exc:
-        raise ReleaseError(f"missing Skill entrypoint: {skill_file}") from exc
+        raise ReleaseError(f"缺少 Skill 入口文件：{skill_file}") from exc
     lines = content.splitlines()
     if not lines or lines[0] != "---":
-        raise ReleaseError("SKILL.md must start with YAML frontmatter")
+        raise ReleaseError("SKILL.md 必须以 YAML frontmatter 开头")
     try:
         closing_index = lines.index("---", 1)
     except ValueError as exc:
-        raise ReleaseError("SKILL.md frontmatter is not closed") from exc
+        raise ReleaseError("SKILL.md frontmatter 未闭合") from exc
     frontmatter = _load_yaml_mapping("\n".join(lines[1:closing_index]), "SKILL.md frontmatter")
     if set(frontmatter) != {"name", "description"}:
-        raise ReleaseError("SKILL.md frontmatter must contain only name and description")
+        raise ReleaseError("SKILL.md frontmatter 只能包含 name 和 description")
     if frontmatter["name"] != SKILL_NAME:
-        raise ReleaseError(f"SKILL.md name must be {SKILL_NAME!r}")
+        raise ReleaseError(f"SKILL.md 的 name 必须是 {SKILL_NAME!r}")
     description = frontmatter["description"]
     if not isinstance(description, str) or not description.strip():
-        raise ReleaseError("SKILL.md description must be non-empty")
+        raise ReleaseError("SKILL.md 的 description 不能为空")
     if not "\n".join(lines[closing_index + 1 :]).strip():
-        raise ReleaseError("SKILL.md body must be non-empty")
+        raise ReleaseError("SKILL.md 正文不能为空")
 
     metadata_path = skill_root / OPENAI_METADATA_RELATIVE_PATH
     try:
@@ -178,22 +178,22 @@ def validate_skill_metadata(skill_root: Path) -> None:
             metadata_path.read_text(encoding="utf-8"), "agents/openai.yaml"
         )
     except FileNotFoundError as exc:
-        raise ReleaseError(f"missing Codex metadata: {metadata_path}") from exc
+        raise ReleaseError(f"缺少 Codex 元数据：{metadata_path}") from exc
     interface = metadata.get("interface")
     if not isinstance(interface, dict):
-        raise ReleaseError("agents/openai.yaml interface must be a YAML object")
+        raise ReleaseError("agents/openai.yaml 的 interface 必须是 YAML 对象")
     for field in ("display_name", "short_description", "default_prompt"):
         value = interface.get(field)
         if not isinstance(value, str) or not value.strip():
-            raise ReleaseError(f"agents/openai.yaml interface.{field} must be non-empty")
+            raise ReleaseError(f"agents/openai.yaml 的 interface.{field} 不能为空")
     if not 25 <= len(interface["short_description"]) <= 64:
-        raise ReleaseError("agents/openai.yaml short_description must contain 25 to 64 characters")
+        raise ReleaseError("agents/openai.yaml 的 short_description 必须包含 25～64 个字符")
     if f"${SKILL_NAME}" not in interface["default_prompt"]:
-        raise ReleaseError(f"agents/openai.yaml default_prompt must mention ${SKILL_NAME}")
+        raise ReleaseError(f"agents/openai.yaml 的 default_prompt 必须包含 ${SKILL_NAME}")
 
 
 def validate_platform_sources(skill_root: Path) -> None:
-    """Validate plugin templates and the shared remote MCP safety contract."""
+    """校验插件模板和共用的远程 MCP 安全契约。"""
     platform_root = _platform_source_root(skill_root.resolve())
     discover_platform_source_files(skill_root)
     for platform in PLATFORM_NAMES:
@@ -209,23 +209,23 @@ def validate_platform_sources(skill_root: Path) -> None:
             .replace(PLATFORM_VERSION_TOKEN, "0.0.0")
         )
         if manifest.get("name") != SKILL_NAME:
-            raise ReleaseError(f"{platform} plugin name must be {SKILL_NAME!r}")
+            raise ReleaseError(f"{platform} 插件名称必须是 {SKILL_NAME!r}")
         if manifest.get("version") != "0.0.0":
-            raise ReleaseError(f"{platform} plugin version must use the release token")
+            raise ReleaseError(f"{platform} 插件版本必须使用发布占位符")
         if manifest.get("skills") != "./skills/":
-            raise ReleaseError(f"{platform} plugin must load ./skills/")
+            raise ReleaseError(f"{platform} 插件必须加载 ./skills/")
         if manifest.get("mcpServers") != "./.mcp.json":
-            raise ReleaseError(f"{platform} plugin must load ./.mcp.json")
+            raise ReleaseError(f"{platform} 插件必须加载 ./.mcp.json")
 
         mcp = json.loads((source_root / ".mcp.json").read_text(encoding="utf-8"))
         server = (mcp.get("mcpServers") or {}).get("scene-creator") or {}
         if server.get("url") != "https://workflow-mcp.qa.goalfyai.com/mcp":
-            raise ReleaseError(f"{platform} MCP must use the reviewed QA endpoint")
+            raise ReleaseError(f"{platform} MCP 必须使用经过审查的 QA 地址")
         serialized = json.dumps(server, ensure_ascii=False)
         if "SCENE_CREATOR_API_KEY" not in serialized:
-            raise ReleaseError(f"{platform} MCP must reference the API Key env var")
+            raise ReleaseError(f"{platform} MCP 必须引用 API Key 环境变量")
         if re.search(r"Bearer\s+sk_[A-Za-z0-9]", serialized):
-            raise ReleaseError(f"{platform} MCP must not contain a plaintext API Key")
+            raise ReleaseError(f"{platform} MCP 不得包含明文 API Key")
 
         combined_docs = "\n".join(
             (source_root / name).read_text(encoding="utf-8")
@@ -241,7 +241,7 @@ def validate_platform_sources(skill_root: Path) -> None:
         ):
             if required_text not in combined_docs:
                 raise ReleaseError(
-                    f"{platform} install docs must mention {required_text!r}"
+                    f"{platform} 安装文档必须提到 {required_text!r}"
                 )
 
 
@@ -262,35 +262,35 @@ def _load_manifest(skill_root: Path) -> dict[str, Any]:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError as exc:
-        raise ReleaseError(f"missing release manifest: {path}") from exc
+        raise ReleaseError(f"缺少发布清单：{path}") from exc
     except json.JSONDecodeError as exc:
-        raise ReleaseError(f"invalid release manifest JSON: {exc}") from exc
+        raise ReleaseError(f"发布清单不是有效的 JSON：{exc}") from exc
     if not isinstance(data, dict):
-        raise ReleaseError("release manifest must be a JSON object")
+        raise ReleaseError("发布清单必须是 JSON 对象")
     return data
 
 
 def _validate_version(version: Any) -> tuple[int, int, int]:
     if not isinstance(version, str) or not SEMVER_RE.fullmatch(version):
-        raise ReleaseError("version must use MAJOR.MINOR.PATCH")
+        raise ReleaseError("版本号必须使用 MAJOR.MINOR.PATCH 格式")
     return tuple(int(part) for part in version.split("."))  # type: ignore[return-value]
 
 
 def _validate_released_at(value: Any) -> None:
     if not isinstance(value, str) or not value:
-        raise ReleaseError("released_at must be a non-empty ISO-8601 timestamp")
+        raise ReleaseError("released_at 必须是非空的 ISO-8601 时间戳")
     try:
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError as exc:
-        raise ReleaseError("released_at must be a valid ISO-8601 timestamp") from exc
+        raise ReleaseError("released_at 必须是有效的 ISO-8601 时间戳") from exc
     if parsed.tzinfo is None:
-        raise ReleaseError("released_at must include a timezone")
+        raise ReleaseError("released_at 必须包含时区")
 
 
 def check_release(
     skill_root: Path, *, check_direct_install: bool = True
 ) -> dict[str, Any]:
-    """Validate manifest metadata and every canonical source checksum."""
+    """校验发布清单元数据和所有唯一源文件的校验和。"""
     skill_root = skill_root.resolve()
     validate_skill_metadata(skill_root)
     validate_platform_sources(skill_root)
@@ -298,24 +298,24 @@ def check_release(
     if set(manifest) != MANIFEST_KEYS:
         missing = sorted(MANIFEST_KEYS - set(manifest))
         extra = sorted(set(manifest) - MANIFEST_KEYS)
-        raise ReleaseError(f"release manifest keys differ: missing={missing}, extra={extra}")
+        raise ReleaseError(f"发布清单字段不一致：缺少={missing}，多出={extra}")
     if manifest["skill_name"] != SKILL_NAME:
-        raise ReleaseError(f"skill_name must be {SKILL_NAME!r}")
+        raise ReleaseError(f"skill_name 必须是 {SKILL_NAME!r}")
     _validate_version(manifest["version"])
     _validate_released_at(manifest["released_at"])
 
     reason = manifest["update_reason"]
     if not isinstance(reason, str) or not reason.strip() or len(reason) > 1024:
-        raise ReleaseError("update_reason must contain 1 to 1024 characters")
+        raise ReleaseError("update_reason 必须包含 1～1024 个字符")
 
     files = discover_source_files(skill_root)
     expected_files = [_relative(path, skill_root) for path in files]
     if manifest["source_files"] != expected_files:
         raise ReleaseError(
-            "source_files differ from canonical Skill files; run the release action"
+            "source_files 与 Skill 唯一源文件不一致，请执行 release 操作"
         )
     if not isinstance(manifest["checksums"], dict):
-        raise ReleaseError("checksums must be a JSON object")
+        raise ReleaseError("checksums 必须是 JSON 对象")
     actual_checksums = _checksums(skill_root, files)
     if manifest["checksums"] != actual_checksums:
         stale = sorted(
@@ -323,7 +323,7 @@ def check_release(
             for path in set(manifest["checksums"]) | set(actual_checksums)
             if manifest["checksums"].get(path) != actual_checksums.get(path)
         )
-        raise ReleaseError(f"release checksums are stale: {stale}")
+        raise ReleaseError(f"发布校验和已过期：{stale}")
 
     platform_root = _platform_source_root(skill_root)
     platform_files = discover_platform_source_files(skill_root)
@@ -332,7 +332,7 @@ def check_release(
     ]
     if manifest["platform_source_files"] != expected_platform_files:
         raise ReleaseError(
-            "platform_source_files differ from reviewed install files; run the release action"
+            "platform_source_files 与经过审查的安装文件不一致，请执行 release 操作"
         )
     actual_platform_checksums = {
         path.relative_to(platform_root).as_posix(): _sha256(path)
@@ -346,21 +346,21 @@ def check_release(
             if manifest["platform_checksums"].get(path)
             != actual_platform_checksums.get(path)
         )
-        raise ReleaseError(f"platform release checksums are stale: {stale}")
+        raise ReleaseError(f"平台发布校验和已过期：{stale}")
     if check_direct_install:
         check_direct_install_tree(skill_root, manifest)
     return manifest
 
 
 def release(skill_root: Path, version: str, reason: str) -> dict[str, Any]:
-    """Write a new explicit release manifest without performing Git operations."""
+    """写入新的明确版本发布清单，不执行 Git 操作。"""
     skill_root = skill_root.resolve()
     validate_skill_metadata(skill_root)
     validate_platform_sources(skill_root)
     new_version = _validate_version(version)
     reason = reason.strip()
     if not reason or len(reason) > 1024:
-        raise ReleaseError("update_reason must contain 1 to 1024 characters")
+        raise ReleaseError("update_reason 必须包含 1～1024 个字符")
 
     manifest_path = _manifest_path(skill_root)
     if manifest_path.exists():
@@ -368,7 +368,7 @@ def release(skill_root: Path, version: str, reason: str) -> dict[str, Any]:
         current_version = _validate_version(current.get("version"))
         if new_version <= current_version:
             raise ReleaseError(
-                f"new version {version} must be greater than current version {current['version']}"
+                f"新版本 {version} 必须大于当前版本 {current['version']}"
             )
 
     files = discover_source_files(skill_root)
@@ -488,7 +488,7 @@ def _direct_marketplace(platform: str, version: str) -> bytes:
 def _direct_install_files(
     skill_root: Path, manifest: dict[str, Any]
 ) -> dict[Path, bytes]:
-    """Render the checked-in marketplace trees from the one canonical Skill."""
+    """根据唯一 Skill 源文件渲染需要提交到仓库的插件市场目录。"""
     version = manifest["version"]
     platform_root = _platform_source_root(skill_root)
     common_files = [
@@ -523,7 +523,7 @@ def _direct_install_files(
 def sync_direct_install_tree(
     skill_root: Path, manifest: dict[str, Any] | None = None
 ) -> list[Path]:
-    """Regenerate repository marketplace files; generated copies are never edited."""
+    """重新生成仓库中的插件市场文件；生成副本不得直接编辑。"""
     skill_root = skill_root.resolve()
     manifest = manifest or _load_manifest(skill_root)
     repository_root = _repository_root(skill_root)
@@ -550,7 +550,7 @@ def sync_direct_install_tree(
 def check_direct_install_tree(
     skill_root: Path, manifest: dict[str, Any] | None = None
 ) -> None:
-    """Reject missing, edited, or extra files in generated marketplace trees."""
+    """拒绝生成目录中缺失、被修改或多出的文件。"""
     skill_root = skill_root.resolve()
     manifest = manifest or _load_manifest(skill_root)
     repository_root = _repository_root(skill_root)
@@ -574,7 +574,7 @@ def check_direct_install_tree(
         missing = sorted(str(path) for path in expected_paths - actual_paths)
         extra = sorted(str(path) for path in actual_paths - expected_paths)
         raise ReleaseError(
-            f"direct marketplace files differ: missing={missing}, extra={extra}"
+            f"直接安装的插件市场文件不一致：缺少={missing}，多出={extra}"
         )
     stale = sorted(
         str(relative_path)
@@ -582,7 +582,7 @@ def check_direct_install_tree(
         if (repository_root / relative_path).read_bytes() != data
     )
     if stale:
-        raise ReleaseError(f"direct marketplace files are stale: {stale}")
+        raise ReleaseError(f"直接安装的插件市场文件已过期：{stale}")
 
 
 def _write_platform_zip(
@@ -622,7 +622,7 @@ def _write_platform_zip(
 
 
 def build_packages(skill_root: Path, output_dir: Path) -> list[Path]:
-    """Build deterministic packages from the checked release only."""
+    """只根据已校验的发布版本构建可复现安装包。"""
     skill_root = skill_root.resolve()
     manifest = check_release(skill_root)
     common_files = [
@@ -654,21 +654,21 @@ def build_packages(skill_root: Path, output_dir: Path) -> list[Path]:
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="action", required=True)
-    subparsers.add_parser("check", help="validate the checked-in release manifest")
+    subparsers.add_parser("check", help="校验仓库中的发布清单")
     subparsers.add_parser(
-        "sync", help="regenerate direct-install marketplace files from the checked release"
+        "sync", help="根据已校验的发布版本重新生成直接安装的插件市场文件"
     )
 
-    release_parser = subparsers.add_parser("release", help="write a new release manifest")
+    release_parser = subparsers.add_parser("release", help="写入新的发布清单")
     release_parser.add_argument("--version", required=True, help="MAJOR.MINOR.PATCH")
-    release_parser.add_argument("--reason", required=True, help="release reason")
+    release_parser.add_argument("--reason", required=True, help="发布原因")
 
-    build_parser = subparsers.add_parser("build", help="build all platform ZIPs")
+    build_parser = subparsers.add_parser("build", help="构建所有平台的 ZIP 安装包")
     build_parser.add_argument(
         "--output-dir",
         type=Path,
         default=None,
-        help="output directory (default: repository dist/)",
+        help="输出目录（默认：仓库 dist/）",
     )
     return parser
 
@@ -679,7 +679,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.action == "check":
             manifest = check_release(skill_root)
-            print(f"{SKILL_NAME} release {manifest['version']} is current")
+            print(f"{SKILL_NAME} 发布版本 {manifest['version']} 已是最新状态")
         elif args.action == "sync":
             manifest = check_release(skill_root, check_direct_install=False)
             for path in sync_direct_install_tree(skill_root, manifest):
@@ -687,13 +687,13 @@ def main(argv: list[str] | None = None) -> int:
             check_release(skill_root)
         elif args.action == "release":
             manifest = release(skill_root, args.version, args.reason)
-            print(f"released {SKILL_NAME} {manifest['version']}")
+            print(f"已发布 {SKILL_NAME} {manifest['version']}")
         else:
             output_dir = args.output_dir or skill_root.parent / "dist"
             for path in build_packages(skill_root, output_dir):
                 print(path)
     except ReleaseError as exc:
-        print(f"error: {exc}", file=sys.stderr)
+        print(f"错误：{exc}", file=sys.stderr)
         return 1
     return 0
 

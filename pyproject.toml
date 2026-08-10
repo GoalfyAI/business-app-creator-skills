@@ -1,7 +1,7 @@
 [project]
 name = "scene-creator-skills"
 version = "0.1.0"
-description = "Canonical skills and release tooling for Goalfy scene creation"
+description = "Goalfy 场景包制作 Skill 与发布工具的唯一源码"
 requires-python = ">=3.10"
 dependencies = [
     "pyyaml>=6.0",

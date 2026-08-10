@@ -1,17 +1,17 @@
 {
   "skill_name": "scene-creator",
-  "version": "2.0.0",
-  "released_at": "2026-08-10T08:00:40Z",
-  "update_reason": "Rename the Skill, plugin, marketplace, MCP server, and API Key variable to scene-creator, and make all Skill knowledge Chinese.",
+  "version": "2.0.3",
+  "released_at": "2026-08-10T08:18:54Z",
+  "update_reason": "移除核心 Skill 中最后一处可翻译的英文方案挑战名称，保证说明性内容全部使用中文。",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
     "references/external-mcp-tools.md"
   ],
   "checksums": {
-    "SKILL.md": "9ec6f683548e092475ae213fb6f752f0660dd14f3b59631a2506f3fd654cf706",
-    "agents/openai.yaml": "ddfb6987949ae5f1855a2cf139fb4ce050d76d318f629f801215d80b57f97a47",
-    "references/external-mcp-tools.md": "a6383d037320533f855ddd75010d270cc98499f6a8d081dbffbfd13315f3eab1"
+    "SKILL.md": "175bdf70a717f03a925d3038df1ae9fa002893f68665b321888a6c6797bf9121",
+    "agents/openai.yaml": "9899266cc4b3ecda95775b11534c443a1eef8623e9ae443465160f33b3ff7b4c",
+    "references/external-mcp-tools.md": "0b2a3693818155c5ec5a819356a09f8cf743b26d6ee5b44128ff7caadb16fca1"
   },
   "platform_source_files": [
     "claude-code/.claude-plugin/plugin.json",
@@ -26,15 +26,15 @@
     "codex/UPDATE.md"
   ],
   "platform_checksums": {
-    "claude-code/.claude-plugin/plugin.json": "60d09c19bf6497e2810cf26d1a179fb18498a66a85ba0e091067c74b4d82f69b",
+    "claude-code/.claude-plugin/plugin.json": "a733c0be3a983fda437d8f14817ab8f1bcd51aeeea9ea0e714fa26d9df1b84a5",
     "claude-code/.mcp.json": "056dc4ee8ffd2a7459142b866a2a41ad229a5c0cc6d9d9276362532c40f2dcfd",
-    "claude-code/AGENTS.md": "54785c8683e21dd02de3d8ca02aecaf3c51bbe0ed61cca227ad6bfac36d2c753",
-    "claude-code/README.md": "4f0b8fa5cd65d38153fe862554707c3c0bd5272f9ede0ed55acba5c101d11a81",
-    "claude-code/UPDATE.md": "0e949ae5aafd9deb6f1b91ac15be1269fd7e5fcd70c132e3790c030e7174fa96",
-    "codex/.codex-plugin/plugin.json": "ee3fb332285903422f3e187d9e8b8733fe55abd20b9c9e390c3e4fb2226cfa75",
+    "claude-code/AGENTS.md": "84f3af7c804827fda1afc5e997e49100c35de6b4b136757f703beb6f1e39be0f",
+    "claude-code/README.md": "090ecc67623288ddd370a43ec5754cc7e65c5068ac8f9c42d432a203ada5d863",
+    "claude-code/UPDATE.md": "15c5f912c84bcb8aae5f25567fd0043b5faaedf3ee195b4e7550951b30b14bd7",
+    "codex/.codex-plugin/plugin.json": "4add5ed47c3f3c4f38c0d2d672ff7e7cf88b6a7cae4b6c8bbdd0c692b26fed27",
     "codex/.mcp.json": "9e1c197e836053227e30a9e93c6a033d5a914892e6a0b76e45de21d809876cb6",
-    "codex/AGENTS.md": "e80d1b9571d6b24437044b9764950961c4fc7446db548637c1dd76f0da142725",
-    "codex/README.md": "b6df1cbf2a26a7e585ed2c24256457c9e2874df10767b9e0ffcd211e59ce086c",
-    "codex/UPDATE.md": "c334d6cbce81a0202d725daa2b01ff1f7589a59abb8f12400e7d2472f3c6fe21"
+    "codex/AGENTS.md": "1a0ac4423d4c6e9d2729f05f14da428e9feab01d9104e27ceb6cde402a9d391c",
+    "codex/README.md": "9ea64382e29f0a5219330b933e142bb24186ea30d7767b3774e68ba21f3d4ca8",
+    "codex/UPDATE.md": "e1256846437a4ad642bf61ae7635548606dc6252018098fbfb7be97c0ca0f683"
   }
 }

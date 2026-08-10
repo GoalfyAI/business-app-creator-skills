@@ -1,13 +1,13 @@
 {
   "name": "scene-creator",
-  "version": "2.0.0",
+  "version": "2.0.3",
   "description": "通过经过审计的 External MCP 制作、验证并发布 GoalfyMax Workflow 场景包。",
   "author": {
     "name": "GoalfyAI"
   },
   "skills": "./skills/",
   "interface": {
-    "displayName": "Scene Creator",
+    "displayName": "场景包制作",
     "shortDescription": "制作并验证 GoalfyMax Workflow 场景包。",
     "longDescription": "连接经过审计的 Scene Creator MCP，并加载中文场景包制作 Skill，用于单 Workflow 和多 Workflow 场景包开发。",
     "developerName": "GoalfyAI",

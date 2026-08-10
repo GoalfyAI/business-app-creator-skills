@@ -1,6 +1,6 @@
 {
   "name": "scene-creator",
-  "displayName": "Scene Creator",
+  "displayName": "场景包制作",
   "version": "__SCENE_CREATOR_VERSION__",
   "description": "通过经过审计的 External MCP 制作、验证并发布 GoalfyMax Workflow 场景包。",
   "author": {

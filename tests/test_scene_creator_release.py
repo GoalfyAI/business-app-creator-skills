@@ -45,7 +45,7 @@ def test_skill_source_change_requires_a_new_release(tmp_path: Path):
     skill_file = copied / "SKILL.md"
     skill_file.write_text(skill_file.read_text(encoding="utf-8") + "\n", encoding="utf-8")
 
-    with pytest.raises(release_module.ReleaseError, match="checksums are stale"):
+    with pytest.raises(release_module.ReleaseError, match="发布校验和已过期"):
         release_module.check_release(copied)
 
 
@@ -53,7 +53,7 @@ def test_new_reference_requires_a_new_release(tmp_path: Path):
     copied = _copy_skill(tmp_path)
     (copied / "references" / "unreleased.md").write_text("unreleased\n", encoding="utf-8")
 
-    with pytest.raises(release_module.ReleaseError, match="source_files differ"):
+    with pytest.raises(release_module.ReleaseError, match="source_files 与 Skill 唯一源文件不一致"):
         release_module.check_release(copied)
 
 
@@ -63,7 +63,7 @@ def test_platform_install_change_requires_a_new_release(tmp_path: Path):
     readme.write_text(readme.read_text(encoding="utf-8") + "\n", encoding="utf-8")
 
     with pytest.raises(
-        release_module.ReleaseError, match="platform release checksums are stale"
+        release_module.ReleaseError, match="平台发布校验和已过期"
     ):
         release_module.check_release(copied)
 
@@ -118,7 +118,7 @@ def test_direct_marketplace_drift_is_rejected(tmp_path: Path):
     generated_skill.write_text("edited generated copy\n", encoding="utf-8")
 
     with pytest.raises(
-        release_module.ReleaseError, match="direct marketplace files are stale"
+        release_module.ReleaseError, match="直接安装的插件市场文件已过期"
     ):
         release_module.check_release(copied)
 
@@ -172,7 +172,7 @@ def test_release_rejects_hidden_or_unsupported_source_files(tmp_path: Path):
     copied = _copy_skill(tmp_path)
     (copied / "references" / ".env").write_text("SECRET=value\n", encoding="utf-8")
 
-    with pytest.raises(release_module.ReleaseError, match="unsupported hidden Skill file"):
+    with pytest.raises(release_module.ReleaseError, match="不支持的 Skill 隐藏文件"):
         release_module.release(
             copied, _next_patch(_manifest(copied)["version"]), "Unsafe source"
         )
@@ -184,7 +184,7 @@ def test_release_rejects_unlisted_skill_resource_directories(tmp_path: Path):
     scripts.mkdir()
     (scripts / "unlisted.py").write_text("print('not packaged')\n", encoding="utf-8")
 
-    with pytest.raises(release_module.ReleaseError, match="unsupported Skill file"):
+    with pytest.raises(release_module.ReleaseError, match="不支持的 Skill 文件"):
         release_module.release(
             copied, _next_patch(_manifest(copied)["version"]), "Unlisted resource"
         )

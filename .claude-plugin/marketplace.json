@@ -8,7 +8,7 @@
     {
       "name": "scene-creator",
       "description": "制作并验证 GoalfyMax Workflow 场景包。",
-      "version": "2.0.0",
+      "version": "2.0.3",
       "author": {
         "name": "GoalfyAI"
       },
