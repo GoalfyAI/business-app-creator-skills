@@ -1,0 +1,17 @@
+{
+  "name": "workflow-authoring",
+  "displayName": "Goalfy Workflow Authoring",
+  "version": "__WORKFLOW_AUTHORING_VERSION__",
+  "description": "Create, validate, and publish GoalfyMax Workflow scenario packages through the audited External MCP.",
+  "author": {
+    "name": "GoalfyAI"
+  },
+  "keywords": [
+    "workflow",
+    "scenario-package",
+    "goalfymax",
+    "mcp"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json"
+}

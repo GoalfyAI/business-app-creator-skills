@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "goalfy_workflow": {
+      "type": "streamable-http",
+      "url": "https://workflow-mcp.qa.goalfyai.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${GOALFY_WORKFLOW_API_KEY}"
+      }
+    }
+  }
+}
