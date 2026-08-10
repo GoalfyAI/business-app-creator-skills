@@ -68,7 +68,7 @@ def test_platform_install_change_requires_a_new_release(tmp_path: Path):
         release_module.check_release(copied)
 
 
-def test_release_updates_manifest_without_copying_platform_sources(tmp_path: Path):
+def test_release_updates_manifest_and_generates_direct_marketplaces(tmp_path: Path):
     copied = _copy_skill(tmp_path)
     new_reference = copied / "references" / "new-rule.md"
     new_reference.write_text("# New rule\n", encoding="utf-8")
@@ -80,9 +80,65 @@ def test_release_updates_manifest_without_copying_platform_sources(tmp_path: Pat
     assert "references/new-rule.md" in manifest["source_files"]
     assert "codex/AGENTS.md" in manifest["platform_source_files"]
     assert "claude-code/.mcp.json" in manifest["platform_source_files"]
-    assert not (copied / "codex").exists()
-    assert not (copied / "claude-code").exists()
-    assert not (copied / "generic").exists()
+    repository_root = copied.parent
+    assert (repository_root / ".agents/plugins/marketplace.json").is_file()
+    assert (repository_root / ".claude-plugin/marketplace.json").is_file()
+    assert (repository_root / "codex/skills/workflow-authoring/SKILL.md").is_file()
+    assert (repository_root / "claude-code/skills/workflow-authoring/SKILL.md").is_file()
+    assert not (repository_root / "generic").exists()
+
+
+def test_checked_in_direct_marketplaces_are_current():
+    manifest = _manifest()
+
+    release_module.check_direct_install_tree(SKILL_ROOT, manifest)
+
+    repository_root = SKILL_ROOT.parent
+    codex_marketplace = json.loads(
+        (repository_root / ".agents/plugins/marketplace.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    claude_marketplace = json.loads(
+        (repository_root / ".claude-plugin/marketplace.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert codex_marketplace["plugins"][0]["source"] == "./codex"
+    assert claude_marketplace["plugins"][0]["source"] == "./claude-code"
+    assert codex_marketplace["plugins"][0]["version"] == manifest["version"]
+    assert claude_marketplace["plugins"][0]["version"] == manifest["version"]
+
+
+def test_direct_marketplace_drift_is_rejected(tmp_path: Path):
+    copied = _copy_skill(tmp_path)
+    manifest = _manifest(copied)
+    release_module.sync_direct_install_tree(copied, manifest)
+    generated_skill = tmp_path / "codex/skills/workflow-authoring/SKILL.md"
+    generated_skill.write_text("edited generated copy\n", encoding="utf-8")
+
+    with pytest.raises(
+        release_module.ReleaseError, match="direct marketplace files are stale"
+    ):
+        release_module.check_release(copied)
+
+
+def test_direct_marketplaces_share_the_canonical_skill():
+    repository_root = SKILL_ROOT.parent
+    canonical = (SKILL_ROOT / "SKILL.md").read_bytes()
+
+    assert (
+        repository_root / "codex/skills/workflow-authoring/SKILL.md"
+    ).read_bytes() == canonical
+    assert (
+        repository_root / "claude-code/skills/workflow-authoring/SKILL.md"
+    ).read_bytes() == canonical
+    assert (
+        repository_root / "codex/skills/workflow-authoring/agents/openai.yaml"
+    ).is_file()
+    assert not (
+        repository_root / "claude-code/skills/workflow-authoring/agents"
+    ).exists()
 
 
 def test_release_rejects_invalid_skill_frontmatter(tmp_path: Path):
@@ -213,6 +269,10 @@ def test_platform_mcp_templates_use_env_key_and_live_external_contract():
         assert "12" in docs
         assert "bubble" in docs
         assert "list_assets" in docs
+        assert "/developer/api-keys" in docs
+        assert "sk_" in docs
+        assert "Authorization: Bearer" in docs
+        assert "X-User-ID" in docs
         assert "sk_" not in mcp_text
 
 

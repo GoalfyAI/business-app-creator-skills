@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import re
+import shutil
 import sys
 import zipfile
 from collections.abc import Iterable
@@ -22,6 +23,10 @@ OPENAI_METADATA_RELATIVE_PATH = Path("agents/openai.yaml")
 PLATFORM_SOURCE_RELATIVE_PATH = Path("release/platforms")
 PLATFORM_VERSION_TOKEN = "__WORKFLOW_AUTHORING_VERSION__"
 PLATFORM_NAMES = ("codex", "claude-code")
+DIRECT_MARKETPLACE_PATHS = {
+    "codex": Path(".agents/plugins/marketplace.json"),
+    "claude-code": Path(".claude-plugin/marketplace.json"),
+}
 PLATFORM_FILES = {
     "codex/.codex-plugin/plugin.json",
     "codex/.mcp.json",
@@ -66,6 +71,10 @@ def _relative(path: Path, skill_root: Path) -> str:
 
 def _platform_source_root(skill_root: Path) -> Path:
     return skill_root / PLATFORM_SOURCE_RELATIVE_PATH
+
+
+def _repository_root(skill_root: Path) -> Path:
+    return skill_root.resolve().parent
 
 
 def discover_platform_source_files(skill_root: Path) -> list[Path]:
@@ -222,7 +231,14 @@ def validate_platform_sources(skill_root: Path) -> None:
             (source_root / name).read_text(encoding="utf-8")
             for name in ("README.md", "AGENTS.md", "UPDATE.md")
         )
-        for required_text in ("12", "bubble", "list_assets"):
+        for required_text in (
+            "12",
+            "bubble",
+            "list_assets",
+            "/developer/api-keys",
+            "sk_",
+            "Authorization: Bearer",
+        ):
             if required_text not in combined_docs:
                 raise ReleaseError(
                     f"{platform} install docs must mention {required_text!r}"
@@ -271,7 +287,9 @@ def _validate_released_at(value: Any) -> None:
         raise ReleaseError("released_at must include a timezone")
 
 
-def check_release(skill_root: Path) -> dict[str, Any]:
+def check_release(
+    skill_root: Path, *, check_direct_install: bool = True
+) -> dict[str, Any]:
     """Validate manifest metadata and every canonical source checksum."""
     skill_root = skill_root.resolve()
     validate_skill_metadata(skill_root)
@@ -329,6 +347,8 @@ def check_release(skill_root: Path) -> dict[str, Any]:
             != actual_platform_checksums.get(path)
         )
         raise ReleaseError(f"platform release checksums are stale: {stale}")
+    if check_direct_install:
+        check_direct_install_tree(skill_root, manifest)
     return manifest
 
 
@@ -377,6 +397,7 @@ def release(skill_root: Path, version: str, reason: str) -> dict[str, Any]:
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
     temporary_path.replace(manifest_path)
+    sync_direct_install_tree(skill_root, manifest)
     return check_release(skill_root)
 
 
@@ -401,7 +422,7 @@ def _write_zip(
             _write_member(archive, archive_path, data)
 
 
-def _marketplace(platform: str, version: str) -> tuple[str, bytes]:
+def _bundle_marketplace(platform: str, version: str) -> tuple[str, bytes]:
     if platform == "codex":
         path = ".agents/plugins/marketplace.json"
         body = {
@@ -443,6 +464,127 @@ def _marketplace(platform: str, version: str) -> tuple[str, bytes]:
     return path, (json.dumps(body, ensure_ascii=False, indent=2) + "\n").encode()
 
 
+def _direct_marketplace(platform: str, version: str) -> bytes:
+    body: dict[str, Any] = {
+        "name": "goalfy-workflow",
+        "description": "Create and validate GoalfyMax Workflow scenario packages through the audited External MCP.",
+        "owner": {"name": "GoalfyAI"},
+        "plugins": [
+            {
+                "name": SKILL_NAME,
+                "description": "Build and validate GoalfyMax Workflow scenario packages.",
+                "version": version,
+                "author": {"name": "GoalfyAI"},
+                "source": f"./{platform}",
+            }
+        ],
+    }
+    if platform == "claude-code":
+        body["$schema"] = "https://anthropic.com/claude-code/marketplace.schema.json"
+        body["plugins"][0]["category"] = "development"
+    return (json.dumps(body, ensure_ascii=False, indent=2) + "\n").encode()
+
+
+def _direct_install_files(
+    skill_root: Path, manifest: dict[str, Any]
+) -> dict[Path, bytes]:
+    """Render the checked-in marketplace trees from the one canonical Skill."""
+    version = manifest["version"]
+    platform_root = _platform_source_root(skill_root)
+    common_files = [
+        path
+        for path in manifest["source_files"]
+        if path == "SKILL.md" or path.startswith("references/")
+    ]
+    rendered: dict[Path, bytes] = {}
+    for platform in PLATFORM_NAMES:
+        rendered[DIRECT_MARKETPLACE_PATHS[platform]] = _direct_marketplace(
+            platform, version
+        )
+        for source_path in sorted((platform_root / platform).rglob("*")):
+            if not source_path.is_file():
+                continue
+            relative_path = source_path.relative_to(platform_root / platform)
+            rendered[Path(platform) / relative_path] = (
+                source_path.read_text(encoding="utf-8")
+                .replace(PLATFORM_VERSION_TOKEN, version)
+                .encode()
+            )
+        source_files = (
+            list(manifest["source_files"]) if platform == "codex" else common_files
+        )
+        for relative_path in source_files:
+            rendered[
+                Path(platform) / "skills" / SKILL_NAME / relative_path
+            ] = (skill_root / relative_path).read_bytes()
+    return rendered
+
+
+def sync_direct_install_tree(
+    skill_root: Path, manifest: dict[str, Any] | None = None
+) -> list[Path]:
+    """Regenerate repository marketplace files; generated copies are never edited."""
+    skill_root = skill_root.resolve()
+    manifest = manifest or _load_manifest(skill_root)
+    repository_root = _repository_root(skill_root)
+    rendered = _direct_install_files(skill_root, manifest)
+
+    for generated_directory in (
+        repository_root / "codex",
+        repository_root / "claude-code",
+        repository_root / ".agents",
+        repository_root / ".claude-plugin",
+    ):
+        if generated_directory.exists():
+            shutil.rmtree(generated_directory)
+
+    written = []
+    for relative_path, data in sorted(rendered.items(), key=lambda item: str(item[0])):
+        target = repository_root / relative_path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(data)
+        written.append(target)
+    return written
+
+
+def check_direct_install_tree(
+    skill_root: Path, manifest: dict[str, Any] | None = None
+) -> None:
+    """Reject missing, edited, or extra files in generated marketplace trees."""
+    skill_root = skill_root.resolve()
+    manifest = manifest or _load_manifest(skill_root)
+    repository_root = _repository_root(skill_root)
+    expected = _direct_install_files(skill_root, manifest)
+    actual_paths: set[Path] = set()
+    for generated_directory in (
+        repository_root / "codex",
+        repository_root / "claude-code",
+        repository_root / ".agents",
+        repository_root / ".claude-plugin",
+    ):
+        if not generated_directory.exists():
+            continue
+        actual_paths.update(
+            path.relative_to(repository_root)
+            for path in generated_directory.rglob("*")
+            if path.is_file()
+        )
+    expected_paths = set(expected)
+    if actual_paths != expected_paths:
+        missing = sorted(str(path) for path in expected_paths - actual_paths)
+        extra = sorted(str(path) for path in actual_paths - expected_paths)
+        raise ReleaseError(
+            f"direct marketplace files differ: missing={missing}, extra={extra}"
+        )
+    stale = sorted(
+        str(relative_path)
+        for relative_path, data in expected.items()
+        if (repository_root / relative_path).read_bytes() != data
+    )
+    if stale:
+        raise ReleaseError(f"direct marketplace files are stale: {stale}")
+
+
 def _write_platform_zip(
     output_path: Path,
     skill_root: Path,
@@ -456,7 +598,7 @@ def _write_platform_zip(
     with zipfile.ZipFile(
         output_path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
     ) as archive:
-        marketplace_path, marketplace_data = _marketplace(platform, version)
+        marketplace_path, marketplace_data = _bundle_marketplace(platform, version)
         _write_member(
             archive, f"{bundle_root}/{marketplace_path}", marketplace_data
         )
@@ -513,6 +655,9 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="action", required=True)
     subparsers.add_parser("check", help="validate the checked-in release manifest")
+    subparsers.add_parser(
+        "sync", help="regenerate direct-install marketplace files from the checked release"
+    )
 
     release_parser = subparsers.add_parser("release", help="write a new release manifest")
     release_parser.add_argument("--version", required=True, help="MAJOR.MINOR.PATCH")
@@ -535,6 +680,11 @@ def main(argv: list[str] | None = None) -> int:
         if args.action == "check":
             manifest = check_release(skill_root)
             print(f"{SKILL_NAME} release {manifest['version']} is current")
+        elif args.action == "sync":
+            manifest = check_release(skill_root, check_direct_install=False)
+            for path in sync_direct_install_tree(skill_root, manifest):
+                print(path)
+            check_release(skill_root)
         elif args.action == "release":
             manifest = release(skill_root, args.version, args.reason)
             print(f"released {SKILL_NAME} {manifest['version']}")
