@@ -1,8 +1,8 @@
 {
   "skill_name": "scene-creator",
-  "version": "2.0.4",
-  "released_at": "2026-08-10T08:26:31Z",
-  "update_reason": "丰富 Skill、Codex/Claude Code 插件和 marketplace 的中文描述，完整说明场景包制作的适用场景、资产复用、契约取样、依赖、Schema、编排、验证、诊断和发布能力。",
+  "version": "1.0.0",
+  "released_at": "2026-08-10T08:31:06Z",
+  "update_reason": "全部功能正式上线前版本固定为 1.0.0；QA 阶段继续使用 QA MCP 地址和 GoalfyMax QA API 密钥入口，仅刷新发布校验和，不推动版本号。",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",

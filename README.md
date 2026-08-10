@@ -59,14 +59,24 @@ uv run python scene-creator/release/build_platform_packages.py build \
 外部 MCP；此外还会生成一个平台无关的 Skill ZIP。各平台的安装和更新说明位于
 [`scene-creator/release/platforms`](scene-creator/release/platforms/)。
 
-修改 Skill 内容、参考资料或平台模板后，必须先发布新版本再提交。发布命令也会重新生成可直接
-安装的插件市场目录：
+## 版本与环境策略
+
+全部功能正式上线前，插件版本固定为 `1.0.0`。QA 阶段修改 Skill 内容、参考资料或平台模板后，
+仍需刷新发布清单、校验和与直接安装目录，但不得增加版本号：
 
 ```bash
 uv run python scene-creator/release/build_platform_packages.py release \
-  --version <MAJOR.MINOR.PATCH> \
+  --version 1.0.0 \
   --reason "<已验证的变更说明>"
 ```
+
+正式上线时必须作为一次完整变更同时完成：
+
+1. 将 Codex 和 Claude Code 的 MCP 配置切换到正式环境地址；
+2. 将全部安装说明中的 API 密钥获取入口由 GoalfyMax QA 改为 GoalfyMax 线上环境；
+3. 更新发布工具中的审核地址，解除 QA 版本冻结，再从 `1.0.0` 推动后续版本。
+
+禁止只升级版本而继续连接 QA，或者在正式安装包中保留 QA API 密钥获取说明。
 
 只有在不改变已发布内容、仅需恢复被删除或误改的生成文件时，才运行 `sync`：
 

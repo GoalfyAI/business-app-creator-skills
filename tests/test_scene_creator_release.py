@@ -28,16 +28,11 @@ def _manifest(skill_root: Path = SKILL_ROOT) -> dict:
     )
 
 
-def _next_patch(version: str) -> str:
-    major, minor, patch = (int(part) for part in version.split("."))
-    return f"{major}.{minor}.{patch + 1}"
-
-
 def test_checked_in_scene_creator_release_is_current():
     manifest = release_module.check_release(SKILL_ROOT)
 
     assert manifest["skill_name"] == "scene-creator"
-    assert release_module.SEMVER_RE.fullmatch(manifest["version"])
+    assert manifest["version"] == "1.0.0"
 
 
 def test_skill_source_change_requires_a_new_release(tmp_path: Path):
@@ -72,11 +67,11 @@ def test_release_updates_manifest_and_generates_direct_marketplaces(tmp_path: Pa
     copied = _copy_skill(tmp_path)
     new_reference = copied / "references" / "new-rule.md"
     new_reference.write_text("# New rule\n", encoding="utf-8")
-    next_version = _next_patch(_manifest(copied)["version"])
+    fixed_version = release_module.QA_FIXED_VERSION
 
-    manifest = release_module.release(copied, next_version, "Add one tested rule")
+    manifest = release_module.release(copied, fixed_version, "Add one tested rule")
 
-    assert manifest["version"] == next_version
+    assert manifest["version"] == fixed_version
     assert "references/new-rule.md" in manifest["source_files"]
     assert "codex/AGENTS.md" in manifest["platform_source_files"]
     assert "claude-code/.mcp.json" in manifest["platform_source_files"]
@@ -117,6 +112,13 @@ def test_checked_in_direct_marketplaces_are_current():
         assert len(marketplace["plugins"][0]["description"]) >= 80
 
 
+def test_qa_release_rejects_version_bump(tmp_path: Path):
+    copied = _copy_skill(tmp_path)
+
+    with pytest.raises(release_module.ReleaseError, match="QA 阶段版本固定为 1.0.0"):
+        release_module.release(copied, "1.0.1", "不允许提前升级")
+
+
 def test_direct_marketplace_drift_is_rejected(tmp_path: Path):
     copied = _copy_skill(tmp_path)
     manifest = _manifest(copied)
@@ -154,7 +156,7 @@ def test_release_rejects_invalid_skill_frontmatter(tmp_path: Path):
 
     with pytest.raises(release_module.ReleaseError, match="frontmatter"):
         release_module.release(
-            copied, _next_patch(_manifest(copied)["version"]), "Invalid metadata"
+            copied, release_module.QA_FIXED_VERSION, "Invalid metadata"
         )
 
 
@@ -171,7 +173,7 @@ def test_release_rejects_invalid_openai_metadata(tmp_path: Path):
 
     with pytest.raises(release_module.ReleaseError, match="default_prompt"):
         release_module.release(
-            copied, _next_patch(_manifest(copied)["version"]), "Invalid metadata"
+            copied, release_module.QA_FIXED_VERSION, "Invalid metadata"
         )
 
 
@@ -181,7 +183,7 @@ def test_release_rejects_hidden_or_unsupported_source_files(tmp_path: Path):
 
     with pytest.raises(release_module.ReleaseError, match="不支持的 Skill 隐藏文件"):
         release_module.release(
-            copied, _next_patch(_manifest(copied)["version"]), "Unsafe source"
+            copied, release_module.QA_FIXED_VERSION, "Unsafe source"
         )
 
 
@@ -193,7 +195,7 @@ def test_release_rejects_unlisted_skill_resource_directories(tmp_path: Path):
 
     with pytest.raises(release_module.ReleaseError, match="不支持的 Skill 文件"):
         release_module.release(
-            copied, _next_patch(_manifest(copied)["version"]), "Unlisted resource"
+            copied, release_module.QA_FIXED_VERSION, "Unlisted resource"
         )
 
 

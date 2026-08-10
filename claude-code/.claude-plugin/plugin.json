@@ -1,7 +1,7 @@
 {
   "name": "scene-creator",
   "displayName": "场景包制作",
-  "version": "2.0.4",
+  "version": "1.0.0",
   "description": "面向 Codex、Claude Code 等编码 Agent 的 GoalfyMax 场景包制作插件。连接经过审计的 scene-creator 外部 MCP，把业务流程转成可直接使用的单 Workflow 或多 Workflow 场景包，覆盖线上资产复用、工具契约取样、依赖准备、脚本和输入输出 Schema、辅助文件交付、场景编排、预览、bubble 验证、可选全真项目验证、日志诊断、交付物检查、修复和发布。",
   "author": {
     "name": "GoalfyAI"

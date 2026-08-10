@@ -23,6 +23,9 @@ OPENAI_METADATA_RELATIVE_PATH = Path("agents/openai.yaml")
 PLATFORM_SOURCE_RELATIVE_PATH = Path("release/platforms")
 PLATFORM_VERSION_TOKEN = "__SCENE_CREATOR_VERSION__"
 PLATFORM_NAMES = ("codex", "claude-code")
+QA_MCP_ENDPOINT = "https://workflow-mcp.qa.goalfyai.com/mcp"
+REVIEWED_MCP_ENDPOINT = QA_MCP_ENDPOINT
+QA_FIXED_VERSION = "1.0.0"
 DIRECT_MARKETPLACE_PATHS = {
     "codex": Path(".agents/plugins/marketplace.json"),
     "claude-code": Path(".claude-plugin/marketplace.json"),
@@ -225,8 +228,8 @@ def validate_platform_sources(skill_root: Path) -> None:
 
         mcp = json.loads((source_root / ".mcp.json").read_text(encoding="utf-8"))
         server = (mcp.get("mcpServers") or {}).get("scene-creator") or {}
-        if server.get("url") != "https://workflow-mcp.qa.goalfyai.com/mcp":
-            raise ReleaseError(f"{platform} MCP 必须使用经过审查的 QA 地址")
+        if server.get("url") != REVIEWED_MCP_ENDPOINT:
+            raise ReleaseError(f"{platform} MCP 必须使用经过审查的环境地址")
         serialized = json.dumps(server, ensure_ascii=False)
         if "SCENE_CREATOR_API_KEY" not in serialized:
             raise ReleaseError(f"{platform} MCP 必须引用 API Key 环境变量")
@@ -282,6 +285,13 @@ def _validate_version(version: Any) -> tuple[int, int, int]:
     return tuple(int(part) for part in version.split("."))  # type: ignore[return-value]
 
 
+def _validate_environment_version(version: str) -> None:
+    if REVIEWED_MCP_ENDPOINT == QA_MCP_ENDPOINT and version != QA_FIXED_VERSION:
+        raise ReleaseError(
+            f"QA 阶段版本固定为 {QA_FIXED_VERSION}；切换正式 MCP 地址和线上 API Key 获取说明后才能升级版本"
+        )
+
+
 def _validate_released_at(value: Any) -> None:
     if not isinstance(value, str) or not value:
         raise ReleaseError("released_at 必须是非空的 ISO-8601 时间戳")
@@ -308,6 +318,7 @@ def check_release(
     if manifest["skill_name"] != SKILL_NAME:
         raise ReleaseError(f"skill_name 必须是 {SKILL_NAME!r}")
     _validate_version(manifest["version"])
+    _validate_environment_version(manifest["version"])
     _validate_released_at(manifest["released_at"])
 
     reason = manifest["update_reason"]
@@ -364,6 +375,7 @@ def release(skill_root: Path, version: str, reason: str) -> dict[str, Any]:
     validate_skill_metadata(skill_root)
     validate_platform_sources(skill_root)
     new_version = _validate_version(version)
+    _validate_environment_version(version)
     reason = reason.strip()
     if not reason or len(reason) > 1024:
         raise ReleaseError("update_reason 必须包含 1～1024 个字符")
@@ -372,7 +384,7 @@ def release(skill_root: Path, version: str, reason: str) -> dict[str, Any]:
     if manifest_path.exists():
         current = _load_manifest(skill_root)
         current_version = _validate_version(current.get("version"))
-        if new_version <= current_version:
+        if REVIEWED_MCP_ENDPOINT != QA_MCP_ENDPOINT and new_version <= current_version:
             raise ReleaseError(
                 f"新版本 {version} 必须大于当前版本 {current['version']}"
             )
@@ -681,7 +693,11 @@ def _parser() -> argparse.ArgumentParser:
     )
 
     release_parser = subparsers.add_parser("release", help="写入新的发布清单")
-    release_parser.add_argument("--version", required=True, help="MAJOR.MINOR.PATCH")
+    release_parser.add_argument(
+        "--version",
+        required=True,
+        help=f"QA 阶段固定为 {QA_FIXED_VERSION}；正式上线后使用 MAJOR.MINOR.PATCH",
+    )
     release_parser.add_argument("--reason", required=True, help="发布原因")
 
     build_parser = subparsers.add_parser("build", help="构建所有平台的 ZIP 安装包")
