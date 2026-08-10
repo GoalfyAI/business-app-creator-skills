@@ -71,6 +71,13 @@ description: 当用户需要把业务流程制作成可在 GoalfyMax 直接使�
 
 未经明确授权，不得取样破坏性、对外发布、凭证变更、金融或其他不可逆操作。FA、`file`、`shell` 和 `send_email` 需要 Max 运行时上下文，不能用 `test_tool` 测试。
 
+任何 Workflow create 前都必须完成依赖 Toolset 上线硬门：
+
+1. 根据脚本确定完整 `preload_toolset_ids`，用 `get_asset(asset_type="toolset")` 检查成员、契约和 `is_online`。
+2. 对本任务新建的 Toolset，先验证关联完整；其中可独立安全调用的 MCP 工具完成上述 `test_tool` 取样和复验。
+3. 无 FAIL 后调用 `workflow_dependency_manage(action="online_toolsets", task_id=<task_id>, toolset_ids=[...])`，再用 `get_asset` 反读确认每个 Toolset 的 `is_online=true`。
+4. 任一依赖仍离线就阻断 Workflow create。对任务开始前已存在的离线 Toolset，告知用户并等待处理，不擅自上线。
+
 ### 6. 交付辅助文件并创建全部 Workflow
 
 外部 MCP 接收完整内联脚本，不能读取客户端本地 Codex/CC 路径，也不能读取其他 Max 项目中的路径。
@@ -89,8 +96,9 @@ Workflow 引用 `ctx.skill_dir` 时，通过同一工单交付每个辅助文件
 1. 按单 Workflow 契约起草内联脚本和根对象 input/output Schema。
 2. 调用 `workflow_tpe_manage(action="preview", task_id=..., script=..., input_schema=..., output_schema=..., preload_toolset_ids=...)`。
 3. 按返回的工具、字段、行、节点或路径修复全部错误，禁止压制校验。
-4. 预览通过后才能调用 `workflow_tpe_manage(action="create", task_id=..., scene_package_id=..., ...)`。
-5. 保存返回的 `tpe_id`，后续修复全部使用 `action="update"`。
+4. 预览通过后，再次确认本 Workflow 的所有 `preload_toolset_ids` 已通过上线硬门。
+5. 只有依赖全部 `is_online=true` 才能调用 `workflow_tpe_manage(action="create", task_id=..., scene_package_id=..., ...)`。
+6. 保存返回的 `tpe_id`，后续修复全部使用 `action="update"`。
 
 不得通过拆分或复制 Workflow 绕过可修复的预览错误。每次创建都必须包含根对象 `output_schema`；缺失、非对象或无效 JSON Schema 都是创建错误，即使脚本能够返回值也不例外。
 

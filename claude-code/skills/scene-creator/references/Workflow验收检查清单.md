@@ -8,6 +8,8 @@
 - 没有终态轨迹只能裁决 `needs_bubble`，不得判通过。
 - `status=success` 只证明本次输入走到的路径成功；未触达工具和分支必须列为盲区。
 - FA 使用 Schema 桩，只能证明调用名、输入形状和下游管路，不能证明内容质量。
+- 工具步骤被调用不等于循环体或分支已覆盖；FA 桩返回空数组时，循环体和元素字段访问必须列为未覆盖。
+- 数组 `_output` 只声明 `type=array`，但脚本迭代或索引后直接读元素字段时，是阻塞缺陷，不得因空数组未执行循环而放行。
 
 ## 检查步骤
 
@@ -15,7 +17,7 @@
 2. 用 `get_asset(asset_type="tpe")` 读取当前脚本、input/output Schema、preload Toolset 和 `io_table`。
 3. 证据不足时按需读取实际引用的 FA、Tool Group 或工具 Schema，不凭名称猜参数。
 4. 检查 input/output Schema 均为根对象，脚本为 `async def run(input, ctx)`，最终直接返回匹配对象。
-5. 检查每个 `tool()` 的真实调用名、required 参数、类型、来源、最小 `_output` 和业务化 `_rationale`。
+5. 检查每个 `tool()` 的真实调用名、required 参数、类型、来源、最小 `_output` 和业务化 `_rationale`。“最小”仍必须覆盖代码实际读取的完整嵌套路径；读数组元素字段时核对 `items.type=object`、`items.properties` 和未做缺省处理的 `items.required`。
 6. 检查文件只来自 input 文件字段、`ctx.skill_dir` 或本轮过程/输出目录；正式文件位于 `ctx.output_dir` 并以 `workspace-file-path` 返回。
 7. 对照轨迹逐步核对 kind、状态、错误、输出形状、字段衔接和最终输出。
 

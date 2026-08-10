@@ -30,6 +30,7 @@ workflow_task_manager(create)
 → workflow_file_upload(prepare → PUT → complete)          # 可选场景知识文件
 → scene_package_manage(create, offline, apc_skill, skill_file_urls)
 → workflow_dependency_manage(按需复用/创建/授权/取样)
+→ get_asset(toolset) → workflow_dependency_manage(online_toolsets) → get_asset(is_online=true)  # Workflow 依赖必须在 create 前上线反读
 → workflow_file_upload(prepare → PUT → complete)          # 可选 Workflow ctx.skill_dir 文件
 → workflow_tpe_manage(preview → create)
 → scene_package_manage(update, workflow_orchestration)    # 仅多 Workflow

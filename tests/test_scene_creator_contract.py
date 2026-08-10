@@ -123,6 +123,26 @@ def test_external_review_order_and_runtime_actions_match_current_contract():
     assert "不存在名为 `resume` 或 `stop` 的 action" in skill
 
 
+def test_workflow_dependencies_are_online_before_create_and_empty_arrays_do_not_pass():
+    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    routing = (SKILL_ROOT / "references" / "external-mcp-tools.md").read_text(
+        encoding="utf-8"
+    )
+    checklist = (SKILL_ROOT / "references" / "Workflow验收检查清单.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert skill.index("依赖 Toolset 上线硬门") < skill.index(
+        'workflow_tpe_manage(action="create"'
+    )
+    assert 'get_asset` 反读确认每个 Toolset 的 `is_online=true`' in skill
+    assert routing.index("workflow_dependency_manage(online_toolsets)") < routing.index(
+        "workflow_tpe_manage(preview → create)"
+    )
+    assert "空数组未执行循环而放行" in checklist
+    assert "items.properties" in checklist
+
+
 def test_runtime_apc_skill_and_file_handoff_rules_remain_in_procedure():
     content = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
 
