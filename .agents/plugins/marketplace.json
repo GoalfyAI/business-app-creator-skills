@@ -1,14 +1,14 @@
 {
-  "name": "goalfy-workflow",
-  "description": "Create and validate GoalfyMax Workflow scenario packages through the audited External MCP.",
+  "name": "scene-creator",
+  "description": "通过经过审计的 Scene Creator MCP 制作并验证 GoalfyMax Workflow 场景包。",
   "owner": {
     "name": "GoalfyAI"
   },
   "plugins": [
     {
-      "name": "workflow-authoring",
-      "description": "Build and validate GoalfyMax Workflow scenario packages.",
-      "version": "1.1.9",
+      "name": "scene-creator",
+      "description": "制作并验证 GoalfyMax Workflow 场景包。",
+      "version": "2.0.0",
       "author": {
         "name": "GoalfyAI"
       },

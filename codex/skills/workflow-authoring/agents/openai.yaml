@@ -1,4 +1,0 @@
-interface:
-  display_name: "Goalfy Workflow Authoring"
-  short_description: "通过 External MCP 制作、验证并发布 Workflow 场景包"
-  default_prompt: "Use $workflow-authoring to turn my business process into a validated GoalfyMax Workflow scenario package."
