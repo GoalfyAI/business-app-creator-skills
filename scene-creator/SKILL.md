@@ -1,6 +1,6 @@
 ---
 name: scene-creator
-description: 通过经过审计的外部 MCP 创建、更新、验证并发布 GoalfyMax Workflow 资产及多 Workflow 场景包。当 Codex、Claude Code 或其他编码 Agent 需要把业务流程转换为 Workflow 脚本、发现线上工具契约、安全取样 MCP 返回、编排 workflow_orchestration 或 sa_handoff、按需在真实 Max 项目中验证、诊断失败或维护已有场景包时使用。
+description: 当用户需要把业务流程制作成可在 GoalfyMax 直接使用的场景包，或需要创建、更新、验证和发布单 Workflow 或多 Workflow 资产时使用。通过经过审计的 scene-creator 外部 MCP，完成需求澄清、线上资产复用、工具契约发现与真实取样、依赖准备、脚本及输入输出 Schema 编写、辅助文件交付、场景编排、预览、bubble 验证、可选全真项目验证、日志与交付物检查、问题修复和最终发布；也适用于维护、诊断和迭代已有场景包。
 ---
 
 # 场景包制作

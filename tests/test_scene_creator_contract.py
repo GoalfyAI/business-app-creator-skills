@@ -126,6 +126,19 @@ def test_skill_and_agent_metadata_use_chinese():
     assert "# 外部 MCP 工具路由" in reference
     assert 'display_name: "场景包制作"' in metadata
     assert "$scene-creator" in metadata
+    skill_description = re.search(r"^description: (.+)$", skill, flags=re.MULTILINE).group(1)
+    for capability in (
+        "线上资产复用",
+        "工具契约发现与真实取样",
+        "输入输出 Schema",
+        "辅助文件交付",
+        "场景编排",
+        "bubble 验证",
+        "可选全真项目验证",
+        "日志与交付物检查",
+        "最终发布",
+    ):
+        assert capability in skill_description
     for stale_english in (
         "Follow the External procedure",
         "Load knowledge progressively",

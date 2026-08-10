@@ -1,7 +1,7 @@
 [project]
 name = "scene-creator-skills"
 version = "0.1.0"
-description = "Goalfy 场景包制作 Skill 与发布工具的唯一源码"
+description = "GoalfyMax 场景包制作 Skill、Codex/Claude Code 插件模板与可复现发布工具"
 requires-python = ">=3.10"
 dependencies = [
     "pyyaml>=6.0",

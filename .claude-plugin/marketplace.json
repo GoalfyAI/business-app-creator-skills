@@ -1,14 +1,14 @@
 {
   "name": "scene-creator",
-  "description": "通过经过审计的 Scene Creator MCP 制作并验证 GoalfyMax Workflow 场景包。",
+  "description": "面向编码 Agent 的 GoalfyMax 场景包制作与验证能力。通过经过审计的 scene-creator 外部 MCP，把业务流程转成可直接运行的单 Workflow 或多 Workflow 场景包，并维护从线上资产复用、工具契约取样、依赖与辅助文件准备、输入输出 Schema、场景编排、预览、bubble 验证、可选全真项目验证、日志与交付物检查到最终发布的完整制作链路。",
   "owner": {
     "name": "GoalfyAI"
   },
   "plugins": [
     {
       "name": "scene-creator",
-      "description": "制作并验证 GoalfyMax Workflow 场景包。",
-      "version": "2.0.3",
+      "description": "在 Claude Code 中创建、更新、验证并发布 GoalfyMax 场景包。支持线上资产复用、工具契约取样、依赖与辅助文件准备、单 Workflow 或多 Workflow 编排、输入输出 Schema 校验、预览、bubble、可选全真项目验证、日志诊断和交付物检查。",
+      "version": "2.0.4",
       "author": {
         "name": "GoalfyAI"
       },

@@ -108,6 +108,13 @@ def test_checked_in_direct_marketplaces_are_current():
     assert claude_marketplace["plugins"][0]["source"] == "./claude-code"
     assert codex_marketplace["plugins"][0]["version"] == manifest["version"]
     assert claude_marketplace["plugins"][0]["version"] == manifest["version"]
+    for marketplace in (codex_marketplace, claude_marketplace):
+        assert len(marketplace["description"]) >= 100
+        assert "线上资产复用" in marketplace["description"]
+        assert "bubble 验证" in marketplace["description"]
+        assert "可选全真项目验证" in marketplace["description"]
+        assert "日志与交付物检查" in marketplace["description"]
+        assert len(marketplace["plugins"][0]["description"]) >= 80
 
 
 def test_direct_marketplace_drift_is_rejected(tmp_path: Path):
@@ -253,6 +260,12 @@ def test_platform_packages_share_one_source_and_exclude_release_files(tmp_path: 
     )
     assert codex_manifest["version"] == version
     assert claude_manifest["version"] == version
+    for plugin_manifest in (codex_manifest, claude_manifest):
+        assert len(plugin_manifest["description"]) >= 150
+        assert "工具契约取样" in plugin_manifest["description"]
+        assert "输入输出 Schema" in plugin_manifest["description"]
+        assert "bubble 验证" in plugin_manifest["description"]
+        assert "日志诊断" in plugin_manifest["description"]
 
 
 def test_platform_mcp_templates_use_env_key_and_live_external_contract():

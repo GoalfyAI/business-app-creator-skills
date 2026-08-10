@@ -1,4 +1,4 @@
 interface:
   display_name: "场景包制作"
-  short_description: "通过外部 MCP 制作、验证并发布 GoalfyMax 场景包"
+  short_description: "把业务流程制作成经过预览、bubble 验证并可直接发布的 GoalfyMax 场景包"
   default_prompt: "使用 $scene-creator 把我的业务流程制作成经过验证、可在 GoalfyMax 使用的 Workflow 场景包。"

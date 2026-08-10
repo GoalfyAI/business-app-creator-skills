@@ -51,6 +51,12 @@ MANIFEST_KEYS = {
 }
 SEMVER_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
+MARKETPLACE_DESCRIPTION = (
+    "面向编码 Agent 的 GoalfyMax 场景包制作与验证能力。通过经过审计的 scene-creator 外部 MCP，"
+    "把业务流程转成可直接运行的单 Workflow 或多 Workflow 场景包，并维护从线上资产复用、工具契约"
+    "取样、依赖与辅助文件准备、输入输出 Schema、场景编排、预览、bubble 验证、可选全真项目验证、"
+    "日志与交付物检查到最终发布的完整制作链路。"
+)
 
 
 class ReleaseError(ValueError):
@@ -423,14 +429,24 @@ def _write_zip(
 
 
 def _bundle_marketplace(platform: str, version: str) -> tuple[str, bytes]:
+    client_name = "Codex" if platform == "codex" else "Claude Code"
+    plugin_description = (
+        f"在 {client_name} 中创建、更新、验证并发布 GoalfyMax 场景包。支持线上资产复用、工具契约"
+        "取样、依赖与辅助文件准备、单 Workflow 或多 Workflow 编排、输入输出 Schema 校验、预览、"
+        "bubble、可选全真项目验证、日志诊断和交付物检查。"
+    )
     if platform == "codex":
         path = ".agents/plugins/marketplace.json"
         body = {
             "name": "scene-creator",
-            "interface": {"displayName": "Scene Creator"},
+            "description": MARKETPLACE_DESCRIPTION,
+            "interface": {"displayName": "场景包制作"},
             "plugins": [
                 {
                     "name": SKILL_NAME,
+                    "description": plugin_description,
+                    "version": version,
+                    "author": {"name": "GoalfyAI"},
                     "source": {
                         "source": "local",
                         "path": f"./plugins/{SKILL_NAME}",
@@ -448,12 +464,12 @@ def _bundle_marketplace(platform: str, version: str) -> tuple[str, bytes]:
         body = {
             "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
             "name": "scene-creator",
-            "description": "Scene Creator MCP 与中文场景包制作 Skill。",
+            "description": MARKETPLACE_DESCRIPTION,
             "owner": {"name": "GoalfyAI"},
             "plugins": [
                 {
                     "name": SKILL_NAME,
-                    "description": "制作并验证 GoalfyMax Workflow 场景包。",
+                    "description": plugin_description,
                     "version": version,
                     "author": {"name": "GoalfyAI"},
                     "source": f"./plugins/{SKILL_NAME}",
@@ -465,14 +481,19 @@ def _bundle_marketplace(platform: str, version: str) -> tuple[str, bytes]:
 
 
 def _direct_marketplace(platform: str, version: str) -> bytes:
+    client_name = "Codex" if platform == "codex" else "Claude Code"
     body: dict[str, Any] = {
         "name": "scene-creator",
-        "description": "通过经过审计的 Scene Creator MCP 制作并验证 GoalfyMax Workflow 场景包。",
+        "description": MARKETPLACE_DESCRIPTION,
         "owner": {"name": "GoalfyAI"},
         "plugins": [
             {
                 "name": SKILL_NAME,
-                "description": "制作并验证 GoalfyMax Workflow 场景包。",
+                "description": (
+                    f"在 {client_name} 中创建、更新、验证并发布 GoalfyMax 场景包。支持线上资产复用、"
+                    "工具契约取样、依赖与辅助文件准备、单 Workflow 或多 Workflow 编排、输入输出 "
+                    "Schema 校验、预览、bubble、可选全真项目验证、日志诊断和交付物检查。"
+                ),
                 "version": version,
                 "author": {"name": "GoalfyAI"},
                 "source": f"./{platform}",

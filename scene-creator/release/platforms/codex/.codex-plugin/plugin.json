@@ -1,15 +1,15 @@
 {
   "name": "scene-creator",
   "version": "__SCENE_CREATOR_VERSION__",
-  "description": "通过经过审计的 External MCP 制作、验证并发布 GoalfyMax Workflow 场景包。",
+  "description": "面向 Codex、Claude Code 等编码 Agent 的 GoalfyMax 场景包制作插件。连接经过审计的 scene-creator 外部 MCP，把业务流程转成可直接使用的单 Workflow 或多 Workflow 场景包，覆盖线上资产复用、工具契约取样、依赖准备、脚本和输入输出 Schema、辅助文件交付、场景编排、预览、bubble 验证、可选全真项目验证、日志诊断、交付物检查、修复和发布。",
   "author": {
     "name": "GoalfyAI"
   },
   "skills": "./skills/",
   "interface": {
     "displayName": "场景包制作",
-    "shortDescription": "制作并验证 GoalfyMax Workflow 场景包。",
-    "longDescription": "连接经过审计的 Scene Creator MCP，并加载中文场景包制作 Skill，用于单 Workflow 和多 Workflow 场景包开发。",
+    "shortDescription": "把业务流程制作成经过预览、bubble 验证并可直接发布的 GoalfyMax 场景包。",
+    "longDescription": "连接经过审计的 scene-creator 外部 MCP，并加载中文场景包制作 Skill。引导编码 Agent 从需求澄清和线上资产复用开始，完成单 Workflow 或多 Workflow 的工具契约取样、依赖准备、脚本与输入输出 Schema、辅助文件交付、场景编排、预览、bubble 验证、可选全真项目验证、日志诊断、交付物检查、问题修复和最终发布；也可用于维护和迭代已有场景包。",
     "developerName": "GoalfyAI",
     "category": "Developer Tools",
     "capabilities": [
