@@ -1,17 +1,23 @@
 {
   "skill_name": "scene-creator",
   "version": "1.0.0",
-  "released_at": "2026-08-10T08:31:06Z",
-  "update_reason": "全部功能正式上线前版本固定为 1.0.0；QA 阶段继续使用 QA MCP 地址和 GoalfyMax QA API 密钥入口，仅刷新发布校验和，不推动版本号。",
+  "released_at": "2026-08-10T09:00:52Z",
+  "update_reason": "内置场景包方案挑战与验收清单并统一三态运行 action",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
-    "references/external-mcp-tools.md"
+    "references/Workflow验收检查清单.md",
+    "references/external-mcp-tools.md",
+    "references/场景包验收检查清单.md",
+    "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "52cd21f0a6a625e498a1d23b9bb3ebb06a1cd799b93fbddd2436c849cf84371f",
+    "SKILL.md": "3ed16bc015aad90a417d30e9380d7d41a863f29e8b328c62462ac3bf4c8781f9",
     "agents/openai.yaml": "ec0a4e5a361c1e5ae0d54937e5fcaffac8e06ade856957033fc2ebdcc4f6a792",
-    "references/external-mcp-tools.md": "0b2a3693818155c5ec5a819356a09f8cf743b26d6ee5b44128ff7caadb16fca1"
+    "references/Workflow验收检查清单.md": "b4b935935ff7215ae08f0561e23c22c73982a41df1782b1181ce1a21a5050daf",
+    "references/external-mcp-tools.md": "15a2a584a28c13c57f4defec9574a9ddc3ca535b4808a5b5af32d10f104b3d95",
+    "references/场景包验收检查清单.md": "614215af2f7bc6b49f6cb6a90f61157dc9e0952f513e6a5697b75b738cb61ac6",
+    "references/方案挑战检查清单.md": "b8fdc5506bd552bbc94d4235ea1a2526af2599d065c2d73a1dc2d698cc4a162f"
   },
   "platform_source_files": [
     "claude-code/.claude-plugin/plugin.json",

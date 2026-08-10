@@ -22,21 +22,31 @@ def test_skill_local_links_resolve():
         assert (skill.parent / unquote(target)).resolve().is_file(), target
 
 
-def test_skill_routes_to_server_owned_workflow_knowledge():
+def test_skill_routes_to_server_contracts_and_local_review_checklists():
     content = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
 
-    assert "MCP 知识库是共享 Workflow 契约和示例的完整来源" in content
+    assert "MCP 知识库是共享 Workflow 契约和正反例的完整来源" in content
     assert "references/contracts/" not in content
     for topic in (
         "workflow_authoring",
         "workflow_single",
         "workflow_multi",
         "workflow_examples",
-        "scene_package_battle",
-        "workflow_verify",
-        "scene_package_verify",
     ):
         assert f'topic="{topic}"' in content or f'`{topic}`' in content
+
+    for filename, marker in (
+        ("方案挑战检查清单.md", "承接 Max `csp_battle_reviewer` 的职责"),
+        ("Workflow验收检查清单.md", "承接 Max `workflow_verify_fa` 的职责"),
+        ("场景包验收检查清单.md", "承接 Max `csp_verify_checker` 的职责"),
+    ):
+        assert f"references/{filename}" in content
+        reference = (SKILL_ROOT / "references" / filename).read_text(encoding="utf-8")
+        assert marker in reference
+        assert "不调用 FastAgent" in reference
+
+    for obsolete_topic in ("scene_package_battle", "workflow_verify", "scene_package_verify"):
+        assert f'topic="{obsolete_topic}"' not in content
 
 
 def test_external_skill_uses_only_external_procedure_names():
@@ -96,6 +106,21 @@ def test_full_validation_is_optional_and_skips_are_audited():
     assert "禁止虚构 `project_id`" in skill
     assert "发布完成后必须调用 `manage_goalfymax_project" not in skill
     assert "仅批准覆盖所选路径时" in routing
+
+
+def test_external_review_order_and_runtime_actions_match_current_contract():
+    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    routing = (SKILL_ROOT / "references" / "external-mcp-tools.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert routing.index("get_diagnosis_doc(workflow_multi)") < routing.index(
+        "workflow_tpe_manage(preview → create)"
+    )
+    assert routing.index("Workflow 验收检查清单") < routing.index("场景包验收检查清单")
+    assert routing.index("场景包验收检查清单") < routing.index("分别询问每个 Workflow")
+    assert "运行时只有 `continue_as_planned`" in skill
+    assert "不存在名为 `resume` 或 `stop` 的 action" in skill
 
 
 def test_runtime_apc_skill_and_file_handoff_rules_remain_in_procedure():

@@ -22,21 +22,21 @@
 ```text
 workflow_task_manager(create)
 → get_diagnosis_doc(workflow_authoring, workflow_single)
+→ get_diagnosis_doc(workflow_multi)                       # 仅多 Workflow，写任何节点前
 → get_diagnosis_doc(workflow_examples → 匹配的 topic)    # 仅在需要时
 → list_assets / get_asset
-→ get_diagnosis_doc(scene_package_battle) → Agent 自检
+→ 读取 Skill 内方案挑战检查清单 → Agent 自检
 → 起草 apc_skill
 → workflow_file_upload(prepare → PUT → complete)          # 可选场景知识文件
 → scene_package_manage(create, offline, apc_skill, skill_file_urls)
 → workflow_dependency_manage(按需复用/创建/授权/取样)
 → workflow_file_upload(prepare → PUT → complete)          # 可选 Workflow ctx.skill_dir 文件
 → workflow_tpe_manage(preview → create)
-→ get_diagnosis_doc(workflow_multi)                       # 仅多 Workflow
 → scene_package_manage(update, workflow_orchestration)    # 仅多 Workflow
 → scene_package_ui_bundle(download_template → prepare_upload → complete_upload)  # 可选业务 UI
 → workflow_tpe_manage(bubble start → poll)                # 每个 Workflow 必做
-→ get_diagnosis_doc(workflow_verify) → Agent 自检
-→ get_diagnosis_doc(scene_package_verify) → Agent 自检
+→ 读取 Skill 内 Workflow 验收检查清单 → 逐条 Agent 自检
+→ 读取 Skill 内场景包验收检查清单 → 整包 Agent 自检
 → workflow_tpe_manage(update) / scene_package_manage(update)  # 按需修复
 → scene_package_manage(online)
 → 分别询问每个 Workflow 是否全真验证
@@ -66,4 +66,4 @@ workflow_task_manager(create)
 - 供应商 `test_tool`：获取直连 MCP 真实返回样本，并可校验候选 Schema。
 - `bubble` 运行时：FA 使用 Schema 桩值，普通/文件工具真实执行，仅 `shell` 按需创建沙箱。
 - Max 运行时：执行真实 FA、默认工具、文件和完整 C2 业务行为。
-- Agent：负责业务语义、Workflow/Agent 边界、副作用授权、`ctx.dry_run` 守卫位置和修复决策。`bubble` 中 FA 使用桩值，但 `shell`、`file` 和直连工具仍真实执行。
+- Agent：使用 Skill 内的方案挑战、Workflow 验收和场景包验收检查清单负责业务语义、Workflow/Agent 边界、副作用授权、`ctx.dry_run` 守卫位置和修复决策；不调用或虚构 External MCP 未提供的 Battle/Verify FA。`bubble` 中 FA 使用桩值，但 `shell`、`file` 和直连工具仍真实执行。

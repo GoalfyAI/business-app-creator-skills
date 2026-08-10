@@ -14,8 +14,9 @@ description: 当用户需要把业务流程制作成可在 GoalfyMax 直接使�
 3. 确认任务需要制作 Workflow 后，调用一次 `get_diagnosis_doc(task_id=..., topic="workflow_authoring")`。
 4. 编写任何 Workflow 脚本前，调用一次 `get_diagnosis_doc(task_id=..., topic="workflow_single")`。只有确认场景包需要多个 Workflow 后，才调用一次 `get_diagnosis_doc(task_id=..., topic="workflow_multi")`。
 5. 使用特殊原语或契约，或者预览、Hub、运行时错误需要已知修复模式时，先读一次 `workflow_examples`，再只读取匹配的 `workflow_example_*` topic。
+6. 方案创建前读取 [方案挑战检查清单](references/方案挑战检查清单.md)；每条 Workflow 冒泡后读取 [Workflow 验收检查清单](references/Workflow验收检查清单.md)；发布前读取 [场景包验收检查清单](references/场景包验收检查清单.md)。三份检查清单承接 Max 内 Battle/Verify FA 的审查职责，由外部 Agent 自行执行，不调用或虚构不存在的 FA。
 
-同一工单内不要重复读取相同 topic。MCP 知识库是共享 Workflow 契约和示例的完整来源。本 Skill 先于服务端知识加载，因此只重复 `apc_skill`、`_output`、文件、失败、最终契约和验证中的高风险规则；完整规则以 MCP 知识库为准，发生冲突时以线上 Schema 和服务端校验为准。
+同一工单内不要重复读取相同 topic。MCP 知识库是共享 Workflow 契约和正反例的完整来源；本 Skill 内三份检查清单是外部制作入口的方案挑战与验收执行提示。发生冲突时以线上 Schema、Preview、Hub Validator 和 Max Runtime 为准。
 
 ## 执行外部制作流程
 
@@ -35,7 +36,7 @@ description: 当用户需要把业务流程制作成可在 GoalfyMax 直接使�
 
 ### 3. 执行方案挑战并质疑方案
 
-调用 `get_diagnosis_doc(task_id=<task_id>, topic="scene_package_battle")`。CC/Codex 根据返回契约和当前资产证据自行审查，不再启动历史的方案挑战 FastAgent。
+读取 [方案挑战检查清单](references/方案挑战检查清单.md)。CC/Codex 根据清单和当前资产证据自行审查，不启动或假设存在方案挑战 FastAgent。
 
 创建场景包前，解决业务输入不清、多余 Workflow、Agent 判断位置错误、不安全副作用和交付物缺失问题。只把简洁结论写入工单检查点。
 
@@ -106,7 +107,7 @@ scene_package_manage(
 )
 ```
 
-始终执行整对象替换。`delivery.node_id` 指向的节点必须声明节点级 `sa_handoff`：要求运行时 Agent 读取已提交结果，并通过 `message_user(type="result")` 交付面向用户的自然语言结果；运行时随后使用 `take_over` 阻止兼容自动交付。严格按当前 Hub Schema 编写 `decision_criteria.resume/stop`。运行时这些条件映射到 `continue_as_planned`、针对所列直接下一节点且通过 Schema 校验的 `revise_and_continue` 补丁，或剩余路径改变时的 `take_over`。不要把这些运行时动作名虚构成新的 orchestration JSON 字段。按 Hub 返回的节点、映射、交付或 `sa_handoff` 错误修复同一完整对象并重新提交。禁止把 DAG 复制进 `apc_skill`，也禁止虚构字段。
+始终执行整对象替换。`delivery.node_id` 指向的节点必须声明节点级 `sa_handoff`：要求运行时 Agent 读取已提交结果，并通过 `message_user(type="result")` 交付面向用户的自然语言结果；运行时随后使用 `take_over` 阻止兼容自动交付。严格按当前 Hub Schema 编写 `decision_criteria.resume/stop`；这两个名称只是制作期判断条件字段，不是运行时 action。运行时只有 `continue_as_planned`、对紧邻待执行节点提交并通过 Schema 校验的 `revise_and_continue`、以及接管剩余流程的 `take_over` 三种 action，不存在名为 `resume` 或 `stop` 的 action。不要把运行时 action 虚构成新的 orchestration JSON 字段。按 Hub 返回的节点、映射、交付或 `sa_handoff` 错误修复同一完整对象并重新提交。禁止把 DAG 复制进 `apc_skill`，也禁止虚构字段。
 
 ### 8. 对每个 Workflow 做 bubble 跑
 
@@ -114,17 +115,19 @@ scene_package_manage(
 
 开始 bubble 前，确认直连工具使用已授权的代表性输入；邮件、通知、发布、扣费、远端对象创建和正式业务状态写入只能用 `ctx.dry_run` 抑制对应外部副作用。不得用 `ctx.dry_run` 跳过普通工具、Schema 校验、Workspace pipeline 步骤或 FA 桩值引发的失败。
 
-`bubble` 是受信任的 Max 验证运行，不是本地执行。FA 步骤返回 Schema 桩值，不启动真实 FA；普通 MCP 和文件工具真实执行。只有脚本引用 `shell` 时才创建临时服务端沙箱，内部项目/沙箱 ID 和挂载路径不对外返回。把供应商副作用视为真实副作用，涉及破坏或发布时先取得授权。`bubble` 和语义验收通过后，对每个 Workflow 分别询问用户是否执行 FA 全真跑并记录决定。用户跳过时继续流程；可选全真跑永远不能替代必做的 `bubble` 证据。
+`bubble` 是受信任的 Max 验证运行，不是本地执行。FA 步骤返回 Schema 桩值，不启动真实 FA；普通 MCP 和文件工具真实执行。只有脚本引用 `shell` 时才创建临时服务端沙箱，内部项目/沙箱 ID 和挂载路径不对外返回。把供应商副作用视为真实副作用，涉及破坏或发布时先取得授权。可选全真跑永远不能替代必做的 `bubble` 证据。
 
 ### 9. 根据契约和轨迹验收每个 Workflow
 
 外部制作与 Max 制作遵循同一条“预览 → `bubble` → 语义验收 → 可选全真跑”生命周期。两者工具面可以不同，但都通过 Max 运行时执行并使用同一证据标准。需要完整项目验证时复用检查点中的 `project_id`，不要为每次修复新建项目。
 
-调用 `get_diagnosis_doc(task_id=<task_id>, topic="workflow_verify")`。CC/Codex 根据当前 Workflow 资产、预览结果和 `bubble` 轨迹自行执行语义验收，不再启动历史的 Workflow 验收 FastAgent。持续修复原 Workflow 并重跑 `bubble`，直到证据满足契约。
+读取 [Workflow 验收检查清单](references/Workflow验收检查清单.md)。CC/Codex 根据当前 Workflow 资产、预览结果和 `bubble` 轨迹自行执行语义验收，不启动或假设存在 Workflow 验收 FastAgent。持续修复原 Workflow 并重跑 `bubble`，直到证据满足契约。
 
 ### 10. 验收完整场景包
 
-调用 `get_diagnosis_doc(task_id=<task_id>, topic="scene_package_verify")`，把场景包 Skill、依赖闭包、每个 Workflow 契约、`workflow_orchestration`、交付映射和 Agent 交接作为一个整体检查。不再启动历史的场景包验收 FastAgent。把简洁的方案挑战、Workflow 和场景包验收结论写入工单。
+读取 [场景包验收检查清单](references/场景包验收检查清单.md)，把场景包 Skill、依赖闭包、每个 Workflow 契约、`workflow_orchestration`、交付映射和 Agent 交接作为一个整体检查，不启动或假设存在场景包验收 FastAgent。多 Workflow 先确认每条 Workflow 已完成 bubble 和单体验收，再做整包接缝与业务语义验收。把简洁的方案挑战、Workflow 和场景包验收结论写入工单。
+
+场景包验收通过后，对每个 Workflow 分别询问用户是否执行 FA 全真跑并记录决定。用户跳过时继续流程；只有用户批准覆盖所选场景路径可能执行的全部 Workflow，步骤 13 才能启动真实 Max 项目。
 
 ### 11. 在归属层修复问题
 
