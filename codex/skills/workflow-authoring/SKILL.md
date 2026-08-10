@@ -108,7 +108,7 @@ scene_package_manage(
 )
 ```
 
-Use whole-object replacement. The node named by `delivery.node_id` must declare node-level `sa_handoff`: instruct the runtime Agent to read the committed result, deliver a user-facing natural-language response with `message_user(type="result")`, then choose `stop` to prevent compatibility automatic delivery. Apply Hub's exact node, mapping, delivery, or `sa_handoff` error to the same object and resubmit it. Do not copy the DAG into `apc_skill` and do not invent unsupported fields.
+Use whole-object replacement. The node named by `delivery.node_id` must declare node-level `sa_handoff`: instruct the runtime Agent to read the committed result and deliver a user-facing natural-language response with `message_user(type="result")`; the runtime then uses `take_over` to prevent compatibility automatic delivery. Author `decision_criteria.resume/stop` exactly as required by the current Hub schema. At runtime these criteria map to `continue_as_planned`, `revise_and_continue` for a schema-validated patch to the listed immediate next node, or `take_over` when the remaining route changes. Do not invent those runtime action names as new orchestration JSON fields. Apply Hub's exact node, mapping, delivery, or `sa_handoff` error to the same object and resubmit it. Do not copy the DAG into `apc_skill` and do not invent unsupported fields.
 
 ### 8. Bubble every Workflow
 
@@ -147,7 +147,7 @@ If asset changes made the draft stale, call `scene_package_manage(action="update
 
 Run this step only when the user approved full validation for every Workflow that the selected scenario path can execute, or explicitly requested complete business-project evidence. If approval does not cover the whole path, do not start the project. Record `full_validation_skipped` and the remaining FA/content/side-effect blind spots, then continue to close the work order.
 
-When approved, call `manage_goalfymax_project(action="run", task_id=<task_id>, scenario_package_ids=[...], workflow_input=<object>, ...)` after publication. Explicit `workflow_input={}` triggers the deterministic C2 package; omitting the field intentionally runs normal SA dialogue. This run starts the real Max project and real FA/runtime behavior, unlike bubble.
+When approved, call `manage_goalfymax_project(action="run", task_id=<task_id>, scenario_package_ids=[...], workflow_input=<object>, ...)` after publication. Explicit `workflow_input={}` triggers the deterministic C2 package. Omitting the field starts normal Agent dialogue; for an orchestrated package the Agent can collect the top-level input and explicitly start the same C2 through its internal orchestration-start tool. This run starts the real Max project and real FA/runtime behavior, unlike bubble.
 
 Continue the returned `project_id` with `wait` or `status`. Use `reply` or `confirm` only when Max reports `needs_input=true`; use `send` for a new attempt after an asset update. Do not create a new project for every poll or minor repair.
 
