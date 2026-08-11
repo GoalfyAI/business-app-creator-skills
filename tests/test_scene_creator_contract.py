@@ -49,6 +49,48 @@ def test_skill_routes_to_server_contracts_and_local_review_checklists():
         assert f'topic="{obsolete_topic}"' not in content
 
 
+def test_external_skill_loads_scene_package_domain_model_before_tool_procedure():
+    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    model_path = SKILL_ROOT / "references" / "场景包核心模型.md"
+    model = model_path.read_text(encoding="utf-8")
+
+    assert "先完整读取一次 [场景包核心模型]" in skill
+    assert skill.index("[场景包核心模型]") < skill.index("[外部 MCP 工具路由]")
+    assert "不要把 Max 内部“场景包助手”的整份系统提示词复制进本 Skill" in skill
+
+    for required_model in (
+        "场景包不是一段长提示词、一个工具列表或一张配置表",
+        "信息分层和唯一真相",
+        "执行形态选择",
+        "Workflow",
+        "普通任务点 / TaskAgent",
+        "FastAgent",
+        "运行时 Skill 的质量标准",
+        "创建、诊断和优化的不同证据链",
+        "外部 MCP 的知识边界",
+    ):
+        assert required_model in model
+
+
+def test_scene_package_domain_model_excludes_max_runtime_protocols():
+    model = (SKILL_ROOT / "references" / "场景包核心模型.md").read_text(
+        encoding="utf-8"
+    )
+
+    for max_runtime_rule in (
+        "GOALFYAI_STATE_",
+        "message_user",
+        "project_plan",
+        "memory_maintainer",
+        "sandbox_manage",
+        "agent_wait",
+        "csp_battle_reviewer",
+        "workflow_verify_fa",
+        "project_create_taskpoint_event",
+    ):
+        assert max_runtime_rule not in model
+
+
 def test_external_skill_uses_only_external_procedure_names():
     content = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
 

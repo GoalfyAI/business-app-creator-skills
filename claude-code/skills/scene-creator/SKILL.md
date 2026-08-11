@@ -7,9 +7,15 @@ description: 当用户需要把业务流程制作成可在 GoalfyMax 直接使�
 
 通过外部 MCP 创建与 Max 实际执行一致的 Workflow 资产。以线上 MCP 工具 Schema、服务端校验和返回的资产数据为准。禁止虚构资产 ID、工具名、参数、Schema、版本或返回字段。
 
-## 按需加载知识
+## 先建立场景包认知
 
-1. 先读 [外部 MCP 工具路由](references/external-mcp-tools.md)，再用线上 `tools/list` 核对 12 个工具。
+每个新的制作、诊断或优化任务开始时，先完整读取一次 [场景包核心模型](references/场景包核心模型.md)。该文件定义场景包是什么、各类资产如何协作、信息应该放在哪一层，以及何时使用 Workflow、普通任务点或 FastAgent。未完成这一步前，不得给出架构方案、创建资产或把用户需求直接翻译成工具调用。
+
+不要把 Max 内部“场景包助手”的整份系统提示词复制进本 Skill。内部状态机、交互协议、Max 专属工具和运行环境只属于 Max；外部 Agent 只继承其中稳定的领域模型和设计方法，并严格使用当前外部 MCP 暴露的 12 个工具。
+
+## 加载制作契约
+
+1. 读完核心模型后，再读 [外部 MCP 工具路由](references/external-mcp-tools.md)，并用线上 `tools/list` 核对 12 个工具。
 2. 读取服务端契约前，先创建 Workflow 制作工单。
 3. 确认任务需要制作 Workflow 后，调用一次 `get_diagnosis_doc(task_id=..., topic="workflow_authoring")`。
 4. 编写任何 Workflow 脚本前，调用一次 `get_diagnosis_doc(task_id=..., topic="workflow_single")`。只有确认场景包需要多个 Workflow 后，才调用一次 `get_diagnosis_doc(task_id=..., topic="workflow_multi")`。
@@ -18,17 +24,30 @@ description: 当用户需要把业务流程制作成可在 GoalfyMax 直接使�
 
 同一工单内不要重复读取相同 topic。MCP 知识库是共享 Workflow 契约和正反例的完整来源；本 Skill 内三份检查清单是外部制作入口的方案挑战与验收执行提示。发生冲突时以线上 Schema、Preview、Hub Validator 和 Max Runtime 为准。
 
+## 判断任务模式和授权边界
+
+先根据用户目标选择模式，模式决定证据来源和允许的写操作：
+
+- **创建模式**：用户要把一个业务流程沉淀为新的场景包。先理解业务目标、里程碑、输入、产出和授权边界，再设计资产。
+- **诊断模式**：用户提供已有场景包或真实项目，要求找问题。先只读获取场景包全貌和执行证据，按场景包 → 任务点/Workflow → Toolset → FastAgent/Tool Group 逐层定位；“看看问题”不授权修改。
+- **优化模式**：用户已经明确要求修改已有场景包。先完成诊断并展示业务影响和拟修改范围，再更新原资产；不得用重复创建代替修复。
+- **续作模式**：已有 `task_id` 时，先恢复工单和资产现状，再从最近的有效检查点继续，禁止凭对话记忆重建资产。
+
+用户意图不清、缺少目标场景或诊断对象时，只询问真正阻止开始的业务信息。缺少工具知识或不知道需要哪些资产不是用户参数缺失，应通过核心模型、线上资产和服务端契约自行研究。
+
 ## 执行外部制作流程
 
 ### 1. 创建一个可审计工单
 
-在第一次预览、写入、真实取样、项目运行、下载或审计动作前，调用 `workflow_task_manager(action="create", task_name=..., task_description=...)`。保存返回的 `task_id`，后续所有审计操作都传入该值。
+在第一次预览、写入、真实取样、项目运行、下载或审计动作前，调用 `workflow_task_manager(action="create", task_name=..., task_description=...)`。`task_description` 应写明当前模式、业务目标、预期交付物和验收边界。保存返回的 `task_id`，后续所有审计操作都传入该值。
 
 中断后用 `workflow_task_manager(action="get", task_id=<task_id>)` 恢复上下文。资产创建和验证后，用 `workflow_task_manager(action="insert", task_id=<task_id>, entry_type="checkpoint", content=...)` 写入简洁检查点；不要把完整工具输入、供应商输出、凭证或日志复制进工单。
 
 ### 2. 检查并复用线上资产
 
 用 `list_assets` 查找候选场景包、Workflow、Toolset、Tool Group、FA 和数据集，用 `get_asset` 读取完整现状。
+
+创建模式先寻找可复用资产再决定新建；诊断和优化模式先读取目标场景包全貌，再沿真实引用关系下钻，不能跳过上层结构直接凭某个子资产下结论。用户提供参考项目时，真实项目日志是业务流程和瓶颈的主要证据，不得只看场景包文案。
 
 为每个脚本依赖收集线上调用名、所属资产 ID、input Schema、可见的正式 output Schema、当前版本和 Toolset 依赖。禁止从手册、其他项目或历史对话推断这些信息。
 
@@ -38,11 +57,11 @@ description: 当用户需要把业务流程制作成可在 GoalfyMax 直接使�
 
 读取 [方案挑战检查清单](references/方案挑战检查清单.md)。CC/Codex 根据清单和当前资产证据自行审查，不启动或假设存在方案挑战 FastAgent。
 
-创建场景包前，解决业务输入不清、多余 Workflow、Agent 判断位置错误、不安全副作用和交付物缺失问题。只把简洁结论写入工单检查点。
+创建场景包前，先形成一份业务蓝图：目标用户和触发场景、业务里程碑、每阶段输入与用户可见产出、需要 Agent/用户判断的边界、能力覆盖与缺口、验收证据。再解决业务输入不清、多余 Workflow、Agent 判断位置错误、不安全副作用和交付物缺失问题。面向用户使用业务语言展示蓝图，不展示资产 ID、参数名或技术调用链；工单中只写简洁结论。
 
 ### 4. 选择执行形态并起草运行时 Skill
 
-用制作总契约区分固定阶段和 Agent 判断；每个脚本都应用单 Workflow 契约，只有固定 DAG 才应用多 Workflow 契约。
+按核心模型先决定哪些业务阶段应由场景 Skill、普通任务点、FastAgent 或 Workflow 承担，再用制作总契约区分固定阶段和 Agent 判断。每个脚本都应用单 Workflow 契约，只有固定 DAG 才应用多 Workflow 契约。不得因为外部 MCP 以 Workflow 制作为主，就把所有场景强行改造成 Workflow。
 
 创建资产前，根据确认过的业务里程碑起草 `apc_skill`，只保留运行时 Agent 必须始终知道的内容：
 
