@@ -91,6 +91,49 @@ def test_scene_package_domain_model_excludes_max_runtime_protocols():
         assert max_runtime_rule not in model
 
 
+def test_external_skill_preserves_scene_creator_intent_routing_without_max_state_machine():
+    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+
+    assert skill.index("## 判断任务模式和授权边界") < skill.index(
+        "### 1. 创建一个可审计工单"
+    )
+    for route in (
+        "创建模式",
+        "诊断模式",
+        "优化模式",
+        "续作模式",
+        "Workflow 资产任务",
+        "分析这个项目的执行日志",
+    ):
+        assert route in skill
+    for gap in (
+        "意图缺失",
+        "关键业务参数缺失",
+        "知识缺失",
+        "可选偏好缺失",
+        "授权缺失",
+    ):
+        assert gap in skill
+    for context_item in (
+        "业务目标",
+        "业务里程碑",
+        "输入与产出",
+        "参考证据",
+        "权限和副作用",
+        "验收标准",
+    ):
+        assert context_item in skill
+
+    for max_state_protocol in (
+        "GOALFYAI_STATE_FOG",
+        "GOALFYAI_STATE_PLAN",
+        "GOALFYAI_STATE_EXEC",
+        "GOALFYAI_STATE_BLOCK",
+        "GOALFYAI_STATE_DELIVER",
+    ):
+        assert max_state_protocol not in skill
+
+
 def test_external_skill_uses_only_external_procedure_names():
     content = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
 
