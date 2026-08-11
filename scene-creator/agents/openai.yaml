@@ -1,4 +1,4 @@
 interface:
   display_name: "场景包制作"
-  short_description: "理解场景包资产模型，创建、诊断、优化并验证可在 GoalfyMax 使用的场景包"
-  default_prompt: "使用 $scene-creator 理解我的业务场景，创建或诊断优化一个经过验证、可在 GoalfyMax 使用的场景包。"
+  short_description: "理解资产模型，创建、诊断、优化并验证 GoalfyMax 场景包及业务界面"
+  default_prompt: "使用 $scene-creator 理解我的业务场景，创建或诊断优化一个经过验证、可在 GoalfyMax 使用的场景包及其业务界面。"

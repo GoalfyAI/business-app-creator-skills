@@ -1,6 +1,6 @@
 # 外部 MCP 工具路由
 
-外部场景包制作模式固定暴露 12 个工具。只使用线上工具 Schema 中实际存在的 action；下表只说明用途和顺序，不能替代 `tools/list`。
+下表是外部场景包制作工具的语义路由。工具名、action 和参数以当前线上 `tools/list` 为唯一真相；本文只说明用途和顺序，不复制完整参数 Schema，也不要求工具数量永远不变。
 
 | 工具 | 用途 | 重要 action 或规则 |
 |---|---|---|
@@ -12,7 +12,7 @@
 | `workflow_file_upload` | 把本地辅助文件或 Skill 文件上传到工单 | `prepare → upload → complete`；返回文件受用户和工单隔离 |
 | `workflow_dependency_manage` | 创建或维护依赖、Auth Card、普通自定义 TPE，以及直连 MCP 取样 | `test_tool` 会真实调用供应商；审计不保存凭证明文；Workflow TPE 禁止使用 `create_custom_tpe` |
 | `scene_package_manage` | 创建、读取、更新并发布场景包 | 先草稿后发布；`workflow_orchestration` 执行完整对象替换 |
-| `scene_package_ui_bundle` | 下载共享 UI 模板并维护场景包定制 UI 源码包 | 所有 action 都传 `task_id`；`download_template` 是共享模板，其他上传/读取/下载操作还需 `scene_package_id` |
+| `scene_package_ui_bundle` | 下载共享 UI 模板，维护、部署并反读场景包定制 UI 源码包 | 所有 action 都传 `task_id`；业务界面开发必须以 `download_template` 为初始化入口并消费返回的 `data.file_name/size_bytes/download_url/expires_in`，不得用通用 `init_project` 或 Git 克隆替代；其余 action 按实时 Schema 使用 `prepare_upload/complete_upload/get/download/deploy/status` 并绑定 `scene_package_id` |
 | `workflow_tpe_manage` | 预览、创建、更新、挂载、发布和 `bubble` Workflow TPE | 创建必须传 `scene_package_id` 和根对象 `output_schema`；`bubble` 首次返回 `run_id`，后续轮询同一运行 |
 | `manage_goalfymax_project` | 运行并控制真实 Max 项目 | 传 `workflow_input` 测试 C2；省略时进入普通 SA 对话 |
 | `get_project_execution_logs` | 检查日志并获取最终交付物 | `summary/detail` 用于诊断，`outputs/download/bundle` 用于交付 |
@@ -34,9 +34,11 @@ workflow_task_manager(create)
 → workflow_file_upload(prepare → PUT → complete)          # 可选 Workflow ctx.skill_dir 文件
 → workflow_tpe_manage(preview → create)
 → scene_package_manage(update, workflow_orchestration)    # 仅多 Workflow
-→ scene_package_ui_bundle(download_template → prepare_upload → complete_upload)  # 可选业务 UI
 → workflow_tpe_manage(bubble start → poll)                # 每个 Workflow 必做
 → 读取 Skill 内 Workflow 验收检查清单 → 逐条 Agent 自检
+→ 冻结最终 Workflow/编排契约
+→ 读取业务界面制作契约 → scene_package_ui_bundle(download_template → prepare_upload → complete_upload → deploy/status → get)  # business_ui=required 时
+→ 读取 Skill 内业务界面验收检查清单 → Agent 自检       # business_ui=required 时
 → 读取 Skill 内场景包验收检查清单 → 整包 Agent 自检
 → workflow_tpe_manage(update) / scene_package_manage(update)  # 按需修复
 → scene_package_manage(online)
@@ -47,6 +49,8 @@ workflow_task_manager(create)
 ```
 
 工单创建后的每个审计调用都必须携带返回的 `task_id`；上面的紧凑路由写法不代表它可以省略。
+
+MCP 协议已经通过 `tools/list` 暴露实时工具清单，不再增加平行的 `list_tools` 业务工具。Skill 只维护稳定的能力路由；浏览器中的业务界面不接收这份 MCP 清单，只使用宿主 SDK 和公开运行契约。
 
 ## ID 和名称纪律
 

@@ -9,7 +9,7 @@
 3. 必须由用户本人将密钥写入本地 `~/.claude/settings.json`；不要要求用户在聊天中粘贴明文密钥。
 4. 添加环境变量时，保留 Claude Code 的全部已有配置。
 5. 验证安装期间，不要创建、更新、发布或运行任何 Goalfy 资产。
-6. 只有在重启后的会话中确认插件、Skill、12 个 MCP 工具、`bubble` 操作和一次只读资产请求
+6. 只有在重启后的会话中确认插件、Skill、当前 MCP 工具清单、`bubble` 操作和一次只读资产请求
    全部正常后，才能宣布安装成功。
 
 ## 第 0 步：检查当前状态
@@ -90,7 +90,7 @@ python3 -c 'import json, pathlib; p=pathlib.Path.home()/".claude/settings.json";
 
 1. `scene-creator` 已安装，且可以选择对应 Skill。
 2. `/mcp` 显示 `scene-creator` 已连接。
-3. 线上 `tools/list` 恰好包含 12 个工具。
+3. 线上 `tools/list` 包含安装文档要求的核心工具，且没有使用 Skill 中的静态数量替代实时清单。
 4. 线上 `workflow_tpe_manage` Schema 包含 `bubble`。
 5. 使用只读查询调用 `list_assets` 成功。
 

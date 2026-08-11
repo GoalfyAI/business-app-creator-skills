@@ -52,7 +52,7 @@ Codex CLI 用户也可以在启动 Codex 的 Shell 中导出同名变量。桌�
 
 1. 确认 `scene-creator` 插件和 Skill 已加载。
 2. 确认 MCP 服务 `scene-creator` 已连接。
-3. 确认 `tools/list` 恰好暴露 12 个外部工具。
+3. 确认 `tools/list` 能看到 `scene-creator` 当前发布的外部工具，并包含安装文档要求的核心工具。
 4. 确认 `workflow_tpe_manage` 包含 `bubble` 操作。
 5. 执行一次只读的 `list_assets` 请求。不要为了测试安装而创建或修改资产。
 

@@ -175,7 +175,86 @@ def test_external_tool_reference_tracks_exact_profile():
     documented_tools = set(re.findall(r"^\| `([^`]+)` \|", content, flags=re.MULTILINE))
 
     assert documented_tools == expected_tools
-    assert "外部场景包制作模式固定暴露 12 个工具" in content
+    assert "当前线上 `tools/list` 为唯一真相" in content
+    assert "不复制完整参数 Schema" in content
+    assert "不要求工具数量永远不变" in content
+
+
+def test_business_ui_is_co_built_after_workflow_acceptance_and_before_pack_release():
+    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    routing = (SKILL_ROOT / "references" / "external-mcp-tools.md").read_text(
+        encoding="utf-8"
+    )
+    contract = (SKILL_ROOT / "references" / "业务界面制作契约.md").read_text(
+        encoding="utf-8"
+    )
+    checklist = (SKILL_ROOT / "references" / "业务界面验收检查清单.md").read_text(
+        encoding="utf-8"
+    )
+
+    for reference in ("业务界面制作契约.md", "业务界面验收检查清单.md"):
+        assert f"references/{reference}" in skill
+
+    assert skill.index("### 9. 根据契约和轨迹验收每个 Workflow") < skill.index(
+        "### 10. 按最终 Workflow 契约制作并发布业务界面"
+    )
+    assert skill.index("### 10. 按最终 Workflow 契约制作并发布业务界面") < skill.index(
+        "### 11. 验收完整场景包"
+    )
+    assert routing.index("workflow_tpe_manage(bubble start → poll)") < routing.index(
+        "冻结最终 Workflow/编排契约"
+    )
+    assert routing.index("业务界面验收检查清单") < routing.index(
+        "场景包验收检查清单"
+    )
+
+    for action in (
+        "download_template",
+        "prepare_upload",
+        "complete_upload",
+        "deploy",
+        "status",
+        "get",
+    ):
+        assert action in contract
+    assert "只提交顶层 `workflow_input`" in contract
+    assert "不得用单 Workflow `workflow.run` 假装执行整包编排" in checklist
+    assert "MCP 工具清单只服务制作 Agent" in contract
+
+
+def test_business_ui_template_download_is_a_mandatory_initialization_gate():
+    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    contract = (SKILL_ROOT / "references" / "业务界面制作契约.md").read_text(
+        encoding="utf-8"
+    )
+    checklist = (SKILL_ROOT / "references" / "业务界面验收检查清单.md").read_text(
+        encoding="utf-8"
+    )
+    routing = (SKILL_ROOT / "references" / "external-mcp-tools.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert 'scene_package_ui_bundle(action="download_template"' in skill
+    assert "强制初始化入口" in skill
+    assert "不能用通用 `init_project`、Git 克隆" in skill
+    for response_field in (
+        "file_name",
+        "size_bytes",
+        "download_url",
+        "expires_in",
+    ):
+        assert response_field in contract
+    for required_file in (
+        "AGENTS.md",
+        "README.md",
+        "schema/README.md",
+        "src/sdk/docs/README.md",
+    ):
+        assert required_file in contract
+    assert "路径穿越" in contract
+    assert "唯一包含 `goalfy-app.json`" in contract
+    assert "不得用通用 `init_project` 或 Git 克隆替代" in routing
+    assert "模板实际字节数与响应一致" in checklist
 
 
 def test_full_validation_is_optional_and_skips_are_audited():
@@ -185,7 +264,7 @@ def test_full_validation_is_optional_and_skips_are_audited():
     )
 
     assert "预览 → `bubble` → 语义验收 → 可选全真跑" in skill
-    assert "### 13. 按需运行一个真实 Max 业务项目" in skill
+    assert "### 14. 按需运行一个真实 Max 业务项目" in skill
     assert "只有用户批准所选场景路径" in skill
     assert "full_validation_skipped" in skill
     assert "禁止虚构 `project_id`" in skill
@@ -264,6 +343,7 @@ def test_skill_and_agent_metadata_use_chinese():
         "辅助文件交付",
         "场景编排",
         "bubble 验证",
+        "业务界面制作与发布",
         "可选全真项目验证",
         "日志与交付物检查",
         "最终发布",

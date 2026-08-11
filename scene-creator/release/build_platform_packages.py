@@ -57,8 +57,8 @@ ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 MARKETPLACE_DESCRIPTION = (
     "面向编码 Agent 的 GoalfyMax 场景包制作与验证能力。通过经过审计的 scene-creator 外部 MCP，"
     "把业务流程转成可直接运行的单 Workflow 或多 Workflow 场景包，并维护从线上资产复用、工具契约"
-    "取样、依赖与辅助文件准备、输入输出 Schema、场景编排、预览、bubble 验证、可选全真项目验证、"
-    "日志与交付物检查到最终发布的完整制作链路。"
+    "取样、依赖与辅助文件准备、输入输出 Schema、场景编排、预览、bubble 验证、业务界面制作与部署、"
+    "可选全真项目验证、日志与交付物检查到最终发布的完整制作链路。"
 )
 
 
@@ -241,7 +241,7 @@ def validate_platform_sources(skill_root: Path) -> None:
             for name in ("README.md", "AGENTS.md", "UPDATE.md")
         )
         for required_text in (
-            "12",
+            "tools/list",
             "bubble",
             "list_assets",
             "/developer/api-keys",
@@ -445,7 +445,7 @@ def _bundle_marketplace(platform: str, version: str) -> tuple[str, bytes]:
     plugin_description = (
         f"在 {client_name} 中创建、更新、验证并发布 GoalfyMax 场景包。支持线上资产复用、工具契约"
         "取样、依赖与辅助文件准备、单 Workflow 或多 Workflow 编排、输入输出 Schema 校验、预览、"
-        "bubble、可选全真项目验证、日志诊断和交付物检查。"
+        "bubble、业务界面制作与部署、可选全真项目验证、日志诊断和交付物检查。"
     )
     if platform == "codex":
         path = ".agents/plugins/marketplace.json"
@@ -504,7 +504,7 @@ def _direct_marketplace(platform: str, version: str) -> bytes:
                 "description": (
                     f"在 {client_name} 中创建、更新、验证并发布 GoalfyMax 场景包。支持线上资产复用、"
                     "工具契约取样、依赖与辅助文件准备、单 Workflow 或多 Workflow 编排、输入输出 "
-                    "Schema 校验、预览、bubble、可选全真项目验证、日志诊断和交付物检查。"
+                    "Schema 校验、预览、bubble、业务界面制作与部署、可选全真项目验证、日志诊断和交付物检查。"
                 ),
                 "version": version,
                 "author": {"name": "GoalfyAI"},

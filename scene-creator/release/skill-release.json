@@ -1,24 +1,28 @@
 {
   "skill_name": "scene-creator",
   "version": "1.0.0",
-  "released_at": "2026-08-11T10:27:24Z",
-  "update_reason": "补回场景包领域意图路由、信息缺口分类和最小需求收集规则，并继续排除 Max 状态机",
+  "released_at": "2026-08-11T14:02:36Z",
+  "update_reason": "强化业务界面脚手架下载初始化闭环：强制通过专用工具取得当前模板，校验下载与归档，定位唯一开发目录并完整读取模板指南，禁止用通用初始化或历史仓库替代",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
     "references/Workflow验收检查清单.md",
     "references/external-mcp-tools.md",
+    "references/业务界面制作契约.md",
+    "references/业务界面验收检查清单.md",
     "references/场景包核心模型.md",
     "references/场景包验收检查清单.md",
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "47081ade6cddd15f40ff52cc6be4e008db34ff90e081287fa22e639ad1083e77",
-    "agents/openai.yaml": "e04823d808cb6a28082793977eda076b32843f114173377696684e81393141e6",
+    "SKILL.md": "8bb16cfc247c0ced1c41468424799f807226a37da1ccad2330b3024440da8138",
+    "agents/openai.yaml": "f5fd4927be313528c20acbcbb9cbfebef03a13b105045c10aad77f5314c7bf62",
     "references/Workflow验收检查清单.md": "884ed35842b999c50f80872eb35abdffa38992483e86567d0d037a15ce331876",
-    "references/external-mcp-tools.md": "821c0b8372e2dcf8263d8f7e4a61461bae3e7c20d4349469e11e699eee526ac6",
-    "references/场景包核心模型.md": "6880bf703376db56c16a2472e6898bf5f0495b8ee5a3c15dbe6b38131e249603",
-    "references/场景包验收检查清单.md": "614215af2f7bc6b49f6cb6a90f61157dc9e0952f513e6a5697b75b738cb61ac6",
+    "references/external-mcp-tools.md": "5b738f8c568700a1f67f6482996bc5dd69e93cd2144d04c56ad1754b8c252afd",
+    "references/业务界面制作契约.md": "67bde5cca479d5da03fcfcc644c8436ac431e1d414c36d97f37a2392d850da86",
+    "references/业务界面验收检查清单.md": "564fe90a9b4d52cd04673fa7cb7fdeebf87bb486dea0de0c634e3cd2fc5eff9f",
+    "references/场景包核心模型.md": "4e89fdf4289eaeaa9810ad07d7c8cb2dca5ae271e7df82b0db3dd39f46710b94",
+    "references/场景包验收检查清单.md": "d8f9121597dd4b4d2f7f982933f0b368b07994d2b6e409a3f19b5796a10f56e4",
     "references/方案挑战检查清单.md": "b8fdc5506bd552bbc94d4235ea1a2526af2599d065c2d73a1dc2d698cc4a162f"
   },
   "platform_source_files": [
@@ -36,13 +40,13 @@
   "platform_checksums": {
     "claude-code/.claude-plugin/plugin.json": "545f721cce3f9fee7cbd542e4e54ea3c86612065d1c537d266b597b2781a9cc4",
     "claude-code/.mcp.json": "056dc4ee8ffd2a7459142b866a2a41ad229a5c0cc6d9d9276362532c40f2dcfd",
-    "claude-code/AGENTS.md": "84f3af7c804827fda1afc5e997e49100c35de6b4b136757f703beb6f1e39be0f",
-    "claude-code/README.md": "090ecc67623288ddd370a43ec5754cc7e65c5068ac8f9c42d432a203ada5d863",
+    "claude-code/AGENTS.md": "e019b5e86fc580548b5412344ac0fdb0edcb6cde466cf1011332bdcc7c99f871",
+    "claude-code/README.md": "6338273062a5c9e6d3160508ba353fb9f744bc36c5ceb66dd4eb3463e04f70d6",
     "claude-code/UPDATE.md": "15c5f912c84bcb8aae5f25567fd0043b5faaedf3ee195b4e7550951b30b14bd7",
     "codex/.codex-plugin/plugin.json": "76db76980cb4abcdc60f4fea7906cdd7558160fa03a4d2de1c4e7bdd273ed58b",
     "codex/.mcp.json": "9e1c197e836053227e30a9e93c6a033d5a914892e6a0b76e45de21d809876cb6",
-    "codex/AGENTS.md": "1a0ac4423d4c6e9d2729f05f14da428e9feab01d9104e27ceb6cde402a9d391c",
-    "codex/README.md": "9ea64382e29f0a5219330b933e142bb24186ea30d7767b3774e68ba21f3d4ca8",
+    "codex/AGENTS.md": "759f77e95f9edbc4a1d8c1db8212b91708cf8a772fc9b3fed60b8ec1876dc066",
+    "codex/README.md": "305c0310e70bc6b413f57a435e7de30ff251710bb030223dbf2645bc3ff7e0da",
     "codex/UPDATE.md": "e1256846437a4ad642bf61ae7635548606dc6252018098fbfb7be97c0ca0f683"
   }
 }

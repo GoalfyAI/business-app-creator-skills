@@ -1,6 +1,6 @@
 ---
 name: scene-creator
-description: 当用户需要把业务流程制作成可在 GoalfyMax 直接使用的场景包，或需要创建、更新、验证和发布单 Workflow 或多 Workflow 资产时使用。通过经过审计的 scene-creator 外部 MCP，完成需求澄清、线上资产复用、工具契约发现与真实取样、依赖准备、脚本及输入输出 Schema 编写、辅助文件交付、场景编排、预览、bubble 验证、可选全真项目验证、日志与交付物检查、问题修复和最终发布；也适用于根据真实项目执行日志复盘，维护、诊断和迭代已有场景包。
+description: 当用户需要把业务流程制作成可在 GoalfyMax 直接使用的场景包，或需要创建、更新、验证和发布单 Workflow、多 Workflow 及其业务界面时使用。通过经过审计的 scene-creator 外部 MCP，完成需求澄清、线上资产复用、工具契约发现与真实取样、依赖准备、脚本及输入输出 Schema 编写、辅助文件交付、场景编排、预览、bubble 验证、业务界面制作与发布、可选全真项目验证、日志与交付物检查、问题修复和最终发布；也适用于根据真实项目执行日志复盘，维护、诊断和迭代已有场景包及业务界面。
 ---
 
 # 场景包制作
@@ -11,18 +11,19 @@ description: 当用户需要把业务流程制作成可在 GoalfyMax 直接使�
 
 每个新的制作、诊断或优化任务开始时，先完整读取一次 [场景包核心模型](references/场景包核心模型.md)。该文件定义场景包是什么、各类资产如何协作、信息应该放在哪一层，以及何时使用 Workflow、普通任务点或 FastAgent。未完成这一步前，不得给出架构方案、创建资产或把用户需求直接翻译成工具调用。
 
-不要把 Max 内部“场景包助手”的整份系统提示词复制进本 Skill。内部状态机、交互协议、Max 专属工具和运行环境只属于 Max；外部 Agent 只继承其中稳定的领域模型和设计方法，并严格使用当前外部 MCP 暴露的 12 个工具。
+不要把 Max 内部“场景包助手”的整份系统提示词复制进本 Skill。内部状态机、交互协议、Max 专属工具和运行环境只属于 Max；外部 Agent 只继承其中稳定的领域模型和设计方法，并严格使用当前外部 MCP 实时暴露的工具。
 
 ## 加载制作契约
 
-1. 读完核心模型后，再读 [外部 MCP 工具路由](references/external-mcp-tools.md)，并用线上 `tools/list` 核对 12 个工具。
+1. 读完核心模型后，再读 [外部 MCP 工具路由](references/external-mcp-tools.md)，并用线上 `tools/list` 核对当前工具和 action；参考表只负责用途路由，不替代实时参数 Schema。
 2. 读取服务端契约前，先创建 Workflow 制作工单。
 3. 确认任务需要制作 Workflow 后，调用一次 `get_diagnosis_doc(task_id=..., topic="workflow_authoring")`。
 4. 编写任何 Workflow 脚本前，调用一次 `get_diagnosis_doc(task_id=..., topic="workflow_single")`。只有确认场景包需要多个 Workflow 后，才调用一次 `get_diagnosis_doc(task_id=..., topic="workflow_multi")`。
 5. 使用特殊原语或契约，或者预览、Hub、运行时错误需要已知修复模式时，先读一次 `workflow_examples`，再只读取匹配的 `workflow_example_*` topic。
-6. 方案创建前读取 [方案挑战检查清单](references/方案挑战检查清单.md)；每条 Workflow 冒泡后读取 [Workflow 验收检查清单](references/Workflow验收检查清单.md)；发布前读取 [场景包验收检查清单](references/场景包验收检查清单.md)。三份检查清单承接 Max 内 Battle/Verify FA 的审查职责，由外部 Agent 自行执行，不调用或虚构不存在的 FA。
+6. 创建或更新场景包时必须明确业务界面是 `required` 还是 `not_required`。选择 `required`，或已有场景包已经绑定业务界面时，完整读取 [业务界面制作契约](references/业务界面制作契约.md)。
+7. 方案创建前读取 [方案挑战检查清单](references/方案挑战检查清单.md)；每条 Workflow 冒泡后读取 [Workflow 验收检查清单](references/Workflow验收检查清单.md)；业务界面交付前读取 [业务界面验收检查清单](references/业务界面验收检查清单.md)；发布前读取 [场景包验收检查清单](references/场景包验收检查清单.md)。这些检查清单承接 Max 内审查职责，由外部 Agent 自行执行，不调用或虚构不存在的 FA。
 
-同一工单内不要重复读取相同 topic。MCP 知识库是共享 Workflow 契约和正反例的完整来源；本 Skill 内三份检查清单是外部制作入口的方案挑战与验收执行提示。发生冲突时以线上 Schema、Preview、Hub Validator 和 Max Runtime 为准。
+同一工单内不要重复读取相同 topic。MCP 知识库是共享 Workflow 契约和正反例的完整来源；本 Skill 内四份检查清单是外部制作入口的方案挑战与验收执行提示。发生冲突时以线上 Schema、Preview、Hub Validator 和 Max Runtime 为准。
 
 ## 判断任务模式和授权边界
 
@@ -63,6 +64,7 @@ description: 当用户需要把业务流程制作成可在 GoalfyMax 直接使�
 - **参考证据**：真实项目、经验体、文件、已有资产或失败日志；
 - **权限和副作用**：哪些动作可以自主完成，哪些必须确认；
 - **验收标准**：用户怎样判断场景包真的变好或可以使用。
+- **业务界面**：是否需要专属操作界面；如果需要，哪些输入、进度和结果必须结构化呈现。
 
 已有信息不要重复询问。一次只问最影响下一步的一至三个问题；用户只给业务语言时，由外部 Agent 负责翻译成资产方案，不要求用户理解 Toolset、FastAgent、TPE、Schema 或资产 ID。
 
@@ -88,7 +90,7 @@ description: 当用户需要把业务流程制作成可在 GoalfyMax 直接使�
 
 读取 [方案挑战检查清单](references/方案挑战检查清单.md)。CC/Codex 根据清单和当前资产证据自行审查，不启动或假设存在方案挑战 FastAgent。
 
-创建场景包前，先形成一份业务蓝图：目标用户和触发场景、业务里程碑、每阶段输入与用户可见产出、需要 Agent/用户判断的边界、能力覆盖与缺口、验收证据。再解决业务输入不清、多余 Workflow、Agent 判断位置错误、不安全副作用和交付物缺失问题。面向用户使用业务语言展示蓝图，不展示资产 ID、参数名或技术调用链；工单中只写简洁结论。
+创建场景包前，先形成一份业务蓝图：目标用户和触发场景、业务里程碑、每阶段输入与用户可见产出、需要 Agent/用户判断的边界、能力覆盖与缺口、验收证据，以及业务界面决策。业务界面必须明确为 `required` 或 `not_required`，不得在创建后期静默省略；已有业务界面时，优化范围默认同时包含契约兼容性检查。再解决业务输入不清、多余 Workflow、Agent 判断位置错误、不安全副作用和交付物缺失问题。面向用户使用业务语言展示蓝图，不展示资产 ID、参数名或技术调用链；工单中只写简洁结论。
 
 ### 4. 选择执行形态并起草运行时 Skill
 
@@ -181,29 +183,43 @@ scene_package_manage(
 
 读取 [Workflow 验收检查清单](references/Workflow验收检查清单.md)。CC/Codex 根据当前 Workflow 资产、预览结果和 `bubble` 轨迹自行执行语义验收，不启动或假设存在 Workflow 验收 FastAgent。持续修复原 Workflow 并重跑 `bubble`，直到证据满足契约。
 
-### 10. 验收完整场景包
+### 10. 按最终 Workflow 契约制作并发布业务界面
 
-读取 [场景包验收检查清单](references/场景包验收检查清单.md)，把场景包 Skill、依赖闭包、每个 Workflow 契约、`workflow_orchestration`、交付映射和 Agent 交接作为一个整体检查，不启动或假设存在场景包验收 FastAgent。多 Workflow 先确认每条 Workflow 已完成 bubble 和单体验收，再做整包接缝与业务语义验收。把简洁的方案挑战、Workflow 和场景包验收结论写入工单。
+仅当业务界面决策为 `required`，或目标场景包已有业务界面时执行本步骤。完整读取 [业务界面制作契约](references/业务界面制作契约.md)，并以当前场景包、当前 Workflow 和当前 `workflow_orchestration` 的反读结果作为编码契约。业务界面不是独立资产：它必须绑定同一个 `scene_package_id`，在同一工单内制作、验证和发布。
 
-场景包验收通过后，对每个 Workflow 分别询问用户是否执行 FA 全真跑并记录决定。用户跳过时继续流程；只有用户批准覆盖所选场景路径可能执行的全部 Workflow，步骤 13 才能启动真实 Max 项目。
+必须在全部受影响 Workflow 完成 Preview、bubble 和单体验收后才冻结界面契约。若后续修改 Workflow input/output Schema、slug 或顶层编排入口，原界面验收立即失效，必须重新生成契约、验证、上传和部署。
 
-### 11. 在归属层修复问题
+把 `scene_package_ui_bundle(action="download_template", task_id=<task_id>)` 作为业务界面开发的强制初始化入口，必须先调用，不能用通用 `init_project`、Git 克隆、历史模板或手工新建目录替代。按返回的 `data.download_url` 在有效期内把压缩包下载到当前可写工作区；校验 HTTP 成功、实际字节数等于 `data.size_bytes`、文件类型和归档成员安全后再解压。以解压后包含 `goalfy-app.json` 的目录作为唯一开发目录，完整读取根 `AGENTS.md`、`README.md`、`schema/README.md` 和 `src/sdk/docs/README.md` 后才能修改业务代码。详细返回字段、落盘、校验和失败恢复规则见业务界面制作契约。
+
+模板源码、其中的 SDK 文档和线上工具 Schema 是制作期事实源；仓库分支或历史模板只能用于理解。按契约完成业务代码、真实 Schema 快照、manifest、检查和示例清理后，计算实际源码包大小和 SHA256，再依次执行 `prepare_upload → HTTP PUT → complete_upload → deploy`。`deploy` 未返回终态时，用同一 `deployment_id` 执行 `status`，禁止重复上传或重复创建场景包。
+
+读取 [业务界面验收检查清单](references/业务界面验收检查清单.md)，确认源码、运行契约、SDK 边界、异步状态和部署结果。成功后用 `scene_package_ui_bundle(action="get", ...)` 反读当前包及已激活地址，并把界面契约摘要、源码 SHA256、部署 ID 和验收裁决写入工单；不记录预签名下载或上传 URL。
+
+### 11. 验收完整场景包
+
+读取 [场景包验收检查清单](references/场景包验收检查清单.md)，把场景包 Skill、依赖闭包、每个 Workflow 契约、`workflow_orchestration`、交付映射、Agent 交接和业务界面决策作为一个整体检查，不启动或假设存在场景包验收 FastAgent。多 Workflow 先确认每条 Workflow 已完成 bubble 和单体验收；业务界面标记为 `required` 时，还必须已有当前契约对应的界面验收与部署证据，再做整包接缝与业务语义验收。把简洁的方案挑战、Workflow、业务界面和场景包验收结论写入工单。
+
+场景包验收通过后，对每个 Workflow 分别询问用户是否执行 FA 全真跑并记录决定。用户跳过时继续流程；只有用户批准覆盖所选场景路径可能执行的全部 Workflow，步骤 14 才能启动真实 Max 项目。
+
+### 12. 在归属层修复问题
 
 - 线上工具参数或返回不匹配：重读资产，修复调用或步骤契约。
 - Workflow 预览或运行时失败：更新原 Workflow。
 - Hub orchestration 失败：更新同一个完整 `workflow_orchestration` 对象。
 - 运行时工具缺失：核对调用名、Toolset 成员、在线状态和 preload 依赖。
 - 输出文件缺失或不可信：检查 TaskAgent 证据，修复文件来源或生成步骤。
+- 业务界面契约与当前 Workflow 不一致：修复同一界面源码包并重新验证和部署；若根因在 Workflow，先修复 Workflow 并使旧界面验收失效。
+- 当前模板缺少新编排所需的顶层 Manifest/Submit/State 能力：不得用单 Workflow `workflow.run` 假装执行整包编排；记录宿主能力缺口并停止该界面发布，场景包仍按已确认的无界面回落策略处理。
 - 业务判断不确定：停止强行固化 Workflow，把该阶段还给 Agent。
 - 基础设施错误：只有返回错误明确可重试且操作幂等时才重试。
 
-### 12. 发布已验证场景包
+### 13. 发布已验证场景包
 
-发布前重读场景包，确认引用资产存在、每个 Workflow 都有当前 input/output 契约、多 Workflow 场景包已保存一个有效的 orchestration 完整对象且交付节点包含最终 `sa_handoff`、交付文件使用 Workspace 路径、工单中存在简洁验证证据。确认 `apc_skill` 仍对应最终里程碑，列出所有必需业务输入和 Agent/用户判断，不含数字资产 ID 或复制的 DAG，并且为每个上传的场景 Skill 文件提供明确读取时机。
+发布前重读场景包，确认引用资产存在、每个 Workflow 都有当前 input/output 契约、多 Workflow 场景包已保存一个有效的 orchestration 完整对象且交付节点包含最终 `sa_handoff`、交付文件使用 Workspace 路径、工单中存在简洁验证证据。业务界面决策为 `required` 时，确认当前源码 SHA256 已部署成功、绑定同一场景包且界面契约未因后续资产修改过期；决策为 `not_required` 时记录回落现有对话界面。确认 `apc_skill` 仍对应最终里程碑，列出所有必需业务输入和 Agent/用户判断，不含数字资产 ID 或复制的 DAG，并且为每个上传的场景 Skill 文件提供明确读取时机。
 
 资产变更导致草稿过期时，先调用 `scene_package_manage(action="update", task_id=<task_id>, scene_package_id=<scene_package_id>, apc_skill=...)`。随后调用 `scene_package_manage(action="online", task_id=<task_id>, scene_package_id=<scene_package_id>)` 并重读线上场景包。
 
-### 13. 按需运行一个真实 Max 业务项目
+### 14. 按需运行一个真实 Max 业务项目
 
 只有用户批准所选场景路径可能执行的每个 Workflow 都做全真验证，或明确要求完整业务项目证据时，才执行本步骤。批准未覆盖完整路径时不得启动项目；记录 `full_validation_skipped` 和剩余 FA、内容、外部副作用盲区，然后继续关闭工单。
 
@@ -211,10 +227,10 @@ scene_package_manage(
 
 用返回的 `project_id` 执行 `wait` 或 `status`。只有 Max 返回 `needs_input=true` 时才用 `reply` 或 `confirm`；资产更新后需要新尝试时才用 `send`。轮询或小修复不得反复新建项目。
 
-### 14. 全真跑后检查真实日志和交付物
+### 15. 全真跑后检查真实日志和交付物
 
-只有步骤 13 实际执行后，才用相同 `task_id` 和 `project_id` 调用 `get_project_execution_logs`：`summary/detail` 用于执行证据，`outputs/download/bundle` 用于真实交付物。临时 FA 文件和内部挂载路径不得出现。项目整体完成不代表目标 Workflow 和交付物通过。跳过全真跑时，禁止虚构 `project_id`、项目结果、日志结果或交付物结果。
+只有步骤 14 实际执行后，才用相同 `task_id` 和 `project_id` 调用 `get_project_execution_logs`：`summary/detail` 用于执行证据，`outputs/download/bundle` 用于真实交付物。临时 FA 文件和内部挂载路径不得出现。项目整体完成不代表目标 Workflow 和交付物通过。跳过全真跑时，禁止虚构 `project_id`、项目结果、日志结果或交付物结果。
 
-### 15. 关闭工单
+### 16. 关闭工单
 
-写入最终检查点，包含资产 ID 和 `bubble` 结论。检查点必须二选一：记录已批准的真实项目结果与交付摘要，或者记录 `full_validation_skipped`、用户决定和剩余盲区；不得包含凭证或原始日志。调用 `workflow_task_manager(action="complete", task_id=<task_id>)`。跳过全真跑时不得声称存在全真验证证据；缺少必做 `bubble` 证据或审计落库时不得声称可审计完成。
+写入最终检查点，包含资产 ID、`bubble` 结论和业务界面决策；已发布界面还要记录源码 SHA256、deployment_id、激活地址和验收裁决。检查点必须二选一：记录已批准的真实项目结果与交付摘要，或者记录 `full_validation_skipped`、用户决定和剩余盲区；不得包含凭证、预签名 URL 或原始日志。调用 `workflow_task_manager(action="complete", task_id=<task_id>)`。跳过全真跑时不得声称存在全真验证证据；缺少必做 `bubble` 证据、业务界面必需证据或审计落库时不得声称可审计完成。
