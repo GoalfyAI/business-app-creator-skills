@@ -457,7 +457,7 @@ Skill 颗粒度由要消除的真实瓶颈决定：
 
 ### 7.1 创建一个可审计工单
 
-在第一次预览、写入、真实取样、项目运行、下载或审计动作前，调用 `workflow_task_manager(action="create", task_name=..., task_description=...)`。`task_description` 应写明当前模式、业务目标、预期交付物和验收边界。保存返回的 `task_id`，后续所有审计操作都传入该值。
+在第一次预览、写入、真实取样、项目运行、下载或审计动作前，从本文件 description 读取 `[skill-version:...]` 的完整版本值，并调用 `workflow_task_manager(action="create", task_name=..., task_description=..., mode="write", skill_version=<版本值>)`。纯只读诊断可传 `mode="read"`；写模式不得省略或猜测 `skill_version`。`task_description` 应写明当前模式、业务目标、预期交付物和验收边界。保存返回的 `task_id`，后续所有审计操作都传入该值。若返回 `SCENE_SKILL_UPGRADE_REQUIRED`，停止写操作并按返回的最新版本和更新说明升级 Skill 后重试；`SCENE_SKILL_UPGRADE_RECOMMENDED` 只提示，不阻断本次工单。
 
 中断后用 `workflow_task_manager(action="get", task_id=<task_id>)` 恢复上下文。资产创建和验证后，用 `workflow_task_manager(action="insert", task_id=<task_id>, entry_type="checkpoint", content=...)` 写入简洁检查点；不要把完整工具输入、供应商输出、凭证或日志复制进工单。
 

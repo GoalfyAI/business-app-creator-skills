@@ -9,6 +9,7 @@ import json
 import re
 import shutil
 import sys
+import tempfile
 import zipfile
 from collections.abc import Iterable
 from datetime import datetime, timezone
@@ -113,9 +114,7 @@ def discover_platform_source_files(skill_root: Path) -> list[Path]:
     if relative_files != PLATFORM_FILES:
         missing = sorted(PLATFORM_FILES - relative_files)
         extra = sorted(relative_files - PLATFORM_FILES)
-        raise ReleaseError(
-            f"平台源文件不一致：缺少={missing}，多出={extra}"
-        )
+        raise ReleaseError(f"平台源文件不一致：缺少={missing}，多出={extra}")
     return sorted(files, key=lambda path: path.relative_to(platform_root).as_posix())
 
 
@@ -183,18 +182,14 @@ def validate_skill_metadata(skill_root: Path) -> None:
         raise ReleaseError("SKILL.md frontmatter 未闭合") from exc
     frontmatter = _load_yaml_mapping("\n".join(lines[1:closing_index]), "SKILL.md frontmatter")
     if set(frontmatter) != {"name", "description", "keywords"}:
-        raise ReleaseError(
-            "SKILL.md frontmatter 必须且只能包含 name、description 和 keywords"
-        )
+        raise ReleaseError("SKILL.md frontmatter 必须且只能包含 name、description 和 keywords")
     if frontmatter["name"] != SKILL_NAME:
         raise ReleaseError(f"SKILL.md 的 name 必须是 {SKILL_NAME!r}")
     description = frontmatter["description"]
     if not isinstance(description, str) or not description.strip():
         raise ReleaseError("SKILL.md 的 description 不能为空")
     if SKILL_VERSION_MARKER not in description:
-        raise ReleaseError(
-            f"SKILL.md 的 description 必须包含 {SKILL_VERSION_MARKER}"
-        )
+        raise ReleaseError(f"SKILL.md 的 description 必须包含 {SKILL_VERSION_MARKER}")
     keywords = frontmatter["keywords"]
     if not isinstance(keywords, list) or not keywords:
         raise ReleaseError("SKILL.md 的 keywords 必须是非空列表")
@@ -229,9 +224,7 @@ def validate_skill_metadata(skill_root: Path) -> None:
 
     policy = metadata.get("policy")
     if not isinstance(policy, dict) or policy.get("allow_implicit_invocation") is not True:
-        raise ReleaseError(
-            "agents/openai.yaml 必须启用 policy.allow_implicit_invocation"
-        )
+        raise ReleaseError("agents/openai.yaml 必须启用 policy.allow_implicit_invocation")
 
     dependencies = metadata.get("dependencies")
     tools = dependencies.get("tools") if isinstance(dependencies, dict) else None
@@ -297,9 +290,7 @@ def validate_platform_sources(skill_root: Path) -> None:
             "Authorization: Bearer",
         ):
             if required_text not in combined_docs:
-                raise ReleaseError(
-                    f"{platform} 安装文档必须提到 {required_text!r}"
-                )
+                raise ReleaseError(f"{platform} 安装文档必须提到 {required_text!r}")
 
 
 def _sha256(path: Path) -> str:
@@ -351,9 +342,7 @@ def _validate_released_at(value: Any) -> None:
         raise ReleaseError("released_at 必须包含时区")
 
 
-def check_release(
-    skill_root: Path, *, check_direct_install: bool = True
-) -> dict[str, Any]:
+def check_release(skill_root: Path, *, check_direct_install: bool = True) -> dict[str, Any]:
     """校验发布清单元数据和所有唯一源文件的校验和。"""
     skill_root = skill_root.resolve()
     validate_skill_metadata(skill_root)
@@ -376,9 +365,7 @@ def check_release(
     files = discover_source_files(skill_root)
     expected_files = [_relative(path, skill_root) for path in files]
     if manifest["source_files"] != expected_files:
-        raise ReleaseError(
-            "source_files 与 Skill 唯一源文件不一致，请执行 release 操作"
-        )
+        raise ReleaseError("source_files 与 Skill 唯一源文件不一致，请执行 release 操作")
     if not isinstance(manifest["checksums"], dict):
         raise ReleaseError("checksums 必须是 JSON 对象")
     actual_checksums = _checksums(skill_root, files)
@@ -396,20 +383,15 @@ def check_release(
         path.relative_to(platform_root).as_posix() for path in platform_files
     ]
     if manifest["platform_source_files"] != expected_platform_files:
-        raise ReleaseError(
-            "platform_source_files 与经过审查的安装文件不一致，请执行 release 操作"
-        )
+        raise ReleaseError("platform_source_files 与经过审查的安装文件不一致，请执行 release 操作")
     actual_platform_checksums = {
-        path.relative_to(platform_root).as_posix(): _sha256(path)
-        for path in platform_files
+        path.relative_to(platform_root).as_posix(): _sha256(path) for path in platform_files
     }
     if manifest["platform_checksums"] != actual_platform_checksums:
         stale = sorted(
             path
-            for path in set(manifest["platform_checksums"])
-            | set(actual_platform_checksums)
-            if manifest["platform_checksums"].get(path)
-            != actual_platform_checksums.get(path)
+            for path in set(manifest["platform_checksums"]) | set(actual_platform_checksums)
+            if manifest["platform_checksums"].get(path) != actual_platform_checksums.get(path)
         )
         raise ReleaseError(f"平台发布校验和已过期：{stale}")
     if check_direct_install:
@@ -433,9 +415,7 @@ def release(skill_root: Path, version: str, reason: str) -> dict[str, Any]:
         current = _load_manifest(skill_root)
         current_version = _validate_version(current.get("version"))
         if REVIEWED_MCP_ENDPOINT != QA_MCP_ENDPOINT and new_version <= current_version:
-            raise ReleaseError(
-                f"新版本 {version} 必须大于当前版本 {current['version']}"
-            )
+            raise ReleaseError(f"新版本 {version} 必须大于当前版本 {current['version']}")
 
     files = discover_source_files(skill_root)
     platform_root = _platform_source_root(skill_root)
@@ -453,8 +433,7 @@ def release(skill_root: Path, version: str, reason: str) -> dict[str, Any]:
             path.relative_to(platform_root).as_posix() for path in platform_files
         ],
         "platform_checksums": {
-            path.relative_to(platform_root).as_posix(): _sha256(path)
-            for path in platform_files
+            path.relative_to(platform_root).as_posix(): _sha256(path) for path in platform_files
         },
     }
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
@@ -471,14 +450,10 @@ def _write_member(archive: zipfile.ZipFile, archive_path: str, data: bytes) -> N
     info = zipfile.ZipInfo(archive_path, ZIP_TIMESTAMP)
     info.compress_type = zipfile.ZIP_DEFLATED
     info.external_attr = 0o100644 << 16
-    archive.writestr(
-        info, data, compress_type=zipfile.ZIP_DEFLATED, compresslevel=9
-    )
+    archive.writestr(info, data, compress_type=zipfile.ZIP_DEFLATED, compresslevel=9)
 
 
-def _write_zip(
-    output_path: Path, skill_root: Path, source_files: Iterable[str]
-) -> None:
+def _write_zip(output_path: Path, skill_root: Path, source_files: Iterable[str]) -> None:
     with zipfile.ZipFile(
         output_path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
     ) as archive:
@@ -566,9 +541,7 @@ def _direct_marketplace(platform: str, version: str) -> bytes:
     return (json.dumps(body, ensure_ascii=False, indent=2) + "\n").encode()
 
 
-def _direct_install_files(
-    skill_root: Path, manifest: dict[str, Any]
-) -> dict[Path, bytes]:
+def _direct_install_files(skill_root: Path, manifest: dict[str, Any]) -> dict[Path, bytes]:
     """根据唯一 Skill 源文件渲染需要提交到仓库的插件市场目录。"""
     version = manifest["version"]
     platform_root = _platform_source_root(skill_root)
@@ -579,9 +552,7 @@ def _direct_install_files(
     ]
     rendered: dict[Path, bytes] = {}
     for platform in PLATFORM_NAMES:
-        rendered[DIRECT_MARKETPLACE_PATHS[platform]] = _direct_marketplace(
-            platform, version
-        )
+        rendered[DIRECT_MARKETPLACE_PATHS[platform]] = _direct_marketplace(platform, version)
         for source_path in sorted((platform_root / platform).rglob("*")):
             if not source_path.is_file():
                 continue
@@ -591,13 +562,11 @@ def _direct_install_files(
                 .replace(PLATFORM_VERSION_TOKEN, version)
                 .encode()
             )
-        source_files = (
-            list(manifest["source_files"]) if platform == "codex" else common_files
-        )
+        source_files = list(manifest["source_files"]) if platform == "codex" else common_files
         for relative_path in source_files:
-            rendered[
-                Path(platform) / "skills" / SKILL_NAME / relative_path
-            ] = (skill_root / relative_path).read_bytes()
+            rendered[Path(platform) / "skills" / SKILL_NAME / relative_path] = (
+                skill_root / relative_path
+            ).read_bytes()
     return rendered
 
 
@@ -628,9 +597,7 @@ def sync_direct_install_tree(
     return written
 
 
-def check_direct_install_tree(
-    skill_root: Path, manifest: dict[str, Any] | None = None
-) -> None:
+def check_direct_install_tree(skill_root: Path, manifest: dict[str, Any] | None = None) -> None:
     """拒绝生成目录中缺失、被修改或多出的文件。"""
     skill_root = skill_root.resolve()
     manifest = manifest or _load_manifest(skill_root)
@@ -654,9 +621,7 @@ def check_direct_install_tree(
     if actual_paths != expected_paths:
         missing = sorted(str(path) for path in expected_paths - actual_paths)
         extra = sorted(str(path) for path in actual_paths - expected_paths)
-        raise ReleaseError(
-            f"直接安装的插件市场文件不一致：缺少={missing}，多出={extra}"
-        )
+        raise ReleaseError(f"直接安装的插件市场文件不一致：缺少={missing}，多出={extra}")
     stale = sorted(
         str(relative_path)
         for relative_path, data in expected.items()
@@ -680,16 +645,16 @@ def _write_platform_zip(
         output_path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
     ) as archive:
         marketplace_path, marketplace_data = _bundle_marketplace(platform, version)
-        _write_member(
-            archive, f"{bundle_root}/{marketplace_path}", marketplace_data
-        )
+        _write_member(archive, f"{bundle_root}/{marketplace_path}", marketplace_data)
         for source_path in sorted(platform_root.rglob("*")):
             if not source_path.is_file():
                 continue
             relative_path = source_path.relative_to(platform_root).as_posix()
-            data = source_path.read_text(encoding="utf-8").replace(
-                PLATFORM_VERSION_TOKEN, version
-            ).encode()
+            data = (
+                source_path.read_text(encoding="utf-8")
+                .replace(PLATFORM_VERSION_TOKEN, version)
+                .encode()
+            )
             _write_member(archive, f"{plugin_root}/{relative_path}", data)
             if relative_path in {"README.md", "AGENTS.md", "UPDATE.md"}:
                 _write_member(archive, f"{bundle_root}/{relative_path}", data)
@@ -715,9 +680,7 @@ def build_packages(skill_root: Path, output_dir: Path) -> list[Path]:
     outputs = []
     for platform in PLATFORM_NAMES:
         output_path = output_dir / f"{SKILL_NAME}-{platform}-{manifest['version']}.zip"
-        source_files = (
-            list(manifest["source_files"]) if platform == "codex" else common_files
-        )
+        source_files = list(manifest["source_files"]) if platform == "codex" else common_files
         _write_platform_zip(
             output_path,
             skill_root,
@@ -732,13 +695,57 @@ def build_packages(skill_root: Path, output_dir: Path) -> list[Path]:
     return outputs
 
 
+def generate_prod_version(commit_sha: str, now: datetime | None = None) -> str:
+    """Build the immutable production marker from UTC date and Git SHA."""
+    commit_sha = commit_sha.strip().lower()
+    if not re.fullmatch(r"[0-9a-f]{6,64}", commit_sha):
+        raise ReleaseError("生产发布必须提供至少 6 位十六进制 Git SHA")
+    instant = now or datetime.now(timezone.utc)
+    return f"v{instant.astimezone(timezone.utc):%Y%m%d}-{commit_sha[:6]}"
+
+
+def build_prod_packages(
+    skill_root: Path, output_dir: Path, commit_sha: str
+) -> tuple[str, list[Path]]:
+    """Render production-only artifacts without changing the checked-in QA tree."""
+    skill_root = skill_root.resolve()
+    manifest = check_release(skill_root)
+    version = generate_prod_version(commit_sha)
+    with tempfile.TemporaryDirectory(prefix="scene-skill-prod-") as temp_dir:
+        rendered_root = Path(temp_dir) / SKILL_NAME
+        shutil.copytree(skill_root, rendered_root)
+        skill_file = rendered_root / "SKILL.md"
+        content = skill_file.read_text(encoding="utf-8")
+        content, count = re.subn(
+            r"\[skill-version:[^\]]+\]", f"[skill-version:{version}]", content, count=1
+        )
+        if count != 1:
+            raise ReleaseError("SKILL.md 必须且只能渲染一个 skill-version 标记")
+        skill_file.write_text(content, encoding="utf-8")
+
+        common_files = [
+            path
+            for path in manifest["source_files"]
+            if path == "SKILL.md" or path.startswith("references/")
+        ]
+        output_dir.mkdir(parents=True, exist_ok=True)
+        outputs: list[Path] = []
+        for platform in PLATFORM_NAMES:
+            output_path = output_dir / f"{SKILL_NAME}-{platform}-{version}.zip"
+            source_files = list(manifest["source_files"]) if platform == "codex" else common_files
+            _write_platform_zip(output_path, rendered_root, platform, version, source_files)
+            outputs.append(output_path)
+        generic_path = output_dir / f"{SKILL_NAME}-generic-{version}.zip"
+        _write_zip(generic_path, rendered_root, common_files)
+        outputs.append(generic_path)
+    return version, outputs
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="action", required=True)
     subparsers.add_parser("check", help="校验仓库中的发布清单")
-    subparsers.add_parser(
-        "sync", help="根据已校验的发布版本重新生成直接安装的插件市场文件"
-    )
+    subparsers.add_parser("sync", help="根据已校验的发布版本重新生成直接安装的插件市场文件")
 
     release_parser = subparsers.add_parser("release", help="写入新的发布清单")
     release_parser.add_argument(
@@ -755,6 +762,12 @@ def _parser() -> argparse.ArgumentParser:
         default=None,
         help="输出目录（默认：仓库 dist/）",
     )
+
+    prod_parser = subparsers.add_parser(
+        "prod-build", help="仅供 PROD 流水线生成新版本标记并构建安装包"
+    )
+    prod_parser.add_argument("--commit-sha", required=True)
+    prod_parser.add_argument("--output-dir", type=Path, default=None)
     return parser
 
 
@@ -773,9 +786,15 @@ def main(argv: list[str] | None = None) -> int:
         elif args.action == "release":
             manifest = release(skill_root, args.version, args.reason)
             print(f"已发布 {SKILL_NAME} {manifest['version']}")
-        else:
+        elif args.action == "build":
             output_dir = args.output_dir or skill_root.parent / "dist"
             for path in build_packages(skill_root, output_dir):
+                print(path)
+        else:
+            output_dir = args.output_dir or skill_root.parent / "dist"
+            version, paths = build_prod_packages(skill_root, output_dir, args.commit_sha)
+            print(f"SCENE_SKILL_VERSION={version}")
+            for path in paths:
                 print(path)
     except ReleaseError as exc:
         print(f"错误：{exc}", file=sys.stderr)

@@ -1,0 +1,108 @@
+# GoalfyMax scene-creator Skill 独立流水线（T-2775）。
+# QA/main push 只校验固定 1.0.0；只有手工进入 PROD job 才生成内容版本、上传制品并登记 Max Hub。
+sources:
+  repo_0:
+    type: codeup
+    name: scene-creator-skills
+    endpoint: https://codeup.aliyun.com/goalfyai/goalfyagent/scene-creator-skills.git
+    branch: main
+    triggerEvents:
+      - push
+    branchesFilter: ^main$
+    cloneDepth: 1
+    certificate:
+      type: serviceConnection
+      serviceConnection: 821549
+
+defaultWorkspace: repo_0
+
+concurrencyConfig:
+  maxRunningPipelineInstances: 100
+  pipelineMaxRunningBehavior: rejectNew
+  maxRunningJobInstances: 1
+
+stages:
+  stage_validate:
+    name: QA校验
+    jobs:
+      job_validate:
+        name: 校验固定版本与全量测试
+        runsOn:
+          group: private/o3yZdT0POoGmFbak
+          labels: linux,amd64
+          vm: true
+        driven: auto
+        steps:
+          step_checkout:
+            name: 检出并锁定提交
+            step: Command
+            with:
+              run: |
+                set -euo pipefail
+                cd ${PROJECT_DIR}
+                git fetch origin ${CI_COMMIT_REF_NAME}:refs/remotes/origin/${CI_COMMIT_REF_NAME} --depth=1 --force
+                git checkout -B ${CI_COMMIT_REF_NAME} origin/${CI_COMMIT_REF_NAME}
+                RELEASE_SHA=$(git rev-parse HEAD)
+                echo "RELEASE_SHA=${RELEASE_SHA}" >> $FLOW_ENV
+          step_test:
+            name: 安装依赖并测试
+            step: Command
+            with:
+              run: |
+                set -euo pipefail
+                cd ${PROJECT_DIR}
+                python3 -m pip install --user uv
+                python3 -m uv sync --group dev
+                python3 -m uv run ruff check scene-creator/release/build_platform_packages.py scripts/prod-release-skill.py tests
+                python3 -m uv run pytest -q
+                python3 -m uv run python scene-creator/release/build_platform_packages.py check
+                if DEPLOY_ENV=qa CI_COMMIT_SHA=${RELEASE_SHA} scripts/prod-release-skill.py; then
+                  echo "非 PROD 环境错误地更新了版本" >&2
+                  exit 1
+                fi
+
+  stage_prod:
+    name: PROD发布
+    needs:
+      - stage_validate
+    jobs:
+      job_prod:
+        name: 生成版本、上传制品并登记Max Hub
+        driven: manual
+        runsOn:
+          group: private/o3yZdT0POoGmFbak
+          labels: linux,amd64
+          vm: true
+        steps:
+          step_build:
+            name: 仅在main生成PROD版本制品
+            step: Command
+            with:
+              run: |
+                set -euo pipefail
+                cd ${PROJECT_DIR}
+                test "${CI_COMMIT_REF_NAME}" = "main"
+                rm -rf dist
+                output=$(python3 -m uv run python scene-creator/release/build_platform_packages.py prod-build --commit-sha "${RELEASE_SHA}" --output-dir dist)
+                version=$(printf '%s\n' "${output}" | sed -n 's/^SCENE_SKILL_VERSION=//p')
+                test -n "${version}"
+                echo "SCENE_SKILL_VERSION=${version}" >> $FLOW_ENV
+                find dist -maxdepth 1 -type f -name "*-${version}.zip" -print
+                test "$(find dist -maxdepth 1 -type f -name "*-${version}.zip" | wc -l | tr -d ' ')" = "3"
+          step_artifact:
+            name: 上传PROD安装包
+            step: ArtifactUpload
+            with:
+              uploadType: flowPublic
+              artifact: scene-creator-${SCENE_SKILL_VERSION}
+              filePath:
+                - dist/
+          step_register:
+            name: 制品成功后登记Max Hub版本
+            step: Command
+            with:
+              run: |
+                set -euo pipefail
+                cd ${PROJECT_DIR}
+                DEPLOY_ENV=prod SCENE_SKILL_VERSION=${SCENE_SKILL_VERSION} \
+                  python3 -m uv run python scripts/prod-release-skill.py --register-only

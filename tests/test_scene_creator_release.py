@@ -24,9 +24,7 @@ def _copy_skill(tmp_path: Path) -> Path:
 
 
 def _manifest(skill_root: Path = SKILL_ROOT) -> dict:
-    return json.loads(
-        (skill_root / "release" / "skill-release.json").read_text(encoding="utf-8")
-    )
+    return json.loads((skill_root / "release" / "skill-release.json").read_text(encoding="utf-8"))
 
 
 def test_checked_in_scene_creator_release_is_current():
@@ -58,9 +56,7 @@ def test_platform_install_change_requires_a_new_release(tmp_path: Path):
     readme = copied / "release" / "platforms" / "codex" / "README.md"
     readme.write_text(readme.read_text(encoding="utf-8") + "\n", encoding="utf-8")
 
-    with pytest.raises(
-        release_module.ReleaseError, match="平台发布校验和已过期"
-    ):
+    with pytest.raises(release_module.ReleaseError, match="平台发布校验和已过期"):
         release_module.check_release(copied)
 
 
@@ -91,14 +87,10 @@ def test_checked_in_direct_marketplaces_are_current():
 
     repository_root = SKILL_ROOT.parent
     codex_marketplace = json.loads(
-        (repository_root / ".agents/plugins/marketplace.json").read_text(
-            encoding="utf-8"
-        )
+        (repository_root / ".agents/plugins/marketplace.json").read_text(encoding="utf-8")
     )
     claude_marketplace = json.loads(
-        (repository_root / ".claude-plugin/marketplace.json").read_text(
-            encoding="utf-8"
-        )
+        (repository_root / ".claude-plugin/marketplace.json").read_text(encoding="utf-8")
     )
     assert codex_marketplace["plugins"][0]["source"] == "./codex"
     assert claude_marketplace["plugins"][0]["source"] == "./claude-code"
@@ -120,6 +112,38 @@ def test_qa_release_rejects_version_bump(tmp_path: Path):
         release_module.release(copied, "1.0.1", "不允许提前升级")
 
 
+def test_prod_version_uses_utc_date_and_git_sha():
+    fixed = release_module.datetime(2026, 8, 12, 3, 4, tzinfo=release_module.timezone.utc)
+    assert release_module.generate_prod_version("A1B2C3D4", fixed) == "v20260812-a1b2c3"
+
+
+def test_prod_version_rejects_non_git_sha():
+    with pytest.raises(release_module.ReleaseError, match="Git SHA"):
+        release_module.generate_prod_version("not-a-sha")
+
+
+def test_prod_build_renders_versioned_artifacts_without_mutating_qa_tree(tmp_path: Path):
+    qa_skill_before = (SKILL_ROOT / "SKILL.md").read_bytes()
+    version, outputs = release_module.build_prod_packages(SKILL_ROOT, tmp_path / "dist", "a1b2c3d4")
+
+    assert version.startswith("v") and version.endswith("-a1b2c3")
+    assert len(outputs) == 3
+    assert (SKILL_ROOT / "SKILL.md").read_bytes() == qa_skill_before
+
+    generic = next(path for path in outputs if "-generic-" in path.name)
+    with zipfile.ZipFile(generic) as archive:
+        packaged_skill = archive.read("scene-creator/SKILL.md").decode()
+    assert f"[skill-version:{version}]" in packaged_skill
+    assert "[skill-version:v1.0.0]" not in packaged_skill
+
+    codex = next(path for path in outputs if "-codex-" in path.name)
+    with zipfile.ZipFile(codex) as archive:
+        plugin = json.loads(
+            archive.read("scene-creator-codex/plugins/scene-creator/.codex-plugin/plugin.json")
+        )
+    assert plugin["version"] == version
+
+
 def test_direct_marketplace_drift_is_rejected(tmp_path: Path):
     copied = _copy_skill(tmp_path)
     manifest = _manifest(copied)
@@ -127,9 +151,7 @@ def test_direct_marketplace_drift_is_rejected(tmp_path: Path):
     generated_skill = tmp_path / "codex/skills/scene-creator/SKILL.md"
     generated_skill.write_text("edited generated copy\n", encoding="utf-8")
 
-    with pytest.raises(
-        release_module.ReleaseError, match="直接安装的插件市场文件已过期"
-    ):
+    with pytest.raises(release_module.ReleaseError, match="直接安装的插件市场文件已过期"):
         release_module.check_release(copied)
 
 
@@ -137,18 +159,10 @@ def test_direct_marketplaces_share_the_canonical_skill():
     repository_root = SKILL_ROOT.parent
     canonical = (SKILL_ROOT / "SKILL.md").read_bytes()
 
-    assert (
-        repository_root / "codex/skills/scene-creator/SKILL.md"
-    ).read_bytes() == canonical
-    assert (
-        repository_root / "claude-code/skills/scene-creator/SKILL.md"
-    ).read_bytes() == canonical
-    assert (
-        repository_root / "codex/skills/scene-creator/agents/openai.yaml"
-    ).is_file()
-    assert not (
-        repository_root / "claude-code/skills/scene-creator/agents"
-    ).exists()
+    assert (repository_root / "codex/skills/scene-creator/SKILL.md").read_bytes() == canonical
+    assert (repository_root / "claude-code/skills/scene-creator/SKILL.md").read_bytes() == canonical
+    assert (repository_root / "codex/skills/scene-creator/agents/openai.yaml").is_file()
+    assert not (repository_root / "claude-code/skills/scene-creator/agents").exists()
 
 
 def test_release_rejects_invalid_skill_frontmatter(tmp_path: Path):
@@ -156,9 +170,7 @@ def test_release_rejects_invalid_skill_frontmatter(tmp_path: Path):
     (copied / "SKILL.md").write_text("# Missing frontmatter\n", encoding="utf-8")
 
     with pytest.raises(release_module.ReleaseError, match="frontmatter"):
-        release_module.release(
-            copied, release_module.QA_FIXED_VERSION, "Invalid metadata"
-        )
+        release_module.release(copied, release_module.QA_FIXED_VERSION, "Invalid metadata")
 
 
 def test_release_rejects_missing_skill_keywords(tmp_path: Path):
@@ -174,9 +186,7 @@ def test_release_rejects_missing_skill_keywords(tmp_path: Path):
     )
 
     with pytest.raises(release_module.ReleaseError, match="keywords"):
-        release_module.release(
-            copied, release_module.QA_FIXED_VERSION, "Missing keywords"
-        )
+        release_module.release(copied, release_module.QA_FIXED_VERSION, "Missing keywords")
 
 
 def test_release_rejects_missing_skill_version_marker(tmp_path: Path):
@@ -188,9 +198,7 @@ def test_release_rejects_missing_skill_version_marker(tmp_path: Path):
     skill_file.write_text(content, encoding="utf-8")
 
     with pytest.raises(release_module.ReleaseError, match="skill-version"):
-        release_module.release(
-            copied, release_module.QA_FIXED_VERSION, "Missing version marker"
-        )
+        release_module.release(copied, release_module.QA_FIXED_VERSION, "Missing version marker")
 
 
 def test_release_rejects_invalid_openai_metadata(tmp_path: Path):
@@ -205,9 +213,7 @@ def test_release_rejects_invalid_openai_metadata(tmp_path: Path):
     )
 
     with pytest.raises(release_module.ReleaseError, match="default_prompt"):
-        release_module.release(
-            copied, release_module.QA_FIXED_VERSION, "Invalid metadata"
-        )
+        release_module.release(copied, release_module.QA_FIXED_VERSION, "Invalid metadata")
 
 
 def test_release_rejects_missing_openai_mcp_dependency(tmp_path: Path):
@@ -224,9 +230,7 @@ def test_release_rejects_missing_openai_mcp_dependency(tmp_path: Path):
     )
 
     with pytest.raises(release_module.ReleaseError, match="MCP 依赖"):
-        release_module.release(
-            copied, release_module.QA_FIXED_VERSION, "Invalid dependency"
-        )
+        release_module.release(copied, release_module.QA_FIXED_VERSION, "Invalid dependency")
 
 
 def test_release_rejects_hidden_or_unsupported_source_files(tmp_path: Path):
@@ -234,9 +238,7 @@ def test_release_rejects_hidden_or_unsupported_source_files(tmp_path: Path):
     (copied / "references" / ".env").write_text("SECRET=value\n", encoding="utf-8")
 
     with pytest.raises(release_module.ReleaseError, match="不支持的 Skill 隐藏文件"):
-        release_module.release(
-            copied, release_module.QA_FIXED_VERSION, "Unsafe source"
-        )
+        release_module.release(copied, release_module.QA_FIXED_VERSION, "Unsafe source")
 
 
 def test_release_rejects_unlisted_skill_resource_directories(tmp_path: Path):
@@ -246,9 +248,7 @@ def test_release_rejects_unlisted_skill_resource_directories(tmp_path: Path):
     (scripts / "unlisted.py").write_text("print('not packaged')\n", encoding="utf-8")
 
     with pytest.raises(release_module.ReleaseError, match="不支持的 Skill 文件"):
-        release_module.release(
-            copied, release_module.QA_FIXED_VERSION, "Unlisted resource"
-        )
+        release_module.release(copied, release_module.QA_FIXED_VERSION, "Unlisted resource")
 
 
 def test_platform_packages_share_one_source_and_exclude_release_files(tmp_path: Path):
@@ -292,8 +292,7 @@ def test_platform_packages_share_one_source_and_exclude_release_files(tmp_path: 
     for relative_path in common_files:
         generic_member = f"scene-creator/{relative_path}"
         assert (
-            codex[f"{codex_plugin}/skills/scene-creator/{relative_path}"]
-            == generic[generic_member]
+            codex[f"{codex_plugin}/skills/scene-creator/{relative_path}"] == generic[generic_member]
         )
         assert (
             claude[f"{claude_plugin}/skills/scene-creator/{relative_path}"]
@@ -302,16 +301,13 @@ def test_platform_packages_share_one_source_and_exclude_release_files(tmp_path: 
 
     manifest = _manifest()
     assert set(generic) == {
-        f"scene-creator/{relative_path}" for relative_path in manifest["source_files"]
+        f"scene-creator/{relative_path}"
+        for relative_path in manifest["source_files"]
         if relative_path == "SKILL.md" or relative_path.startswith("references/")
     }
 
-    codex_manifest = json.loads(
-        codex[f"{codex_plugin}/.codex-plugin/plugin.json"]
-    )
-    claude_manifest = json.loads(
-        claude[f"{claude_plugin}/.claude-plugin/plugin.json"]
-    )
+    codex_manifest = json.loads(codex[f"{codex_plugin}/.codex-plugin/plugin.json"])
+    claude_manifest = json.loads(claude[f"{claude_plugin}/.claude-plugin/plugin.json"])
     assert codex_manifest["version"] == version
     assert claude_manifest["version"] == version
     for plugin_manifest in (codex_manifest, claude_manifest):
@@ -351,8 +347,6 @@ def test_platform_package_build_is_deterministic(tmp_path: Path):
     release_module.build_packages(SKILL_ROOT, first)
     release_module.build_packages(SKILL_ROOT, second)
 
-    assert {
-        path.name: path.read_bytes() for path in sorted(first.iterdir())
-    } == {
+    assert {path.name: path.read_bytes() for path in sorted(first.iterdir())} == {
         path.name: path.read_bytes() for path in sorted(second.iterdir())
     }
