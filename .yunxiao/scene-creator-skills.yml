@@ -83,6 +83,7 @@ stages:
                 set -euo pipefail
                 cd ${PROJECT_DIR}
                 test "${CI_COMMIT_REF_NAME}" = "main"
+                RELEASE_SHA=$(git rev-parse HEAD)
                 python3 -m pip install --user uv
                 python3 -m uv sync --group dev
                 git fetch origin main --depth=1 --force
