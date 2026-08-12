@@ -51,27 +51,25 @@ def test_skill_routes_to_server_contracts_and_local_review_checklists():
         assert f'topic="{obsolete_topic}"' not in content
 
 
-def test_external_skill_loads_scene_package_domain_model_before_tool_procedure():
+def test_external_skill_embeds_scene_package_domain_model_before_tool_procedure():
     skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    model_path = SKILL_ROOT / "references" / "场景包核心模型.md"
-    model = model_path.read_text(encoding="utf-8")
 
-    assert "先完整读取一次 [场景包核心模型]" in skill
-    assert skill.index("[场景包核心模型]") < skill.index("[外部 MCP 工具路由]")
+    assert not (SKILL_ROOT / "references" / "场景包核心模型.md").exists()
+    assert skill.index("## 理解场景包") < skill.index("## 加载制作契约")
     assert "不要把 Max 内部“场景包助手”的整份系统提示词复制进本 Skill" in skill
 
     for required_model in (
         "场景包不是一段长提示词、一个工具列表或一张配置表",
-        "信息分层和唯一真相",
-        "执行形态选择",
+        "保持信息分层和唯一真相",
+        "选择 Workflow、普通任务点、FastAgent 或直接执行",
         "Workflow",
         "普通任务点 / TaskAgent",
         "FastAgent",
-        "运行时 Skill 的质量标准",
-        "创建、诊断和优化的不同证据链",
-        "外部 MCP 的知识边界",
+        "写好运行时场景 Skill",
+        "区分创建、诊断和优化的证据链",
+        "明确本 Skill 和外部 MCP 的知识边界",
     ):
-        assert required_model in model
+        assert required_model in skill
 
 
 def test_skill_has_progressive_reference_index_prerequisites_and_hard_gates():
@@ -79,7 +77,6 @@ def test_skill_has_progressive_reference_index_prerequisites_and_hard_gates():
 
     assert "本文件是完整制作主流程" in skill
     for reference in (
-        "场景包核心模型.md",
         "external-mcp-tools.md",
         "方案挑战检查清单.md",
         "Workflow验收检查清单.md",
@@ -106,14 +103,12 @@ def test_each_reference_declares_its_scope_as_a_supplement():
         assert "\n---\n" in content, reference.name
 
 
-def test_scene_package_domain_model_excludes_max_runtime_protocols():
-    model = (SKILL_ROOT / "references" / "场景包核心模型.md").read_text(
-        encoding="utf-8"
-    )
+def test_embedded_scene_package_domain_model_excludes_max_runtime_protocols():
+    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    model = skill.split("## 理解场景包", 1)[1].split("## 加载制作契约", 1)[0]
 
     for max_runtime_rule in (
         "GOALFYAI_STATE_",
-        "message_user",
         "project_plan",
         "memory_maintainer",
         "sandbox_manage",
@@ -128,9 +123,19 @@ def test_scene_package_domain_model_excludes_max_runtime_protocols():
 def test_external_skill_preserves_scene_creator_intent_routing_without_max_state_machine():
     skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
 
-    assert skill.index("## 判断任务模式和授权边界") < skill.index(
+    assert skill.index("## 与用户沟通并确定制作模式") < skill.index(
         "### 1. 创建一个可审计工单"
     )
+    for communication_rule in (
+        "场景包业务顾问",
+        "渐进式访谈",
+        "关键节点确认",
+        "用业务语言展示方案",
+        "问题及时透明",
+        "不做确认机器",
+        "变更可审阅",
+    ):
+        assert communication_rule in skill
     for route in (
         "创建模式",
         "诊断模式",
