@@ -177,6 +177,25 @@ def test_release_rejects_invalid_openai_metadata(tmp_path: Path):
         )
 
 
+def test_release_rejects_missing_openai_mcp_dependency(tmp_path: Path):
+    copied = _copy_skill(tmp_path)
+    metadata = copied / "agents" / "openai.yaml"
+    metadata.write_text(
+        "interface:\n"
+        '  display_name: "场景包制作"\n'
+        '  short_description: "理解资产模型，创建、诊断、优化并验证 GoalfyMax 场景包及业务界面"\n'
+        '  default_prompt: "使用 $scene-creator 创建场景包。"\n'
+        "policy:\n"
+        "  allow_implicit_invocation: true\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(release_module.ReleaseError, match="MCP 依赖"):
+        release_module.release(
+            copied, release_module.QA_FIXED_VERSION, "Invalid dependency"
+        )
+
+
 def test_release_rejects_hidden_or_unsupported_source_files(tmp_path: Path):
     copied = _copy_skill(tmp_path)
     (copied / "references" / ".env").write_text("SECRET=value\n", encoding="utf-8")

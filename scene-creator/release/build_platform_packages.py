@@ -200,6 +200,27 @@ def validate_skill_metadata(skill_root: Path) -> None:
     if f"${SKILL_NAME}" not in interface["default_prompt"]:
         raise ReleaseError(f"agents/openai.yaml 的 default_prompt 必须包含 ${SKILL_NAME}")
 
+    policy = metadata.get("policy")
+    if not isinstance(policy, dict) or policy.get("allow_implicit_invocation") is not True:
+        raise ReleaseError(
+            "agents/openai.yaml 必须启用 policy.allow_implicit_invocation"
+        )
+
+    dependencies = metadata.get("dependencies")
+    tools = dependencies.get("tools") if isinstance(dependencies, dict) else None
+    if not isinstance(tools, list) or len(tools) != 1:
+        raise ReleaseError("agents/openai.yaml 必须声明唯一的 scene-creator MCP 依赖")
+    dependency = tools[0]
+    expected_dependency = {
+        "type": "mcp",
+        "value": "scene-creator",
+        "transport": "streamable_http",
+        "url": REVIEWED_MCP_ENDPOINT,
+        "bearer_token_env_var": "SCENE_CREATOR_API_KEY",
+    }
+    if dependency != expected_dependency:
+        raise ReleaseError("agents/openai.yaml 的 scene-creator MCP 依赖配置不正确")
+
 
 def validate_platform_sources(skill_root: Path) -> None:
     """校验插件模板和共用的远程 MCP 安全契约。"""

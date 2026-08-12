@@ -1,4 +1,14 @@
 interface:
   display_name: "场景包制作"
+  brand_color: "#6366F1"
   short_description: "理解资产模型，创建、诊断、优化并验证 GoalfyMax 场景包及业务界面"
   default_prompt: "使用 $scene-creator 理解我的业务场景，创建或诊断优化一个经过验证、可在 GoalfyMax 使用的场景包及其业务界面。"
+policy:
+  allow_implicit_invocation: true
+dependencies:
+  tools:
+    - type: mcp
+      value: scene-creator
+      transport: streamable_http
+      url: https://workflow-mcp.qa.goalfyai.com/mcp
+      bearer_token_env_var: SCENE_CREATOR_API_KEY

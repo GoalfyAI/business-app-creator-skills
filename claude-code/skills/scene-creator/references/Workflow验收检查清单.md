@@ -1,5 +1,9 @@
 # Workflow 验收检查清单
 
+> 本文是 `SKILL.md` 的单 Workflow 验收指南。每条 Workflow 完成 bubble 并取得终态轨迹后读取；没有轨迹时只能裁决 `needs_bubble`。
+
+---
+
 本清单承接 Max `workflow_verify_fa` 的职责。外部 Agent 在每条 Workflow 完成 `bubble` 后直接执行，不调用 FastAgent。
 
 ## 裁决规则

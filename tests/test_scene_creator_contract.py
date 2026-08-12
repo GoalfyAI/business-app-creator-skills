@@ -2,6 +2,8 @@ import re
 from pathlib import Path
 from urllib.parse import unquote
 
+import yaml
+
 ROOT = Path(__file__).parents[1]
 SKILL_ROOT = ROOT / "scene-creator"
 
@@ -70,6 +72,38 @@ def test_external_skill_loads_scene_package_domain_model_before_tool_procedure()
         "外部 MCP 的知识边界",
     ):
         assert required_model in model
+
+
+def test_skill_has_progressive_reference_index_prerequisites_and_hard_gates():
+    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+
+    assert "本文件是完整制作主流程" in skill
+    for reference in (
+        "场景包核心模型.md",
+        "external-mcp-tools.md",
+        "方案挑战检查清单.md",
+        "Workflow验收检查清单.md",
+        "业务界面制作契约.md",
+        "业务界面验收检查清单.md",
+        "场景包验收检查清单.md",
+    ):
+        assert f"references/{reference}" in skill
+    assert "上述路径相对于本 `SKILL.md` 所在目录" in skill
+    assert "## 运行前提" in skill
+    assert "**必需 MCP Server**：`scene-creator`" in skill
+    assert "远端，不能直接读取或写入当前 Agent 的本地文件系统" in skill
+    assert "## 核心硬约束" in skill
+    assert "## 常见故障与恢复" in skill
+
+
+def test_each_reference_declares_its_scope_as_a_supplement():
+    references = sorted((SKILL_ROOT / "references").glob("*.md"))
+
+    assert references
+    for reference in references:
+        content = reference.read_text(encoding="utf-8")
+        assert "本文是 `SKILL.md` 的" in content, reference.name
+        assert "\n---\n" in content, reference.name
 
 
 def test_scene_package_domain_model_excludes_max_runtime_protocols():
@@ -357,3 +391,21 @@ def test_skill_and_agent_metadata_use_chinese():
     ):
         assert stale_english not in skill
         assert stale_english not in reference
+
+
+def test_openai_metadata_declares_implicit_invocation_and_mcp_dependency():
+    metadata = yaml.safe_load(
+        (SKILL_ROOT / "agents" / "openai.yaml").read_text(encoding="utf-8")
+    )
+
+    assert metadata["policy"]["allow_implicit_invocation"] is True
+    assert metadata["interface"]["brand_color"] == "#6366F1"
+    assert metadata["dependencies"]["tools"] == [
+        {
+            "type": "mcp",
+            "value": "scene-creator",
+            "transport": "streamable_http",
+            "url": "https://workflow-mcp.qa.goalfyai.com/mcp",
+            "bearer_token_env_var": "SCENE_CREATOR_API_KEY",
+        }
+    ]
