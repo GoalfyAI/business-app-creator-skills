@@ -12,7 +12,7 @@ sources:
     cloneDepth: 1
     certificate:
       type: serviceConnection
-      serviceConnection: 821549
+      serviceConnection: f6zd5dyxonnftkc5
 
 defaultWorkspace: repo_0
 
