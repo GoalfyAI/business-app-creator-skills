@@ -5,6 +5,7 @@ import zipfile
 from pathlib import Path
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).parents[1]
 SKILL_ROOT = ROOT / "scene-creator"
@@ -157,6 +158,38 @@ def test_release_rejects_invalid_skill_frontmatter(tmp_path: Path):
     with pytest.raises(release_module.ReleaseError, match="frontmatter"):
         release_module.release(
             copied, release_module.QA_FIXED_VERSION, "Invalid metadata"
+        )
+
+
+def test_release_rejects_missing_skill_keywords(tmp_path: Path):
+    copied = _copy_skill(tmp_path)
+    skill_file = copied / "SKILL.md"
+    content = skill_file.read_text(encoding="utf-8")
+    _, frontmatter_text, body = content.split("---", 2)
+    frontmatter = yaml.safe_load(frontmatter_text)
+    frontmatter.pop("keywords")
+    skill_file.write_text(
+        f"---\n{yaml.safe_dump(frontmatter, allow_unicode=True, sort_keys=False)}---{body}",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(release_module.ReleaseError, match="keywords"):
+        release_module.release(
+            copied, release_module.QA_FIXED_VERSION, "Missing keywords"
+        )
+
+
+def test_release_rejects_missing_skill_version_marker(tmp_path: Path):
+    copied = _copy_skill(tmp_path)
+    skill_file = copied / "SKILL.md"
+    content = skill_file.read_text(encoding="utf-8").replace(
+        release_module.SKILL_VERSION_MARKER, "", 1
+    )
+    skill_file.write_text(content, encoding="utf-8")
+
+    with pytest.raises(release_module.ReleaseError, match="skill-version"):
+        release_module.release(
+            copied, release_module.QA_FIXED_VERSION, "Missing version marker"
         )
 
 

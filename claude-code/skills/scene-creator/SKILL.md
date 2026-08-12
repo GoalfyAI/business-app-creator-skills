@@ -1,6 +1,27 @@
 ---
 name: scene-creator
-description: 当用户需要把业务流程制作成可在 GoalfyMax 直接使用的场景包，或需要创建、更新、验证和发布单 Workflow、多 Workflow 及其业务界面时使用。以内置的完整场景包领域模型和业务顾问式访谈方法理解需求，通过经过审计的 scene-creator 外部 MCP，完成线上资产复用、工具契约发现与真实取样、依赖准备、脚本及输入输出 Schema 编写、辅助文件交付、场景编排、预览、bubble 验证、业务界面制作与发布、可选全真项目验证、日志与交付物检查、问题修复和最终发布；也适用于根据真实项目执行日志复盘，维护、诊断和迭代已有场景包及业务界面。
+description: 当用户需要把业务流程制作成可在 GoalfyMax 直接使用的场景包，或需要创建、更新、验证和发布单 Workflow、多 Workflow 及其业务界面时使用。以内置的完整场景包领域模型和业务顾问式访谈方法理解需求，通过经过审计的 scene-creator 外部 MCP，完成线上资产复用、工具契约发现与真实取样、依赖准备、脚本及输入输出 Schema 编写、辅助文件交付、场景编排、预览、bubble 验证、业务界面制作与发布、可选全真项目验证、日志与交付物检查、问题修复和最终发布；也适用于根据真实项目执行日志复盘，维护、诊断和迭代已有场景包及业务界面。[skill-version:v1.0.0]
+keywords:
+  - scene package
+  - scenario package
+  - 场景包
+  - workflow
+  - multi-workflow
+  - workflow orchestration
+  - bubble validation
+  - business UI
+  - 业务界面
+  - GoalfyMax
+  - GoalfyHub
+  - apc_skill
+  - toolset
+  - tool group
+  - FastAgent
+  - TaskAgent
+  - MCP
+  - scene diagnosis
+  - project log analysis
+  - 场景包优化
 ---
 
 # 场景包制作
@@ -17,11 +38,45 @@ description: 当用户需要把业务流程制作成可在 GoalfyMax 直接使�
 >
 > 上述路径相对于本 `SKILL.md` 所在目录，不是当前工作目录。优先使用平台加载 Skill 时提供的真实路径；路径不确定时按文件名搜索，不要凭记忆拼接插件缓存目录。
 
-## 运行前提
+## Prerequisites
 
-**必需 MCP Server**：`scene-creator`
+**Required MCP Server**：`scene-creator`
 
-Codex 插件通过 streamable HTTP 连接经过审查的外部服务，并从环境变量 `SCENE_CREATOR_API_KEY` 读取 Bearer 凭证。发布包已经包含连接配置；如果当前会话没有出现本 Skill 所列能力，先检查插件和 MCP 是否已加载，不要用同名本地脚本或未经审查的地址替代。
+scene-creator MCP 当前提供 12 个经过审计的场景包管理与执行工具；所有资产查询、制作、验证、项目运行和发布操作都通过 GoalfyMax QA 后端完成。实时工具数量和参数仍以 `tools/list` 为准。
+
+**MCP configuration**（streamable HTTP、API Key、Bearer）：
+
+```json
+{
+  "scene-creator": {
+    "type": "streamable-http",
+    "url": "https://workflow-mcp.qa.goalfyai.com/mcp",
+    "headers": {
+      "Authorization": "Bearer ${SCENE_CREATOR_API_KEY}"
+    }
+  }
+}
+```
+
+- `SCENE_CREATOR_API_KEY` 的值是当前用户完整的 GoalfyMax QA 个人 API 密钥，前缀为 `sk_`；缺失、已撤销或没有被新进程读取时，所有工具都会返回未认证。
+- 发布包已包含连接配置。Codex 从 `~/.codex/.env` 或启动进程环境读取 `SCENE_CREATOR_API_KEY`；Claude Code 按插件 MCP 配置引用同名环境变量。
+- 不配置 `user_id`、`X-User-ID` 或 `X-Project-ID` 作为身份凭证。服务端根据个人 API 密钥解析用户，项目和工单标识只在实时工具 Schema 明确要求时传入。
+
+**Required CLI**：无。场景包资产操作全部通过 MCP；本地 Agent 只使用自身文件和 HTTPS 能力完成预签名文件传输、业务界面开发、归档和校验。
+
+**Getting an API Key**：登录 GoalfyMax QA，打开账号菜单 → **开发者工具** → **API 密钥**（`/developer/api-keys`），创建具名个人密钥。完整 `sk_...` 只显示一次；如果没有入口，说明账号没有开发者权限，应联系管理员开通，不能借用他人的密钥。当前账号最多保留 10 个有效密钥。
+
+严禁把密钥写入仓库、Skill、工单、检查点、日志、命令参数或聊天。需要用户配置时，只输出以下要求，不让用户在对话中发送密钥：
+
+```markdown
+# 需要用户操作：连接 scene-creator
+
+**请在 GoalfyMax QA 的“开发者工具 → API 密钥”创建或选择个人密钥，并将完整密钥写入本机 `SCENE_CREATOR_API_KEY` 环境变量。不要把密钥发给我。**
+
+**完成后彻底重启当前 Agent 客户端，再回来让我验证连接。**
+```
+
+**Connection verification**：在新会话中确认 Skill 已加载、MCP `scene-creator` 已连接、实时 `tools/list` 包含本文工具概览中的核心能力、`workflow_tpe_manage` 包含 `bubble`，并执行一次只读 `list_assets`。安装验证不得创建工单、资产、项目或部署。
 
 连接成功后，以实时 `tools/list` 为当前工具名、action、参数和必填字段的唯一真相。当前稳定能力及职责见 [外部 MCP 工具路由](references/external-mcp-tools.md)；文档中的清单用于发现和路由，不覆盖实时 Schema。
 
@@ -31,9 +86,64 @@ Codex 插件通过 streamable HTTP 连接经过审查的外部服务，并从环
 - 下载业务界面模板或已有源码包时，MCP 只返回临时下载 URL，由当前 Agent 在本地下载、校验和解压；
 - 不要把本地路径传给远端 MCP 并期待它读取，也不要把预签名 URL 当成本地文件路径。
 
-若 MCP 返回未认证，先检查 `SCENE_CREATOR_API_KEY` 是否存在且由插件配置正确引用。不得生成、猜测、回显或写入 API Key；需要用户操作时，只引导其在 GoalfyMax 开发者页面创建或更新凭证，然后重新加载连接。
+若 MCP 返回未认证，先检查 `SCENE_CREATOR_API_KEY` 是否存在、密钥是否已撤销，以及插件是否在密钥配置后彻底重启。只检查变量是否存在，不打印其值；不得生成、猜测、回显或记录 API Key。
 
-## 核心硬约束
+---
+
+## 1. Boundaries and Core Concepts
+
+根据用户的表达方式调整沟通层级：用户使用技术语言时可以精确讨论资产和契约；用户只描述业务时，使用管理和业务语言，不要求其理解资产 ID、Schema、TPE、Toolset 或 Agent 内部结构。
+
+### 1.1 When to Use Scene Creator
+
+出现以下任一信号时使用本 Skill：
+
+- **创建场景包**：用户希望把一套业务流程、SOP、经验或已完成项目沉淀成可复用的 GoalfyMax 场景能力；
+- **制作 Workflow**：用户要创建、更新或验证单 Workflow、多 Workflow 固定编排及其输入输出契约；
+- **诊断或优化场景包**：场景包效果不好、执行绕圈、成本高、结果不稳定、路由错误，或资产配置存在问题；
+- **分析真实项目**：用户提供项目 ID，希望通过完整执行日志定位瓶颈，并把结论用于创建或优化场景包；
+- **制作业务界面**：场景包需要专属表单、进度、结果和交付物界面，或已有界面需要随 Workflow 契约迭代；
+- **维护依赖能力**：场景包制作过程中需要复用、补建、授权、取样、上线或修复 Toolset、Tool Group、FastAgent、普通任务点和 Skill 文件；
+- **验证和发布**：需要执行 Preview、bubble、语义验收、整包验收、可选全真项目测试、日志复检和最终发布；
+- **继续未完成制作**：已有 `task_id`、场景包 ID、Workflow ID、run_id、project_id 或 deployment_id，需要恢复原工单和检查点继续执行。
+
+不要在以下情况使用本 Skill：
+
+- 只执行一次普通业务任务，不准备沉淀、诊断或维护场景资产；
+- 只开发与场景包无关的独立网站或通用前端项目；
+- 只询问 GoalfyMax 产品概念但不需要场景包资产操作；
+- 试图复制 Max 内部系统提示词、内部状态机或未通过外部 MCP 暴露的管理能力。
+
+### 1.2 Capabilities
+
+- 通过业务顾问式访谈提炼目标用户、触发场景、里程碑、输入、交付物、权限边界和验收标准；
+- 搜索并反读场景包、Workflow、普通任务点、Toolset、Tool Group、FastAgent、Dataset、经验体和项目证据，优先复用现有资产；
+- 根据稳定性、交互需求和推理边界选择 System Agent、TaskAgent、FastAgent、单 Workflow 或多 Workflow；
+- 创建和维护 `apc_skill`、场景 Skill 文件、依赖闭包、Workflow 脚本、input/output Schema 和 `workflow_orchestration`；
+- 对没有可信 output Schema 的只读 MCP 工具执行真实取样和候选 Schema 复验；
+- 通过预签名上传交付 Workflow 辅助文件、模板、样例和场景知识文件；
+- 执行 Preview、bubble、Workflow 语义验收、场景包整体验收，并按证据修复原资产；
+- 下载当前官方业务界面模板，按真实 Workflow 契约开发、检查、打包、上传、部署和反读专属界面；
+- 发布经过验证的场景包，并在用户批准后运行真实 Max 项目、检查完整日志与交付物；
+- 对已有场景包执行分层诊断、严重度分级、改前/改后说明、范围确认和受影响链路回归验证；
+- 通过统一工单保存检查点、资产身份、验证结论和剩余盲区，形成可审计制作记录。
+
+### 1.3 Intent Routing
+
+收到请求后先判断用户要解决的是哪一种问题，再进入对应执行流：
+
+| 用户意图 | 路由方式 |
+|---|---|
+| 把一套业务流程、SOP 或经验做成可复用能力 | **创建模式**：访谈业务目标与里程碑，形成蓝图，复用或创建资产，完成验证、业务界面和发布 |
+| 已有场景包效果不好、执行绕圈或配置异常 | **诊断模式**：从目标场景包和真实项目证据出发，逐层定位结构、契约、提示词或运行机制根因 |
+| 已知具体问题，希望修改已有场景包或 Workflow | **优化模式**：先反读现状和影响范围，在原资产上修复，并重建受影响的 Preview、bubble、界面和整包证据 |
+| 用户提供项目 ID，要求分析执行过程 | **日志分析模式**：完整读取执行摘要、详细日志和交付物证据，区分症状与机制根因，再决定是否进入诊断或优化 |
+| 用户要求单独制作或更新业务界面 | **界面维护模式**：先确认其绑定场景包和最终 Workflow 契约，再从官方模板初始化、验证和发布 |
+| 中断后继续已存在的制作任务 | **续作模式**：恢复原工单、资产 ID、验证状态和待处理问题，不重新创建平行资产 |
+
+如果模式或目标对象不清，先用渐进式访谈补齐最小充分上下文；如果只是缺少可通过工具发现的知识、Schema 或资产信息，继续调查，不把平台内部信息缺口转嫁给用户。详细沟通方法见第 5 节。
+
+## 2. Core Constraints (violation = task failure)
 
 以下任一项违反都视为当前制作未完成，而不是可忽略的格式问题：
 
@@ -47,9 +157,9 @@ Codex 插件通过 streamable HTTP 连接经过审查的外部服务，并从环
 8. 所有下载、上传、发布、收费、通知和正式业务写入均按真实副作用处理；需要授权时在动作发生前确认，bubble 中也不能假设直连工具无副作用。
 9. 没有证据就明确记录盲区；不得把 FA 桩值、未触达分支、未运行项目或未验证内容描述成真实通过。
 
-## 理解场景包
+## 3. Scene Package Model
 
-### 场景包是什么
+### 3.1 What a Scene Package Is
 
 场景包是 GoalfyMax 在一类业务场景中的运行时能力包。它同时规定：
 
@@ -79,7 +189,7 @@ Codex 插件通过 streamable HTTP 连接经过审查的外部服务，并从环
 
 这些资产不是越多越好。每个资产都必须对应一个明确的业务职责；没有独立职责的包装层会增加路由歧义、成本和维护负担。
 
-### 运行时角色和资产如何协作
+### 3.2 Runtime Roles and Asset Relationships
 
 - **System Agent**：面向用户理解意图、选择场景能力、组织任务和完成交付。
 - **TaskAgent**：在普通任务点中执行一个需要独立上下文、临场决策或用户交互的完整任务。
@@ -92,7 +202,7 @@ Codex 插件通过 streamable HTTP 连接经过审查的外部服务，并从环
 
 场景包负责把这些能力放进同一个业务上下文，不应把每一层的内部逻辑都复制到 `apc_skill`。
 
-### 保持信息分层和唯一真相
+### 3.3 Information Ownership and Single Source of Truth
 
 同一规则只保留一个权威位置。判断信息应该放在哪里时，先问“它跟着谁变化”：
 
@@ -119,7 +229,7 @@ Codex 插件通过 streamable HTTP 连接经过审查的外部服务，并从环
 - 同一业务规则在多个资产中分别维护，修改后产生漂移；
 - 让业务界面自行选择 Workflow、推进节点或解释内部编排。
 
-### 选择 Workflow、普通任务点、FastAgent 或直接执行
+### 3.4 Choosing Workflow, TaskAgent, FastAgent, or Direct Execution
 
 先把业务目标拆成阶段，再判断控制流和推理边界。按以下顺序一次完成选择，不要在资产类型之间反复横跳：
 
@@ -136,7 +246,7 @@ Codex 插件通过 streamable HTTP 连接经过审查的外部服务，并从环
 
 多 Workflow 只用于固定 DAG。Agent 只在明确的 `sa_handoff` 边界介入；如果 Agent 需要改路线、补充顶层输入或重新解释已完成节点，应接管剩余流程，而不是假装原 DAG 仍然有效。
 
-### 从业务问题形成场景包方案
+### 3.5 From Business Problem to Scene Package Blueprint
 
 先理解业务，不要先选工具。完整方案至少回答：
 
@@ -170,7 +280,7 @@ Codex 插件通过 streamable HTTP 连接经过审查的外部服务，并从环
 
 方案需要说明不可优化的部分和剩余盲区。没有真实基线时，不编造轮次节省比例或业务收益。
 
-### 写好运行时场景 Skill
+### 3.6 Runtime Scene Skill Quality
 
 `apc_skill` 是 Agent 始终可见的最小业务控制面，应包含：
 
@@ -198,7 +308,7 @@ Skill 颗粒度由要消除的真实瓶颈决定：
 - Agent 缺领域知识 → 写具体规则，不写“请遵循最佳实践”；
 - Agent 找不到长知识 → 在 `apc_skill` 写“何时读取哪个文件”。
 
-### 区分创建、诊断和优化的证据链
+### 3.7 Evidence Chains for Creation, Diagnosis, and Optimization
 
 - **创建**：业务素材和参考项目 → 理想态与业务蓝图 → 线上资产复用 → 架构方案 → 创建 → Preview → Bubble → 语义验收 → 发布 → 可选全真验证。
 - **诊断**：用户问题或真实项目 → 场景包全貌 → 沿引用关系逐层下钻 → 对照服务端规范和运行证据 → 按严重度给出发现。诊断本身不授权修改。
@@ -210,7 +320,7 @@ Skill 颗粒度由要消除的真实瓶颈决定：
 - **warning**：不一定失败，但明显影响路由、稳定性、成本或维护；
 - **suggestion**：改善可读性、复用性或体验。
 
-### 明确本 Skill 和外部 MCP 的知识边界
+### 3.8 Knowledge Boundaries
 
 - 本 `SKILL.md`：场景包领域模型、用户沟通、制作、诊断、验证和发布流程；
 - MCP `tools/list`：当前可调用工具、action 和参数的唯一真相；
@@ -222,7 +332,7 @@ Skill 颗粒度由要消除的真实瓶颈决定：
 
 不要把 Max 内部“场景包助手”的整份系统提示词复制进本 Skill。内部状态机、消息协议、内部 FastAgent、Max 专属资产修改工具和运行环境只属于 Max；外部 Agent 只继承稳定的领域模型和设计方法，并严格使用当前外部 MCP 实时暴露的工具。遇到内外差异时，不模拟内部工具或复制内部流程。
 
-## 加载制作契约
+## 4. Authoring Contracts
 
 1. 先读 [外部 MCP 工具路由](references/external-mcp-tools.md)，并用线上 `tools/list` 核对当前工具和 action；参考表只负责用途路由，不替代实时参数 Schema。
 2. 读取服务端契约前，先创建 Workflow 制作工单。
@@ -234,7 +344,7 @@ Skill 颗粒度由要消除的真实瓶颈决定：
 
 同一工单内不要重复读取相同 topic。MCP 知识库是共享 Workflow 契约和正反例的完整来源；本 Skill 内四份检查清单是外部制作入口的方案挑战与验收执行提示。发生冲突时以线上 Schema、Preview、Hub Validator 和 Max Runtime 为准。
 
-## 与用户沟通并确定制作模式
+## 5. User Collaboration and Intent Routing
 
 把自己定位成场景包业务顾问，而不是配置录入员。用户通常只知道业务目标和当前痛点，不知道应该创建哪些资产；主动把业务语言翻译成场景方案，不要求用户学习 Toolset、FastAgent、TPE、Schema 或资产 ID。
 
@@ -291,15 +401,67 @@ Skill 颗粒度由要消除的真实瓶颈决定：
 
 已有信息不要重复询问。一次只问最影响下一步的一至三个问题；用户只给业务语言时，由外部 Agent 负责翻译成资产方案，不要求用户理解 Toolset、FastAgent、TPE、Schema 或资产 ID。
 
-## 执行外部制作流程
+## 6. Tool Overview
 
-### 1. 创建一个可审计工单
+### 6.1 MCP Tools
+
+| Tool | Purpose |
+|---|---|
+| `workflow_task_manager` | 创建、读取、追加检查点并完成可审计制作工单；第一个审计写操作，后续复用同一 `task_id` |
+| `list_assets` | 搜索可复用场景包、Workflow、普通任务点、Toolset、Tool Group、FastAgent、Dataset 和经验体 |
+| `get_asset` | 读取完整资产、关系、工具契约、Schema、版本、在线状态和经验页面 |
+| `get_diagnosis_doc` | 读取服务端 Workflow 总契约、单/多 Workflow 规则、正反例、配置规范和诊断知识 |
+| `dataset_read` | 只读访问当前用户有权限的数据集内容，为方案和验证提供真实数据证据 |
+| `workflow_file_upload` | 通过 `prepare → PUT → complete` 或可信 HTTPS 来源交付 Workflow 辅助文件和场景 Skill 文件 |
+| `workflow_dependency_manage` | 复用或维护 Toolset、Tool Group、FastAgent、Auth Card、普通自定义 TPE，并对安全 MCP 工具真实取样 |
+| `scene_package_manage` | 创建、读取、更新、挂载编排并发布场景包；`workflow_orchestration` 使用完整对象替换 |
+| `scene_package_ui_bundle` | 下载官方业务界面模板，上传、部署、查询状态、反读或下载场景包专属界面源码包 |
+| `workflow_tpe_manage` | Preview、创建、更新、挂载、发布和 bubble Workflow；bubble 使用同一 `run_id` 轮询终态 |
+| `manage_goalfymax_project` | 启动和控制真实 Max 项目；显式 `workflow_input` 用于确定性场景编排，全真运行会启动真实 FA 和副作用 |
+| `get_project_execution_logs` | 读取项目执行摘要、详细日志和最终交付物，用于诊断、全真复检和交付 |
+
+这张表是稳定能力地图，不是参数文档。每次调用前仍读取实时 Schema；发现线上工具新增、删除或 action 变化时，以 `tools/list` 为准，并记录需要更新本 Skill 的具体条目。详细 ID 纪律和调用职责见 [外部 MCP 工具路由](references/external-mcp-tools.md)。
+
+### 6.2 Validation Responsibilities
+
+- **MCP JSON Schema**：约束单次工具调用的参数形状和必填字段；
+- **Preview**：校验 Workflow 脚本 AST、声明工具、input/output Schema、文件来源和确定性规则；
+- **Hub Validator**：校验场景包 `workflow_orchestration` 的 DAG、映射、required、类型和 delivery；
+- **供应商取样**：获取可安全直连 MCP 的真实返回，并验证候选 output Schema；
+- **bubble**：FA 使用 Schema 桩值，普通 MCP、文件步骤和 shell 管路按运行时契约执行；
+- **Max Runtime**：执行真实 FastAgent、默认工具、文件和完整业务行为；
+- **当前 Agent**：负责业务语义、执行形态、权限边界、副作用、未覆盖路径、界面体验和最终修复裁决。
+
+任何一层成功都不能替代下一层。工具返回 `success=true` 只说明该调用完成，不代表 Workflow、场景包、业务界面或业务目标已验收。
+
+### 6.3 Core Call Chain
+
+```text
+创建或恢复工单
+→ 读取实时工具清单和制作契约
+→ 理解业务、项目证据与现有资产
+→ 形成业务蓝图并执行方案挑战
+→ 创建离线场景包草稿
+→ 复用或补齐依赖并完成上线反读
+→ Preview / 创建全部 Workflow
+→ 保存多 Workflow 完整编排（如需要）
+→ 对每条 Workflow 执行 bubble 和语义验收
+→ 按冻结契约制作、部署并验收业务界面（required 时）
+→ 整包验收、修复和发布
+→ 逐条询问是否做全真验证
+→ 运行一个真实 Max 项目并检查日志/交付物（用户批准时）
+→ 写最终检查点并完成工单
+```
+
+## 7. Execution Flows
+
+### 7.1 创建一个可审计工单
 
 在第一次预览、写入、真实取样、项目运行、下载或审计动作前，调用 `workflow_task_manager(action="create", task_name=..., task_description=...)`。`task_description` 应写明当前模式、业务目标、预期交付物和验收边界。保存返回的 `task_id`，后续所有审计操作都传入该值。
 
 中断后用 `workflow_task_manager(action="get", task_id=<task_id>)` 恢复上下文。资产创建和验证后，用 `workflow_task_manager(action="insert", task_id=<task_id>, entry_type="checkpoint", content=...)` 写入简洁检查点；不要把完整工具输入、供应商输出、凭证或日志复制进工单。
 
-### 2. 检查并复用线上资产
+### 7.2 检查并复用线上资产
 
 用 `list_assets` 查找候选场景包、Workflow、Toolset、Tool Group、FA 和数据集，用 `get_asset` 读取完整现状。
 
@@ -309,13 +471,13 @@ Skill 颗粒度由要消除的真实瓶颈决定：
 
 已完成项目中存在可复用业务经验时，用 `list_assets(asset_type="experience", ...)` 和 `get_asset(asset_type="experience"|"experience_page", ...)` 读取。经验数据只读，并继续受当前用户 Hub 权限约束。
 
-### 3. 执行方案挑战并质疑方案
+### 7.3 执行方案挑战并质疑方案
 
 读取 [方案挑战检查清单](references/方案挑战检查清单.md)。CC/Codex 根据清单和当前资产证据自行审查，不启动或假设存在方案挑战 FastAgent。
 
 创建场景包前，先形成一份业务蓝图：目标用户和触发场景、业务里程碑、每阶段输入与用户可见产出、需要 Agent/用户判断的边界、能力覆盖与缺口、验收证据，以及业务界面决策。业务界面必须明确为 `required` 或 `not_required`，不得在创建后期静默省略；已有业务界面时，优化范围默认同时包含契约兼容性检查。再解决业务输入不清、多余 Workflow、Agent 判断位置错误、不安全副作用和交付物缺失问题。面向用户使用业务语言展示蓝图，不展示资产 ID、参数名或技术调用链；工单中只写简洁结论。
 
-### 4. 选择执行形态并起草运行时 Skill
+### 7.4 选择执行形态并起草运行时 Skill
 
 按本 Skill 的执行形态决策先决定哪些业务阶段应由场景 Skill、普通任务点、FastAgent 或 Workflow 承担，再用制作总契约区分固定阶段和 Agent 判断。每个脚本都应用单 Workflow 契约，只有固定 DAG 才应用多 Workflow 契约。不得因为外部 MCP 以 Workflow 制作为主，就把所有场景强行改造成 Workflow。
 
@@ -332,7 +494,7 @@ Skill 颗粒度由要消除的真实瓶颈决定：
 
 调用一次 `scene_package_manage(action="create", task_id=<task_id>, name=..., description=..., apc_skill=...)` 创建离线草稿，再创建 Workflow。保存 `scene_package_id`。后续配置失败时用 `action="update"` 修复同一场景包，禁止重复创建。
 
-### 5. 只补缺失依赖
+### 7.5 只补缺失依赖
 
 优先复用现有依赖。只有缺少或确实需要维护 Toolset、Tool Group、FA、Auth Card、普通自定义 TPE 或 Skill 文件时，才使用 `workflow_dependency_manage`。Auth Card 只使用 `create_auth_card`、`update_auth_card` 和 `link_auth_card`；禁止把返回或提供的凭证明文写入检查点和日志。普通自定义或预定义 TPE 才使用 `create_custom_tpe`，Workflow TPE 始终使用 `workflow_tpe_manage`。
 
@@ -353,7 +515,7 @@ Skill 颗粒度由要消除的真实瓶颈决定：
 3. 无 FAIL 后调用 `workflow_dependency_manage(action="online_toolsets", task_id=<task_id>, toolset_ids=[...])`，再用 `get_asset` 反读确认每个 Toolset 的 `is_online=true`。
 4. 任一依赖仍离线就阻断 Workflow create。对任务开始前已存在的离线 Toolset，告知用户并等待处理，不擅自上线。
 
-### 6. 交付辅助文件并创建全部 Workflow
+### 7.6 交付辅助文件并创建全部 Workflow
 
 外部 MCP 接收完整内联脚本，不能读取客户端本地 Codex/CC 路径，也不能读取其他 Max 项目中的路径。
 
@@ -377,7 +539,7 @@ Workflow 引用 `ctx.skill_dir` 时，通过同一工单交付每个辅助文件
 
 不得通过拆分或复制 Workflow 绕过可修复的预览错误。每次创建都必须包含根对象 `output_schema`；缺失、非对象或无效 JSON Schema 都是创建错误，即使脚本能够返回值也不例外。
 
-### 7. 保存一个完整的多 Workflow 对象
+### 7.7 保存一个完整的多 Workflow 对象
 
 全部 Workflow ID 创建并挂载后，按多 Workflow 契约构造一个完整对象并调用：
 
@@ -392,7 +554,7 @@ scene_package_manage(
 
 始终执行整对象替换。`delivery.node_id` 指向的节点必须声明节点级 `sa_handoff`：要求运行时 Agent 读取已提交结果，并通过 `message_user(type="result")` 交付面向用户的自然语言结果；运行时随后使用 `take_over` 阻止兼容自动交付。严格按当前 Hub Schema 编写 `decision_criteria.resume/stop`；这两个名称只是制作期判断条件字段，不是运行时 action。运行时只有 `continue_as_planned`、对紧邻待执行节点提交并通过 Schema 校验的 `revise_and_continue`、以及接管剩余流程的 `take_over` 三种 action，不存在名为 `resume` 或 `stop` 的 action。不要把运行时 action 虚构成新的 orchestration JSON 字段。按 Hub 返回的节点、映射、交付或 `sa_handoff` 错误修复同一完整对象并重新提交。禁止把 DAG 复制进 `apc_skill`，也禁止虚构字段。
 
-### 8. 对每个 Workflow 做 bubble 跑
+### 7.8 对每个 Workflow 做 bubble 跑
 
 对每个 Workflow 调用 `workflow_tpe_manage(action="bubble", task_id=..., tpe_id=..., workflow_input=<valid object>)`，保存返回的 `run_id`。继续用同一 action 和 `task_id + run_id` 轮询到终态，再检查 `steps`、`run_trace`、`coverage`、`unreached_tools`、`final_output` 和 `error`。
 
@@ -400,13 +562,13 @@ scene_package_manage(
 
 `bubble` 是受信任的 Max 验证运行，不是本地执行。FA 步骤返回 Schema 桩值，不启动真实 FA；普通 MCP 和文件工具真实执行。只有脚本引用 `shell` 时才创建临时服务端沙箱，内部项目/沙箱 ID 和挂载路径不对外返回。把供应商副作用视为真实副作用，涉及破坏或发布时先取得授权。可选全真跑永远不能替代必做的 `bubble` 证据。
 
-### 9. 根据契约和轨迹验收每个 Workflow
+### 7.9 根据契约和轨迹验收每个 Workflow
 
 外部制作与 Max 制作遵循同一条“预览 → `bubble` → 语义验收 → 可选全真跑”生命周期。两者工具面可以不同，但都通过 Max 运行时执行并使用同一证据标准。需要完整项目验证时复用检查点中的 `project_id`，不要为每次修复新建项目。
 
 读取 [Workflow 验收检查清单](references/Workflow验收检查清单.md)。CC/Codex 根据当前 Workflow 资产、预览结果和 `bubble` 轨迹自行执行语义验收，不启动或假设存在 Workflow 验收 FastAgent。持续修复原 Workflow 并重跑 `bubble`，直到证据满足契约。
 
-### 10. 按最终 Workflow 契约制作并发布业务界面
+### 7.10 按最终 Workflow 契约制作并发布业务界面
 
 仅当业务界面决策为 `required`，或目标场景包已有业务界面时执行本步骤。完整读取 [业务界面制作契约](references/业务界面制作契约.md)，并以当前场景包、当前 Workflow 和当前 `workflow_orchestration` 的反读结果作为编码契约。业务界面不是独立资产：它必须绑定同一个 `scene_package_id`，在同一工单内制作、验证和发布。
 
@@ -418,13 +580,13 @@ scene_package_manage(
 
 读取 [业务界面验收检查清单](references/业务界面验收检查清单.md)，确认源码、运行契约、SDK 边界、异步状态和部署结果。成功后用 `scene_package_ui_bundle(action="get", ...)` 反读当前包及已激活地址，并把界面契约摘要、源码 SHA256、部署 ID 和验收裁决写入工单；不记录预签名下载或上传 URL。
 
-### 11. 验收完整场景包
+### 7.11 验收完整场景包
 
 读取 [场景包验收检查清单](references/场景包验收检查清单.md)，把场景包 Skill、依赖闭包、每个 Workflow 契约、`workflow_orchestration`、交付映射、Agent 交接和业务界面决策作为一个整体检查，不启动或假设存在场景包验收 FastAgent。多 Workflow 先确认每条 Workflow 已完成 bubble 和单体验收；业务界面标记为 `required` 时，还必须已有当前契约对应的界面验收与部署证据，再做整包接缝与业务语义验收。把简洁的方案挑战、Workflow、业务界面和场景包验收结论写入工单。
 
-场景包验收通过后，对每个 Workflow 分别询问用户是否执行 FA 全真跑并记录决定。用户跳过时继续流程；只有用户批准覆盖所选场景路径可能执行的全部 Workflow，步骤 14 才能启动真实 Max 项目。
+场景包验收通过后，对每个 Workflow 分别询问用户是否执行 FA 全真跑并记录决定。用户跳过时继续流程；只有用户批准覆盖所选场景路径可能执行的全部 Workflow，7.14 才能启动真实 Max 项目。
 
-### 12. 在归属层修复问题
+### 7.12 在归属层修复问题
 
 - 线上工具参数或返回不匹配：重读资产，修复调用或步骤契约。
 - Workflow 预览或运行时失败：更新原 Workflow。
@@ -436,13 +598,13 @@ scene_package_manage(
 - 业务判断不确定：停止强行固化 Workflow，把该阶段还给 Agent。
 - 基础设施错误：只有返回错误明确可重试且操作幂等时才重试。
 
-### 13. 发布已验证场景包
+### 7.13 发布已验证场景包
 
 发布前重读场景包，确认引用资产存在、每个 Workflow 都有当前 input/output 契约、多 Workflow 场景包已保存一个有效的 orchestration 完整对象且交付节点包含最终 `sa_handoff`、交付文件使用 Workspace 路径、工单中存在简洁验证证据。业务界面决策为 `required` 时，确认当前源码 SHA256 已部署成功、绑定同一场景包且界面契约未因后续资产修改过期；决策为 `not_required` 时记录回落现有对话界面。确认 `apc_skill` 仍对应最终里程碑，列出所有必需业务输入和 Agent/用户判断，不含数字资产 ID 或复制的 DAG，并且为每个上传的场景 Skill 文件提供明确读取时机。
 
 资产变更导致草稿过期时，先调用 `scene_package_manage(action="update", task_id=<task_id>, scene_package_id=<scene_package_id>, apc_skill=...)`。随后调用 `scene_package_manage(action="online", task_id=<task_id>, scene_package_id=<scene_package_id>)` 并重读线上场景包。
 
-### 14. 按需运行一个真实 Max 业务项目
+### 7.14 按需运行一个真实 Max 业务项目
 
 只有用户批准所选场景路径可能执行的每个 Workflow 都做全真验证，或明确要求完整业务项目证据时，才执行本步骤。批准未覆盖完整路径时不得启动项目；记录 `full_validation_skipped` 和剩余 FA、内容、外部副作用盲区，然后继续关闭工单。
 
@@ -450,15 +612,15 @@ scene_package_manage(
 
 用返回的 `project_id` 执行 `wait` 或 `status`。只有 Max 返回 `needs_input=true` 时才用 `reply` 或 `confirm`；资产更新后需要新尝试时才用 `send`。轮询或小修复不得反复新建项目。
 
-### 15. 全真跑后检查真实日志和交付物
+### 7.15 全真跑后检查真实日志和交付物
 
-只有步骤 14 实际执行后，才用相同 `task_id` 和 `project_id` 调用 `get_project_execution_logs`：`summary/detail` 用于执行证据，`outputs/download/bundle` 用于真实交付物。临时 FA 文件和内部挂载路径不得出现。项目整体完成不代表目标 Workflow 和交付物通过。跳过全真跑时，禁止虚构 `project_id`、项目结果、日志结果或交付物结果。
+只有 7.14 实际执行后，才用相同 `task_id` 和 `project_id` 调用 `get_project_execution_logs`：`summary/detail` 用于执行证据，`outputs/download/bundle` 用于真实交付物。临时 FA 文件和内部挂载路径不得出现。项目整体完成不代表目标 Workflow 和交付物通过。跳过全真跑时，禁止虚构 `project_id`、项目结果、日志结果或交付物结果。
 
-### 16. 关闭工单
+### 7.16 关闭工单
 
 写入最终检查点，包含资产 ID、`bubble` 结论和业务界面决策；已发布界面还要记录源码 SHA256、deployment_id、激活地址和验收裁决。检查点必须二选一：记录已批准的真实项目结果与交付摘要，或者记录 `full_validation_skipped`、用户决定和剩余盲区；不得包含凭证、预签名 URL 或原始日志。调用 `workflow_task_manager(action="complete", task_id=<task_id>)`。跳过全真跑时不得声称存在全真验证证据；缺少必做 `bubble` 证据、业务界面必需证据或审计落库时不得声称可审计完成。
 
-## 常见故障与恢复
+## 8. Common Issues and Recovery
 
 | 现象 | 根因判断 | 恢复方式 |
 |---|---|---|

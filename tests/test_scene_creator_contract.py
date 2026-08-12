@@ -8,6 +8,10 @@ ROOT = Path(__file__).parents[1]
 SKILL_ROOT = ROOT / "scene-creator"
 
 
+def _skill_frontmatter(content: str) -> dict:
+    return yaml.safe_load(content.split("---", 2)[1])
+
+
 def _local_links(markdown: str) -> list[str]:
     return [
         target
@@ -55,19 +59,21 @@ def test_external_skill_embeds_scene_package_domain_model_before_tool_procedure(
     skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
 
     assert not (SKILL_ROOT / "references" / "场景包核心模型.md").exists()
-    assert skill.index("## 理解场景包") < skill.index("## 加载制作契约")
+    assert skill.index("## 3. Scene Package Model") < skill.index(
+        "## 4. Authoring Contracts"
+    )
     assert "不要把 Max 内部“场景包助手”的整份系统提示词复制进本 Skill" in skill
 
     for required_model in (
         "场景包不是一段长提示词、一个工具列表或一张配置表",
-        "保持信息分层和唯一真相",
-        "选择 Workflow、普通任务点、FastAgent 或直接执行",
+        "### 3.3 Information Ownership and Single Source of Truth",
+        "### 3.4 Choosing Workflow, TaskAgent, FastAgent, or Direct Execution",
         "Workflow",
         "普通任务点 / TaskAgent",
         "FastAgent",
-        "写好运行时场景 Skill",
-        "区分创建、诊断和优化的证据链",
-        "明确本 Skill 和外部 MCP 的知识边界",
+        "### 3.6 Runtime Scene Skill Quality",
+        "### 3.7 Evidence Chains for Creation, Diagnosis, and Optimization",
+        "### 3.8 Knowledge Boundaries",
     ):
         assert required_model in skill
 
@@ -86,11 +92,11 @@ def test_skill_has_progressive_reference_index_prerequisites_and_hard_gates():
     ):
         assert f"references/{reference}" in skill
     assert "上述路径相对于本 `SKILL.md` 所在目录" in skill
-    assert "## 运行前提" in skill
-    assert "**必需 MCP Server**：`scene-creator`" in skill
+    assert "## Prerequisites" in skill
+    assert "**Required MCP Server**：`scene-creator`" in skill
     assert "远端，不能直接读取或写入当前 Agent 的本地文件系统" in skill
-    assert "## 核心硬约束" in skill
-    assert "## 常见故障与恢复" in skill
+    assert "## 2. Core Constraints (violation = task failure)" in skill
+    assert "## 8. Common Issues and Recovery" in skill
 
 
 def test_each_reference_declares_its_scope_as_a_supplement():
@@ -105,7 +111,9 @@ def test_each_reference_declares_its_scope_as_a_supplement():
 
 def test_embedded_scene_package_domain_model_excludes_max_runtime_protocols():
     skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    model = skill.split("## 理解场景包", 1)[1].split("## 加载制作契约", 1)[0]
+    model = skill.split("## 3. Scene Package Model", 1)[1].split(
+        "## 4. Authoring Contracts", 1
+    )[0]
 
     for max_runtime_rule in (
         "GOALFYAI_STATE_",
@@ -123,8 +131,8 @@ def test_embedded_scene_package_domain_model_excludes_max_runtime_protocols():
 def test_external_skill_preserves_scene_creator_intent_routing_without_max_state_machine():
     skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
 
-    assert skill.index("## 与用户沟通并确定制作模式") < skill.index(
-        "### 1. 创建一个可审计工单"
+    assert skill.index("## 5. User Collaboration and Intent Routing") < skill.index(
+        "### 7.1 创建一个可审计工单"
     )
     for communication_rule in (
         "场景包业务顾问",
@@ -219,6 +227,57 @@ def test_external_tool_reference_tracks_exact_profile():
     assert "不要求工具数量永远不变" in content
 
 
+def test_skill_has_platform_discovery_metadata_and_data_style_sections():
+    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    frontmatter = _skill_frontmatter(skill)
+    required_keywords = {
+        "scene package",
+        "scenario package",
+        "场景包",
+        "workflow",
+        "business UI",
+        "业务界面",
+        "GoalfyMax",
+        "MCP",
+    }
+
+    assert frontmatter["name"] == "scene-creator"
+    assert "[skill-version:v1.0.0]" in frontmatter["description"]
+    assert required_keywords <= set(frontmatter["keywords"])
+    assert len(frontmatter["keywords"]) == len(set(frontmatter["keywords"]))
+    for heading in (
+        "## Prerequisites",
+        "### 1.1 When to Use Scene Creator",
+        "### 1.2 Capabilities",
+        "### 1.3 Intent Routing",
+        "## 6. Tool Overview",
+        "### 6.2 Validation Responsibilities",
+        "### 6.3 Core Call Chain",
+        "## 7. Execution Flows",
+        "## 8. Common Issues and Recovery",
+    ):
+        assert heading in skill
+
+    expected_tools = {
+        "workflow_task_manager",
+        "list_assets",
+        "get_asset",
+        "get_diagnosis_doc",
+        "dataset_read",
+        "workflow_file_upload",
+        "workflow_dependency_manage",
+        "scene_package_manage",
+        "scene_package_ui_bundle",
+        "workflow_tpe_manage",
+        "manage_goalfymax_project",
+        "get_project_execution_logs",
+    }
+    overview = skill.split("### 6.1 MCP Tools", 1)[1].split(
+        "### 6.2 Validation Responsibilities", 1
+    )[0]
+    assert set(re.findall(r"^\| `([^`]+)` \|", overview, flags=re.MULTILINE)) == expected_tools
+
+
 def test_business_ui_is_co_built_after_workflow_acceptance_and_before_pack_release():
     skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
     routing = (SKILL_ROOT / "references" / "external-mcp-tools.md").read_text(
@@ -234,11 +293,11 @@ def test_business_ui_is_co_built_after_workflow_acceptance_and_before_pack_relea
     for reference in ("业务界面制作契约.md", "业务界面验收检查清单.md"):
         assert f"references/{reference}" in skill
 
-    assert skill.index("### 9. 根据契约和轨迹验收每个 Workflow") < skill.index(
-        "### 10. 按最终 Workflow 契约制作并发布业务界面"
+    assert skill.index("### 7.9 根据契约和轨迹验收每个 Workflow") < skill.index(
+        "### 7.10 按最终 Workflow 契约制作并发布业务界面"
     )
-    assert skill.index("### 10. 按最终 Workflow 契约制作并发布业务界面") < skill.index(
-        "### 11. 验收完整场景包"
+    assert skill.index("### 7.10 按最终 Workflow 契约制作并发布业务界面") < skill.index(
+        "### 7.11 验收完整场景包"
     )
     assert routing.index("workflow_tpe_manage(bubble start → poll)") < routing.index(
         "冻结最终 Workflow/编排契约"
@@ -303,7 +362,7 @@ def test_full_validation_is_optional_and_skips_are_audited():
     )
 
     assert "预览 → `bubble` → 语义验收 → 可选全真跑" in skill
-    assert "### 14. 按需运行一个真实 Max 业务项目" in skill
+    assert "### 7.14 按需运行一个真实 Max 业务项目" in skill
     assert "只有用户批准所选场景路径" in skill
     assert "full_validation_skipped" in skill
     assert "禁止虚构 `project_id`" in skill
@@ -374,7 +433,7 @@ def test_skill_and_agent_metadata_use_chinese():
     assert "# 外部 MCP 工具路由" in reference
     assert 'display_name: "场景包制作"' in metadata
     assert "$scene-creator" in metadata
-    skill_description = re.search(r"^description: (.+)$", skill, flags=re.MULTILINE).group(1)
+    skill_description = _skill_frontmatter(skill)["description"]
     for capability in (
         "线上资产复用",
         "工具契约发现与真实取样",

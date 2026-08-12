@@ -1,8 +1,8 @@
 {
   "skill_name": "scene-creator",
   "version": "1.0.0",
-  "released_at": "2026-08-12T09:36:37Z",
-  "update_reason": "将场景包核心模型彻底融入 SKILL.md：内置场景包定义、资产协作、信息分层、执行形态决策、业务方案映射、运行时 Skill 标准、证据链与用户沟通方法，删除独立核心模型引用以保持单一真相",
+  "released_at": "2026-08-12T09:52:48Z",
+  "update_reason": "参照 GoalfyData 补齐 Skill 发现与使用结构：增加关键词、版本标识、Prerequisites、When to Use、Capabilities、Intent Routing、完整工具概览、验证职责、核心调用链及发布契约校验",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -14,7 +14,7 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "009b45c5560394a9eaeea448c8b16d55a1c6635747c0e2b9ac37e8a915065f4b",
+    "SKILL.md": "481c4de91743bf9069876d267b3ef080ee9434ab311c51b21079ab269fdac7ba",
     "agents/openai.yaml": "16239e57465c671035671f5b35957f4fe665c765d4305ea7203e9f7d689b454a",
     "references/Workflow验收检查清单.md": "e04cae5ee4c01743b5d0f719f4effe2a67b3188e89e67f03ee05cafc81a451e1",
     "references/external-mcp-tools.md": "4297c25175a29c28627306cb0536232de3a75f01a62bf00babf743c3f464f1f9",
