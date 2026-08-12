@@ -1,8 +1,8 @@
 {
   "skill_name": "scene-creator",
   "version": "1.0.0",
-  "released_at": "2026-08-12T10:35:04Z",
-  "update_reason": "Add Max scene skill version reporting and PROD-only version generation",
+  "released_at": "2026-08-12T13:48:04Z",
+  "update_reason": "补充上下文型 MCP 工具真实取样规则，并增加 Max 场景包助手版本上报与仅 PROD 自动更新逻辑",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -14,7 +14,7 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "68bc0c41697f73b8aaa7903fc7fb7ed5dcfdc1995fc89558877d547f3dff3a95",
+    "SKILL.md": "58fc462361601a53d36c2ff5d4205b143958834458faa3e7ebe74ac1e315d07f",
     "agents/openai.yaml": "16239e57465c671035671f5b35957f4fe665c765d4305ea7203e9f7d689b454a",
     "references/Workflow验收检查清单.md": "e04cae5ee4c01743b5d0f719f4effe2a67b3188e89e67f03ee05cafc81a451e1",
     "references/external-mcp-tools.md": "4297c25175a29c28627306cb0536232de3a75f01a62bf00babf743c3f464f1f9",

@@ -501,9 +501,9 @@ Skill 颗粒度由要消除的真实瓶颈决定：
 可独立调用的 MCP 工具没有可信正式 output Schema 时：
 
 1. 确认调用只读，或者已经获得相应授权。
-2. 用代表性输入调用一次 `workflow_dependency_manage(action="test_tool", task_id=<task_id>, tool_group_id=..., tool_id=..., input=...)`。
+2. 用代表性输入调用一次 `workflow_dependency_manage(action="test_tool", task_id=<task_id>, tool_group_id=..., tool_id=..., input=...)`。目标 MCP 依赖项目上下文（如 `web_research`）时，额外传已有 Max 返回的加密 `project_id` 或已知正整数项目 ID；`user_id` 不由 Agent 提供，服务端从个人 API 密钥解析并与项目上下文一起注入目标 MCP。与项目无关的工具不要虚构 `project_id`。
 3. 只为下游代码起草最小步骤 `_output`。
-4. 换一组新输入，再调用 `workflow_dependency_manage(action="test_tool", task_id=<task_id>, tool_group_id=..., tool_id=..., input=<新输入>, expected_output_schema=<候选 Schema>)`。
+4. 换一组新输入，再调用 `workflow_dependency_manage(action="test_tool", task_id=<task_id>, tool_group_id=..., tool_id=..., input=<新输入>, expected_output_schema=<候选 Schema>)`；上下文型工具继续复用同一 `project_id`。
 5. 检查点只记录契约结论和资产版本。
 
 未经明确授权，不得取样破坏性、对外发布、凭证变更、金融或其他不可逆操作。FA、`file`、`shell` 和 `send_email` 需要 Max 运行时上下文，不能用 `test_tool` 测试。
