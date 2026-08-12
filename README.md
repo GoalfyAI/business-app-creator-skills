@@ -62,8 +62,8 @@ uv run python scene-creator/release/build_platform_packages.py build \
 
 ## 版本与环境策略
 
-全部功能正式上线前，插件版本固定为 `1.0.0`。QA 阶段修改 Skill 内容、参考资料或平台模板后，
-仍需刷新发布清单、校验和与直接安装目录，但不得增加版本号：
+QA 阶段修改 Skill 内容、参考资料或平台模板后，仍需刷新发布清单、校验和与直接安装目录，
+但不得修改 description 中的 `skill-version`：
 
 ```bash
 uv run python scene-creator/release/build_platform_packages.py release \
@@ -76,17 +76,17 @@ uv run python scene-creator/release/build_platform_packages.py release \
 普通合并和手工构建都不得更新版本号。脚本在 `DEPLOY_ENV` 不是 `prod` 时会直接拒绝执行。
 
 1. 在 PROD 流水线注入 `CI_COMMIT_SHA`、`SCENE_SKILL_RELEASE_S2S_SECRET`、
-   `SCENE_SKILL_RELEASE_REGISTER_URL`，并在部署制品发布步骤执行该脚本；
+   `SCENE_SKILL_RELEASE_REGISTER_URL`，并在手工 PROD job 执行该脚本；
 
 2. 将 Codex 和 Claude Code 的 MCP 配置切换到正式环境地址；
 3. 将全部安装说明中的 API 密钥获取入口由 GoalfyMax QA 改为 GoalfyMax 线上环境；
-4. 将脚本生成的 ZIP 作为本次 PROD 部署制品，并由脚本幂等登记版本。
+4. PROD job 更新仓库中的 Skill 版本标记、发布清单和直接安装副本，提交并 tag；推送成功后由脚本幂等登记版本。该流程不生成、不上传任何 ZIP 或其他制品。
 
-Codeup Flow 的受控配置源位于 `.yunxiao/scene-creator-skills.yml`。`QA校验` 自动执行且只验证
-固定 `1.0.0`；`PROD发布` 必须人工触发，并强制要求源分支为 `main`。PROD job 按顺序生成三个
-版本化 ZIP、上传 Flow 制品，最后才通过 HMAC 向独立的 Max Hub 登记版本。流水线必须单独配置
-`SCENE_SKILL_RELEASE_S2S_SECRET` 与 `SCENE_SKILL_RELEASE_REGISTER_URL`，不得复用 GoalfyData
-Hub 的地址或密钥。
+Codeup Flow 的受控配置源位于 `.yunxiao/scene-creator-skills.yml`。`QA校验` 自动执行且只校验
+当前版本；`PROD发布` 必须人工触发，并强制要求源分支为 `main`。PROD job 更新仓库版本并推回
+Codeup 后，才通过 HMAC 向 CN Max Hub 登记版本。`SCENE_SKILL_RELEASE_REGISTER_URL` 当前固定指向
+`https://goalfyhub.goalfyai.cn/api/internal/workflow/scene-skill-versions/releases/register`；流水线必须
+单独配置 `SCENE_SKILL_RELEASE_S2S_SECRET`，不得复用 GoalfyData Hub 的地址或密钥。
 
 禁止只升级版本而继续连接 QA，或者在正式安装包中保留 QA API 密钥获取说明。
 

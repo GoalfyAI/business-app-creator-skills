@@ -1,5 +1,6 @@
+# template=true
 # GoalfyMax scene-creator Skill 独立流水线（T-2775）。
-# QA/main push 只校验固定 1.0.0；只有手工进入 PROD job 才生成内容版本、上传制品并登记 Max Hub。
+# QA/main push 只校验、不更新版本；只有手工进入 PROD job 才更新仓库版本并登记 CN Max Hub。
 sources:
   repo_0:
     type: codeup
@@ -26,7 +27,7 @@ stages:
     name: QA校验
     jobs:
       job_validate:
-        name: 校验固定版本与全量测试
+        name: 校验当前版本与全量测试
         runsOn:
           group: private/o3yZdT0POoGmFbak
           labels: linux,amd64
@@ -56,7 +57,7 @@ stages:
                 python3 -m uv run ruff check scene-creator/release/build_platform_packages.py scripts/prod-release-skill.py tests
                 python3 -m uv run pytest -q
                 python3 -m uv run python scene-creator/release/build_platform_packages.py check
-                if DEPLOY_ENV=qa CI_COMMIT_SHA=${RELEASE_SHA} scripts/prod-release-skill.py; then
+                if DEPLOY_ENV=qa CI_COMMIT_SHA=${RELEASE_SHA} scripts/prod-release-skill.py --prepare-only; then
                   echo "非 PROD 环境错误地更新了版本" >&2
                   exit 1
                 fi
@@ -67,38 +68,41 @@ stages:
       - stage_validate
     jobs:
       job_prod:
-        name: 生成版本、上传制品并登记Max Hub
+        name: 更新仓库版本并登记CN Max Hub
         driven: manual
         runsOn:
           group: private/o3yZdT0POoGmFbak
           labels: linux,amd64
           vm: true
         steps:
-          step_build:
-            name: 仅在main生成PROD版本制品
+          step_release:
+            name: 仅在main更新PROD版本
             step: Command
             with:
               run: |
                 set -euo pipefail
                 cd ${PROJECT_DIR}
                 test "${CI_COMMIT_REF_NAME}" = "main"
-                rm -rf dist
-                output=$(python3 -m uv run python scene-creator/release/build_platform_packages.py prod-build --commit-sha "${RELEASE_SHA}" --output-dir dist)
+                python3 -m pip install --user uv
+                python3 -m uv sync --group dev
+                git fetch origin main --depth=1 --force
+                test "$(git rev-parse origin/main)" = "${RELEASE_SHA}"
+                output=$(DEPLOY_ENV=prod CI_COMMIT_SHA=${RELEASE_SHA} SCENE_SKILL_RELEASE_NOTES="${CI_COMMIT_TITLE}" \
+                  python3 -m uv run python scripts/prod-release-skill.py --prepare-only)
                 version=$(printf '%s\n' "${output}" | sed -n 's/^SCENE_SKILL_VERSION=//p')
                 test -n "${version}"
                 echo "SCENE_SKILL_VERSION=${version}" >> $FLOW_ENV
-                find dist -maxdepth 1 -type f -name "*-${version}.zip" -print
-                test "$(find dist -maxdepth 1 -type f -name "*-${version}.zip" | wc -l | tr -d ' ')" = "3"
-          step_artifact:
-            name: 上传PROD安装包
-            step: ArtifactUpload
-            with:
-              uploadType: flowPublic
-              artifact: scene-creator-${SCENE_SKILL_VERSION}
-              filePath:
-                - dist/
+                python3 -m uv run python scene-creator/release/build_platform_packages.py check
+                python3 -m uv run pytest -q
+                git config user.name "goalfymax-release-bot"
+                git config user.email "goalfymax-release-bot@goalfy.ai"
+                git add scene-creator codex claude-code .agents .claude-plugin
+                git commit -m "chore(skill): release ${version} [skip ci]"
+                git tag -a "skill/${version}" -m "${CI_COMMIT_TITLE}"
+                git push origin HEAD:main
+                git push origin "skill/${version}"
           step_register:
-            name: 制品成功后登记Max Hub版本
+            name: 仓库版本推送成功后登记CN Max Hub
             step: Command
             with:
               run: |

@@ -122,26 +122,21 @@ def test_prod_version_rejects_non_git_sha():
         release_module.generate_prod_version("not-a-sha")
 
 
-def test_prod_build_renders_versioned_artifacts_without_mutating_qa_tree(tmp_path: Path):
-    qa_skill_before = (SKILL_ROOT / "SKILL.md").read_bytes()
-    version, outputs = release_module.build_prod_packages(SKILL_ROOT, tmp_path / "dist", "a1b2c3d4")
+def test_prod_release_updates_repository_copies_without_building_packages(tmp_path: Path):
+    copied = _copy_skill(tmp_path)
+    release_module.sync_direct_install_tree(copied, _manifest(copied))
+    version = release_module.release_prod_source(copied, "a1b2c3d4", "PROD release")
 
     assert version.startswith("v") and version.endswith("-a1b2c3")
-    assert len(outputs) == 3
-    assert (SKILL_ROOT / "SKILL.md").read_bytes() == qa_skill_before
-
-    generic = next(path for path in outputs if "-generic-" in path.name)
-    with zipfile.ZipFile(generic) as archive:
-        packaged_skill = archive.read("scene-creator/SKILL.md").decode()
-    assert f"[skill-version:{version}]" in packaged_skill
-    assert "[skill-version:v1.0.0]" not in packaged_skill
-
-    codex = next(path for path in outputs if "-codex-" in path.name)
-    with zipfile.ZipFile(codex) as archive:
-        plugin = json.loads(
-            archive.read("scene-creator-codex/plugins/scene-creator/.codex-plugin/plugin.json")
-        )
-    assert plugin["version"] == version
+    assert f"[skill-version:{version}]" in (copied / "SKILL.md").read_text()
+    repository_root = copied.parent
+    assert f"[skill-version:{version}]" in (
+        repository_root / "codex/skills/scene-creator/SKILL.md"
+    ).read_text()
+    assert f"[skill-version:{version}]" in (
+        repository_root / "claude-code/skills/scene-creator/SKILL.md"
+    ).read_text()
+    assert not (repository_root / "dist").exists()
 
 
 def test_direct_marketplace_drift_is_rejected(tmp_path: Path):

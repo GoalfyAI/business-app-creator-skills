@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""PROD pipeline entrypoint: render artifacts and register the Max-only release."""
+"""PROD pipeline entrypoint: update repository version or register Max Hub."""
 
 from __future__ import annotations
 
@@ -8,7 +8,6 @@ import hashlib
 import hmac
 import json
 import os
-import subprocess
 import sys
 import time
 import urllib.request
@@ -24,29 +23,29 @@ def required_env(name: str) -> str:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
+    actions = parser.add_mutually_exclusive_group(required=True)
+    actions.add_argument(
+        "--prepare-only",
+        action="store_true",
+        help="update the repository Skill marker without creating a package",
+    )
+    actions.add_argument(
         "--register-only",
         action="store_true",
-        help="register SCENE_SKILL_VERSION after the pipeline artifact upload succeeds",
+        help="register SCENE_SKILL_VERSION after the release commit is pushed",
     )
     return parser.parse_args()
 
 
-def build_prod_artifacts(root: Path, commit_sha: str, output_dir: Path) -> str:
-    command = [
-        sys.executable,
-        str(root / "scene-creator/release/build_platform_packages.py"),
-        "prod-build",
-        "--commit-sha",
+def prepare_release(root: Path, commit_sha: str) -> str:
+    sys.path.insert(0, str(root / "scene-creator/release"))
+    from build_platform_packages import release_prod_source
+
+    return release_prod_source(
+        root / "scene-creator",
         commit_sha,
-        "--output-dir",
-        str(output_dir),
-    ]
-    completed = subprocess.run(command, cwd=root, check=True, text=True, capture_output=True)
-    version_line = next(
-        line for line in completed.stdout.splitlines() if line.startswith("SCENE_SKILL_VERSION=")
+        os.environ.get("SCENE_SKILL_RELEASE_NOTES", "PROD pipeline release"),
     )
-    return version_line.split("=", 1)[1]
 
 
 def register_release(version: str) -> None:
@@ -80,14 +79,13 @@ def main() -> int:
     if os.environ.get("DEPLOY_ENV", "").strip().lower() != "prod":
         raise RuntimeError("refusing to update scene skill version outside PROD")
     root = Path(__file__).resolve().parents[1]
-    if args.register_only:
-        version = required_env("SCENE_SKILL_VERSION")
+    if args.prepare_only:
+        version = prepare_release(root, required_env("CI_COMMIT_SHA"))
+        print(f"SCENE_SKILL_VERSION={version}")
     else:
-        commit_sha = required_env("CI_COMMIT_SHA")
-        output_dir = Path(os.environ.get("SCENE_SKILL_OUTPUT_DIR", root / "dist"))
-        version = build_prod_artifacts(root, commit_sha, output_dir)
-    register_release(version)
-    print(version)
+        version = required_env("SCENE_SKILL_VERSION")
+        register_release(version)
+        print(version)
     return 0
 
 

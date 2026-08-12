@@ -9,7 +9,6 @@ import json
 import re
 import shutil
 import sys
-import tempfile
 import zipfile
 from collections.abc import Iterable
 from datetime import datetime, timezone
@@ -28,6 +27,9 @@ QA_MCP_ENDPOINT = "https://workflow-mcp.qa.goalfyai.com/mcp"
 REVIEWED_MCP_ENDPOINT = QA_MCP_ENDPOINT
 QA_FIXED_VERSION = "1.0.0"
 SKILL_VERSION_MARKER = f"[skill-version:v{QA_FIXED_VERSION}]"
+SKILL_VERSION_RE = re.compile(
+    r"\[skill-version:(v(?:\d+\.\d+\.\d+|\d{8}-[0-9a-f]{6}))\]"
+)
 REQUIRED_SKILL_KEYWORDS = {
     "scene package",
     "scenario package",
@@ -188,8 +190,9 @@ def validate_skill_metadata(skill_root: Path) -> None:
     description = frontmatter["description"]
     if not isinstance(description, str) or not description.strip():
         raise ReleaseError("SKILL.md 的 description 不能为空")
-    if SKILL_VERSION_MARKER not in description:
-        raise ReleaseError(f"SKILL.md 的 description 必须包含 {SKILL_VERSION_MARKER}")
+    markers = SKILL_VERSION_RE.findall(description)
+    if len(markers) != 1:
+        raise ReleaseError("SKILL.md 的 description 必须且只能包含一个有效 skill-version 标记")
     keywords = frontmatter["keywords"]
     if not isinstance(keywords, list) or not keywords:
         raise ReleaseError("SKILL.md 的 keywords 必须是非空列表")
@@ -704,41 +707,25 @@ def generate_prod_version(commit_sha: str, now: datetime | None = None) -> str:
     return f"v{instant.astimezone(timezone.utc):%Y%m%d}-{commit_sha[:6]}"
 
 
-def build_prod_packages(
-    skill_root: Path, output_dir: Path, commit_sha: str
-) -> tuple[str, list[Path]]:
-    """Render production-only artifacts without changing the checked-in QA tree."""
+def release_prod_source(skill_root: Path, commit_sha: str, reason: str) -> str:
+    """Update the repository Skill marker during the manual PROD release only."""
     skill_root = skill_root.resolve()
     manifest = check_release(skill_root)
     version = generate_prod_version(commit_sha)
-    with tempfile.TemporaryDirectory(prefix="scene-skill-prod-") as temp_dir:
-        rendered_root = Path(temp_dir) / SKILL_NAME
-        shutil.copytree(skill_root, rendered_root)
-        skill_file = rendered_root / "SKILL.md"
-        content = skill_file.read_text(encoding="utf-8")
-        content, count = re.subn(
-            r"\[skill-version:[^\]]+\]", f"[skill-version:{version}]", content, count=1
-        )
-        if count != 1:
-            raise ReleaseError("SKILL.md 必须且只能渲染一个 skill-version 标记")
-        skill_file.write_text(content, encoding="utf-8")
-
-        common_files = [
-            path
-            for path in manifest["source_files"]
-            if path == "SKILL.md" or path.startswith("references/")
-        ]
-        output_dir.mkdir(parents=True, exist_ok=True)
-        outputs: list[Path] = []
-        for platform in PLATFORM_NAMES:
-            output_path = output_dir / f"{SKILL_NAME}-{platform}-{version}.zip"
-            source_files = list(manifest["source_files"]) if platform == "codex" else common_files
-            _write_platform_zip(output_path, rendered_root, platform, version, source_files)
-            outputs.append(output_path)
-        generic_path = output_dir / f"{SKILL_NAME}-generic-{version}.zip"
-        _write_zip(generic_path, rendered_root, common_files)
-        outputs.append(generic_path)
-    return version, outputs
+    skill_file = skill_root / "SKILL.md"
+    original = skill_file.read_text(encoding="utf-8")
+    updated, count = SKILL_VERSION_RE.subn(f"[skill-version:{version}]", original, count=1)
+    if count != 1:
+        raise ReleaseError("SKILL.md 必须且只能更新一个 skill-version 标记")
+    skill_file.write_text(updated, encoding="utf-8")
+    try:
+        # Plugin semver remains independent. The repository commit is the Max
+        # delivery unit; this refreshes checksums and committed direct copies.
+        release(skill_root, manifest["version"], reason)
+    except Exception:
+        skill_file.write_text(original, encoding="utf-8")
+        raise
+    return version
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -764,10 +751,10 @@ def _parser() -> argparse.ArgumentParser:
     )
 
     prod_parser = subparsers.add_parser(
-        "prod-build", help="仅供 PROD 流水线生成新版本标记并构建安装包"
+        "prod-release", help="仅供 PROD 流水线更新仓库内版本标记；不生成安装包"
     )
     prod_parser.add_argument("--commit-sha", required=True)
-    prod_parser.add_argument("--output-dir", type=Path, default=None)
+    prod_parser.add_argument("--reason", required=True)
     return parser
 
 
@@ -790,12 +777,11 @@ def main(argv: list[str] | None = None) -> int:
             output_dir = args.output_dir or skill_root.parent / "dist"
             for path in build_packages(skill_root, output_dir):
                 print(path)
-        else:
-            output_dir = args.output_dir or skill_root.parent / "dist"
-            version, paths = build_prod_packages(skill_root, output_dir, args.commit_sha)
+        elif args.action == "prod-release":
+            version = release_prod_source(skill_root, args.commit_sha, args.reason)
             print(f"SCENE_SKILL_VERSION={version}")
-            for path in paths:
-                print(path)
+        else:
+            raise ReleaseError(f"不支持的动作：{args.action}")
     except ReleaseError as exc:
         print(f"错误：{exc}", file=sys.stderr)
         return 1

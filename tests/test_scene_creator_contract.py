@@ -242,7 +242,7 @@ def test_skill_has_platform_discovery_metadata_and_data_style_sections():
     }
 
     assert frontmatter["name"] == "scene-creator"
-    assert "[skill-version:v1.0.0]" in frontmatter["description"]
+    assert "[skill-version:v" in frontmatter["description"]
     assert required_keywords <= set(frontmatter["keywords"])
     assert len(frontmatter["keywords"]) == len(set(frontmatter["keywords"]))
     for heading in (
