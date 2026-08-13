@@ -237,6 +237,13 @@ def test_checked_in_first_party_package_versions_are_synchronized():
     assert release_module._repository_package_version(SKILL_ROOT) == expected
 
 
+def test_docs_do_not_pin_a_stale_first_party_package_version():
+    readme = (SKILL_ROOT.parent / "README.md").read_text(encoding="utf-8")
+    assert "--version 1.0.0" not in readme
+    assert "Git SHA 前 6 位" not in readme
+    assert "CI_COMMIT_SHA" not in readme
+
+
 def test_release_rejects_invalid_skill_frontmatter(tmp_path: Path):
     copied = _copy_skill(tmp_path)
     (copied / "SKILL.md").write_text("# Missing frontmatter\n", encoding="utf-8")

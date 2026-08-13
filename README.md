@@ -67,7 +67,7 @@ QA 阶段修改 Skill 内容、参考资料或平台模板后，仍需刷新发�
 
 ```bash
 uv run python scene-creator/release/build_platform_packages.py release \
-  --version 1.0.0 \
+  --version "<skill-release.json 中当前 package_version>" \
   --reason "<已验证的变更说明>"
 ```
 
