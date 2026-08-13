@@ -1,8 +1,8 @@
 {
   "skill_name": "scene-creator",
   "version": "1.0.0",
-  "released_at": "2026-08-12T13:21:49Z",
-  "update_reason": "强化场景包多路线与业务档案个性化执行模型：场景包定义共同终点和候选路线，apc_skill 在运行前识别实体/情境档案并据当前状态、标准和历史结果选路；新增反事实验收、档案证据纪律与候选事实回流边界",
+  "released_at": "2026-08-13T08:21:27Z",
+  "update_reason": "重构章节结构，以场景包为核心主线并将 Workflow 降为可选资产",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -14,7 +14,7 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "5fae07bb78f12b5578796d32c93a28302d3d8b30509d22c580aac7fe25772f3d",
+    "SKILL.md": "acb9d7c3936ec47e60f1ba0e5fb57cf56b9d427c36abb7dfee48e988e8962f5a",
     "agents/openai.yaml": "16239e57465c671035671f5b35957f4fe665c765d4305ea7203e9f7d689b454a",
     "references/Workflow验收检查清单.md": "e04cae5ee4c01743b5d0f719f4effe2a67b3188e89e67f03ee05cafc81a451e1",
     "references/external-mcp-tools.md": "4297c25175a29c28627306cb0536232de3a75f01a62bf00babf743c3f464f1f9",
