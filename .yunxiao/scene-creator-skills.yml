@@ -93,6 +93,7 @@ stages:
                 version=$(printf '%s\n' "${output}" | sed -n 's/^SCENE_SKILL_VERSION=//p')
                 test -n "${version}"
                 echo "SCENE_SKILL_VERSION=${version}" >> $FLOW_ENV
+                echo "SCENE_SKILL_RELEASE_NOTES=${CI_COMMIT_TITLE}" >> $FLOW_ENV
                 python3 -m uv run python scene-creator/release/build_platform_packages.py check
                 python3 -m uv run pytest -q
                 git config user.name "goalfymax-release-bot"
@@ -110,4 +111,5 @@ stages:
                 set -euo pipefail
                 cd ${PROJECT_DIR}
                 DEPLOY_ENV=prod SCENE_SKILL_VERSION=${SCENE_SKILL_VERSION} \
+                  SCENE_SKILL_RELEASE_NOTES="${SCENE_SKILL_RELEASE_NOTES}" \
                   python3 -m uv run python scripts/prod-release-skill.py --register-only

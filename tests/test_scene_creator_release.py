@@ -10,6 +10,7 @@ import yaml
 ROOT = Path(__file__).parents[1]
 SKILL_ROOT = ROOT / "scene-creator"
 SCRIPT_PATH = SKILL_ROOT / "release" / "build_platform_packages.py"
+PIPELINE_PATH = ROOT / ".yunxiao" / "scene-creator-skills.yml"
 
 SPEC = importlib.util.spec_from_file_location("scene_creator_release", SCRIPT_PATH)
 assert SPEC and SPEC.loader
@@ -187,13 +188,38 @@ def test_release_rejects_missing_skill_keywords(tmp_path: Path):
 def test_release_rejects_missing_skill_version_marker(tmp_path: Path):
     copied = _copy_skill(tmp_path)
     skill_file = copied / "SKILL.md"
-    content = skill_file.read_text(encoding="utf-8").replace(
-        release_module.SKILL_VERSION_MARKER, "", 1
+    content, count = release_module.SKILL_VERSION_RE.subn(
+        "", skill_file.read_text(encoding="utf-8"), count=1
     )
+    assert count == 1
     skill_file.write_text(content, encoding="utf-8")
 
     with pytest.raises(release_module.ReleaseError, match="skill-version"):
         release_module.release(copied, release_module.QA_FIXED_VERSION, "Missing version marker")
+
+
+def test_missing_marker_contract_still_runs_after_prod_prepare(tmp_path: Path):
+    copied = _copy_skill(tmp_path)
+    release_module.sync_direct_install_tree(copied, _manifest(copied))
+    release_module.release_prod_source(copied, "a1b2c3d4", "PROD release")
+
+    skill_file = copied / "SKILL.md"
+    content, count = release_module.SKILL_VERSION_RE.subn(
+        "", skill_file.read_text(encoding="utf-8"), count=1
+    )
+    assert count == 1
+    skill_file.write_text(content, encoding="utf-8")
+
+    with pytest.raises(release_module.ReleaseError, match="skill-version"):
+        release_module.release(copied, release_module.QA_FIXED_VERSION, "Missing marker")
+
+
+def test_prod_pipeline_preserves_release_notes_for_hub_registration():
+    pipeline = PIPELINE_PATH.read_text(encoding="utf-8")
+
+    assert 'echo "SCENE_SKILL_RELEASE_NOTES=${CI_COMMIT_TITLE}" >> $FLOW_ENV' in pipeline
+    register_step = pipeline.split("step_register:", 1)[1]
+    assert 'SCENE_SKILL_RELEASE_NOTES="${SCENE_SKILL_RELEASE_NOTES}"' in register_step
 
 
 def test_release_rejects_invalid_openai_metadata(tmp_path: Path):
