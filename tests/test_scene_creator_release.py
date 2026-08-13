@@ -13,11 +13,17 @@ ROOT = Path(__file__).parents[1]
 SKILL_ROOT = ROOT / "scene-creator"
 SCRIPT_PATH = SKILL_ROOT / "release" / "build_platform_packages.py"
 PIPELINE_PATH = ROOT / ".yunxiao" / "scene-creator-skills.yml"
+PROD_SCRIPT_PATH = ROOT / "scripts" / "prod-release-skill.py"
 
 SPEC = importlib.util.spec_from_file_location("scene_creator_release", SCRIPT_PATH)
 assert SPEC and SPEC.loader
 release_module = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(release_module)
+
+PROD_SPEC = importlib.util.spec_from_file_location("prod_release_skill", PROD_SCRIPT_PATH)
+assert PROD_SPEC and PROD_SPEC.loader
+prod_release_module = importlib.util.module_from_spec(PROD_SPEC)
+PROD_SPEC.loader.exec_module(prod_release_module)
 
 
 def _copy_skill(tmp_path: Path) -> Path:
@@ -27,6 +33,7 @@ def _copy_skill(tmp_path: Path) -> Path:
 
 
 def _copy_repository_metadata(tmp_path: Path) -> None:
+    shutil.copy2(ROOT / "README.md", tmp_path / "README.md")
     shutil.copy2(ROOT / "pyproject.toml", tmp_path / "pyproject.toml")
     shutil.copy2(ROOT / "uv.lock", tmp_path / "uv.lock")
 
@@ -172,6 +179,8 @@ def test_prod_release_updates_repository_copies_without_building_packages(tmp_pa
     manifest = _manifest(copied)
     assert manifest["version"] == version
     assert manifest["package_version"] == expected_package_version
+    assert manifest["mcp_endpoint"] == release_module.PROD_MCP_ENDPOINT
+    release_module.assert_prod_runtime(copied)
     for path in (
         repository_root / ".agents/plugins/marketplace.json",
         repository_root / ".claude-plugin/marketplace.json",
@@ -193,6 +202,85 @@ def test_prod_release_updates_repository_copies_without_building_packages(tmp_pa
     )
     assert lock_match and lock_match.group(1) == expected_package_version
     assert not (repository_root / "dist").exists()
+
+
+def test_prod_prepare_rewrites_every_install_surface_to_cn_prod(tmp_path: Path):
+    copied = _copy_skill(tmp_path)
+    _copy_repository_metadata(tmp_path)
+    release_module.sync_direct_install_tree(copied, _manifest(copied))
+
+    release_module.release_prod_source(copied, "PROD release", random_hex="a1b2c3")
+
+    checked_paths = release_module._prod_runtime_paths(copied)
+    combined = "\n".join(path.read_text(encoding="utf-8") for path in checked_paths)
+    assert release_module.PROD_MCP_ENDPOINT in combined
+    assert release_module.QA_MCP_ENDPOINT not in combined
+    assert "GoalfyMax QA" not in combined
+    assert release_module.PROD_MCP_ENDPOINT in (
+        tmp_path / "codex/.mcp.json"
+    ).read_text(encoding="utf-8")
+    assert release_module.PROD_MCP_ENDPOINT in (
+        tmp_path / "claude-code/.mcp.json"
+    ).read_text(encoding="utf-8")
+
+
+def test_prod_runtime_probe_requires_auth_layer(monkeypatch, tmp_path: Path):
+    copied = _copy_skill(tmp_path)
+    _copy_repository_metadata(tmp_path)
+    release_module.sync_direct_install_tree(copied, _manifest(copied))
+    release_module.release_prod_source(copied, "PROD release", random_hex="a1b2c3")
+
+    def reject_without_auth(*_args, **_kwargs):
+        raise prod_release_module.urllib.error.HTTPError(
+            release_module.PROD_MCP_ENDPOINT,
+            401,
+            "Unauthorized",
+            {"X-Scene-Skill-Runtime": "cn-prod"},
+            None,
+        )
+
+    monkeypatch.setattr(prod_release_module.urllib.request, "urlopen", reject_without_auth)
+    prod_release_module.verify_prod_runtime(tmp_path)
+
+
+def test_prod_runtime_probe_rejects_missing_route(monkeypatch, tmp_path: Path):
+    copied = _copy_skill(tmp_path)
+    _copy_repository_metadata(tmp_path)
+    release_module.sync_direct_install_tree(copied, _manifest(copied))
+    release_module.release_prod_source(copied, "PROD release", random_hex="a1b2c3")
+
+    def missing_route(*_args, **_kwargs):
+        raise prod_release_module.urllib.error.HTTPError(
+            release_module.PROD_MCP_ENDPOINT,
+            404,
+            "Not Found",
+            {"X-Scene-Skill-Runtime": "unknown"},
+            None,
+        )
+
+    monkeypatch.setattr(prod_release_module.urllib.request, "urlopen", missing_route)
+    with pytest.raises(RuntimeError, match="not ready"):
+        prod_release_module.verify_prod_runtime(tmp_path)
+
+
+def test_prod_runtime_probe_rejects_qa_hub_binding(monkeypatch, tmp_path: Path):
+    copied = _copy_skill(tmp_path)
+    _copy_repository_metadata(tmp_path)
+    release_module.sync_direct_install_tree(copied, _manifest(copied))
+    release_module.release_prod_source(copied, "PROD release", random_hex="a1b2c3")
+
+    def qa_binding(*_args, **_kwargs):
+        raise prod_release_module.urllib.error.HTTPError(
+            release_module.PROD_MCP_ENDPOINT,
+            401,
+            "Unauthorized",
+            {"X-Scene-Skill-Runtime": "qa"},
+            None,
+        )
+
+    monkeypatch.setattr(prod_release_module.urllib.request, "urlopen", qa_binding)
+    with pytest.raises(RuntimeError, match="not connected"):
+        prod_release_module.verify_prod_runtime(tmp_path)
 
 
 def test_direct_marketplace_drift_is_rejected(tmp_path: Path):
@@ -283,6 +371,7 @@ def test_release_rejects_missing_skill_version_marker(tmp_path: Path):
 
 def test_missing_marker_contract_still_runs_after_prod_prepare(tmp_path: Path):
     copied = _copy_skill(tmp_path)
+    _copy_repository_metadata(tmp_path)
     release_module.sync_direct_install_tree(copied, _manifest(copied))
     release_module.release_prod_source(copied, "PROD release", random_hex="a1b2c3")
 
@@ -302,11 +391,12 @@ def test_prod_pipeline_preserves_release_notes_for_hub_registration():
 
     assert 'echo "SCENE_SKILL_RELEASE_NOTES=${CI_COMMIT_TITLE}" >> $FLOW_ENV' in pipeline
     assert (
-        "git add scene-creator codex claude-code .agents .claude-plugin pyproject.toml uv.lock"
+        "git add README.md scene-creator codex claude-code .agents .claude-plugin pyproject.toml uv.lock"
         in pipeline
     )
     register_step = pipeline.split("step_register:", 1)[1]
     assert 'SCENE_SKILL_RELEASE_NOTES="${SCENE_SKILL_RELEASE_NOTES}"' in register_step
+    assert "--verify-runtime-only" in pipeline.split("step_release:", 1)[1]
 
 
 def test_release_rejects_invalid_openai_metadata(tmp_path: Path):
@@ -435,7 +525,7 @@ def test_platform_mcp_templates_use_env_key_and_live_external_contract():
             for name in ("README.md", "AGENTS.md", "UPDATE.md")
         )
 
-        assert "https://workflow-mcp.qa.goalfyai.com/mcp" in mcp_text
+        assert _manifest()["mcp_endpoint"] in mcp_text
         assert "SCENE_CREATOR_API_KEY" in mcp_text
         assert set(json.loads(mcp_text)["mcpServers"]) == {"scene-creator"}
         assert "12" in docs

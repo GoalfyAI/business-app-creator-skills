@@ -151,7 +151,7 @@ scene-creator MCP 当前提供 12 个经过审计的场景包管理与执行工�
 
 以下任一项违反都视为当前制作未完成，而不是可忽略的格式问题：
 
-1. 首次预览、写入、真实取样、项目运行、下载或审计前，先创建工单；后续审计操作始终复用同一 `task_id`。
+1. 首次预览、写入、真实取样、项目运行、下载或审计前，先创建工单；同一 mode 内的后续审计操作复用同一 `task_id`。只读诊断获用户授权转入修复时，必须新建受版本闸门保护的 write 工单，并用 `continued_from_task_id` 关联原 read 工单，不得拿 read `task_id` 调写 action。
 2. 工具名、action、参数、资产 ID、Schema 和版本只能来自实时 `tools/list`、线上资产反读或服务端返回，禁止从本文、历史对话或名称猜测。
 3. 先复用再创建；更新失败时修复原资产，不用重复创建同名资产绕过错误。
 4. Workflow 必须遵循“Preview → bubble → Agent 语义验收 → 可选全真项目验证”，`success`、创建成功或页面可打开都不能替代验收证据。
@@ -402,7 +402,7 @@ Skill 颗粒度由要消除的真实瓶颈决定：
 | 只要求创建或修改某条 Workflow，目标和输入输出明确 | Workflow 资产任务 | 保持用户范围，不擅自扩展成新场景包 |
 | 无法判断是创建、诊断、优化还是普通业务执行 | 未明确 | 只询问模式或目标，不启动工单 |
 
-创建完成后的试运行暴露问题时，自然转入诊断或优化；诊断发现必须补建资产时，在用户授权的修复范围内进入创建。模式转换不代表新建工单或重建场景包，优先沿用同一工单和原资产。
+创建完成后的试运行暴露问题时，自然转入诊断或优化；诊断发现必须补建资产时，在用户授权的修复范围内进入创建。同一 read 或 write mode 内优先沿用原工单和原资产；read 诊断转入任何修复/优化写操作时属于权限边界变化，必须创建新的 write 工单，传 `continued_from_task_id=<原 read task_id>` 和当前 `skill_version`，由新工单继续引用原检查点。
 
 ### 区分信息缺口
 
@@ -487,7 +487,11 @@ Skill 颗粒度由要消除的真实瓶颈决定：
 
 ### 7.1 创建一个可审计工单
 
-在第一次预览、写入、真实取样、项目运行、下载或审计动作前，从本文件 description 读取 `[skill-version:...]` 的完整版本值，并调用 `workflow_task_manager(action="create", task_name=..., task_description=..., mode="write", skill_version=<版本值>)`。纯只读诊断可传 `mode="read"`；写模式不得省略或猜测 `skill_version`。`task_description` 应写明当前模式、业务目标、预期交付物和验收边界。保存返回的 `task_id`，后续所有审计操作都传入该值。若返回 `SCENE_SKILL_UPGRADE_REQUIRED`，停止写操作并按返回的最新版本和更新说明升级 Skill 后重试；`SCENE_SKILL_UPGRADE_RECOMMENDED` 只提示，不阻断本次工单。
+在第一次预览、写入、真实取样、项目运行、下载或审计动作前，从本文件 description 读取 `[skill-version:...]` 的完整版本值，并调用 `workflow_task_manager(action="create", task_name=..., task_description=..., mode="write", skill_version=<版本值>)`。纯只读诊断可传 `mode="read"`；写模式不得省略或猜测 `skill_version`。`task_description` 应写明当前模式、业务目标、预期交付物和验收边界。保存返回的 `task_id`，同一 mode 内的后续审计操作都传入该值。
+
+纯只读诊断后用户授权修复或优化时，不得复用 read `task_id` 执行任何写 action。重新读取本文件版本标记，调用 `workflow_task_manager(action="create", mode="write", skill_version=<当前版本>, continued_from_task_id=<原 read task_id>, ...)`；创建成功后改用新 write `task_id`，原 read 工单及检查点作为可审计来源保留。服务端返回 `WORKFLOW_TASK_MODE_MISMATCH` 时，按 metadata 中的 `actual_mode`/`required_mode` 纠正工单，不把它误判成工单不存在或他人所有。
+
+若创建 write 工单返回 `SCENE_SKILL_UPGRADE_REQUIRED`，立即停止写操作。只使用返回的 `upgrade_source`：从其 `git_url` 克隆精确 `ref`（`skill/<latest_version>`），再按平台选择 `platform_roots.codex` 或 `platform_roots.claude_code` 作为安装根目录并执行对应 `UPDATE.md`；不得猜测下载地址，也不得改用 ZIP。若 `upgrade_source` 缺失、Codeup 无权限或精确 tag 不存在，保持阻断并联系内部运维；运营侧在恢复来源可用前不得开启 required。`SCENE_SKILL_UPGRADE_RECOMMENDED` 只提示，不阻断本次工单，但升级仍使用同一受控来源。
 
 中断后用 `workflow_task_manager(action="get", task_id=<task_id>)` 恢复上下文。资产创建和验证后，用 `workflow_task_manager(action="insert", task_id=<task_id>, entry_type="checkpoint", content=...)` 写入简洁检查点；不要把完整工具输入、供应商输出、凭证或日志复制进工单。
 

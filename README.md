@@ -22,10 +22,11 @@ uv run ruff check tests scene-creator/release/build_platform_packages.py
 uv run python scene-creator/release/build_platform_packages.py check
 ```
 
-## 直接从本仓库安装
+## 从仓库当前分支验证
 
 仓库根目录同时是 Codex 和 Claude Code 的插件市场。`codex/` 与 `claude-code/` 是自动生成并
-提交到仓库的安装目录，只能编辑 `scene-creator/` 下的唯一源文件。
+提交到仓库的安装目录，只能编辑 `scene-creator/` 下的唯一源文件。下面的 `main` 只用于当前
+QA/开发分支验证，不是正式升级来源；PROD 客户端必须使用版本门禁返回的精确 tag，禁止跟随 `main`。
 
 Codex:
 
@@ -49,16 +50,9 @@ claude plugin install scene-creator@scene-creator
 **开发者工具** → **API 密钥**（`/developer/api-keys`）。插件会把该密钥作为
 Bearer 凭证发送，不需要另行配置用户 ID 鉴权参数。
 
-## 构建安装包
-
-```bash
-uv run python scene-creator/release/build_platform_packages.py build \
-  --output-dir dist/scene-creator
-```
-
-构建命令会生成 Codex 和 Claude Code 的完整本地插件市场 ZIP，安装时会同时启用 Skill 与
-外部 MCP；此外还会生成一个平台无关的 Skill ZIP。各平台的安装和更新说明位于
-[`scene-creator/release/platforms`](scene-creator/release/platforms/)。
+正式安装和升级不构建、不上传 ZIP。PROD 流水线先创建精确 `skill/<version>` tag；客户端从
+返回的 `upgrade_source.git_url` 克隆该 tag，并分别使用仓库内 `codex/` 或 `claude-code/` 目录。
+各平台的安装和更新说明位于 [`scene-creator/release/platforms`](scene-creator/release/platforms/)。
 
 ## 版本与环境策略
 
@@ -86,12 +80,16 @@ uv run python scene-creator/release/build_platform_packages.py release \
    推送成功后由脚本幂等登记 Skill 版本。该流程不生成、不上传任何 ZIP 或其他制品。
 
 Codeup Flow 的受控配置源位于 `.yunxiao/scene-creator-skills.yml`。`QA校验` 自动执行且只校验
-当前版本；`PROD发布` 必须人工触发，并强制要求源分支为 `main`。PROD job 更新仓库版本并推回
-Codeup 后，才通过 HMAC 向 CN Max Hub 登记版本。`SCENE_SKILL_RELEASE_REGISTER_URL` 当前固定指向
+当前版本；`PROD发布` 必须人工触发，并强制要求源分支为 `main`。PROD prepare 会把唯一源、OpenAI
+元数据和两套插件模板统一渲染为国内生产 MCP `https://workflow-mcp.goalfyai.cn/mcp`，拒绝任何残留
+QA URL 或 QA 密钥说明，并验证该路由已进入鉴权层；未部署或仍返回 404/5xx 时禁止切版。PROD job
+更新仓库版本并推回 Codeup 后，才通过 HMAC 向 CN Max Hub 登记版本。`SCENE_SKILL_RELEASE_REGISTER_URL` 当前固定指向
 `https://goalfyhub.goalfyai.cn/api/internal/workflow/scene-skill-versions/releases/register`；流水线必须
 单独配置 `SCENE_SKILL_RELEASE_S2S_SECRET`，不得复用 GoalfyData Hub 的地址或密钥。
 
-禁止只升级版本而继续连接 QA，或者在正式安装包中保留 QA API 密钥获取说明。
+禁止只升级版本而继续连接 QA，或者在正式安装内容中保留 QA API 密钥获取说明。该流程不打包或
+分发制品；精确 `skill/<version>` Codeup tag 及仓库内 `codex/`、`claude-code/` 目录是唯一受控
+升级来源。required 策略只能在生产 MCP 路由、精确 tag 和平台更新说明都可用后开启。
 
 只有在不改变已发布内容、仅需恢复被删除或误改的生成文件时，才运行 `sync`：
 

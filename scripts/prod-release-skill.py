@@ -10,6 +10,7 @@ import json
 import os
 import sys
 import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -33,6 +34,11 @@ def parse_args() -> argparse.Namespace:
         "--register-only",
         action="store_true",
         help="register SCENE_SKILL_VERSION after the release commit is pushed",
+    )
+    actions.add_argument(
+        "--verify-runtime-only",
+        action="store_true",
+        help="verify that the CN PROD MCP route reaches its authentication layer",
     )
     return parser.parse_args()
 
@@ -73,6 +79,35 @@ def register_release(version: str) -> None:
             raise RuntimeError(f"release registration failed: HTTP {response.status}")
 
 
+def verify_prod_runtime(root: Path) -> None:
+    sys.path.insert(0, str(root / "scene-creator/release"))
+    from build_platform_packages import PROD_MCP_ENDPOINT, assert_prod_runtime
+
+    assert_prod_runtime(root / "scene-creator")
+    request = urllib.request.Request(
+        PROD_MCP_ENDPOINT,
+        method="GET",
+        headers={"Accept": "application/json, text/event-stream"},
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=15) as response:
+            status = response.status
+            runtime = response.headers.get("X-Scene-Skill-Runtime", "")
+    except urllib.error.HTTPError as exc:
+        status = exc.code
+        runtime = exc.headers.get("X-Scene-Skill-Runtime", "")
+    except urllib.error.URLError as exc:
+        raise RuntimeError("CN PROD scene-creator MCP route is unreachable") from exc
+    if status not in (401, 403):
+        raise RuntimeError(
+            f"CN PROD scene-creator MCP route is not ready: expected auth rejection, got HTTP {status}"
+        )
+    if runtime != "cn-prod":
+        raise RuntimeError(
+            "CN PROD scene-creator MCP is not connected to the CN PROD Max Hub"
+        )
+
+
 def main() -> int:
     args = parse_args()
     if os.environ.get("DEPLOY_ENV", "").strip().lower() != "prod":
@@ -81,6 +116,9 @@ def main() -> int:
     if args.prepare_only:
         version = prepare_release(root)
         print(f"SCENE_SKILL_VERSION={version}")
+    elif args.verify_runtime_only:
+        verify_prod_runtime(root)
+        print("CN PROD scene-creator MCP route is ready")
     else:
         version = required_env("SCENE_SKILL_VERSION")
         register_release(version)

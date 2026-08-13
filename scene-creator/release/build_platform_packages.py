@@ -25,7 +25,8 @@ PLATFORM_SOURCE_RELATIVE_PATH = Path("release/platforms")
 PLATFORM_VERSION_TOKEN = "__SCENE_CREATOR_VERSION__"
 PLATFORM_NAMES = ("codex", "claude-code")
 QA_MCP_ENDPOINT = "https://workflow-mcp.qa.goalfyai.com/mcp"
-REVIEWED_MCP_ENDPOINT = QA_MCP_ENDPOINT
+PROD_MCP_ENDPOINT = "https://workflow-mcp.goalfyai.cn/mcp"
+ALLOWED_MCP_ENDPOINTS = {QA_MCP_ENDPOINT, PROD_MCP_ENDPOINT}
 DATA_SKILL_VERSION_RE = re.compile(r"^v\d{8}-[0-9a-f]{6}$")
 LEGACY_SKILL_VERSION_RE = re.compile(r"^v\d+\.\d+\.\d+$")
 SKILL_VERSION_RE = re.compile(
@@ -65,6 +66,7 @@ MANIFEST_KEYS = {
     "skill_name",
     "version",
     "package_version",
+    "mcp_endpoint",
     "released_at",
     "update_reason",
     "source_files",
@@ -104,6 +106,17 @@ def _platform_source_root(skill_root: Path) -> Path:
 
 def _repository_root(skill_root: Path) -> Path:
     return skill_root.resolve().parent
+
+
+def _prod_runtime_paths(skill_root: Path) -> list[Path]:
+    repository_readme = _repository_root(skill_root) / "README.md"
+    if not repository_readme.is_file():
+        raise ReleaseError(f"缺少仓库安装说明：{repository_readme}")
+    return [
+        *discover_source_files(skill_root),
+        *discover_platform_source_files(skill_root),
+        repository_readme,
+    ]
 
 
 def discover_platform_source_files(skill_root: Path) -> list[Path]:
@@ -171,6 +184,21 @@ def _load_yaml_mapping(content: str, label: str) -> dict[str, Any]:
     if not isinstance(data, dict):
         raise ReleaseError(f"{label} 必须是 YAML 对象")
     return data
+
+
+def _configured_mcp_endpoint(skill_root: Path) -> str:
+    metadata = _load_yaml_mapping(
+        (skill_root / OPENAI_METADATA_RELATIVE_PATH).read_text(encoding="utf-8"),
+        "agents/openai.yaml",
+    )
+    dependencies = metadata.get("dependencies")
+    tools = dependencies.get("tools") if isinstance(dependencies, dict) else None
+    if not isinstance(tools, list) or len(tools) != 1 or not isinstance(tools[0], dict):
+        raise ReleaseError("agents/openai.yaml 必须声明唯一的 scene-creator MCP 依赖")
+    endpoint = tools[0].get("url")
+    if endpoint not in ALLOWED_MCP_ENDPOINTS:
+        raise ReleaseError("agents/openai.yaml 必须使用经过审查的 QA 或国内生产 MCP 地址")
+    return endpoint
 
 
 def validate_skill_metadata(skill_root: Path) -> None:
@@ -244,7 +272,7 @@ def validate_skill_metadata(skill_root: Path) -> None:
         "type": "mcp",
         "value": "scene-creator",
         "transport": "streamable_http",
-        "url": REVIEWED_MCP_ENDPOINT,
+        "url": _configured_mcp_endpoint(skill_root),
         "bearer_token_env_var": "SCENE_CREATOR_API_KEY",
     }
     if dependency != expected_dependency:
@@ -254,6 +282,7 @@ def validate_skill_metadata(skill_root: Path) -> None:
 def validate_platform_sources(skill_root: Path) -> None:
     """校验插件模板和共用的远程 MCP 安全契约。"""
     platform_root = _platform_source_root(skill_root.resolve())
+    expected_endpoint = _configured_mcp_endpoint(skill_root)
     discover_platform_source_files(skill_root)
     for platform in PLATFORM_NAMES:
         source_root = platform_root / platform
@@ -278,7 +307,7 @@ def validate_platform_sources(skill_root: Path) -> None:
 
         mcp = json.loads((source_root / ".mcp.json").read_text(encoding="utf-8"))
         server = (mcp.get("mcpServers") or {}).get("scene-creator") or {}
-        if server.get("url") != REVIEWED_MCP_ENDPOINT:
+        if server.get("url") != expected_endpoint:
             raise ReleaseError(f"{platform} MCP 必须使用经过审查的环境地址")
         serialized = json.dumps(server, ensure_ascii=False)
         if "SCENE_CREATOR_API_KEY" not in serialized:
@@ -436,6 +465,8 @@ def check_release(skill_root: Path, *, check_direct_install: bool = True) -> dic
     skill_version = _validate_skill_version(manifest["version"])
     package_version = manifest["package_version"]
     _validate_package_version(package_version)
+    if manifest["mcp_endpoint"] != _configured_mcp_endpoint(skill_root):
+        raise ReleaseError("skill-release.json.mcp_endpoint 与当前 Skill MCP 环境不一致")
     if _current_skill_version(skill_root) != skill_version:
         raise ReleaseError("SKILL.md 标记必须等于 skill-release.json.version")
     repository_package_version = _repository_package_version(skill_root)
@@ -523,6 +554,7 @@ def release(
         "skill_name": SKILL_NAME,
         "version": skill_version,
         "package_version": package_version,
+        "mcp_endpoint": _configured_mcp_endpoint(skill_root),
         "released_at": datetime.now(timezone.utc)
         .isoformat(timespec="seconds")
         .replace("+00:00", "Z"),
@@ -807,6 +839,47 @@ def generate_prod_version(
     return f"v{instant.astimezone(timezone.utc):%Y%m%d}-{suffix}"
 
 
+def render_prod_runtime(skill_root: Path) -> None:
+    """把唯一源和平台模板切到国内生产；生成目录随后统一重建。"""
+    skill_root = skill_root.resolve()
+    replacements = {
+        QA_MCP_ENDPOINT: PROD_MCP_ENDPOINT,
+        "GoalfyMax QA 后端": "GoalfyMax 国内生产后端",
+        "GoalfyMax QA 个人 API 密钥": "GoalfyMax 国内生产个人 API 密钥",
+        "GoalfyMax QA 的": "GoalfyMax 国内生产环境（https://goalfymax.goalfyai.cn）的",
+        "登录 GoalfyMax QA": "登录 GoalfyMax 国内生产环境（https://goalfymax.goalfyai.cn）",
+        "当前连接美国 QA 环境": "当前连接国内生产环境",
+        "在 GoalfyMax QA 中": "在 GoalfyMax 国内生产环境（https://goalfymax.goalfyai.cn）中",
+        "完整的 QA 个人 API 密钥": "完整的国内生产个人 API 密钥",
+        "QA 部署尚未提供": "国内生产部署尚未提供",
+        "GoalfyMax QA": "GoalfyMax 国内生产环境（https://goalfymax.goalfyai.cn）",
+    }
+    paths = _prod_runtime_paths(skill_root)
+    for path in paths:
+        original = path.read_text(encoding="utf-8")
+        updated = original
+        for old, new in replacements.items():
+            updated = updated.replace(old, new)
+        if updated != original:
+            path.write_text(updated, encoding="utf-8")
+
+
+def assert_prod_runtime(skill_root: Path) -> None:
+    """PROD 切版必须只包含国内生产 MCP 和生产密钥说明。"""
+    skill_root = skill_root.resolve()
+    if _configured_mcp_endpoint(skill_root) != PROD_MCP_ENDPOINT:
+        raise ReleaseError("PROD Skill 未连接国内生产 MCP")
+    paths = _prod_runtime_paths(skill_root)
+    forbidden = (QA_MCP_ENDPOINT, "GoalfyMax QA", "QA 个人 API 密钥")
+    stale: list[str] = []
+    for path in paths:
+        content = path.read_text(encoding="utf-8")
+        if any(value in content for value in forbidden):
+            stale.append(str(path.relative_to(skill_root)))
+    if stale:
+        raise ReleaseError(f"PROD Skill 仍包含 QA 安装配置：{sorted(stale)}")
+
+
 def release_prod_source(
     skill_root: Path,
     reason: str,
@@ -820,6 +893,11 @@ def release_prod_source(
     version = generate_prod_version(now, random_hex=random_hex)
     package_version = _next_patch(manifest["package_version"])
     skill_file = skill_root / "SKILL.md"
+    rollback = {
+        path: path.read_bytes()
+        for path in _prod_runtime_paths(skill_root)
+    }
+    render_prod_runtime(skill_root)
     original = skill_file.read_text(encoding="utf-8")
     updated, count = SKILL_VERSION_RE.subn(f"[skill-version:{version}]", original, count=1)
     if count != 1:
@@ -833,8 +911,10 @@ def release_prod_source(
             skill_version=version,
             allow_package_bump=True,
         )
+        assert_prod_runtime(skill_root)
     except Exception:
-        skill_file.write_text(original, encoding="utf-8")
+        for path, content in rollback.items():
+            path.write_bytes(content)
         raise
     return version
 
