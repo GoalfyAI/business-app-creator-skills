@@ -36,6 +36,10 @@ REQUIRED_SKILL_KEYWORDS = {
     "业务界面",
     "GoalfyMax",
     "MCP",
+    "business archive",
+    "业务档案",
+    "personalized routes",
+    "个性化选路",
 }
 DIRECT_MARKETPLACE_PATHS = {
     "codex": Path(".agents/plugins/marketplace.json"),
