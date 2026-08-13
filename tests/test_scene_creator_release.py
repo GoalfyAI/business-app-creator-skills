@@ -1,10 +1,12 @@
 import importlib.util
 import json
+import re
 import shutil
 import zipfile
 from pathlib import Path
 
 import pytest
+import tomllib
 import yaml
 
 ROOT = Path(__file__).parents[1]
@@ -24,15 +26,25 @@ def _copy_skill(tmp_path: Path) -> Path:
     return copied
 
 
+def _copy_repository_metadata(tmp_path: Path) -> None:
+    shutil.copy2(ROOT / "pyproject.toml", tmp_path / "pyproject.toml")
+    shutil.copy2(ROOT / "uv.lock", tmp_path / "uv.lock")
+
+
 def _manifest(skill_root: Path = SKILL_ROOT) -> dict:
     return json.loads((skill_root / "release" / "skill-release.json").read_text(encoding="utf-8"))
+
+
+def _package_version(skill_root: Path = SKILL_ROOT) -> str:
+    return _manifest(skill_root)["package_version"]
 
 
 def test_checked_in_scene_creator_release_is_current():
     manifest = release_module.check_release(SKILL_ROOT)
 
     assert manifest["skill_name"] == "scene-creator"
-    assert manifest["version"] == "1.0.0"
+    assert release_module._validate_skill_version(manifest["version"]) == manifest["version"]
+    assert release_module._validate_package_version(manifest["package_version"])
 
 
 def test_skill_source_change_requires_a_new_release(tmp_path: Path):
@@ -65,11 +77,11 @@ def test_release_updates_manifest_and_generates_direct_marketplaces(tmp_path: Pa
     copied = _copy_skill(tmp_path)
     new_reference = copied / "references" / "new-rule.md"
     new_reference.write_text("# New rule\n", encoding="utf-8")
-    fixed_version = release_module.QA_FIXED_VERSION
+    fixed_version = _manifest()["package_version"]
 
     manifest = release_module.release(copied, fixed_version, "Add one tested rule")
 
-    assert manifest["version"] == fixed_version
+    assert manifest["package_version"] == fixed_version
     assert "references/new-rule.md" in manifest["source_files"]
     assert "codex/AGENTS.md" in manifest["platform_source_files"]
     assert "claude-code/.mcp.json" in manifest["platform_source_files"]
@@ -95,8 +107,8 @@ def test_checked_in_direct_marketplaces_are_current():
     )
     assert codex_marketplace["plugins"][0]["source"] == "./codex"
     assert claude_marketplace["plugins"][0]["source"] == "./claude-code"
-    assert codex_marketplace["plugins"][0]["version"] == manifest["version"]
-    assert claude_marketplace["plugins"][0]["version"] == manifest["version"]
+    assert codex_marketplace["plugins"][0]["version"] == manifest["package_version"]
+    assert claude_marketplace["plugins"][0]["version"] == manifest["package_version"]
     for marketplace in (codex_marketplace, claude_marketplace):
         assert len(marketplace["description"]) >= 100
         assert "线上资产复用" in marketplace["description"]
@@ -106,29 +118,49 @@ def test_checked_in_direct_marketplaces_are_current():
         assert len(marketplace["plugins"][0]["description"]) >= 80
 
 
-def test_qa_release_rejects_version_bump(tmp_path: Path):
+def test_non_prod_release_rejects_package_version_bump(tmp_path: Path):
     copied = _copy_skill(tmp_path)
+    bumped = release_module._next_patch(_package_version(copied))
 
-    with pytest.raises(release_module.ReleaseError, match="QA 阶段版本固定为 1.0.0"):
-        release_module.release(copied, "1.0.1", "不允许提前升级")
+    with pytest.raises(release_module.ReleaseError, match="只有 PROD"):
+        release_module.release(copied, bumped, "不允许提前升级")
 
 
-def test_prod_version_uses_utc_date_and_git_sha():
+def test_non_prod_release_rejects_skill_version_change(tmp_path: Path):
+    copied = _copy_skill(tmp_path)
+    with pytest.raises(release_module.ReleaseError, match="只有 PROD"):
+        release_module.release(
+            copied,
+            _package_version(copied),
+            "不允许提前切换 Skill 版本",
+            skill_version="v20260813-a1b2c3",
+        )
+
+
+def test_prod_version_matches_goalfydata_date_and_random_hex_format():
     fixed = release_module.datetime(2026, 8, 12, 3, 4, tzinfo=release_module.timezone.utc)
-    assert release_module.generate_prod_version("A1B2C3D4", fixed) == "v20260812-a1b2c3"
+    assert release_module.generate_prod_version(fixed, random_hex="a1b2c3") == "v20260812-a1b2c3"
 
 
-def test_prod_version_rejects_non_git_sha():
-    with pytest.raises(release_module.ReleaseError, match="Git SHA"):
-        release_module.generate_prod_version("not-a-sha")
+def test_prod_version_rejects_invalid_random_hex():
+    with pytest.raises(release_module.ReleaseError, match="6 位小写 hex"):
+        release_module.generate_prod_version(random_hex="NOTHEX")
 
 
 def test_prod_release_updates_repository_copies_without_building_packages(tmp_path: Path):
     copied = _copy_skill(tmp_path)
+    _copy_repository_metadata(tmp_path)
     release_module.sync_direct_install_tree(copied, _manifest(copied))
-    version = release_module.release_prod_source(copied, "a1b2c3d4", "PROD release")
+    expected_package_version = release_module._next_patch(_package_version(copied))
+    fixed = release_module.datetime(2026, 8, 13, 3, 4, tzinfo=release_module.timezone.utc)
+    version = release_module.release_prod_source(
+        copied,
+        "PROD release",
+        now=fixed,
+        random_hex="a1b2c3",
+    )
 
-    assert version.startswith("v") and version.endswith("-a1b2c3")
+    assert version == "v20260813-a1b2c3"
     assert f"[skill-version:{version}]" in (copied / "SKILL.md").read_text()
     repository_root = copied.parent
     assert f"[skill-version:{version}]" in (
@@ -137,6 +169,29 @@ def test_prod_release_updates_repository_copies_without_building_packages(tmp_pa
     assert f"[skill-version:{version}]" in (
         repository_root / "claude-code/skills/scene-creator/SKILL.md"
     ).read_text()
+    manifest = _manifest(copied)
+    assert manifest["version"] == version
+    assert manifest["package_version"] == expected_package_version
+    for path in (
+        repository_root / ".agents/plugins/marketplace.json",
+        repository_root / ".claude-plugin/marketplace.json",
+        repository_root / "codex/.codex-plugin/plugin.json",
+        repository_root / "claude-code/.claude-plugin/plugin.json",
+    ):
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        actual_version = (
+            payload["plugins"][0]["version"]
+            if path.name == "marketplace.json"
+            else payload["version"]
+        )
+        assert actual_version == expected_package_version
+    pyproject = tomllib.loads((repository_root / "pyproject.toml").read_text())
+    assert pyproject["project"]["version"] == expected_package_version
+    lock_match = re.search(
+        r'(?ms)^\[\[package\]\]\nname = "scene-creator-skills"\nversion = "([^"]+)"',
+        (repository_root / "uv.lock").read_text(),
+    )
+    assert lock_match and lock_match.group(1) == expected_package_version
     assert not (repository_root / "dist").exists()
 
 
@@ -161,12 +216,33 @@ def test_direct_marketplaces_share_the_canonical_skill():
     assert not (repository_root / "claude-code/skills/scene-creator/agents").exists()
 
 
+def test_checked_in_first_party_package_versions_are_synchronized():
+    repository_root = SKILL_ROOT.parent
+    expected = _package_version()
+    for path in (
+        repository_root / ".agents/plugins/marketplace.json",
+        repository_root / ".claude-plugin/marketplace.json",
+        repository_root / "codex/.codex-plugin/plugin.json",
+        repository_root / "claude-code/.claude-plugin/plugin.json",
+    ):
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        actual = (
+            payload["plugins"][0]["version"]
+            if path.name == "marketplace.json"
+            else payload["version"]
+        )
+        assert actual == expected, path
+    pyproject = tomllib.loads((repository_root / "pyproject.toml").read_text())
+    assert pyproject["project"]["version"] == expected
+    assert release_module._repository_package_version(SKILL_ROOT) == expected
+
+
 def test_release_rejects_invalid_skill_frontmatter(tmp_path: Path):
     copied = _copy_skill(tmp_path)
     (copied / "SKILL.md").write_text("# Missing frontmatter\n", encoding="utf-8")
 
     with pytest.raises(release_module.ReleaseError, match="frontmatter"):
-        release_module.release(copied, release_module.QA_FIXED_VERSION, "Invalid metadata")
+        release_module.release(copied, _package_version(copied), "Invalid metadata")
 
 
 def test_release_rejects_missing_skill_keywords(tmp_path: Path):
@@ -182,7 +258,7 @@ def test_release_rejects_missing_skill_keywords(tmp_path: Path):
     )
 
     with pytest.raises(release_module.ReleaseError, match="keywords"):
-        release_module.release(copied, release_module.QA_FIXED_VERSION, "Missing keywords")
+        release_module.release(copied, _package_version(copied), "Missing keywords")
 
 
 def test_release_rejects_missing_skill_version_marker(tmp_path: Path):
@@ -195,13 +271,13 @@ def test_release_rejects_missing_skill_version_marker(tmp_path: Path):
     skill_file.write_text(content, encoding="utf-8")
 
     with pytest.raises(release_module.ReleaseError, match="skill-version"):
-        release_module.release(copied, release_module.QA_FIXED_VERSION, "Missing version marker")
+        release_module.release(copied, _package_version(copied), "Missing version marker")
 
 
 def test_missing_marker_contract_still_runs_after_prod_prepare(tmp_path: Path):
     copied = _copy_skill(tmp_path)
     release_module.sync_direct_install_tree(copied, _manifest(copied))
-    release_module.release_prod_source(copied, "a1b2c3d4", "PROD release")
+    release_module.release_prod_source(copied, "PROD release", random_hex="a1b2c3")
 
     skill_file = copied / "SKILL.md"
     content, count = release_module.SKILL_VERSION_RE.subn(
@@ -211,13 +287,17 @@ def test_missing_marker_contract_still_runs_after_prod_prepare(tmp_path: Path):
     skill_file.write_text(content, encoding="utf-8")
 
     with pytest.raises(release_module.ReleaseError, match="skill-version"):
-        release_module.release(copied, release_module.QA_FIXED_VERSION, "Missing marker")
+        release_module.release(copied, _package_version(copied), "Missing marker")
 
 
 def test_prod_pipeline_preserves_release_notes_for_hub_registration():
     pipeline = PIPELINE_PATH.read_text(encoding="utf-8")
 
     assert 'echo "SCENE_SKILL_RELEASE_NOTES=${CI_COMMIT_TITLE}" >> $FLOW_ENV' in pipeline
+    assert (
+        "git add scene-creator codex claude-code .agents .claude-plugin pyproject.toml uv.lock"
+        in pipeline
+    )
     register_step = pipeline.split("step_register:", 1)[1]
     assert 'SCENE_SKILL_RELEASE_NOTES="${SCENE_SKILL_RELEASE_NOTES}"' in register_step
 
@@ -234,7 +314,7 @@ def test_release_rejects_invalid_openai_metadata(tmp_path: Path):
     )
 
     with pytest.raises(release_module.ReleaseError, match="default_prompt"):
-        release_module.release(copied, release_module.QA_FIXED_VERSION, "Invalid metadata")
+        release_module.release(copied, _package_version(copied), "Invalid metadata")
 
 
 def test_release_rejects_missing_openai_mcp_dependency(tmp_path: Path):
@@ -251,7 +331,7 @@ def test_release_rejects_missing_openai_mcp_dependency(tmp_path: Path):
     )
 
     with pytest.raises(release_module.ReleaseError, match="MCP 依赖"):
-        release_module.release(copied, release_module.QA_FIXED_VERSION, "Invalid dependency")
+        release_module.release(copied, _package_version(copied), "Invalid dependency")
 
 
 def test_release_rejects_hidden_or_unsupported_source_files(tmp_path: Path):
@@ -259,7 +339,7 @@ def test_release_rejects_hidden_or_unsupported_source_files(tmp_path: Path):
     (copied / "references" / ".env").write_text("SECRET=value\n", encoding="utf-8")
 
     with pytest.raises(release_module.ReleaseError, match="不支持的 Skill 隐藏文件"):
-        release_module.release(copied, release_module.QA_FIXED_VERSION, "Unsafe source")
+        release_module.release(copied, _package_version(copied), "Unsafe source")
 
 
 def test_release_rejects_unlisted_skill_resource_directories(tmp_path: Path):
@@ -269,12 +349,12 @@ def test_release_rejects_unlisted_skill_resource_directories(tmp_path: Path):
     (scripts / "unlisted.py").write_text("print('not packaged')\n", encoding="utf-8")
 
     with pytest.raises(release_module.ReleaseError, match="不支持的 Skill 文件"):
-        release_module.release(copied, release_module.QA_FIXED_VERSION, "Unlisted resource")
+        release_module.release(copied, _package_version(copied), "Unlisted resource")
 
 
 def test_platform_packages_share_one_source_and_exclude_release_files(tmp_path: Path):
     output_dir = tmp_path / "dist"
-    version = _manifest()["version"]
+    version = _package_version()
     outputs = release_module.build_packages(SKILL_ROOT, output_dir)
     archives = {path.name: path for path in outputs}
 

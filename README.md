@@ -72,15 +72,18 @@ uv run python scene-creator/release/build_platform_packages.py release \
 ```
 
 正式上线时必须作为一次完整变更同时完成。版本号仅由 PROD 流水线执行
-`scripts/prod-release-skill.py` 自动生成，格式为 `vYYYYMMDD-<Git SHA 前 6 位>`；QA、PRE、
+`scripts/prod-release-skill.py` 自动生成，格式与 GoalfyData 一致，为
+`vYYYYMMDD-<6 位随机 hex>`；QA、PRE、
 普通合并和手工构建都不得更新版本号。脚本在 `DEPLOY_ENV` 不是 `prod` 时会直接拒绝执行。
 
-1. 在 PROD 流水线注入 `CI_COMMIT_SHA`、`SCENE_SKILL_RELEASE_S2S_SECRET`、
+1. 在 PROD 流水线注入 `SCENE_SKILL_RELEASE_S2S_SECRET`、
    `SCENE_SKILL_RELEASE_REGISTER_URL`，并在手工 PROD job 执行该脚本；
 
 2. 将 Codex 和 Claude Code 的 MCP 配置切换到正式环境地址；
 3. 将全部安装说明中的 API 密钥获取入口由 GoalfyMax QA 改为 GoalfyMax 线上环境；
-4. PROD job 更新仓库中的 Skill 版本标记、发布清单和直接安装副本，提交并 tag；推送成功后由脚本幂等登记版本。该流程不生成、不上传任何 ZIP 或其他制品。
+4. PROD job 更新仓库中的 Skill 版本标记，统一提升两份 marketplace、两份插件 manifest、
+   `pyproject.toml` 与 `uv.lock` 的 package patch，刷新发布清单和直接安装副本，提交并 tag；
+   推送成功后由脚本幂等登记 Skill 版本。该流程不生成、不上传任何 ZIP 或其他制品。
 
 Codeup Flow 的受控配置源位于 `.yunxiao/scene-creator-skills.yml`。`QA校验` 自动执行且只校验
 当前版本；`PROD发布` 必须人工触发，并强制要求源分支为 `main`。PROD job 更新仓库版本并推回

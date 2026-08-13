@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import re
+import secrets
 import shutil
 import sys
 import zipfile
@@ -25,8 +26,8 @@ PLATFORM_VERSION_TOKEN = "__SCENE_CREATOR_VERSION__"
 PLATFORM_NAMES = ("codex", "claude-code")
 QA_MCP_ENDPOINT = "https://workflow-mcp.qa.goalfyai.com/mcp"
 REVIEWED_MCP_ENDPOINT = QA_MCP_ENDPOINT
-QA_FIXED_VERSION = "1.0.0"
-SKILL_VERSION_MARKER = f"[skill-version:v{QA_FIXED_VERSION}]"
+DATA_SKILL_VERSION_RE = re.compile(r"^v\d{8}-[0-9a-f]{6}$")
+LEGACY_SKILL_VERSION_RE = re.compile(r"^v\d+\.\d+\.\d+$")
 SKILL_VERSION_RE = re.compile(
     r"\[skill-version:(v(?:\d+\.\d+\.\d+|\d{8}-[0-9a-f]{6}))\]"
 )
@@ -63,6 +64,7 @@ PLATFORM_FILES = {
 MANIFEST_KEYS = {
     "skill_name",
     "version",
+    "package_version",
     "released_at",
     "update_reason",
     "source_files",
@@ -325,17 +327,87 @@ def _load_manifest(skill_root: Path) -> dict[str, Any]:
     return data
 
 
-def _validate_version(version: Any) -> tuple[int, int, int]:
+def _validate_package_version(version: Any) -> tuple[int, int, int]:
     if not isinstance(version, str) or not SEMVER_RE.fullmatch(version):
         raise ReleaseError("版本号必须使用 MAJOR.MINOR.PATCH 格式")
     return tuple(int(part) for part in version.split("."))  # type: ignore[return-value]
 
 
-def _validate_environment_version(version: str) -> None:
-    if REVIEWED_MCP_ENDPOINT == QA_MCP_ENDPOINT and version != QA_FIXED_VERSION:
-        raise ReleaseError(
-            f"QA 阶段版本固定为 {QA_FIXED_VERSION}；切换正式 MCP 地址和线上 API Key 获取说明后才能升级版本"
-        )
+def _validate_skill_version(version: Any) -> str:
+    if not isinstance(version, str) or not (
+        DATA_SKILL_VERSION_RE.fullmatch(version) or LEGACY_SKILL_VERSION_RE.fullmatch(version)
+    ):
+        raise ReleaseError("Skill 版本必须使用 vYYYYMMDD-6位小写hex；仅兼容初始 vMAJOR.MINOR.PATCH")
+    return version
+
+
+def _next_patch(version: str) -> str:
+    major, minor, patch = _validate_package_version(version)
+    return f"{major}.{minor}.{patch + 1}"
+
+
+def _current_skill_version(skill_root: Path) -> str:
+    content = (skill_root / "SKILL.md").read_text(encoding="utf-8")
+    markers = SKILL_VERSION_RE.findall(content)
+    if len(markers) != 1:
+        raise ReleaseError("SKILL.md 必须且只能包含一个有效 skill-version 标记")
+    return _validate_skill_version(markers[0])
+
+
+def _repository_package_version(skill_root: Path) -> str | None:
+    repository_root = _repository_root(skill_root)
+    pyproject = repository_root / "pyproject.toml"
+    lockfile = repository_root / "uv.lock"
+    if not pyproject.exists() and not lockfile.exists():
+        return None
+    if not pyproject.is_file() or not lockfile.is_file():
+        raise ReleaseError("仓库 package version 要求 pyproject.toml 与 uv.lock 同时存在")
+
+    project_match = re.search(
+        r"(?ms)^\[project\]\n.*?^version = \"([^\"]+)\"",
+        pyproject.read_text(encoding="utf-8"),
+    )
+    lock_match = re.search(
+        rf'(?ms)^\[\[package\]\]\nname = "{re.escape("scene-creator-skills")}"\nversion = "([^"]+)"',
+        lockfile.read_text(encoding="utf-8"),
+    )
+    if not project_match or not lock_match:
+        raise ReleaseError("无法读取仓库自身的 package version")
+    project_version = project_match.group(1)
+    lock_version = lock_match.group(1)
+    _validate_package_version(project_version)
+    _validate_package_version(lock_version)
+    if project_version != lock_version:
+        raise ReleaseError("pyproject.toml 与 uv.lock 的仓库 package version 不一致")
+    return project_version
+
+
+def _sync_repository_package_version(skill_root: Path, version: str) -> None:
+    repository_root = _repository_root(skill_root)
+    pyproject = repository_root / "pyproject.toml"
+    lockfile = repository_root / "uv.lock"
+    if not pyproject.exists() and not lockfile.exists():
+        return
+    if not pyproject.is_file() or not lockfile.is_file():
+        raise ReleaseError("仓库 package version 要求 pyproject.toml 与 uv.lock 同时存在")
+    _validate_package_version(version)
+
+    pyproject_text, project_count = re.subn(
+        r'(?ms)^(\[project\]\n.*?^version = ")[^"]+("$)',
+        rf"\g<1>{version}\g<2>",
+        pyproject.read_text(encoding="utf-8"),
+        count=1,
+    )
+    lock_text, lock_count = re.subn(
+        rf'(?ms)^(\[\[package\]\]\nname = "{re.escape("scene-creator-skills")}"\nversion = ")[^"]+("$)',
+        rf"\g<1>{version}\g<2>",
+        lockfile.read_text(encoding="utf-8"),
+        count=1,
+    )
+    if project_count != 1 or lock_count != 1:
+        raise ReleaseError("仓库 package version 必须且只能各更新一次")
+    pyproject.write_text(pyproject_text, encoding="utf-8")
+    lockfile.write_text(lock_text, encoding="utf-8")
 
 
 def _validate_released_at(value: Any) -> None:
@@ -361,8 +433,14 @@ def check_release(skill_root: Path, *, check_direct_install: bool = True) -> dic
         raise ReleaseError(f"发布清单字段不一致：缺少={missing}，多出={extra}")
     if manifest["skill_name"] != SKILL_NAME:
         raise ReleaseError(f"skill_name 必须是 {SKILL_NAME!r}")
-    _validate_version(manifest["version"])
-    _validate_environment_version(manifest["version"])
+    skill_version = _validate_skill_version(manifest["version"])
+    package_version = manifest["package_version"]
+    _validate_package_version(package_version)
+    if _current_skill_version(skill_root) != skill_version:
+        raise ReleaseError("SKILL.md 标记必须等于 skill-release.json.version")
+    repository_package_version = _repository_package_version(skill_root)
+    if repository_package_version is not None and repository_package_version != package_version:
+        raise ReleaseError("仓库 package version 必须等于 skill-release.json.package_version")
     _validate_released_at(manifest["released_at"])
 
     reason = manifest["update_reason"]
@@ -406,13 +484,20 @@ def check_release(skill_root: Path, *, check_direct_install: bool = True) -> dic
     return manifest
 
 
-def release(skill_root: Path, version: str, reason: str) -> dict[str, Any]:
+def release(
+    skill_root: Path,
+    package_version: str,
+    reason: str,
+    *,
+    skill_version: str | None = None,
+    allow_package_bump: bool = False,
+) -> dict[str, Any]:
     """写入新的明确版本发布清单，不执行 Git 操作。"""
     skill_root = skill_root.resolve()
     validate_skill_metadata(skill_root)
     validate_platform_sources(skill_root)
-    new_version = _validate_version(version)
-    _validate_environment_version(version)
+    _validate_package_version(package_version)
+    skill_version = _validate_skill_version(skill_version or _current_skill_version(skill_root))
     reason = reason.strip()
     if not reason or len(reason) > 1024:
         raise ReleaseError("update_reason 必须包含 1～1024 个字符")
@@ -420,16 +505,24 @@ def release(skill_root: Path, version: str, reason: str) -> dict[str, Any]:
     manifest_path = _manifest_path(skill_root)
     if manifest_path.exists():
         current = _load_manifest(skill_root)
-        current_version = _validate_version(current.get("version"))
-        if REVIEWED_MCP_ENDPOINT != QA_MCP_ENDPOINT and new_version <= current_version:
-            raise ReleaseError(f"新版本 {version} 必须大于当前版本 {current['version']}")
+        current_package_version = current.get("package_version", current.get("version"))
+        _validate_package_version(current_package_version)
+        if skill_version != current.get("version") and not allow_package_bump:
+            raise ReleaseError("只有 PROD 发布可以更新 Skill version")
+        if package_version != current_package_version and not allow_package_bump:
+            raise ReleaseError("只有 PROD 发布可以提升 package version")
+        if allow_package_bump and package_version != _next_patch(current_package_version):
+            raise ReleaseError("PROD 发布必须把所有插件 package version 统一提升一个 patch")
+        if allow_package_bump and not DATA_SKILL_VERSION_RE.fullmatch(skill_version):
+            raise ReleaseError("PROD Skill version 必须使用 vYYYYMMDD-6位小写hex")
 
     files = discover_source_files(skill_root)
     platform_root = _platform_source_root(skill_root)
     platform_files = discover_platform_source_files(skill_root)
     manifest = {
         "skill_name": SKILL_NAME,
-        "version": version,
+        "version": skill_version,
+        "package_version": package_version,
         "released_at": datetime.now(timezone.utc)
         .isoformat(timespec="seconds")
         .replace("+00:00", "Z"),
@@ -449,6 +542,7 @@ def release(skill_root: Path, version: str, reason: str) -> dict[str, Any]:
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
     temporary_path.replace(manifest_path)
+    _sync_repository_package_version(skill_root, package_version)
     sync_direct_install_tree(skill_root, manifest)
     return check_release(skill_root)
 
@@ -550,7 +644,7 @@ def _direct_marketplace(platform: str, version: str) -> bytes:
 
 def _direct_install_files(skill_root: Path, manifest: dict[str, Any]) -> dict[Path, bytes]:
     """根据唯一 Skill 源文件渲染需要提交到仓库的插件市场目录。"""
-    version = manifest["version"]
+    version = manifest["package_version"]
     platform_root = _platform_source_root(skill_root)
     common_files = [
         path
@@ -686,36 +780,45 @@ def build_packages(skill_root: Path, output_dir: Path) -> list[Path]:
     output_dir.mkdir(parents=True, exist_ok=True)
     outputs = []
     for platform in PLATFORM_NAMES:
-        output_path = output_dir / f"{SKILL_NAME}-{platform}-{manifest['version']}.zip"
+        output_path = output_dir / f"{SKILL_NAME}-{platform}-{manifest['package_version']}.zip"
         source_files = list(manifest["source_files"]) if platform == "codex" else common_files
         _write_platform_zip(
             output_path,
             skill_root,
             platform,
-            manifest["version"],
+            manifest["package_version"],
             source_files,
         )
         outputs.append(output_path)
-    generic_path = output_dir / f"{SKILL_NAME}-generic-{manifest['version']}.zip"
+    generic_path = output_dir / f"{SKILL_NAME}-generic-{manifest['package_version']}.zip"
     _write_zip(generic_path, skill_root, common_files)
     outputs.append(generic_path)
     return outputs
 
 
-def generate_prod_version(commit_sha: str, now: datetime | None = None) -> str:
-    """Build the immutable production marker from UTC date and Git SHA."""
-    commit_sha = commit_sha.strip().lower()
-    if not re.fullmatch(r"[0-9a-f]{6,64}", commit_sha):
-        raise ReleaseError("生产发布必须提供至少 6 位十六进制 Git SHA")
+def generate_prod_version(
+    now: datetime | None = None, *, random_hex: str | None = None
+) -> str:
+    """按 GoalfyData 规则生成 UTC 日期加 3 随机字节的生产版本。"""
     instant = now or datetime.now(timezone.utc)
-    return f"v{instant.astimezone(timezone.utc):%Y%m%d}-{commit_sha[:6]}"
+    suffix = random_hex or secrets.token_hex(3)
+    if not re.fullmatch(r"[0-9a-f]{6}", suffix):
+        raise ReleaseError("生产发布随机后缀必须是 6 位小写 hex")
+    return f"v{instant.astimezone(timezone.utc):%Y%m%d}-{suffix}"
 
 
-def release_prod_source(skill_root: Path, commit_sha: str, reason: str) -> str:
-    """Update the repository Skill marker during the manual PROD release only."""
+def release_prod_source(
+    skill_root: Path,
+    reason: str,
+    *,
+    now: datetime | None = None,
+    random_hex: str | None = None,
+) -> str:
+    """按 Data 规则更新 Skill 版本并统一提升所有一方 package version。"""
     skill_root = skill_root.resolve()
     manifest = check_release(skill_root)
-    version = generate_prod_version(commit_sha)
+    version = generate_prod_version(now, random_hex=random_hex)
+    package_version = _next_patch(manifest["package_version"])
     skill_file = skill_root / "SKILL.md"
     original = skill_file.read_text(encoding="utf-8")
     updated, count = SKILL_VERSION_RE.subn(f"[skill-version:{version}]", original, count=1)
@@ -723,9 +826,13 @@ def release_prod_source(skill_root: Path, commit_sha: str, reason: str) -> str:
         raise ReleaseError("SKILL.md 必须且只能更新一个 skill-version 标记")
     skill_file.write_text(updated, encoding="utf-8")
     try:
-        # Plugin semver remains independent. The repository commit is the Max
-        # delivery unit; this refreshes checksums and committed direct copies.
-        release(skill_root, manifest["version"], reason)
+        release(
+            skill_root,
+            package_version,
+            reason,
+            skill_version=version,
+            allow_package_bump=True,
+        )
     except Exception:
         skill_file.write_text(original, encoding="utf-8")
         raise
@@ -742,7 +849,7 @@ def _parser() -> argparse.ArgumentParser:
     release_parser.add_argument(
         "--version",
         required=True,
-        help=f"QA 阶段固定为 {QA_FIXED_VERSION}；正式上线后使用 MAJOR.MINOR.PATCH",
+        help="仓库当前 package version；只有 PROD 发布可以提升 patch",
     )
     release_parser.add_argument("--reason", required=True, help="发布原因")
 
@@ -757,7 +864,6 @@ def _parser() -> argparse.ArgumentParser:
     prod_parser = subparsers.add_parser(
         "prod-release", help="仅供 PROD 流水线更新仓库内版本标记；不生成安装包"
     )
-    prod_parser.add_argument("--commit-sha", required=True)
     prod_parser.add_argument("--reason", required=True)
     return parser
 
@@ -782,7 +888,7 @@ def main(argv: list[str] | None = None) -> int:
             for path in build_packages(skill_root, output_dir):
                 print(path)
         elif args.action == "prod-release":
-            version = release_prod_source(skill_root, args.commit_sha, args.reason)
+            version = release_prod_source(skill_root, args.reason)
             print(f"SCENE_SKILL_VERSION={version}")
         else:
             raise ReleaseError(f"不支持的动作：{args.action}")

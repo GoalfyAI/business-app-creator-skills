@@ -57,7 +57,7 @@ stages:
                 python3 -m uv run ruff check scene-creator/release/build_platform_packages.py scripts/prod-release-skill.py tests
                 python3 -m uv run pytest -q
                 python3 -m uv run python scene-creator/release/build_platform_packages.py check
-                if DEPLOY_ENV=qa CI_COMMIT_SHA=${RELEASE_SHA} scripts/prod-release-skill.py --prepare-only; then
+                if DEPLOY_ENV=qa scripts/prod-release-skill.py --prepare-only; then
                   echo "非 PROD 环境错误地更新了版本" >&2
                   exit 1
                 fi
@@ -88,7 +88,7 @@ stages:
                 python3 -m uv sync --group dev
                 git fetch origin main --depth=1 --force
                 test "$(git rev-parse origin/main)" = "${RELEASE_SHA}"
-                output=$(DEPLOY_ENV=prod CI_COMMIT_SHA=${RELEASE_SHA} SCENE_SKILL_RELEASE_NOTES="${CI_COMMIT_TITLE}" \
+                output=$(DEPLOY_ENV=prod SCENE_SKILL_RELEASE_NOTES="${CI_COMMIT_TITLE}" \
                   python3 -m uv run python scripts/prod-release-skill.py --prepare-only)
                 version=$(printf '%s\n' "${output}" | sed -n 's/^SCENE_SKILL_VERSION=//p')
                 test -n "${version}"
@@ -98,7 +98,7 @@ stages:
                 python3 -m uv run pytest -q
                 git config user.name "goalfymax-release-bot"
                 git config user.email "goalfymax-release-bot@goalfy.ai"
-                git add scene-creator codex claude-code .agents .claude-plugin
+                git add scene-creator codex claude-code .agents .claude-plugin pyproject.toml uv.lock
                 git commit -m "chore(skill): release ${version} [skip ci]"
                 git tag -a "skill/${version}" -m "${CI_COMMIT_TITLE}"
                 git push origin HEAD:main

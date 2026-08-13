@@ -1,6 +1,7 @@
 {
   "skill_name": "scene-creator",
-  "version": "1.0.0",
+  "version": "v1.0.0",
+  "package_version": "1.0.0",
   "released_at": "2026-08-13T02:51:32Z",
   "update_reason": "合并场景包多路线与业务档案个性化执行模型、上下文型 MCP 工具真实取样规则，并增加 Max 场景包助手版本上报与仅 PROD 自动更新逻辑",
   "source_files": [

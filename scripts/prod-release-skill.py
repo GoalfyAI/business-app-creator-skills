@@ -37,13 +37,12 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def prepare_release(root: Path, commit_sha: str) -> str:
+def prepare_release(root: Path) -> str:
     sys.path.insert(0, str(root / "scene-creator/release"))
     from build_platform_packages import release_prod_source
 
     return release_prod_source(
         root / "scene-creator",
-        commit_sha,
         os.environ.get("SCENE_SKILL_RELEASE_NOTES", "PROD pipeline release"),
     )
 
@@ -80,7 +79,7 @@ def main() -> int:
         raise RuntimeError("refusing to update scene skill version outside PROD")
     root = Path(__file__).resolve().parents[1]
     if args.prepare_only:
-        version = prepare_release(root, required_env("CI_COMMIT_SHA"))
+        version = prepare_release(root)
         print(f"SCENE_SKILL_VERSION={version}")
     else:
         version = required_env("SCENE_SKILL_VERSION")
