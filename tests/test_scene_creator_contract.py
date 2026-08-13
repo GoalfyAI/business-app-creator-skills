@@ -65,15 +65,16 @@ def test_external_skill_embeds_scene_package_domain_model_before_tool_procedure(
     assert "不要把 Max 内部“场景包助手”的整份系统提示词复制进本 Skill" in skill
 
     for required_model in (
-        "场景包不是一段长提示词、一个工具列表或一张配置表",
+        "场景包不是一段长提示词、一个工具列表、一张配置表",
         "### 3.3 Information Ownership and Single Source of Truth",
         "### 3.4 Choosing Workflow, TaskAgent, FastAgent, or Direct Execution",
         "Workflow",
         "普通任务点 / TaskAgent",
         "FastAgent",
-        "### 3.6 Runtime Scene Skill Quality",
-        "### 3.7 Evidence Chains for Creation, Diagnosis, and Optimization",
-        "### 3.8 Knowledge Boundaries",
+        "### 3.5 Route Diversity and Archive-Guided Execution",
+        "### 3.7 Runtime Scene Skill Quality",
+        "### 3.8 Evidence Chains for Creation, Diagnosis, and Optimization",
+        "### 3.9 Knowledge Boundaries",
     ):
         assert required_model in skill
 
@@ -239,6 +240,10 @@ def test_skill_has_platform_discovery_metadata_and_data_style_sections():
         "业务界面",
         "GoalfyMax",
         "MCP",
+        "business archive",
+        "业务档案",
+        "personalized routes",
+        "个性化选路",
     }
 
     assert frontmatter["name"] == "scene-creator"
@@ -409,7 +414,7 @@ def test_runtime_apc_skill_and_file_handoff_rules_remain_in_procedure():
     content = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
 
     for required_rule in (
-        "场景包解决什么问题、何时使用",
+        "场景包解决什么问题、共同业务终点是什么、何时使用",
         "业务里程碑，以及每阶段目标",
         "禁止把制作说明、数字资产 ID",
         "每个上传的场景 Skill 文件提供明确读取时机",
@@ -419,6 +424,41 @@ def test_runtime_apc_skill_and_file_handoff_rules_remain_in_procedure():
         'skill_files_mode="merge"',
     ):
         assert required_rule in content
+
+
+def test_scene_package_routes_are_personalized_by_business_archives():
+    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    checklist = (SKILL_ROOT / "references" / "场景包验收检查清单.md").read_text(
+        encoding="utf-8"
+    )
+
+    for principle in (
+        "也不是所有用户只能照走的一条固定 SOP",
+        "通往业务终点的路线地图",
+        "实体档案",
+        "情境档案",
+        "只读取足以影响本次选路的内容",
+        "实质改变本次执行的路线、参数、优先级或解释",
+        "用户明确表达和当前有效约束优先",
+        "Agent 推断必须标为假设",
+        "场景包不能直接修改用户档案",
+    ):
+        assert principle in skill
+
+    for apc_gate in (
+        "共同业务终点",
+        "候选路线",
+        "业务档案选路规则",
+        "具体私有档案事实",
+        "唯一 SOP",
+        "最小充分信息",
+        "现有投稿与审稿机制",
+    ):
+        assert apc_gate in skill or apc_gate in checklist
+
+    assert skill.index("### 3.5 Route Diversity and Archive-Guided Execution") < skill.index(
+        "### 3.7 Runtime Scene Skill Quality"
+    )
 
 
 def test_skill_and_agent_metadata_use_chinese():
