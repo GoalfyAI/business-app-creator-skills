@@ -8,7 +8,7 @@
 
 | 工具 | 用途 | 重要 action 或规则 |
 |---|---|---|
-| `workflow_task_manager` | 创建、读取、追加并完成可审计制作工单 | 第一个调用；后续所有审计操作都传 `task_id` |
+| `task_manager` | 创建、查找、读取、追加并完成统一的场景包制作工单 | 新任务先 `create`；已知任务先 `get`；续作未知 ID 先 `list`；拿到结果前不并行调用其他业务工具 |
 | `list_assets` | 搜索可复用资产和已完成项目经验 | 只读；`asset_type=experience` 受权限约束且不要求工单 |
 | `get_asset` | 读取完整资产或经验契约 | Toolset/Tool Group 返回工具 ID、input/output Schema 和版本；经验页面只读 |
 | `get_diagnosis_doc` | 读取服务端共享契约、示例、方案挑战、验收、配置和诊断知识 | 外部调用必须传 `task_id`；审计只保存 topic 和返回文档名，不保存正文；MCP 知识库是共享来源 |
@@ -24,7 +24,7 @@
 ## 标准调用顺序
 
 ```text
-workflow_task_manager(create)
+task_manager(create|get|list)                              # 工单 Gate，必须先等待结果
 → get_diagnosis_doc(workflow_authoring, workflow_single)
 → get_diagnosis_doc(workflow_multi)                       # 仅多 Workflow，写任何节点前
 → get_diagnosis_doc(workflow_examples → 匹配的 topic)    # 仅在需要时
@@ -49,10 +49,14 @@ workflow_task_manager(create)
 → 分别询问每个 Workflow 是否全真验证
 → manage_goalfymax_project(run，传 workflow_input)        # 仅批准覆盖所选路径时
 → get_project_execution_logs(summary/detail/outputs/download/bundle)  # 仅真实项目已运行时
-→ workflow_task_manager(complete)
+→ task_manager(complete)
 ```
 
-工单创建后的每个审计调用都必须携带返回的 `task_id`；上面的紧凑路由写法不代表它可以省略。
+新任务第一项业务调用必须是 `task_manager(create)`，并按任务模式传 `mode`；write 工单还必须传当前 Skill description 中的完整 `skill_version`。已知 `task_id` 的续作先 `get`；明确续作但未知 ID 时先 `list`，唯一匹配后再 `get`、无匹配才 `create`、多个候选则请用户选择。上述 Gate 的结果返回前不得并行调用制作契约、资产搜索或修改工具，服务端拒绝只作为兜底。
+
+read 工单转入任何写操作时，必须新建 write 工单，并传 `continued_from_task_id` 与当前 `skill_version`；遇到 `WORKFLOW_TASK_MODE_MISMATCH` 按服务端返回的实际/必需模式纠正。`SCENE_SKILL_UPGRADE_REQUIRED` 必须保持写阻断并严格使用返回的 Codeup 精确 ref 与平台安装根目录升级，不猜测下载来源。
+
+工单建立后的每个**需要审计**的调用都必须携带返回的 `task_id`；`list_assets/get_asset` 是例外，它们不接收 `task_id/op_summary`，也不形成逐次工具审计。影响后续制作的资产选择结论通过 `task_manager(insert)` 写入检查点。Max 项目内的 shell、file、FA、消息和规划执行保留在项目执行日志中，工单只记录阶段结论，不复制其内部日志。
 
 MCP 协议已经通过 `tools/list` 暴露实时工具清单，不再增加平行的 `list_tools` 业务工具。Skill 只维护稳定的能力路由；浏览器中的业务界面不接收这份 MCP 清单，只使用宿主 SDK 和公开运行契约。
 

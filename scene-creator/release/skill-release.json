@@ -3,8 +3,8 @@
   "version": "v1.0.0",
   "package_version": "1.0.0",
   "mcp_endpoint": "https://workflow-mcp.qa.goalfyai.com/mcp",
-  "released_at": "2026-08-13T04:27:39Z",
-  "update_reason": "补齐国内生产 MCP 切换校验、read 转 write 审计续接和 Codeup Tag 可执行升级来源",
+  "released_at": "2026-08-14T02:42:05Z",
+  "update_reason": "统一 task_manager 工具契约并保留版本闸门、模式隔离与续作审计语义",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -16,10 +16,10 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "aac889832afcc9c4e45a2c778cf971045fc6f3f9d3df16756d3231f25873293f",
+    "SKILL.md": "e99981ffaa2014c42c3acc8708525ead49465296ee5de458f2eb9c3afe5be7fb",
     "agents/openai.yaml": "16239e57465c671035671f5b35957f4fe665c765d4305ea7203e9f7d689b454a",
     "references/Workflow验收检查清单.md": "e04cae5ee4c01743b5d0f719f4effe2a67b3188e89e67f03ee05cafc81a451e1",
-    "references/external-mcp-tools.md": "4297c25175a29c28627306cb0536232de3a75f01a62bf00babf743c3f464f1f9",
+    "references/external-mcp-tools.md": "999a7c5b97c71297a2827421ab31f12106c693e0748742c595b1711946d86f44",
     "references/业务界面制作契约.md": "b7aa41869eeb84d0abf3a682b9b7369fce659a7897f5e81736fa3eee949fe733",
     "references/业务界面验收检查清单.md": "012bd63f06975d8b2837b5e1005f7e18ad2bfbecbfd511396161e3127227b626",
     "references/场景包验收检查清单.md": "f2cee1176b26efb420878766dd050863078534e45174d27b5022a0d74393e20b",
