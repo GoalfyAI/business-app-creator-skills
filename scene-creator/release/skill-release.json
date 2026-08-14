@@ -1,8 +1,8 @@
 {
   "skill_name": "scene-creator",
   "version": "1.0.0",
-  "released_at": "2026-08-13T08:21:27Z",
-  "update_reason": "重构章节结构，以场景包为核心主线并将 Workflow 降为可选资产",
+  "released_at": "2026-08-14T05:47:33Z",
+  "update_reason": "重排 Skill 运行主线，明确 MCP 职责、沟通协议、意图启动与能力规划",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -14,7 +14,7 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "acb9d7c3936ec47e60f1ba0e5fb57cf56b9d427c36abb7dfee48e988e8962f5a",
+    "SKILL.md": "1ab6eae814fde0678506e2d4826f2ec8bda37ab895a7fd1ee264e42195ceedb4",
     "agents/openai.yaml": "16239e57465c671035671f5b35957f4fe665c765d4305ea7203e9f7d689b454a",
     "references/Workflow验收检查清单.md": "e04cae5ee4c01743b5d0f719f4effe2a67b3188e89e67f03ee05cafc81a451e1",
     "references/external-mcp-tools.md": "4297c25175a29c28627306cb0536232de3a75f01a62bf00babf743c3f464f1f9",
