@@ -37,7 +37,7 @@
 | `update_auth_card` | 更新已绑定授权卡 | 可能使既有授权失效，按实时确认门执行 |
 | `link_auth_card` | 绑定已有授权卡 | 替换现有绑定前按实时确认门执行 |
 | `update_scenario_package_logo` | 将已上传的 PNG 设置为场景包 Logo | 使用 `file_to_url` 返回的受控文件引用，不传本地路径或任意 URL |
-| `workflow_dependency_manage` | 对已有 MCP 工具做真实调用取样 | 只保留 `test_tool`；可能真实调用供应商，不创建、修改或删除资产 |
+| `workflow_tool_test` | 为 Workflow 开发对已有 MCP 工具做真实调用取样 | 直接传取样参数，不使用 action；可能真实调用供应商，不创建、修改或删除资产 |
 | `scene_package_manage` | 创建、读取、更新、发布场景包及当前版本编排 | 当前 `workflow_orchestration` 是完整对象整体替换；写前反读原对象 |
 | `scene_package_ui_bundle` | 下载官方 UI 模板，上传、部署和反读定制界面 | 当前除模板下载外要求目标场景包至少挂载一个 Workflow；不能为纯 SA 包绕过该门槛 |
 | `workflow_tpe_manage` | Preview、创建、更新、挂载、发布和 bubble Workflow | 创建前依赖闭包已准备；bubble 轮询复用同一 `run_id` |
@@ -72,7 +72,7 @@ task_manager(create/get)
 → 能力覆盖矩阵 → 方案挑战检查清单 → 用户确认
 → get_diagnosis_doc(toolset/fast_agent/...)               # 仅将要创建或诊断的资产
 → preview/register/upload/create/update/... 独立资产工具  # 按真实能力缺口选择原工具
-→ workflow_dependency_manage(test_tool)                   # 仅需要真实 MCP 返回取样时
+→ workflow_tool_test(...)                                 # 仅需要真实 MCP 返回取样时
 → scene_package_manage(create/update, offline)            # 建立或复用同一草稿
 → workflow_file_upload + skill_files_mode=merge           # 仅缺少场景知识文件
 
@@ -125,7 +125,7 @@ task_manager(create/get)
 |---|---|---|
 | MCP JSON Schema | 调用参数形状 | 业务方案正确 |
 | Preview | 脚本、声明工具和 IO 契约可保存 | 真实 FastAgent 内容和外部副作用正确 |
-| 依赖反读 / `test_tool` | 资产状态或代表性供应商返回 | 整条 Workflow 正确 |
+| 依赖反读 / `workflow_tool_test` | 资产状态或代表性供应商返回 | 整条 Workflow 正确 |
 | bubble | 当前 Workflow 终态轨迹和接缝行为 | FastAgent 真实内容、未触达分支、整包编排运行 |
 | Hub 编排保存 | 当前版本结构、映射和 delivery 静态合法 | 编排真实命中、顺序、handoff 或最终交付 |
 | Max 项目日志与交付物 | 被批准路线的真实运行结果 | 未运行路线或未来输入都正确 |

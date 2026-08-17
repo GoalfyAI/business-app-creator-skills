@@ -1,6 +1,6 @@
 ---
 name: scene-creator
-description: 创建、诊断、优化、验证或发布 GoalfyMax 场景包，并把业务流程、SOP、经验、项目日志或业务档案沉淀为可复用能力。使用经过审计的 scene-creator MCP 复用和维护场景 Skill、普通任务点、Toolset、Tool Group、FastAgent、Dataset、Workflow、当前平台支持的 Workflow 编排与业务界面；适用于场景包效果诊断、真实项目复盘和续作，不用于一次性业务执行。[skill-version:v1.0.8]
+description: 创建、诊断、优化、验证或发布 GoalfyMax 场景包，并把业务流程、SOP、经验、项目日志或业务档案沉淀为可复用能力。使用经过审计的 scene-creator MCP 复用和维护场景 Skill、普通任务点、Toolset、Tool Group、FastAgent、Dataset、Workflow、当前平台支持的 Workflow 编排与业务界面；适用于场景包效果诊断、真实项目复盘和续作，不用于一次性业务执行。[skill-version:v1.0.9]
 ---
 
 # 场景包制作与优化

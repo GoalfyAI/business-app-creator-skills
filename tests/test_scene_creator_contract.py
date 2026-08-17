@@ -36,7 +36,7 @@ def test_skill_is_progressively_disclosed_and_has_minimal_frontmatter():
 
     assert set(frontmatter) == {"name", "description"}
     assert frontmatter["name"] == "scene-creator"
-    assert "[skill-version:v1.0.8]" in frontmatter["description"]
+    assert "[skill-version:v1.0.9]" in frontmatter["description"]
     assert len(content.splitlines()) < 600
     assert "# 场景包制作与优化" in content
     assert "## 按需参考" in content
@@ -271,7 +271,7 @@ def test_task_manager_is_the_canonical_first_business_gate():
         "update_auth_card",
         "link_auth_card",
         "update_scenario_package_logo",
-        "workflow_dependency_manage",
+        "workflow_tool_test",
         "scene_package_manage",
         "scene_package_ui_bundle",
         "workflow_tpe_manage",
