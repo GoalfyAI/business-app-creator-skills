@@ -47,12 +47,12 @@ Gate 成功前不能读取制作契约、搜索业务资产、创建计划或写
 task_manager(create/get)
 → get_diagnosis_doc(scene_package)                        # 当前场景包契约
 → list_assets / get_asset / dataset_read                  # 建立真实证据
-→ 形成路线图、资产选择和验收蓝图
-→ 方案挑战检查清单
-→ scene_package_manage(create/update, offline)            # 建立或复用同一草稿
-→ workflow_file_upload + skill_files_mode=merge           # 仅缺少场景知识文件
+→ 完整材料/项目深读 → 里程碑、路线图、理想态和验收蓝图
+→ 能力覆盖矩阵 → 方案挑战检查清单 → 用户确认
 → get_diagnosis_doc(toolset/fast_agent/...)               # 仅将要创建或诊断的资产
 → workflow_dependency_manage                              # 仅真实能力缺口
+→ scene_package_manage(create/update, offline)            # 建立或复用同一草稿
+→ workflow_file_upload + skill_files_mode=merge           # 仅缺少场景知识文件
 
 → get_diagnosis_doc(workflow_authoring)                   # 决定使用 Workflow 后
 → get_diagnosis_doc(workflow_single)                      # 写单 Workflow 前

@@ -1,8 +1,8 @@
 {
   "skill_name": "scene-creator",
   "version": "1.0.0",
-  "released_at": "2026-08-17T04:07:55Z",
-  "update_reason": "重构场景包生命周期，统一工单、编排版本和业务界面边界",
+  "released_at": "2026-08-17T05:54:13Z",
+  "update_reason": "恢复 csp_prompt 关键业务规则并充实九阶段质量门",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -14,14 +14,14 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "eb18b4e354700d71d69cc5e9b017ec2114d7656a16b432f05abc2bf52d96f6c7",
+    "SKILL.md": "14bbe2b9770f1e95eb9d4d4e4e591999233b0773b63ed3a49bbe104a89195a33",
     "agents/openai.yaml": "8ac16706d60b48086c3d8a08ea6d0cade465a86556cb1637c3492ed5bf04c5ee",
     "references/Workflow验收检查清单.md": "e04cae5ee4c01743b5d0f719f4effe2a67b3188e89e67f03ee05cafc81a451e1",
-    "references/external-mcp-tools.md": "20b9a63a18085b1d64a62937abf833aa79e87511e77c2e6819d48201bd632bcf",
+    "references/external-mcp-tools.md": "143f2d9d564d2b976183670dc10789b476b662edaccc376b763d828e7bb7ccb5",
     "references/业务界面制作契约.md": "1cb9cec769748821ca4ff87500b76579e1fbf4227e4f8231b695aa1f841ada7c",
     "references/业务界面验收检查清单.md": "a8885732a5d6708e9e97197388ee14e6da95da205e0c0c27929fa87e3bfb057b",
-    "references/场景包验收检查清单.md": "164dae5dbeecb09a4b8e667d491eca7d09f5be6ad645fcae0a167f94f3cd3c92",
-    "references/方案挑战检查清单.md": "13707e8e824bdf3ae18c875a750487a0b45c82402785d9fcbd0d7b1448cb53b9"
+    "references/场景包验收检查清单.md": "be1549660f90c0803b3e5037010dcf548f7fe619e7b633c446f7d5215d0d9242",
+    "references/方案挑战检查清单.md": "96ca26c789e23f0554073973dd4554bf12f390ec72360dc46d9e289156a115cc"
   },
   "platform_source_files": [
     "claude-code/.claude-plugin/plugin.json",

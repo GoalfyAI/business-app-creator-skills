@@ -66,8 +66,114 @@ def test_authority_order_prefers_live_machine_facts():
     content = _skill()
     assert "当前 MCP `tools/list`、线上资产、服务端校验和 Max Runtime 是机器事实" in content
     assert "`get_diagnosis_doc` 返回的当前契约解释机器事实" in content
-    assert "禁止虚构工具、action、ID、Schema、版本、返回字段、资产状态或运行证据" in content
+    assert "禁止虚构工具、action、ID、Schema、版本、返回字段、资产状态、业务数据或运行证据" in content
     assert "不要把仓库设计稿或集成分支当作线上契约" in content
+
+
+def test_csp_prompt_business_consultant_rules_are_preserved():
+    content = _skill()
+    for original_rule in (
+        "核心职责不是“快速完成目标”，而是“挖掘需求、确保质量”",
+        "代入用户的业务视角，用管理型语言沟通",
+        "主动提问和引导，用户往往不知道该提供什么，需要挖掘",
+        "基于数据做判断，先用工具收集信息，再做分析和建议",
+        "在关键节点与用户确认，但不要变成确认机器",
+        "每轮问题聚焦最影响下一步的一至三个事项",
+    ):
+        assert original_rule in content
+    assert "能解决什么、分几阶段、每阶段产出什么、哪里需要用户决定" in content
+    assert "不要展示资产 ID、技术字段、代码或内部调用链" in content
+
+
+def test_csp_prompt_intent_gaps_and_progressive_interview_are_preserved():
+    content = _skill()
+    for gap_rule in (
+        "**意图缺失**",
+        "必须向用户询问明确目标",
+        "**关键参数缺失**",
+        "无法启动。必须向用户索要缺失参数",
+        "**知识缺失**",
+        "属于规划和调查范畴",
+        "**可选偏好缺失**",
+        "**用户授权缺失**",
+    ):
+        assert gap_rule in content
+    assert "必须对其进行完整阅读和理解后再继续" in content
+    assert "严禁只浏览或仅阅读部分内容" in content
+    assert "访谈按需组合、不要一次性全问" in content
+    for context in (
+        "业务场景描述",
+        "参考素材",
+        "业务边界",
+        "成功标准",
+        "创建与诊断",
+    ):
+        assert context in content
+
+
+def test_nine_stages_have_artifacts_and_explicit_quality_gates():
+    content = _skill()
+    lifecycle = content.split("## 九阶段制作流程", 1)[1].split(
+        "### 诊断与优化如何进入九阶段", 1
+    )[0]
+    headings = re.findall(r"^### ([1-9])\. (.+)$", lifecycle, re.MULTILINE)
+    assert [number for number, _ in headings] == [str(number) for number in range(1, 10)]
+    assert lifecycle.count("**阶段产物**") == 9
+    assert lifecycle.count("**进入下一阶段的门**") == 8
+    assert lifecycle.count("**完成门**") == 1
+
+
+def test_nine_stages_restore_csp_prompt_discovery_and_design_depth():
+    content = _skill()
+    for evidence_rule in (
+        "参考项目必须三层递进分析，不能只看摘要",
+        "**概览层**",
+        "**深读层**",
+        "**分析层**",
+        "有效推进、重复沟通、失败重试和等待",
+        "缺知识、缺工具、缺指引、缺前置检查或错误资产边界",
+    ):
+        assert evidence_rule in content
+    for design_rule in (
+        "现状 → 理想态 → 配置手段",
+        "Focus",
+        "泛化",
+        "能力覆盖表",
+        "工具缺口不可阻塞创建流程",
+        "方案是给用户看的，用管理型语言描述",
+        "质疑成立就修正",
+    ):
+        assert design_rule in content
+    assert "诊断不是九阶段之外的简化流程" in content
+    for diagnostic_layer in (
+        "**场景包**",
+        "**普通任务点 / Workflow**",
+        "**Toolset**",
+        "**FastAgent**",
+        "**Tool Group / Dataset / UI**",
+    ):
+        assert diagnostic_layer in content
+
+
+def test_skill_granularity_is_tied_to_observed_bottlenecks():
+    content = _skill()
+    assert "从理想态反推 Skill 颗粒度" in content
+    assert "凡是希望减少的失败、绕行或沟通轮次" in content
+    for bottleneck in (
+        "不知道先做什么",
+        "不知道工具如何搭配",
+        "不知道参数或字段怎样准备",
+        "找不到能力",
+        "缺领域知识",
+        "交付结果不稳定",
+    ):
+        assert bottleneck in content
+    for empty_instruction in (
+        "“完善流程”",
+        "“调用相关工具”",
+        "“输出高质量报告”",
+    ):
+        assert empty_instruction in content
 
 
 def test_task_manager_is_the_canonical_first_business_gate():
@@ -132,7 +238,7 @@ def test_asset_form_is_selected_by_responsibility_not_workflow_first():
     ):
         assert form in content
     assert "确认需要 Workflow 后读取 `workflow_authoring`" in content
-    assert content.index("形成场景包蓝图") < content.index("按需制作 Workflow 和编排")
+    assert content.index("形成场景包蓝图") < content.index("按需制作普通任务点、Workflow 和编排")
 
 
 def test_information_ownership_keeps_apc_skill_balanced():
@@ -150,7 +256,7 @@ def test_information_ownership_keeps_apc_skill_balanced():
         "业务界面源码和宿主 SDK",
     ):
         assert owner in content
-    assert "不要在 `apc_skill` 复制 DAG、工具完整 Schema或制作说明" in content
+    assert "不要在 `apc_skill` 复制 DAG、工具完整 Schema 或制作说明" in content
     assert "不要因为避免重复而删掉 SA 必须始终知道的业务路由" in content
 
 
@@ -223,7 +329,7 @@ def test_validation_evidence_is_layered_without_overclaiming():
     for evidence in required:
         assert evidence in content
         assert evidence in routing
-    assert "缺少整图运行工具时只能记录静态通过和运行盲区" in content
+    assert "缺少整图运行工具或真实日志时只能记录静态通过和运行盲区" in content
     assert "没有整图运行入口或实际日志时，不能声称 `orchestration_runtime_verified`" in routing
 
 
