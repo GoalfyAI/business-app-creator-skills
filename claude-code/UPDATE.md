@@ -16,8 +16,9 @@ claude plugin install scene-creator@scene-creator
 
 ## 轮换个人 API 密钥
 
-1. 在 GoalfyMax QA 中创建或获取替换密钥。
-2. 只替换 `~/.claude/settings.json` 中的 `env.SCENE_CREATOR_API_KEY`，保留其他所有配置。
+1. 用户在 GoalfyMax 中创建替换密钥，并把完整新密钥提供给 Agent。
+2. Agent 只替换 `~/.claude/settings.json` 中的 `env.SCENE_CREATOR_API_KEY`，保留其他所有配置；
+   不得要求用户自行编辑配置文件，也不得在命令回显、差异、日志或回复中展示密钥。
 3. 新密钥保存成功后，撤销旧密钥。
 4. 彻底重启 Claude Code，再次执行只读验证。
 

@@ -44,10 +44,11 @@ claude plugin marketplace add \
 claude plugin install scene-creator@scene-creator
 ```
 
-两个插件连接同一个外部 MCP。请将 GoalfyMax 个人 API 密钥配置到
-`SCENE_CREATOR_API_KEY`，严禁把密钥提交到本仓库。密钥获取入口为 GoalfyMax QA 账号菜单 →
-**开发者工具** → **API 密钥**（`/developer/api-keys`）。插件会把该密钥作为
-Bearer 凭证发送，不需要另行配置用户 ID 鉴权参数。
+两个插件连接同一个正式生产外部 MCP：`https://workflow-mcp.goalfyai.com/mcp`。个人 API 密钥
+获取入口为 GoalfyMax 账号菜单 → **开发者工具** → **API 密钥**（`/developer/api-keys`）。用户
+只需把完整密钥提供给执行安装的 Agent，Agent 负责将其安全配置为
+`SCENE_CREATOR_API_KEY`；不得要求用户自行编辑配置文件，也不得把密钥提交到本仓库、输出到回复
+或写入日志。插件会把该密钥作为 Bearer 凭证发送，不需要另行配置用户 ID 鉴权参数。
 
 ## 构建安装包
 
@@ -62,22 +63,17 @@ uv run python scene-creator/release/build_platform_packages.py build \
 
 ## 版本与环境策略
 
-全部功能正式上线前，插件版本固定为 `1.0.0`。QA 阶段修改 Skill 内容、参考资料或平台模板后，
-仍需刷新发布清单、校验和与直接安装目录，但不得增加版本号：
+插件只生成正式生产安装包，不保留其他环境地址、密钥说明或环境切换逻辑。Skill 内容、参考资料、
+平台模板或生产 MCP 配置发生变化时，使用大于当前版本的 `MAJOR.MINOR.PATCH` 刷新发布清单、
+校验和与直接安装目录：
 
 ```bash
 uv run python scene-creator/release/build_platform_packages.py release \
-  --version 1.0.0 \
+  --version <新的 MAJOR.MINOR.PATCH> \
   --reason "<已验证的变更说明>"
 ```
 
-正式上线时必须作为一次完整变更同时完成：
-
-1. 将 Codex 和 Claude Code 的 MCP 配置切换到正式环境地址；
-2. 将全部安装说明中的 API 密钥获取入口由 GoalfyMax QA 改为 GoalfyMax 线上环境；
-3. 更新发布工具中的审核地址，解除 QA 版本冻结，再从 `1.0.0` 推动后续版本。
-
-禁止只升级版本而继续连接 QA，或者在正式安装包中保留 QA API 密钥获取说明。
+发布校验必须确认正式生产地址，并拒绝要求用户自行写入密钥的安装说明。
 
 只有在不改变已发布内容、仅需恢复被删除或误改的生成文件时，才运行 `sync`：
 

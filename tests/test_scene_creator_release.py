@@ -14,6 +14,7 @@ SPEC = importlib.util.spec_from_file_location("scene_creator_release", SCRIPT_PA
 assert SPEC and SPEC.loader
 release_module = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(release_module)
+NEXT_VERSION = "1.0.2"
 
 
 def _copy_skill(tmp_path: Path) -> Path:
@@ -32,7 +33,7 @@ def test_checked_in_scene_creator_release_is_current():
     manifest = release_module.check_release(SKILL_ROOT)
 
     assert manifest["skill_name"] == "scene-creator"
-    assert manifest["version"] == "1.0.0"
+    assert manifest["version"] == "1.0.1"
 
 
 def test_skill_source_change_requires_a_new_release(tmp_path: Path):
@@ -67,7 +68,7 @@ def test_release_updates_manifest_and_generates_direct_marketplaces(tmp_path: Pa
     copied = _copy_skill(tmp_path)
     new_reference = copied / "references" / "new-rule.md"
     new_reference.write_text("# New rule\n", encoding="utf-8")
-    fixed_version = release_module.QA_FIXED_VERSION
+    fixed_version = NEXT_VERSION
 
     manifest = release_module.release(copied, fixed_version, "Add one tested rule")
 
@@ -112,11 +113,13 @@ def test_checked_in_direct_marketplaces_are_current():
         assert len(marketplace["plugins"][0]["description"]) >= 80
 
 
-def test_qa_release_rejects_version_bump(tmp_path: Path):
+def test_production_release_requires_version_increase(tmp_path: Path):
     copied = _copy_skill(tmp_path)
 
-    with pytest.raises(release_module.ReleaseError, match="QA 阶段版本固定为 1.0.0"):
-        release_module.release(copied, "1.0.1", "不允许提前升级")
+    with pytest.raises(release_module.ReleaseError, match="必须大于当前版本"):
+        release_module.release(
+            copied, release_module.CURRENT_RELEASE_VERSION, "禁止覆盖当前生产版本"
+        )
 
 
 def test_direct_marketplace_drift_is_rejected(tmp_path: Path):
@@ -156,7 +159,7 @@ def test_release_rejects_invalid_skill_frontmatter(tmp_path: Path):
 
     with pytest.raises(release_module.ReleaseError, match="frontmatter"):
         release_module.release(
-            copied, release_module.QA_FIXED_VERSION, "Invalid metadata"
+            copied, NEXT_VERSION, "Invalid metadata"
         )
 
 
@@ -173,7 +176,7 @@ def test_release_rejects_unexpected_skill_frontmatter_field(tmp_path: Path):
 
     with pytest.raises(release_module.ReleaseError, match="name 和 description"):
         release_module.release(
-            copied, release_module.QA_FIXED_VERSION, "Missing keywords"
+            copied, NEXT_VERSION, "Missing keywords"
         )
 
 
@@ -187,7 +190,7 @@ def test_release_rejects_missing_skill_version_marker(tmp_path: Path):
 
     with pytest.raises(release_module.ReleaseError, match="skill-version"):
         release_module.release(
-            copied, release_module.QA_FIXED_VERSION, "Missing version marker"
+            copied, NEXT_VERSION, "Missing version marker"
         )
 
 
@@ -204,7 +207,7 @@ def test_release_rejects_invalid_openai_metadata(tmp_path: Path):
 
     with pytest.raises(release_module.ReleaseError, match="default_prompt"):
         release_module.release(
-            copied, release_module.QA_FIXED_VERSION, "Invalid metadata"
+            copied, NEXT_VERSION, "Invalid metadata"
         )
 
 
@@ -223,7 +226,7 @@ def test_release_rejects_missing_openai_mcp_dependency(tmp_path: Path):
 
     with pytest.raises(release_module.ReleaseError, match="MCP 依赖"):
         release_module.release(
-            copied, release_module.QA_FIXED_VERSION, "Invalid dependency"
+            copied, NEXT_VERSION, "Invalid dependency"
         )
 
 
@@ -233,7 +236,7 @@ def test_release_rejects_hidden_or_unsupported_source_files(tmp_path: Path):
 
     with pytest.raises(release_module.ReleaseError, match="不支持的 Skill 隐藏文件"):
         release_module.release(
-            copied, release_module.QA_FIXED_VERSION, "Unsafe source"
+            copied, NEXT_VERSION, "Unsafe source"
         )
 
 
@@ -245,7 +248,7 @@ def test_release_rejects_unlisted_skill_resource_directories(tmp_path: Path):
 
     with pytest.raises(release_module.ReleaseError, match="不支持的 Skill 文件"):
         release_module.release(
-            copied, release_module.QA_FIXED_VERSION, "Unlisted resource"
+            copied, NEXT_VERSION, "Unlisted resource"
         )
 
 
@@ -329,7 +332,7 @@ def test_platform_mcp_templates_use_env_key_and_live_external_contract():
             for name in ("README.md", "AGENTS.md", "UPDATE.md")
         )
 
-        assert "https://workflow-mcp.qa.goalfyai.com/mcp" in mcp_text
+        assert "https://workflow-mcp.goalfyai.com/mcp" in mcp_text
         assert "SCENE_CREATOR_API_KEY" in mcp_text
         assert set(json.loads(mcp_text)["mcpServers"]) == {"scene-creator"}
         assert "task_manager" in docs
@@ -340,6 +343,8 @@ def test_platform_mcp_templates_use_env_key_and_live_external_contract():
         assert "sk_" in docs
         assert "Authorization: Bearer" in docs
         assert "X-User-ID" in docs
+        assert "用户不需要自行编辑" in docs
+        assert "Agent" in docs
         assert "sk_" not in mcp_text
 
 

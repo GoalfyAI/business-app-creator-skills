@@ -36,8 +36,8 @@ def test_skill_is_progressively_disclosed_and_has_minimal_frontmatter():
 
     assert set(frontmatter) == {"name", "description"}
     assert frontmatter["name"] == "scene-creator"
-    assert "[skill-version:v1.0.0]" in frontmatter["description"]
-    assert len(content.splitlines()) < 500
+    assert "[skill-version:v1.0.1]" in frontmatter["description"]
+    assert len(content.splitlines()) < 600
     assert "# 场景包制作与优化" in content
     assert "## 按需参考" in content
 
@@ -60,6 +60,16 @@ def test_skill_local_links_resolve_and_references_declare_scope():
         reference = _read(path)
         assert "本文是 `SKILL.md` 的" in reference
         assert "\n---\n" in reference
+
+
+def test_skill_uses_full_agent_asset_names_instead_of_fa_ta_abbreviations():
+    published_text = _skill() + "\n" + "\n".join(
+        _read(path) for path in REFERENCES.glob("*.md")
+    )
+
+    assert not re.search(r"(?<![A-Za-z])(?:FA|TA)(?![A-Za-z])", published_text)
+    assert "FastAgent" in published_text
+    assert "TaskAgent" in published_text
 
 
 def test_authority_order_prefers_live_machine_facts():
@@ -153,6 +163,50 @@ def test_nine_stages_restore_csp_prompt_discovery_and_design_depth():
         "**Tool Group / Dataset / UI**",
     ):
         assert diagnostic_layer in content
+
+
+def test_creation_mode_keeps_the_original_execution_overview_visible():
+    content = _skill()
+    overview = content.split("### 创建模式的执行子阶段总览", 1)[1].split(
+        "### 1. 识别意图、渐进访谈并建立任务", 1
+    )[0]
+    for collection_step in (
+        "**收集子阶段**",
+        "业务素材收集",
+        "项目深度分析",
+        "三层递进阅读",
+        "里程碑提炼",
+        "理想态构建与价值预测",
+        "Focus / 泛化",
+    ):
+        assert collection_step in overview
+    for orchestration_step in (
+        "**编排子阶段**",
+        "能力摸底",
+        "架构方案设计",
+        "Battle 审查",
+        "用户确认",
+        "执行创建",
+        "创建后联动校验",
+        "逐条 bubble → 逐条 `workflow_verify_fa`",
+        "最终 Verify",
+        "`csp_verify_checker`",
+    ):
+        assert orchestration_step in overview
+    assert "不得因九阶段已经包含这些动作而删除本总览" in overview
+    assert "禁止虚构调用" in overview
+
+    diagnosis = content.split("### 诊断模式的执行子阶段总览", 1)[1].split(
+        "### 1. 识别意图、渐进访谈并建立任务", 1
+    )[0]
+    for diagnosis_step in (
+        "问题收集",
+        "逐层诊断",
+        "诊断报告",
+        "执行修复",
+        "调用 `csp_verify_checker` 或创建测试项目试运行",
+    ):
+        assert diagnosis_step in diagnosis
 
 
 def test_skill_granularity_is_tied_to_observed_bottlenecks():
@@ -350,13 +404,13 @@ def test_workflow_semantic_checklist_preserves_runtime_edges():
     checklist = _read(REFERENCES / "Workflow验收检查清单.md")
     assert "不调用 FastAgent" in checklist
     assert "没有终态轨迹只能裁决 `needs_bubble`" in checklist
-    assert "FA 使用 Schema 桩" in checklist
+    assert "FastAgent 使用 Schema 桩" in checklist
     assert "空数组未执行循环而放行" in checklist
     assert "items.properties" in checklist
     assert "重新 Preview、bubble 和验收" in checklist
 
 
-def test_local_checklists_replace_obsolete_review_fastagents():
+def test_local_checklists_cover_review_fastagents_when_the_external_mcp_does_not_expose_them():
     content = _skill()
     for filename, marker in (
         ("方案挑战检查清单.md", "承接 Max `csp_battle_reviewer` 的职责"),
@@ -367,8 +421,14 @@ def test_local_checklists_replace_obsolete_review_fastagents():
         reference = _read(REFERENCES / filename)
         assert marker in reference
         assert "不调用 FastAgent" in reference
-    for obsolete_topic in ("scene_package_battle", "workflow_verify", "scene_package_verify"):
+    for obsolete_topic in (
+        'topic="scene_package_battle"',
+        'topic="workflow_verify"',
+        'topic="scene_package_verify"',
+    ):
         assert obsolete_topic not in content
+    assert "原提示词中的内部审查器在当前入口真实可用时直接调用" in content
+    assert "未暴露 `csp_battle_reviewer`、`workflow_verify_fa` 或 `csp_verify_checker` 时，禁止虚构调用" in content
 
 
 def test_external_skill_does_not_copy_max_internal_state_machine():
@@ -410,7 +470,7 @@ def test_skill_and_agent_metadata_are_chinese_and_invocable():
             "type": "mcp",
             "value": "scene-creator",
             "transport": "streamable_http",
-            "url": "https://workflow-mcp.qa.goalfyai.com/mcp",
+            "url": "https://workflow-mcp.goalfyai.com/mcp",
             "bearer_token_env_var": "SCENE_CREATOR_API_KEY",
         }
     ]
