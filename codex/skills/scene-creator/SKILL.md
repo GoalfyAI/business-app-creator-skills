@@ -1,6 +1,6 @@
 ---
 name: scene-creator
-description: 创建、诊断、优化、验证或发布 GoalfyMax 场景包，并把业务流程、SOP、经验、项目日志或业务档案沉淀为可复用能力。使用经过审计的 scene-creator MCP 复用和维护场景 Skill、普通任务点、Toolset、Tool Group、FastAgent、Dataset、Workflow、当前平台支持的 Workflow 编排与业务界面；适用于场景包效果诊断、真实项目复盘和续作，不用于一次性业务执行。[skill-version:v1.0.1]
+description: 创建、诊断、优化、验证或发布 GoalfyMax 场景包，并把业务流程、SOP、经验、项目日志或业务档案沉淀为可复用能力。使用经过审计的 scene-creator MCP 复用和维护场景 Skill、普通任务点、Toolset、Tool Group、FastAgent、Dataset、Workflow、当前平台支持的 Workflow 编排与业务界面；适用于场景包效果诊断、真实项目复盘和续作，不用于一次性业务执行。[skill-version:v1.0.3]
 ---
 
 # 场景包制作与优化
@@ -30,7 +30,7 @@ description: 创建、诊断、优化、验证或发布 GoalfyMax 场景包，�
 ├── FastAgent：一次输入后自包含完成、一次返回的推理子任务
 ├── Tool Group / MCP：单工具的正式能力、参数和授权边界
 ├── Dataset / 业务档案：可查询的数据语义、治理规则与个性化事实
-└── 业务界面：场景包可选的用户入口和结果展示
+└── 业务界面：所有 Workflow 场景包必须配套的用户入口和结果展示
 ```
 
 运行时角色保持清晰：SA 负责理解用户、读取档案、选择候选路线、协调任务和交付；普通任务点在独立上下文中完成需要临场判断或交互的完整任务；FastAgent 作为工具完成自包含推理；Workflow 执行确定步骤；图编排只调度已经存在且通过单体验收的 Workflow。场景包制作的目标是让这些职责共同到达业务终点，并且每一步都能由事实、资产或运行证据解释。
@@ -147,7 +147,7 @@ description: 创建、诊断、优化、验证或发布 GoalfyMax 场景包，�
 
 参考项目只提供候选路线和证据，不能自动成为所有用户的唯一 SOP。业务档案只读取足以改变本次路线、参数、优先级或解释的最小充分信息；当前用户表达优先于历史记录，Agent 推断保持为假设，档案缺失、过期或冲突时补充事实或使用明确的安全默认。
 
-### 选择执行形态
+### 先选择任务执行方式
 
 按职责而不是复杂度或资产数量选择：
 
@@ -157,19 +157,29 @@ description: 创建、诊断、优化、验证或发布 GoalfyMax 场景包，�
 | 独立上下文、开放式判断或执行中自然语言交互 | 普通任务点 / TaskAgent |
 | 一次输入、自包含推理、一次输出 | FastAgent |
 | 至少两个稳定真实步骤、固定数据流或高频复跑 | 单 Workflow |
+
+任务“复杂”或“有多个步骤”不自动意味着普通任务点；FastAgent 可以完成复杂但一次输入后无需交互的子任务。只有执行中确实需要补信息、暂停确认或与用户自然语言交互时，才选择普通任务点。Workflow 只固化无需临场业务判断的稳定真实步骤。
+
+### 再组织 Workflow 路线与节点行为
+
+只有任务执行方式中已经选择 Workflow，才进入本层：
+
+| 编排需要 | 配置位置 |
+|---|---|
 | 一条业务路线内多个 Workflow 的固定依赖、扇出、汇合和交付 | `workflow_orchestration` 中的一条无环路线 |
 | 多种明确候选路线、最终审阅后改稿或重做 | `schema_version: "2.0"` 的多路线图编排；切换路线时启动新 Runtime |
 | 节点成功后必须由用户补充结构化信息 | 节点级 `after_success.business_interaction` |
 | 节点成功后必须由 Agent 检查或处理异常 | 节点级 `sa_handoff` |
-| 场景专属可视化入口与结果展示 | 当前业务界面能力 |
-
-任务“复杂”或“有多个步骤”不自动意味着普通任务点；FastAgent 可以完成复杂但一次输入后无需交互的子任务。只有执行中确实需要补信息、暂停确认或与用户自然语言交互时，才选择普通任务点。Workflow 只固化无需临场业务判断的稳定真实步骤。
 
 图编排不是任意有环流程引擎。一个 Business 可以先后经历多个 Runtime；每个 Runtime 只执行一个已发布 `orchestration_id`，每条路线内部必须是可达的无环 DAG。用户改稿、重做或改走另一条路线时，冻结当前 Delivery，创建新 Runtime；不得把旧 Runtime 改回 pending，不得覆盖旧 Delivery 或旧文件，也不得在同一 DAG 中画回边模拟循环。
 
 进入图编排前完整读取服务端 `workflow_single` 和 `workflow_multi` 两份 Workflow 指南，并以实时 `scene_package_manage` Schema、Hub 保存错误校准字段。当前知识文档与实时服务不一致时，以实时机器契约为准，记录版本差异并停止提交冲突字段；不能把旧 `schema_version: "1.0"`、顶层单路线对象、旧 Block DSL 或 delivery 强制 handoff 规则混入 2.0 对象。
 
-业务界面是交互层，不执行或解释内部 DAG。当前 `scene_package_ui_bundle` 要求场景包至少挂载一个 Workflow 时，没有 Workflow 的场景包不能通过该工具制作定制界面；记录当前平台限制并回落对话界面。以后只有实时 Schema 明确解除该门槛时才改变此结论。
+### Workflow 与业务界面联动规则
+
+业务界面不是独立的执行形态，也不是有 Workflow 后再做的一次可选判断。场景包只要包含至少一个 Workflow，就必须在同一工单中把 `business_ui` 记录为 `required`，同步制作、绑定、部署并验收业务界面；未取得当前 Workflow 契约对应的界面部署证据，整包不得验收完成或发布。没有 Workflow 时记录 `business_ui=not_required`，使用现有对话界面，并且不得伪造或借用无关 Workflow 取得 UI 制作资格。
+
+业务界面只负责公开交互与结果展示，不执行或解释内部 DAG。宿主 SDK 或模板暂不支持目标 Workflow/编排运行契约时，记录 `platform_blocked` 并停止整包交付；不得把强制业务界面静默降级为可选项，也不得通过删除必要 Workflow 绕过此门。
 
 ### 信息归属
 
@@ -238,14 +248,14 @@ Toolset 使用指南只写工具之间的关系、适用条件、输入衔接、
 
 1. 能力摸底：搜索 Toolset，了解已有资产，查看真实能力。
 2. 架构方案设计：Toolset 划分、任务点实现方式判断（重复 / 规范 / 高复用且编排稳定的任务优先做成 Workflow，其余在普通任务点 / FastAgent 间选择）、`apc_skill` 草案、差异规划。
-3. Battle 审查：调用 `csp_battle_reviewer`，分析关键问题并修正方案。
+3. Battle 审查：读取 [方案挑战检查清单](references/方案挑战检查清单.md)，由当前 Agent 分析关键问题并修正方案。
 4. 用户确认：展示完整方案（管理型语言），收集修改意见。
 5. 执行创建：克隆官方场景包 + 前置资产创建 + 定制配置。
 6. 创建后联动校验。
-7. Workflow 专项验证：逐条 bubble → 逐条 `workflow_verify_fa` → 多 Workflow 的 `apc_id` 整包语义体检。
-8. 最终 Verify：调用一次 `csp_verify_checker` 或手动验证整包。
+7. Workflow 专项验证：逐条 bubble → 逐条读取 [Workflow 验收检查清单](references/Workflow验收检查清单.md) 完成语义验收 → 多 Workflow 完成后按 [场景包验收检查清单](references/场景包验收检查清单.md) 检查接缝与整包语义。
+8. 最终 Verify：发布前读取 [场景包验收检查清单](references/场景包验收检查清单.md)，由当前 Agent 完成整包完整性和一致性验收。
 
-这是创建模式的全局执行骨架，后续九阶段是对它的展开，不得因九阶段已经包含这些动作而删除本总览。原提示词中的内部审查器在当前入口真实可用时直接调用；scene-creator 外部 MCP 未暴露 `csp_battle_reviewer`、`workflow_verify_fa` 或 `csp_verify_checker` 时，禁止虚构调用，分别使用 [方案挑战检查清单](references/方案挑战检查清单.md)、[Workflow 验收检查清单](references/Workflow验收检查清单.md) 和 [场景包验收检查清单](references/场景包验收检查清单.md) 由当前 Agent 完成同等审查。原提示词中的 memory 在本外部制作入口对应可续作的工单检查点。
+这是创建模式的全局执行骨架，后续九阶段是对它的展开，不得因九阶段已经包含这些动作而删除本总览。`csp_battle_reviewer`、`workflow_verify_fa` 和 `csp_verify_checker` 属于 Max 生产环境内部 FastAgent，scene-creator 外部 MCP 不暴露、也不能调用；这些名称只说明三份参考清单承接的审查职责，不是外部工具调用路径。外部制作始终由当前 Agent 读取对应清单并执行审查。原提示词中的 memory 在本外部制作入口对应可续作的工单检查点。
 
 ### 诊断模式的执行子阶段总览
 
@@ -260,7 +270,7 @@ Toolset 使用指南只写工具之间的关系、适用条件、输入衔接、
 
 3. 诊断报告：按严重程度分级输出发现。
 4. 执行修复：用户确认后逐项修复。
-5. 验证：调用 `csp_verify_checker` 或创建测试项目试运行；当前入口未暴露内部审查器时，按场景包验收检查清单手动完成整包验证。
+5. 验证：读取 [场景包验收检查清单](references/场景包验收检查清单.md)，由当前 Agent 完成整包验证；需要真实运行证据且获得授权时，再创建测试项目试运行。
 
 ### 1. 识别意图、渐进访谈并建立任务
 
@@ -393,9 +403,9 @@ Tool Group 刷新前先反读旧工具集合，刷新后按工具名比较新增
 
 **进入下一阶段的门**：实际需要的执行资产已挂载；每条 Workflow Preview、bubble 和语义验收通过；2.0 图保存门通过或平台阻断已明确记录；跨 Runtime 重入没有覆盖旧 Delivery。
 
-### 7. 按需制作业务界面
+### 7. 为所有 Workflow 场景包制作业务界面
 
-先核对实时 `scene_package_ui_bundle` 的 Workflow 门槛和宿主 SDK 能力。当前场景包已挂载 Workflow 且用户需要定制入口时，完整读取 [业务界面制作契约](references/业务界面制作契约.md)，冻结场景包、Workflow/编排版本、公开输入、状态、文件和最终交付契约。
+先反读场景包是否挂载 Workflow。只要存在至少一个 Workflow，就把业务界面作为强制交付，完整读取 [业务界面制作契约](references/业务界面制作契约.md)，冻结场景包、Workflow/编排版本、公开输入、状态、文件和最终交付契约。只有场景包完全没有 Workflow 时，才记录 `business_ui=not_required` 并使用现有对话界面。
 
 必须从 `download_template` 返回的当前官方模板开始，校验下载字段、字节数、归档安全和唯一 `goalfy-app.json` 根目录，完整读取模板必读说明。业务界面只消费宿主公开契约，不接收 TPE ID、工具清单、提示词、脚本、DAG 或 Agent 控制动作；2.0 多路线图只有宿主公开匹配版本的 Business/Runtime 能力时才提供整包入口。
 
@@ -403,7 +413,7 @@ Tool Group 刷新前先反读旧工具集合，刷新后按工具名比较新增
 
 **阶段产物**：UI 契约快照、模板身份、源码包 SHA256、构建测试证据、deployment ID、激活地址和回落策略。
 
-**进入下一阶段的门**：不需要 UI 时已记录原因；需要 UI 时通过 [业务界面验收检查清单](references/业务界面验收检查清单.md)，绑定、SDK、安全、交互、构建和部署全部取得当前证据。
+**进入下一阶段的门**：无 Workflow 时已记录 `business_ui=not_required`；存在 Workflow 时必须通过 [业务界面验收检查清单](references/业务界面验收检查清单.md)，绑定、SDK、安全、交互、构建和部署全部取得当前证据。宿主能力不足只能记录 `platform_blocked`，不能继续宣称整包完成。
 
 ### 8. 整包诊断、分层验收并闭环修复
 
@@ -481,7 +491,7 @@ Tool Group 刷新前先反读旧工具集合，刷新后按工具名比较新增
 - [外部 MCP 工具路由](references/external-mcp-tools.md)：任务开始时读取，确认工单 Gate、实时工具职责和稳定调用顺序。
 - [方案挑战检查清单](references/方案挑战检查清单.md)：资产创建前读取。
 - [Workflow 验收检查清单](references/Workflow验收检查清单.md)：每条 Workflow bubble 后读取。
-- [业务界面制作契约](references/业务界面制作契约.md)：实时能力允许且决定制作或维护业务界面时读取。
+- [业务界面制作契约](references/业务界面制作契约.md)：场景包包含任意 Workflow，或维护已有业务界面时读取。
 - [业务界面验收检查清单](references/业务界面验收检查清单.md)：业务界面部署后读取。
 - [场景包验收检查清单](references/场景包验收检查清单.md)：发布前读取。
 

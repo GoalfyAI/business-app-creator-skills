@@ -1,8 +1,8 @@
 {
   "skill_name": "scene-creator",
-  "version": "1.0.1",
-  "released_at": "2026-08-17T06:44:17Z",
-  "update_reason": "恢复场景包创建与诊断执行骨架，统一 Agent 全称，并切换正式生产安装及 Agent 密钥配置",
+  "version": "1.0.3",
+  "released_at": "2026-08-17T07:01:31Z",
+  "update_reason": "明确生产内部审查 FastAgent 不属于外部 MCP，并将创建与诊断流程改为直接执行参考清单",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -14,14 +14,14 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "06aa6c0d8451b54bfa15c0f75916c76b7a1e888e49a18be7b570c0f3df5f0e80",
-    "agents/openai.yaml": "374bdb847cc92e61b40a0f429ca1831a890bb292522688ae3b17c1154606606f",
-    "references/Workflow验收检查清单.md": "f80e72e9bc7abd5ff6cd2dec06417e57706849a67f54cbc367a8caba9839f446",
-    "references/external-mcp-tools.md": "e014d180836c63191942b9a4f1274419b3a83f2295275f69e31def2d032cf613",
-    "references/业务界面制作契约.md": "4504e0db9fd7d8260a1f6de0712c6ceb96c6085d72da165b7084e7aa16b26b2f",
+    "SKILL.md": "1e5a14519456fdaf8978201dd428c1a02ef1441476041c81757891ce5343ac47",
+    "agents/openai.yaml": "c074f028f93e3ddbfc29d457279542cb95e09a21d25fcdc8dfc730c8dcece4bd",
+    "references/Workflow验收检查清单.md": "cf8895fb40bd63ff30b0e0abd10732a528a36271efb161b7bb8bdf06e2ae41f3",
+    "references/external-mcp-tools.md": "bb5e051911b85ca6bff1d0e3aa6d730121c563e0b040af23e1c37030cdacf547",
+    "references/业务界面制作契约.md": "1eaebb0f5ad0cd154be056f57c6064bf241796b17567854b3bd016511d63d72c",
     "references/业务界面验收检查清单.md": "c6490bd2e7937090c66d2d9f4d31d8d5acb894067ddf3b7492ef4b23f96832f3",
-    "references/场景包验收检查清单.md": "c07fab180c11b26f9a93bf3257746b90c9113b3deff128bb92b8a89b5dda7459",
-    "references/方案挑战检查清单.md": "ee73f8bbff2826796b39d0b6f4dd2843792c638bd39d184a17db0bb6aae612e7"
+    "references/场景包验收检查清单.md": "f4dbc410e1afdd6a6cd7527a7c8b455016c6e4fb60dabd762e880a6529537ef7",
+    "references/方案挑战检查清单.md": "be598497af0382f5893d1bfe15b71ed9606370948e1bb9fbd32ceba9adadb1d7"
   },
   "platform_source_files": [
     "claude-code/.claude-plugin/plugin.json",

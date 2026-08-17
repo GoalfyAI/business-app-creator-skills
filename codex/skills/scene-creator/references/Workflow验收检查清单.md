@@ -4,7 +4,7 @@
 
 ---
 
-本清单承接 Max `workflow_verify_fa` 的职责。外部 Agent 在每条 Workflow 完成 `bubble` 后直接执行，不调用 FastAgent。
+本清单承接 Max `workflow_verify_fa` 的职责。该名称只说明内部职责来源，不是 scene-creator 外部 MCP 可调用的工具；外部 Agent 在每条 Workflow 完成 `bubble` 后直接执行本清单，不调用 FastAgent。
 
 ## 裁决规则
 

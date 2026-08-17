@@ -36,7 +36,7 @@ def test_skill_is_progressively_disclosed_and_has_minimal_frontmatter():
 
     assert set(frontmatter) == {"name", "description"}
     assert frontmatter["name"] == "scene-creator"
-    assert "[skill-version:v1.0.1]" in frontmatter["description"]
+    assert "[skill-version:v1.0.3]" in frontmatter["description"]
     assert len(content.splitlines()) < 600
     assert "# 场景包制作与优化" in content
     assert "## 按需参考" in content
@@ -188,13 +188,13 @@ def test_creation_mode_keeps_the_original_execution_overview_visible():
         "用户确认",
         "执行创建",
         "创建后联动校验",
-        "逐条 bubble → 逐条 `workflow_verify_fa`",
+        "逐条 bubble → 逐条读取 [Workflow 验收检查清单]",
         "最终 Verify",
-        "`csp_verify_checker`",
+        "由当前 Agent 完成整包完整性和一致性验收",
     ):
         assert orchestration_step in overview
     assert "不得因九阶段已经包含这些动作而删除本总览" in overview
-    assert "禁止虚构调用" in overview
+    assert "scene-creator 外部 MCP 不暴露、也不能调用" in overview
 
     diagnosis = content.split("### 诊断模式的执行子阶段总览", 1)[1].split(
         "### 1. 识别意图、渐进访谈并建立任务", 1
@@ -204,7 +204,8 @@ def test_creation_mode_keeps_the_original_execution_overview_visible():
         "逐层诊断",
         "诊断报告",
         "执行修复",
-        "调用 `csp_verify_checker` 或创建测试项目试运行",
+        "读取 [场景包验收检查清单]",
+        "再创建测试项目试运行",
     ):
         assert diagnosis_step in diagnosis
 
@@ -288,7 +289,6 @@ def test_asset_form_is_selected_by_responsibility_not_workflow_first():
         "单 Workflow",
         "一条无环路线",
         "多路线图编排",
-        "业务界面能力",
     ):
         assert form in content
     assert "确认需要 Workflow 后读取 `workflow_authoring`" in content
@@ -335,16 +335,19 @@ def test_workflow_and_orchestration_are_version_gated():
         assert draft_only_field not in routing
 
 
-def test_business_ui_is_optional_but_currently_requires_workflow():
+def test_every_workflow_scene_package_requires_business_ui():
     content = _skill()
     contract = _read(REFERENCES / "业务界面制作契约.md")
     checklist = _read(REFERENCES / "业务界面验收检查清单.md")
 
-    assert "当前 `scene_package_ui_bundle` 要求场景包至少挂载一个 Workflow" in content
-    assert "没有 Workflow 的场景包不能通过该工具制作定制界面" in content
+    assert "只要包含至少一个 Workflow" in content
+    assert "`business_ui` 记录为 `required`" in content
+    assert "完全没有 Workflow 时才能记录 `business_ui=not_required`" in contract
     assert "当前场景包至少挂载一个真实 Workflow" in checklist
     assert "不能服务纯 SA 或只有普通任务点的场景包" in contract
-    assert "业务界面是交互层，不执行或解释内部 DAG" in content
+    assert "业务界面只负责公开交互与结果展示，不执行或解释内部 DAG" in content
+    assert "不得把包含 Workflow 的场景包改记为 `not_required`" in contract
+    assert "包含 Workflow 但业务界面缺失" in _read(REFERENCES / "场景包验收检查清单.md")
     assert "普通 SA、单 Workflow、多 Workflow或展示与管理" not in content
     assert "伪造 Workflow" in contract
 
@@ -427,8 +430,8 @@ def test_local_checklists_cover_review_fastagents_when_the_external_mcp_does_not
         'topic="scene_package_verify"',
     ):
         assert obsolete_topic not in content
-    assert "原提示词中的内部审查器在当前入口真实可用时直接调用" in content
-    assert "未暴露 `csp_battle_reviewer`、`workflow_verify_fa` 或 `csp_verify_checker` 时，禁止虚构调用" in content
+    assert "scene-creator 外部 MCP 不暴露、也不能调用" in content
+    assert "这些名称只说明三份参考清单承接的审查职责，不是外部工具调用路径" in content
 
 
 def test_external_skill_does_not_copy_max_internal_state_machine():
@@ -464,7 +467,7 @@ def test_skill_and_agent_metadata_are_chinese_and_invocable():
         assert capability in description
     assert metadata["policy"]["allow_implicit_invocation"] is True
     assert "$scene-creator" in metadata["interface"]["default_prompt"]
-    assert "按需" in metadata["interface"]["short_description"]
+    assert "为所有 Workflow 配套业务界面" in metadata["interface"]["short_description"]
     assert metadata["dependencies"]["tools"] == [
         {
             "type": "mcp",

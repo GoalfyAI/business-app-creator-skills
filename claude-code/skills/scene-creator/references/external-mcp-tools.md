@@ -41,7 +41,7 @@ Gate 成功前不能读取制作契约、搜索业务资产、创建计划或写
 
 ## 稳定调用关系
 
-不是每个场景包都需要 Workflow、编排或业务界面。按以下依赖推进，不把可选分支当成固定流水线：
+不是每个场景包都需要 Workflow 或编排；但只要选择了任意 Workflow，业务界面就是同一场景包的强制交付。按以下依赖推进，不把其他可选分支当成固定流水线：
 
 ```text
 task_manager(create/get)
@@ -64,7 +64,7 @@ task_manager(create/get)
 → scene_package_manage(update, workflow_orchestration)    # 当前 2.0 多路线对象完整替换
 → orchestration_static_validated                          # Hub 保存门，不冒充运行门
 
-→ scene_package_ui_bundle(download_template/...)          # 已挂载 Workflow 且需要定制 UI
+→ scene_package_ui_bundle(download_template/...)          # 已挂载任意 Workflow 时强制执行
 → 业务界面验收
 
 → 场景包整包验收 → scene_package_manage(online)          # 仅已获发布授权

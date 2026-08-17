@@ -8,7 +8,8 @@
 - [`scene-creator`](scene-creator/SKILL.md)：通过经过审计的外部 MCP，把业务流程制作成可在
   GoalfyMax 直接使用的场景包，或诊断优化已有场景包。Skill 自带场景包资产模型、信息分层和
   Workflow/普通任务点/FastAgent 选型框架，并覆盖线上资产复用、工具契约取样、依赖和辅助文件
-  准备、输入输出 Schema、场景编排、预览、`bubble` 验证、业务界面同工单制作与部署、可选全真
+  准备、输入输出 Schema、场景编排、预览、`bubble` 验证、所有 Workflow 场景包的业务界面同工单
+  制作与部署、可选全真
   项目验证、日志诊断、交付物检查和最终发布。
 
 `scene-creator` 负责维护外部 Agent 的制作流程和高风险操作约束。完整的 Workflow 共享契约、

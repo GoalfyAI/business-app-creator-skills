@@ -25,7 +25,7 @@ PLATFORM_VERSION_TOKEN = "__SCENE_CREATOR_VERSION__"
 PLATFORM_NAMES = ("codex", "claude-code")
 PRODUCTION_MCP_ENDPOINT = "https://workflow-mcp.goalfyai.com/mcp"
 REVIEWED_MCP_ENDPOINT = PRODUCTION_MCP_ENDPOINT
-CURRENT_RELEASE_VERSION = "1.0.1"
+CURRENT_RELEASE_VERSION = "1.0.3"
 SKILL_VERSION_MARKER = f"[skill-version:v{CURRENT_RELEASE_VERSION}]"
 DIRECT_MARKETPLACE_PATHS = {
     "codex": Path(".agents/plugins/marketplace.json"),
@@ -59,7 +59,7 @@ MARKETPLACE_DESCRIPTION = (
     "面向编码 Agent 的 GoalfyMax 场景包制作与验证能力。通过经过审计的 scene-creator 外部 MCP，"
     "把业务目标、候选路线和业务档案沉淀为可直接使用的场景包，并按需组合普通任务点、FastAgent、"
     "工具、Dataset、单 Workflow 或多 Workflow。覆盖线上资产复用、工具契约取样、依赖与辅助文件准备、"
-    "输入输出 Schema、当前版本编排、预览、bubble 验证、按需业务界面制作与部署、可选全真项目验证、"
+    "输入输出 Schema、当前版本编排、预览、bubble 验证、所有 Workflow 场景包的业务界面制作与部署、可选全真项目验证、"
     "日志与交付物检查到最终发布的完整制作链路。"
 )
 
