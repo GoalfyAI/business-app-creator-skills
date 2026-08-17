@@ -6,7 +6,7 @@
   "author": {
     "name": "GoalfyAI"
   },
-  "keywords": ["场景包", "场景包助手", "scene package", "scenario_package", "apc", "GoalfyMax", "场景包创建", "场景包诊断", "场景包优化", "能力沉淀", "上线发布", "制作工单", "SOP", "业务流程", "经验体", "项目日志", "执行日志", "复盘", "任务点", "TPE", "工具集", "toolset", "FastAgent", "FA", "工具组", "tool group", "Workflow", "编排", "orchestration", "业务界面"],
+  "keywords": ["场景包", "场景包助手", "scene package", "scenario_package", "apc", "GoalfyMax", "场景包创建", "场景包诊断", "场景包优化", "能力沉淀", "上线发布", "制作工单", "SOP", "业务流程", "经验体", "项目日志", "执行日志", "复盘", "任务点", "TPE", "工具集", "toolset", "FastAgent", "FA", "工具组", "tool group", "Workflow", "workflow", "编排", "orchestration", "业务界面", "business UI", "scenario package", "业务档案", "business archive", "个性化选路", "personalized routes", "MCP"],
   "skills": "./skills/",
   "mcpServers": "./.mcp.json"
 }

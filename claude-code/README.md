@@ -2,7 +2,7 @@
 
 本安装包会同时安装经过审计的 `scene-creator` MCP 和同名 Skill，直接连接正式生产环境：
 
-`https://workflow-mcp.goalfyai.com/mcp`
+`https://workflow-mcp.qa.goalfyai.com/mcp`
 
 ## 安装前准备
 
