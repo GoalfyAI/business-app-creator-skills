@@ -1,6 +1,6 @@
 ---
 name: scene-creator
-description: 当用户需要把业务流程、SOP、实操经验、已执行项目或业务档案沉淀为可复用的 GoalfyMax 场景包，或需要排查一个已有场景包为什么效果差、绕弯多、执行失败时使用——典型场景包括：从零创建场景包、基于参考项目的执行日志复盘并优化、逐层诊断配置问题、修复后回归验证、上线发布、续作此前未完成的制作工单。覆盖业务访谈、里程碑与候选路线提炼、能力摸底、资产制作（普通任务点 / 工具集 / FastAgent / Workflow / 多 Workflow 编排 / 业务界面）、分层验收到交付的完整制作链路。仅执行一次性业务任务、仅咨询平台概念、或开发与场景包无关的应用时不要使用。[skill-version:v1.0.10]
+description: 当用户需要把业务流程、SOP、实操经验、已执行项目或业务档案沉淀为可复用的 GoalfyMax 场景包，或需要排查一个已有场景包为什么效果差、绕弯多、执行失败时使用——典型场景包括：从零创建场景包、基于参考项目的执行日志复盘并优化、逐层诊断配置问题、修复后回归验证、上线发布、续作此前未完成的制作工单。覆盖业务访谈、里程碑与候选路线提炼、能力摸底、资产制作（普通任务点 / 工具集 / FastAgent / Workflow / 多 Workflow 编排 / 业务界面）、分层验收到交付的完整制作链路。仅执行一次性业务任务、仅咨询平台概念、或开发与场景包无关的应用时不要使用。[skill-version:v1.0.11]
 keywords:
   - 场景包
   - 场景包助手
@@ -586,7 +586,7 @@ Workflow 是做业务界面的**前提条件，不是理由**。两者的关系�
 
 ### 4.3 契约与规范
 
-`get_diagnosis_doc` 按主题读取服务端当前的制作契约与最佳实践，共 21 个主题。**需要** `task_id`。
+`get_diagnosis_doc` 按主题读取服务端当前的制作契约与最佳实践，共 22 个主题。**需要** `task_id`。
 
 | 主题 | 什么时候读 |
 |---|---|
@@ -605,6 +605,7 @@ Workflow 是做业务界面的**前提条件，不是理由**。两者的关系�
 | `workflow_example_file` | 文件路径或产物出问题时 |
 | `workflow_example_failure` | 需要失败与降级处理时 |
 | `workflow_example_handoff` | 需要 Agent 介入决策时 |
+| `workflow_example_end_to_end` | 首次需要把业务正反例贯通为 Workflow、2.0 编排、业务界面和分层验收时；**仅作方法参考，不复制案例字段、资产或路线** |
 | `scene_package_battle` | 创建资产前自审方案 |
 | `workflow_verify` | 单条 Workflow 运行后自审 |
 | `scene_package_verify` | 上线前整包自审 |
@@ -1065,6 +1066,8 @@ task_manager(create)
 #### 5.4.1 契约读取路由
 
 按 4.3 的读取纪律：确认要做 Workflow 后读 `workflow_authoring`；**动笔写任何脚本前必读** `workflow_single`；确认需要多 Workflow 依赖图后读 `workflow_multi`；命中特殊原语、文件处理、失败降级或 Agent 介入时，先读示例索引再读匹配的那一个。
+
+首次需要把一组业务正反例完整贯通为 Workflow、2.0 编排、业务界面与验证证据时，可以按需读取 `workflow_example_end_to_end`。该案例只帮助理解各阶段如何衔接，**不得**替代用户事实、实时 Schema、资产反读、工具真实取样或当前官方业务界面模板。
 
 同一主题不重复通读。动笔前仍以 `workflow_tpe_manage` 的实时参数说明和预览诊断为准。
 
