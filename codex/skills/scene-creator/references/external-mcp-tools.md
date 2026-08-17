@@ -15,15 +15,36 @@
 | `get_asset` | 反读资产完整配置、关系、Schema、版本和状态 | 只读，不接收 `task_id`；重要选择用 `task_manager(insert)` 留痕 |
 | `get_diagnosis_doc` | 按 topic 读取当前服务端制作契约和示例 | 在工单 Gate 后按需读取；记录 topic 和结论，不复制整篇返回内容 |
 | `dataset_read` | 读取有权限的数据集内容 | 只读，只取改变路线或参数所需的最小充分内容 |
+| `list_experiences` | 搜索可参考的经验体 | 只读；候选结果需继续读取知识详情才能作为方案依据 |
+| `get_experience_knowledge` | 读取经验体的结构化知识 | 只读；只取当前场景所需范围并记录来源 |
+| `get_page_objective_knowledge` | 读取经验体页面目标与操作知识 | 只读；用于补充真实业务流程和工具映射依据 |
+| `file_to_url` | 将本地文件准备为受控上传对象 | 根据实时 purpose/action 完成上传闭环；临时 URL 不写入工单 |
 | `workflow_file_upload` | 上传场景 Skill 文件或 Workflow 辅助文件 | 使用实时 Schema 暴露的上传闭环；临时 URL 不写入工单 |
-| `workflow_dependency_manage` | 维护依赖、Auth Card、普通 TPE、Toolset 和直连 MCP 取样 | `test_tool` 可能真实调用供应商；Workflow TPE 由 `workflow_tpe_manage` 管理 |
+| `preview_tool_group` | 预览新的 MCP 连接并发现工具 | 只做新连接预览；刷新已有工具组使用 `register_and_refresh_tool_group` |
+| `register_and_refresh_tool_group` | 注册新的工具组或刷新已有工具组 | 创建与刷新共用原工具的两种参数模式，以实时 Schema 为准 |
+| `upload_and_register_tool_group` | 上传并注册私有工具包 | 仅用于实时 Schema 支持的包类型和上传来源 |
+| `create_fast_agent` | 创建 FastAgent | 使用独立原工具，不经过聚合 action；创建后立即反读 |
+| `create_toolset` | 创建 Toolset | 使用独立原工具，不经过聚合 action；创建后验证能力和状态 |
+| `create_tpe` | 创建普通任务点 | 仅编排需要模型临场判断或自然语言交互的任务点 |
+| `online_toolsets` | 发布本轮已验证的 Toolset | 只发布已完成运行验证且属于本工单范围的 Toolset |
+| `import_skill_package` | 从标准 Skill 包导入 Toolset | 导入结果仍需反读、验证和按需发布 |
+| `clone_asset` | 克隆允许复制的已有资产 | 修改共享资产前先克隆；创建后立即反读克隆结果 |
+| `update_asset_field` | 修改资产文本或标量字段 | 先反读旧值并按实时确认门执行，不与关系更新混用 |
+| `update_asset_relations` | 修改资产关联关系 | 先确认真实 ID 和当前关系；受限资产按实时确认门执行 |
+| `upload_skill_files` | 上传或更新已有资产的 Skill 文件 | 使用实时合并/替换语义；临时上传 URL 不写入工单 |
+| `delete_asset` | 删除当前用户有权删除的资产，或按 Hub 规则移除分享授权 | `task_id` 只用于工单审计，实际删除权限和资产边界由 Hub 原工具判断 |
+| `create_auth_card` | 为 MCP 创建授权卡 | 密钥和认证配置不写入工单；按实时认证契约执行 |
+| `update_auth_card` | 更新已绑定授权卡 | 可能使既有授权失效，按实时确认门执行 |
+| `link_auth_card` | 绑定已有授权卡 | 替换现有绑定前按实时确认门执行 |
+| `update_scenario_package_logo` | 将已上传的 PNG 设置为场景包 Logo | 使用 `file_to_url` 返回的受控文件引用，不传本地路径或任意 URL |
+| `workflow_dependency_manage` | 对已有 MCP 工具做真实调用取样 | 只保留 `test_tool`；可能真实调用供应商，不创建、修改或删除资产 |
 | `scene_package_manage` | 创建、读取、更新、发布场景包及当前版本编排 | 当前 `workflow_orchestration` 是完整对象整体替换；写前反读原对象 |
 | `scene_package_ui_bundle` | 下载官方 UI 模板，上传、部署和反读定制界面 | 当前除模板下载外要求目标场景包至少挂载一个 Workflow；不能为纯 SA 包绕过该门槛 |
 | `workflow_tpe_manage` | Preview、创建、更新、挂载、发布和 bubble Workflow | 创建前依赖闭包已准备；bubble 轮询复用同一 `run_id` |
 | `manage_goalfymax_project` | 运行和控制真实 Max 项目 | 会启动真实 Agent、FastAgent 和工具；只有用户批准覆盖整条候选路线时执行 |
 | `get_project_execution_logs` | 读取真实项目日志和最终交付物 | 复用原 `project_id`；只保留诊断和交付所需内容 |
 
-不要虚构平行的 `list_tools`、`scene_package_task_manage` 或 `workflow_task_manager`。如果实时工具改名或 action 变化，重新读取 Schema，并以结构化错误为准更新调用。
+不要虚构平行的 `list_tools` 或 `scene_package_task_manage`。`workflow_task_manager` 仅是兼容别名，正常制作统一使用 `task_manager`。如果实时工具改名或 action 变化，重新读取 Schema，并以结构化错误为准更新调用。
 
 ## 工单 Gate
 
@@ -50,7 +71,8 @@ task_manager(create/get)
 → 完整材料/项目深读 → 里程碑、路线图、理想态和验收蓝图
 → 能力覆盖矩阵 → 方案挑战检查清单 → 用户确认
 → get_diagnosis_doc(toolset/fast_agent/...)               # 仅将要创建或诊断的资产
-→ workflow_dependency_manage                              # 仅真实能力缺口
+→ preview/register/upload/create/update/... 独立资产工具  # 按真实能力缺口选择原工具
+→ workflow_dependency_manage(test_tool)                   # 仅需要真实 MCP 返回取样时
 → scene_package_manage(create/update, offline)            # 建立或复用同一草稿
 → workflow_file_upload + skill_files_mode=merge           # 仅缺少场景知识文件
 

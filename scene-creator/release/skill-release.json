@@ -1,8 +1,8 @@
 {
   "skill_name": "scene-creator",
-  "version": "1.0.5",
-  "released_at": "2026-08-17T08:09:43Z",
-  "update_reason": "收紧 Workflow 首次受理与 Delivery 核验：首批 TaskPoint 创建后才回传 Runtime ID，入口失败不泄露预留 ID，fail_business 统一经过内容统计核验",
+  "version": "1.0.8",
+  "released_at": "2026-08-17T08:35:08Z",
+  "update_reason": "聚合入口仅保留 test_tool，独立工具按原契约路由",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -14,10 +14,10 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "6f7a4c335185aae212dbaae803002eaa0a820f0341deb7a46eee2687f1f9fc61",
+    "SKILL.md": "8d39a0d77ecd1e9100b4e79f5d1a15fbe3ea9114d9eba8fd4f8901a5181bf49f",
     "agents/openai.yaml": "c074f028f93e3ddbfc29d457279542cb95e09a21d25fcdc8dfc730c8dcece4bd",
     "references/Workflow验收检查清单.md": "cf8895fb40bd63ff30b0e0abd10732a528a36271efb161b7bb8bdf06e2ae41f3",
-    "references/external-mcp-tools.md": "bb5e051911b85ca6bff1d0e3aa6d730121c563e0b040af23e1c37030cdacf547",
+    "references/external-mcp-tools.md": "7e326023eb71841190e4c6983b1038cd4d7900d334b7d50c48f046a71f8e4f9f",
     "references/业务界面制作契约.md": "1eaebb0f5ad0cd154be056f57c6064bf241796b17567854b3bd016511d63d72c",
     "references/业务界面验收检查清单.md": "c6490bd2e7937090c66d2d9f4d31d8d5acb894067ddf3b7492ef4b23f96832f3",
     "references/场景包验收检查清单.md": "484b1f38998f53f8d35e783c8330f83065d393dda5caa5b06f91c02f400d7a04",

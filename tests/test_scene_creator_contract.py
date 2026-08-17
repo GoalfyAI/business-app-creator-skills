@@ -36,7 +36,7 @@ def test_skill_is_progressively_disclosed_and_has_minimal_frontmatter():
 
     assert set(frontmatter) == {"name", "description"}
     assert frontmatter["name"] == "scene-creator"
-    assert "[skill-version:v1.0.5]" in frontmatter["description"]
+    assert "[skill-version:v1.0.8]" in frontmatter["description"]
     assert len(content.splitlines()) < 600
     assert "# 场景包制作与优化" in content
     assert "## 按需参考" in content
@@ -249,7 +249,28 @@ def test_task_manager_is_the_canonical_first_business_gate():
         "get_asset",
         "get_diagnosis_doc",
         "dataset_read",
+        "list_experiences",
+        "get_experience_knowledge",
+        "get_page_objective_knowledge",
+        "file_to_url",
         "workflow_file_upload",
+        "preview_tool_group",
+        "register_and_refresh_tool_group",
+        "upload_and_register_tool_group",
+        "create_fast_agent",
+        "create_toolset",
+        "create_tpe",
+        "online_toolsets",
+        "import_skill_package",
+        "clone_asset",
+        "update_asset_field",
+        "update_asset_relations",
+        "upload_skill_files",
+        "delete_asset",
+        "create_auth_card",
+        "update_auth_card",
+        "link_auth_card",
+        "update_scenario_package_logo",
         "workflow_dependency_manage",
         "scene_package_manage",
         "scene_package_ui_bundle",
@@ -259,7 +280,8 @@ def test_task_manager_is_the_canonical_first_business_gate():
     }
     documented = set(re.findall(r"^\| `([^`]+)` \|", routing, re.MULTILINE))
     assert documented == expected_tools
-    assert "不要虚构平行的 `list_tools`、`scene_package_task_manage` 或 `workflow_task_manager`" in routing
+    assert "不要虚构平行的 `list_tools` 或 `scene_package_task_manage`" in routing
+    assert "`workflow_task_manager` 仅是兼容别名" in routing
     assert routing.index("task_manager(create/get)") < routing.index("get_diagnosis_doc(scene_package)")
     assert routing.index("get_diagnosis_doc(scene_package)") < routing.index("list_assets / get_asset")
 
