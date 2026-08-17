@@ -1,8 +1,8 @@
 {
   "skill_name": "scene-creator",
-  "version": "1.0.11",
-  "released_at": "2026-08-17T12:15:39Z",
-  "update_reason": "新增 Workflow 端到端参考案例路由并明确案例不可复制边界",
+  "version": "1.0.12",
+  "released_at": "2026-08-17T12:44:43Z",
+  "update_reason": "端到端示例路由改为规范表述",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -14,7 +14,7 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "c1d626911fb439472337cba4a2a01daf176df5827170a5af3ec22dae2a5ee773",
+    "SKILL.md": "0e060e4772a0a2bfaae16e0d5c36e868141e443f755e7238998b7edce3f08129",
     "agents/openai.yaml": "9165ad4644f65ae71f58467c5683373ca6f1acdd2a9270958a4a13cad60b5790",
     "references/Workflow验收检查清单.md": "ca6159075317b6fa2d993b57c5ec3e6dedccfd637d9969188deff6204a7a582c",
     "references/业务界面制作契约.md": "d55b273146a835f6fcac11911a9842bd052044443e44a0500bcef8e13cdac1dd",
