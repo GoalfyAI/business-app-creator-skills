@@ -11,15 +11,11 @@
 | 工具 | 稳定职责 | 关键边界 |
 |---|---|---|
 | `task_manager` | 创建、读取、追加和完成可审计工单 | 新任务的第一项业务 MCP 调用；`read/write` 模式不可混用；新建 `write` 工单传完整 `skill_version` |
-| `list_assets` | 搜索可复用资产、场景包和已完成经验 | 只读，不接收 `task_id`；搜索结果不是完整资产契约 |
-| `get_asset` | 反读资产完整配置、关系、Schema、版本和状态 | 只读，不接收 `task_id`；重要选择用 `task_manager(insert)` 留痕 |
+| `list_assets` | 搜索可复用资产、场景包和已完成经验 | 只读；可选接收 `task_id` 但不强制，不改变资产权限；搜索结果不是完整资产契约 |
+| `get_asset` | 反读资产完整配置、关系、Schema、版本和状态 | 只读；可选接收 `task_id` 但不强制，不改变资产权限；重要选择用 `task_manager(insert)` 留痕 |
 | `get_diagnosis_doc` | 按 topic 读取当前服务端制作契约和示例 | 在工单 Gate 后按需读取；记录 topic 和结论，不复制整篇返回内容 |
-| `dataset_read` | 读取有权限的数据集内容 | 只读，只取改变路线或参数所需的最小充分内容 |
-| `list_experiences` | 搜索可参考的经验体 | 只读；候选结果需继续读取知识详情才能作为方案依据 |
-| `get_experience_knowledge` | 读取经验体的结构化知识 | 只读；只取当前场景所需范围并记录来源 |
-| `get_page_objective_knowledge` | 读取经验体页面目标与操作知识 | 只读；用于补充真实业务流程和工具映射依据 |
-| `file_to_url` | 将本地文件准备为受控上传对象 | 根据实时 purpose/action 完成上传闭环；临时 URL 不写入工单 |
-| `workflow_file_upload` | 上传场景 Skill 文件或 Workflow 辅助文件 | 使用实时 Schema 暴露的上传闭环；临时 URL 不写入工单 |
+| `dataset_read` | 读取有权限的数据集内容 | 只读；可选接收 `task_id` 但不强制，不改变数据集权限；只取改变路线或参数所需的最小充分内容 |
+| `file_to_url` | 将本地文件或可信 HTTPS Skill 文件准备为受控引用 | `purpose` 区分 Skill 文件、Skill 包、MCP 包和 Logo；Skill 文件支持 `prepare/complete/from_url` 并返回 `data.skill_file` |
 | `preview_tool_group` | 预览新的 MCP 连接并发现工具 | 只做新连接预览；刷新已有工具组使用 `register_and_refresh_tool_group` |
 | `register_and_refresh_tool_group` | 注册新的工具组或刷新已有工具组 | 创建与刷新共用原工具的两种参数模式，以实时 Schema 为准 |
 | `upload_and_register_tool_group` | 上传并注册私有工具包 | 仅用于实时 Schema 支持的包类型和上传来源 |
@@ -44,7 +40,7 @@
 | `manage_goalfymax_project` | 运行和控制真实 Max 项目 | 会启动真实 Agent、FastAgent 和工具；只有用户批准覆盖整条候选路线时执行 |
 | `get_project_execution_logs` | 读取真实项目日志和最终交付物 | 复用原 `project_id`；只保留诊断和交付所需内容 |
 
-不要虚构平行的 `list_tools` 或 `scene_package_task_manage`。`workflow_task_manager` 仅是兼容别名，正常制作统一使用 `task_manager`。如果实时工具改名或 action 变化，重新读取 Schema，并以结构化错误为准更新调用。
+不要虚构平行的 `list_tools`、`scene_package_task_manage` 或旧工单别名。正常制作统一使用 `task_manager`。如果实时工具改名或 action 变化，重新读取 Schema，并以结构化错误为准更新调用。
 
 ## 工单 Gate
 
@@ -58,7 +54,7 @@
 
 Gate 成功前不能读取制作契约、搜索业务资产、创建计划或写入。安装和连通性检查是例外：只做 `tools/list` 与一次只读资产查询，不建立业务工单。
 
-`task_id` 是审计范围，不是资产 ID。只给实时 Schema 明确接受 `task_id` 的调用传入它；`list_assets/get_asset` 不接收该参数。
+`task_id` 是审计范围，不是资产 ID。`list_assets/get_asset/dataset_read/task_manager` 的 Schema 接受该字段但不全局强制：前三者只读且不改变权限，`task_manager` 的 `get/insert/complete` 按 action 要求。
 
 ## 稳定调用关系
 
@@ -74,7 +70,7 @@ task_manager(create/get)
 → preview/register/upload/create/update/... 独立资产工具  # 按真实能力缺口选择原工具
 → workflow_tool_test(...)                                 # 仅需要真实 MCP 返回取样时
 → scene_package_manage(create/update, offline)            # 建立或复用同一草稿
-→ workflow_file_upload + skill_files_mode=merge           # 仅缺少场景知识文件
+→ file_to_url(purpose=skill_file) + skill_files_mode=merge # 仅缺少场景知识文件
 
 → get_diagnosis_doc(workflow_authoring)                   # 决定使用 Workflow 后
 → get_diagnosis_doc(workflow_single)                      # 写单 Workflow 前

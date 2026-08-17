@@ -36,7 +36,7 @@ def test_skill_is_progressively_disclosed_and_has_minimal_frontmatter():
 
     assert set(frontmatter) == {"name", "description"}
     assert frontmatter["name"] == "scene-creator"
-    assert "[skill-version:v1.0.9]" in frontmatter["description"]
+    assert "[skill-version:v1.0.10]" in frontmatter["description"]
     assert len(content.splitlines()) < 600
     assert "# 场景包制作与优化" in content
     assert "## 按需参考" in content
@@ -241,7 +241,7 @@ def test_task_manager_is_the_canonical_first_business_gate():
     assert "完整 `skill_version`" in content
     assert "`read` 诊断转入修复时新建 `write` 工单" in content
     assert "Gate 成功后再读取服务端制作契约、搜索资产、规划或写入" in content
-    assert "`list_assets/get_asset` 不接收 `task_id`" in content
+    assert "`list_assets/get_asset/dataset_read` 可选接收 `task_id`" in content
 
     expected_tools = {
         "task_manager",
@@ -249,11 +249,7 @@ def test_task_manager_is_the_canonical_first_business_gate():
         "get_asset",
         "get_diagnosis_doc",
         "dataset_read",
-        "list_experiences",
-        "get_experience_knowledge",
-        "get_page_objective_knowledge",
         "file_to_url",
-        "workflow_file_upload",
         "preview_tool_group",
         "register_and_refresh_tool_group",
         "upload_and_register_tool_group",
@@ -280,8 +276,8 @@ def test_task_manager_is_the_canonical_first_business_gate():
     }
     documented = set(re.findall(r"^\| `([^`]+)` \|", routing, re.MULTILINE))
     assert documented == expected_tools
-    assert "不要虚构平行的 `list_tools` 或 `scene_package_task_manage`" in routing
-    assert "`workflow_task_manager` 仅是兼容别名" in routing
+    assert "不要虚构平行的 `list_tools`、`scene_package_task_manage`" in routing
+    assert "workflow_task_manager" not in routing
     assert routing.index("task_manager(create/get)") < routing.index("get_diagnosis_doc(scene_package)")
     assert routing.index("get_diagnosis_doc(scene_package)") < routing.index("list_assets / get_asset")
 

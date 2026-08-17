@@ -14,7 +14,7 @@ SPEC = importlib.util.spec_from_file_location("scene_creator_release", SCRIPT_PA
 assert SPEC and SPEC.loader
 release_module = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(release_module)
-NEXT_VERSION = "1.0.10"
+NEXT_VERSION = "1.0.11"
 
 
 def _copy_skill(tmp_path: Path) -> Path:
@@ -33,7 +33,7 @@ def test_checked_in_scene_creator_release_is_current():
     manifest = release_module.check_release(SKILL_ROOT)
 
     assert manifest["skill_name"] == "scene-creator"
-    assert manifest["version"] == "1.0.9"
+    assert manifest["version"] == "1.0.10"
 
 
 def test_skill_source_change_requires_a_new_release(tmp_path: Path):

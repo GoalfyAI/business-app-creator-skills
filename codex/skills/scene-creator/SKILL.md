@@ -1,6 +1,6 @@
 ---
 name: scene-creator
-description: 创建、诊断、优化、验证或发布 GoalfyMax 场景包，并把业务流程、SOP、经验、项目日志或业务档案沉淀为可复用能力。使用经过审计的 scene-creator MCP 复用和维护场景 Skill、普通任务点、Toolset、Tool Group、FastAgent、Dataset、Workflow、当前平台支持的 Workflow 编排与业务界面；适用于场景包效果诊断、真实项目复盘和续作，不用于一次性业务执行。[skill-version:v1.0.9]
+description: 创建、诊断、优化、验证或发布 GoalfyMax 场景包，并把业务流程、SOP、经验、项目日志或业务档案沉淀为可复用能力。使用经过审计的 scene-creator MCP 复用和维护场景 Skill、普通任务点、Toolset、Tool Group、FastAgent、Dataset、Workflow、当前平台支持的 Workflow 编排与业务界面；适用于场景包效果诊断、真实项目复盘和续作，不用于一次性业务执行。[skill-version:v1.0.10]
 ---
 
 # 场景包制作与优化
@@ -121,7 +121,7 @@ description: 创建、诊断、优化、验证或发布 GoalfyMax 场景包，�
 1. 新任务的第一项业务 MCP 调用使用 `task_manager(action="create", mode=...)`。`write` 模式同时传入本文件 description 中的完整 `skill_version`。
 2. 已知 `task_id` 的续作先单独 `task_manager(action="get")`。
 3. 明确是续作但不知道 ID 时先单独 `task_manager(action="list")`；唯一匹配再 `get`，没有匹配才 `create`，多个候选请用户选择。
-4. 等待 Gate 成功后再读取服务端制作契约、搜索资产、规划或写入；`list_assets/get_asset` 不接收 `task_id`，重要选择结论用 `task_manager(insert)` 记录。
+4. 等待 Gate 成功后再读取服务端制作契约、搜索资产、规划或写入；`list_assets/get_asset/dataset_read` 可选接收 `task_id` 但不强制，也不因该字段改变读取权限，重要选择结论用 `task_manager(insert)` 记录。
 5. `read` 诊断转入修复时新建 `write` 工单并传 `continued_from_task_id`，不在只读工单中执行写 action。
 
 工单只记录业务事实、资产标识、决策、假设、阶段产物和验证摘要。不要写入密钥、Cookie、预签名 URL、原始敏感日志、供应商完整输出或内部挂载路径。
@@ -360,7 +360,7 @@ Toolset 使用指南只写工具之间的关系、适用条件、输入衔接、
 
 起草达到“Skill 颗粒度”要求的 `apc_skill` 和必要场景 Skill 文件。逐一对照第 3 阶段的瓶颈、里程碑和候选路线，确认每个预期减少的绕行都有对应指导，每个 Skill 文件都有明确读取时机，数字资产 ID、制作说明、DAG、工具完整 Schema 和具体私有档案事实没有混入。
 
-调用实时 `scene_package_manage` 创建离线草稿；当前 create 默认克隆官方基础场景包时，立即反读继承的基础能力、关系和 warning，只修改真实需要的部分。保存 `scene_package_id`，后续修复更新同一草稿，不创建平行资产绕过错误。上传场景 Skill 文件使用 `workflow_file_upload`，再以 `skill_files_mode="merge"` 绑定。
+调用实时 `scene_package_manage` 创建离线草稿；当前 create 默认克隆官方基础场景包时，立即反读继承的基础能力、关系和 warning，只修改真实需要的部分。保存 `scene_package_id`，后续修复更新同一草稿，不创建平行资产绕过错误。上传场景 Skill 文件使用 `file_to_url(action="prepare"|"complete", purpose="skill_file", ...)`；已有可信 HTTPS 文件使用 `action="from_url"`。收集返回的 `data.skill_file`，再以 `skill_files_mode="merge"` 绑定。
 
 诊断优化模式先反读目标包全貌；结构类与关系类问题优先修复，再处理文本、Prompt 和知识，最后才重建资产。修改共享资产、替换受限能力、删除或扩大范围需要相应确认。
 
