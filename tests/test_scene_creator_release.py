@@ -5,6 +5,7 @@ import zipfile
 from pathlib import Path
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).parents[1]
 SKILL_ROOT = ROOT / "scene-creator"
@@ -14,13 +15,23 @@ SPEC = importlib.util.spec_from_file_location("scene_creator_release", SCRIPT_PA
 assert SPEC and SPEC.loader
 release_module = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(release_module)
-NEXT_VERSION = "1.0.10"
+_CURRENT_PARTS = [int(part) for part in release_module.CURRENT_RELEASE_VERSION.split(".")]
+NEXT_VERSION = f"{_CURRENT_PARTS[0]}.{_CURRENT_PARTS[1]}.{_CURRENT_PARTS[2] + 1}"
 
 
 def _copy_skill(tmp_path: Path) -> Path:
     copied = tmp_path / "scene-creator"
     shutil.copytree(SKILL_ROOT, copied)
     return copied
+
+
+def _skill_keywords(skill_root: Path = SKILL_ROOT) -> list[str]:
+    """读取 SKILL.md frontmatter 的 keywords，作为插件市场标签的唯一预期值。"""
+    content = (skill_root / "SKILL.md").read_text(encoding="utf-8")
+    lines = content.splitlines()
+    closing_index = lines.index("---", 1)
+    frontmatter = yaml.safe_load("\n".join(lines[1:closing_index]))
+    return frontmatter.get("keywords") or []
 
 
 def _manifest(skill_root: Path = SKILL_ROOT) -> dict:
@@ -33,7 +44,7 @@ def test_checked_in_scene_creator_release_is_current():
     manifest = release_module.check_release(SKILL_ROOT)
 
     assert manifest["skill_name"] == "scene-creator"
-    assert manifest["version"] == "1.0.9"
+    assert manifest["version"] == release_module.CURRENT_RELEASE_VERSION
 
 
 def test_skill_source_change_requires_a_new_release(tmp_path: Path):
@@ -104,13 +115,10 @@ def test_checked_in_direct_marketplaces_are_current():
     assert claude_marketplace["plugins"][0]["source"] == "./claude-code"
     assert codex_marketplace["plugins"][0]["version"] == manifest["version"]
     assert claude_marketplace["plugins"][0]["version"] == manifest["version"]
+    expected = release_module._skill_copy(SKILL_ROOT)
     for marketplace in (codex_marketplace, claude_marketplace):
-        assert len(marketplace["description"]) >= 100
-        assert "线上资产复用" in marketplace["description"]
-        assert "bubble 验证" in marketplace["description"]
-        assert "可选全真项目验证" in marketplace["description"]
-        assert "日志与交付物检查" in marketplace["description"]
-        assert len(marketplace["plugins"][0]["description"]) >= 80
+        assert marketplace["description"] == expected["description"]
+        assert marketplace["plugins"][0]["description"] == expected["description"]
 
 
 def test_production_release_requires_version_increase(tmp_path: Path):
@@ -168,15 +176,34 @@ def test_release_rejects_unexpected_skill_frontmatter_field(tmp_path: Path):
     skill_file = copied / "SKILL.md"
     content = skill_file.read_text(encoding="utf-8")
     _, frontmatter_text, body = content.split("---", 2)
-    frontmatter_text += "keywords:\n  - workflow\n"
+    frontmatter_text += "license: MIT\n"
     skill_file.write_text(
         f"---{frontmatter_text}---{body}",
         encoding="utf-8",
     )
 
-    with pytest.raises(release_module.ReleaseError, match="name 和 description"):
+    with pytest.raises(release_module.ReleaseError, match="未知字段"):
         release_module.release(
-            copied, NEXT_VERSION, "Missing keywords"
+            copied, NEXT_VERSION, "Unexpected frontmatter field"
+        )
+
+
+def test_release_rejects_invalid_skill_keywords(tmp_path: Path):
+    copied = _copy_skill(tmp_path)
+    skill_file = copied / "SKILL.md"
+    content = skill_file.read_text(encoding="utf-8")
+    _, frontmatter_text, body = content.split("---", 2)
+    frontmatter_text = frontmatter_text.replace(
+        "keywords:", "keywords_disabled:", 1
+    ) + "keywords: []\n"
+    skill_file.write_text(
+        f"---{frontmatter_text}---{body}",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(release_module.ReleaseError, match="keywords"):
+        release_module.release(
+            copied, NEXT_VERSION, "Empty keywords"
         )
 
 
@@ -315,12 +342,13 @@ def test_platform_packages_share_one_source_and_exclude_release_files(tmp_path: 
     )
     assert codex_manifest["version"] == version
     assert claude_manifest["version"] == version
+    expected = release_module._skill_copy(SKILL_ROOT)
     for plugin_manifest in (codex_manifest, claude_manifest):
-        assert len(plugin_manifest["description"]) >= 150
-        assert "工具契约取样" in plugin_manifest["description"]
-        assert "输入输出 Schema" in plugin_manifest["description"]
-        assert "bubble 验证" in plugin_manifest["description"]
-        assert "日志诊断" in plugin_manifest["description"]
+        assert plugin_manifest["description"] == expected["description"]
+    assert codex_manifest["interface"]["longDescription"] == expected["description"]
+    assert codex_manifest["interface"]["shortDescription"] == expected["short_description"]
+    assert codex_manifest["interface"]["defaultPrompt"] == expected["default_prompt"]
+    assert claude_manifest["keywords"] == _skill_keywords()
 
 
 def test_platform_mcp_templates_use_env_key_and_live_external_contract():

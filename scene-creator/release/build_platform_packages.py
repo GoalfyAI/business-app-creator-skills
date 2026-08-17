@@ -21,12 +21,18 @@ SKILL_NAME = "scene-creator"
 MANIFEST_RELATIVE_PATH = Path("release/skill-release.json")
 OPENAI_METADATA_RELATIVE_PATH = Path("agents/openai.yaml")
 PLATFORM_SOURCE_RELATIVE_PATH = Path("release/platforms")
-PLATFORM_VERSION_TOKEN = "__SCENE_CREATOR_VERSION__"
+PLATFORM_VERSION_PLACEHOLDER = "__SCENE_CREATOR_VERSION__"
+PLATFORM_DESCRIPTION_PLACEHOLDER = "__SCENE_CREATOR_DESCRIPTION__"
+PLATFORM_SHORT_DESCRIPTION_PLACEHOLDER = "__SCENE_CREATOR_SHORT_DESCRIPTION__"
+PLATFORM_DEFAULT_PROMPT_PLACEHOLDER = "__SCENE_CREATOR_DEFAULT_PROMPT__"
+PLATFORM_KEYWORDS_PLACEHOLDER = "__SCENE_CREATOR_KEYWORDS__"
 PLATFORM_NAMES = ("codex", "claude-code")
 PRODUCTION_MCP_ENDPOINT = "https://workflow-mcp.goalfyai.com/mcp"
 REVIEWED_MCP_ENDPOINT = PRODUCTION_MCP_ENDPOINT
 CURRENT_RELEASE_VERSION = "1.0.9"
 SKILL_VERSION_MARKER = f"[skill-version:v{CURRENT_RELEASE_VERSION}]"
+REQUIRED_SKILL_FRONTMATTER_FIELDS = {"name", "description"}
+OPTIONAL_SKILL_FRONTMATTER_FIELDS = {"keywords"}
 DIRECT_MARKETPLACE_PATHS = {
     "codex": Path(".agents/plugins/marketplace.json"),
     "claude-code": Path(".claude-plugin/marketplace.json"),
@@ -55,13 +61,7 @@ MANIFEST_KEYS = {
 }
 SEMVER_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
-MARKETPLACE_DESCRIPTION = (
-    "面向编码 Agent 的 GoalfyMax 场景包制作与验证能力。通过经过审计的 scene-creator 外部 MCP，"
-    "把业务目标、候选路线和业务档案沉淀为可直接使用的场景包，并按需组合普通任务点、FastAgent、"
-    "工具、Dataset、单 Workflow 或多 Workflow。覆盖线上资产复用、工具契约取样、依赖与辅助文件准备、"
-    "输入输出 Schema、当前版本编排、预览、bubble 验证、所有 Workflow 场景包的业务界面制作与部署、可选全真项目验证、"
-    "日志与交付物检查到最终发布的完整制作链路。"
-)
+COPY_UNSAFE_CHARS = ('"', "\\")
 
 
 class ReleaseError(ValueError):
@@ -173,9 +173,19 @@ def validate_skill_metadata(skill_root: Path) -> None:
     except ValueError as exc:
         raise ReleaseError("SKILL.md frontmatter 未闭合") from exc
     frontmatter = _load_yaml_mapping("\n".join(lines[1:closing_index]), "SKILL.md frontmatter")
-    if set(frontmatter) != {"name", "description"}:
+    present_fields = set(frontmatter)
+    missing_fields = REQUIRED_SKILL_FRONTMATTER_FIELDS - present_fields
+    if missing_fields:
         raise ReleaseError(
-            "SKILL.md frontmatter 必须且只能包含 name 和 description"
+            f"SKILL.md frontmatter 缺少必填字段：{sorted(missing_fields)}"
+        )
+    unexpected_fields = present_fields - (
+        REQUIRED_SKILL_FRONTMATTER_FIELDS | OPTIONAL_SKILL_FRONTMATTER_FIELDS
+    )
+    if unexpected_fields:
+        raise ReleaseError(
+            f"SKILL.md frontmatter 只允许 name、description 和 keywords，"
+            f"出现未知字段：{sorted(unexpected_fields)}"
         )
     if frontmatter["name"] != SKILL_NAME:
         raise ReleaseError(f"SKILL.md 的 name 必须是 {SKILL_NAME!r}")
@@ -186,6 +196,14 @@ def validate_skill_metadata(skill_root: Path) -> None:
         raise ReleaseError(
             f"SKILL.md 的 description 必须包含 {SKILL_VERSION_MARKER}"
         )
+    if "keywords" in frontmatter:
+        keywords = frontmatter["keywords"]
+        if not isinstance(keywords, list) or not keywords:
+            raise ReleaseError("SKILL.md 的 keywords 必须是非空列表")
+        if any(not isinstance(item, str) or not item.strip() for item in keywords):
+            raise ReleaseError("SKILL.md 的 keywords 每一项必须是非空字符串")
+        if len(set(keywords)) != len(keywords):
+            raise ReleaseError("SKILL.md 的 keywords 不允许重复")
     if not "\n".join(lines[closing_index + 1 :]).strip():
         raise ReleaseError("SKILL.md 正文不能为空")
 
@@ -242,9 +260,11 @@ def validate_platform_sources(skill_root: Path) -> None:
             else Path(".claude-plugin/plugin.json")
         )
         manifest = json.loads(
-            (source_root / manifest_relative)
-            .read_text(encoding="utf-8")
-            .replace(PLATFORM_VERSION_TOKEN, "0.0.0")
+            _render_copy(
+                (source_root / manifest_relative).read_text(encoding="utf-8"),
+                "0.0.0",
+                _skill_copy(skill_root),
+            )
         )
         if manifest.get("name") != SKILL_NAME:
             raise ReleaseError(f"{platform} 插件名称必须是 {SKILL_NAME!r}")
@@ -462,18 +482,67 @@ def _write_zip(
             _write_member(archive, archive_path, data)
 
 
-def _bundle_marketplace(platform: str, version: str) -> tuple[str, bytes]:
-    client_name = "Codex" if platform == "codex" else "Claude Code"
-    plugin_description = (
-        f"在 {client_name} 中创建、更新、验证并发布 GoalfyMax 场景包。支持线上资产复用、工具契约"
-        "取样、依赖与辅助文件准备、单 Workflow 或多 Workflow 编排、输入输出 Schema 校验、预览、"
-        "bubble、业务界面制作与部署、可选全真项目验证、日志诊断和交付物检查。"
+def _skill_copy(skill_root: Path) -> dict[str, str]:
+    """读取对外文案的唯一源。
+
+    长描述来自 SKILL.md 的 description（剥掉版本标记），短描述和默认指令来自
+    agents/openai.yaml。平台安装文件通过占位符引用它们，不再各存一份。
+    """
+    content = (skill_root / "SKILL.md").read_text(encoding="utf-8")
+    lines = content.splitlines()
+    closing_index = lines.index("---", 1)
+    frontmatter = _load_yaml_mapping("\n".join(lines[1:closing_index]), "SKILL.md frontmatter")
+    description = frontmatter["description"].replace(SKILL_VERSION_MARKER, "").strip()
+
+    metadata = _load_yaml_mapping(
+        (skill_root / OPENAI_METADATA_RELATIVE_PATH).read_text(encoding="utf-8"),
+        "agents/openai.yaml",
     )
+    interface = metadata["interface"]
+    copy = {
+        "description": description,
+        "short_description": interface["short_description"].strip(),
+        "default_prompt": interface["default_prompt"].strip(),
+    }
+    for field, value in copy.items():
+        if not value:
+            raise ReleaseError(f"对外文案 {field} 不能为空")
+        for char in COPY_UNSAFE_CHARS:
+            if char in value:
+                raise ReleaseError(
+                    f"对外文案 {field} 不能包含 {char!r}，否则注入安装文件后会破坏 JSON"
+                )
+
+    keywords = frontmatter.get("keywords") or []
+    for item in keywords:
+        for char in COPY_UNSAFE_CHARS:
+            if char in item:
+                raise ReleaseError(
+                    f"关键词 {item!r} 不能包含 {char!r}，否则注入安装文件后会破坏 JSON"
+                )
+    # 关键词按 JSON 元素序列注入，模板保持 ["占位符"] 形态，因此模板本身仍是合法 JSON
+    copy["keywords"] = ", ".join(json.dumps(item, ensure_ascii=False) for item in keywords)
+    return copy
+
+
+def _render_copy(text: str, version: str, copy: dict[str, str]) -> str:
+    """把版本和对外文案注入平台安装文件模板。"""
+    return (
+        text.replace(PLATFORM_VERSION_PLACEHOLDER, version)
+        .replace(PLATFORM_DESCRIPTION_PLACEHOLDER, copy["description"])
+        .replace(PLATFORM_SHORT_DESCRIPTION_PLACEHOLDER, copy["short_description"])
+        .replace(PLATFORM_DEFAULT_PROMPT_PLACEHOLDER, copy["default_prompt"])
+        .replace(f'"{PLATFORM_KEYWORDS_PLACEHOLDER}"', copy["keywords"])
+    )
+
+
+def _bundle_marketplace(platform: str, version: str, copy: dict[str, str]) -> tuple[str, bytes]:
+    plugin_description = copy["description"]
     if platform == "codex":
         path = ".agents/plugins/marketplace.json"
         body = {
             "name": "scene-creator",
-            "description": MARKETPLACE_DESCRIPTION,
+            "description": copy["description"],
             "interface": {"displayName": "场景包制作"},
             "plugins": [
                 {
@@ -498,7 +567,7 @@ def _bundle_marketplace(platform: str, version: str) -> tuple[str, bytes]:
         body = {
             "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
             "name": "scene-creator",
-            "description": MARKETPLACE_DESCRIPTION,
+            "description": copy["description"],
             "owner": {"name": "GoalfyAI"},
             "plugins": [
                 {
@@ -514,20 +583,15 @@ def _bundle_marketplace(platform: str, version: str) -> tuple[str, bytes]:
     return path, (json.dumps(body, ensure_ascii=False, indent=2) + "\n").encode()
 
 
-def _direct_marketplace(platform: str, version: str) -> bytes:
-    client_name = "Codex" if platform == "codex" else "Claude Code"
+def _direct_marketplace(platform: str, version: str, copy: dict[str, str]) -> bytes:
     body: dict[str, Any] = {
         "name": "scene-creator",
-        "description": MARKETPLACE_DESCRIPTION,
+        "description": copy["description"],
         "owner": {"name": "GoalfyAI"},
         "plugins": [
             {
                 "name": SKILL_NAME,
-                "description": (
-                    f"在 {client_name} 中创建、更新、验证并发布 GoalfyMax 场景包。支持线上资产复用、"
-                    "工具契约取样、依赖与辅助文件准备、单 Workflow 或多 Workflow 编排、输入输出 "
-                    "Schema 校验、预览、bubble、业务界面制作与部署、可选全真项目验证、日志诊断和交付物检查。"
-                ),
+                "description": copy["description"],
                 "version": version,
                 "author": {"name": "GoalfyAI"},
                 "source": f"./{platform}",
@@ -551,20 +615,19 @@ def _direct_install_files(
         for path in manifest["source_files"]
         if path == "SKILL.md" or path.startswith("references/")
     ]
+    copy = _skill_copy(skill_root)
     rendered: dict[Path, bytes] = {}
     for platform in PLATFORM_NAMES:
         rendered[DIRECT_MARKETPLACE_PATHS[platform]] = _direct_marketplace(
-            platform, version
+            platform, version, copy
         )
         for source_path in sorted((platform_root / platform).rglob("*")):
             if not source_path.is_file():
                 continue
             relative_path = source_path.relative_to(platform_root / platform)
-            rendered[Path(platform) / relative_path] = (
-                source_path.read_text(encoding="utf-8")
-                .replace(PLATFORM_VERSION_TOKEN, version)
-                .encode()
-            )
+            rendered[Path(platform) / relative_path] = _render_copy(
+                source_path.read_text(encoding="utf-8"), version, copy
+            ).encode()
         source_files = (
             list(manifest["source_files"]) if platform == "codex" else common_files
         )
@@ -653,7 +716,8 @@ def _write_platform_zip(
     with zipfile.ZipFile(
         output_path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
     ) as archive:
-        marketplace_path, marketplace_data = _bundle_marketplace(platform, version)
+        copy = _skill_copy(skill_root)
+        marketplace_path, marketplace_data = _bundle_marketplace(platform, version, copy)
         _write_member(
             archive, f"{bundle_root}/{marketplace_path}", marketplace_data
         )
@@ -661,8 +725,8 @@ def _write_platform_zip(
             if not source_path.is_file():
                 continue
             relative_path = source_path.relative_to(platform_root).as_posix()
-            data = source_path.read_text(encoding="utf-8").replace(
-                PLATFORM_VERSION_TOKEN, version
+            data = _render_copy(
+                source_path.read_text(encoding="utf-8"), version, copy
             ).encode()
             _write_member(archive, f"{plugin_root}/{relative_path}", data)
             if relative_path in {"README.md", "AGENTS.md", "UPDATE.md"}:
