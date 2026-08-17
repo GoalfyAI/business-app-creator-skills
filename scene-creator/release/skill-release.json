@@ -1,27 +1,27 @@
 {
   "skill_name": "scene-creator",
-  "version": "1.0.9",
-  "released_at": "2026-08-17T10:47:13Z",
-  "update_reason": "将真实工具取样入口更名为 workflow_tool_test，并移除单 action 参数",
+  "version": "1.0.10",
+  "released_at": "2026-08-17T11:54:37Z",
+  "update_reason": "按外部 MCP 实际契约重写场景包制作 Skill：结构重组、29 个工具路由补齐、文案收敛为单一来源",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
     "references/Workflow验收检查清单.md",
-    "references/external-mcp-tools.md",
     "references/业务界面制作契约.md",
     "references/业务界面验收检查清单.md",
+    "references/依赖与MCP接入.md",
     "references/场景包验收检查清单.md",
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "13be8ec414480694bb5929257649f5e4528a9a2cd61d70907f7303daa7515afe",
-    "agents/openai.yaml": "c074f028f93e3ddbfc29d457279542cb95e09a21d25fcdc8dfc730c8dcece4bd",
-    "references/Workflow验收检查清单.md": "cf8895fb40bd63ff30b0e0abd10732a528a36271efb161b7bb8bdf06e2ae41f3",
-    "references/external-mcp-tools.md": "f2c6d7e62e86a1177169dfe12e4b22fd6adb7f18d3a9111a11801df54ed32012",
-    "references/业务界面制作契约.md": "1eaebb0f5ad0cd154be056f57c6064bf241796b17567854b3bd016511d63d72c",
-    "references/业务界面验收检查清单.md": "c6490bd2e7937090c66d2d9f4d31d8d5acb894067ddf3b7492ef4b23f96832f3",
-    "references/场景包验收检查清单.md": "484b1f38998f53f8d35e783c8330f83065d393dda5caa5b06f91c02f400d7a04",
-    "references/方案挑战检查清单.md": "be598497af0382f5893d1bfe15b71ed9606370948e1bb9fbd32ceba9adadb1d7"
+    "SKILL.md": "a3b6208d153187f69e5076c533765ffacc4560a48f0fa089b50ce6e72026bb4b",
+    "agents/openai.yaml": "9165ad4644f65ae71f58467c5683373ca6f1acdd2a9270958a4a13cad60b5790",
+    "references/Workflow验收检查清单.md": "ca6159075317b6fa2d993b57c5ec3e6dedccfd637d9969188deff6204a7a582c",
+    "references/业务界面制作契约.md": "d55b273146a835f6fcac11911a9842bd052044443e44a0500bcef8e13cdac1dd",
+    "references/业务界面验收检查清单.md": "66e345d49a76d9af91e4bd58cfab2b79495b7c7c37cd4a6d8cc212b92d69df00",
+    "references/依赖与MCP接入.md": "8f1bff91998d147695a29bb82b78c6ad7e115171e2bd29ba00dbe9c0d69b91c5",
+    "references/场景包验收检查清单.md": "4173740ce12778b22888ab9b3dd8e2cf3d84d9cd25366a4ff269bd1454f900d8",
+    "references/方案挑战检查清单.md": "4df6b5382023c3956193aedd09613d14c64ccdc2ed79720152db7e83d9c3d1d6"
   },
   "platform_source_files": [
     "claude-code/.claude-plugin/plugin.json",
@@ -36,12 +36,12 @@
     "codex/UPDATE.md"
   ],
   "platform_checksums": {
-    "claude-code/.claude-plugin/plugin.json": "0a0298683c1fa11ceb1b68369aa95cd318dc018fd6628ccd43b3b7e79dfd304c",
+    "claude-code/.claude-plugin/plugin.json": "2eb527220ec9ebc5c288e49b1ff193c9d4665608879ac0b641242043397d36f5",
     "claude-code/.mcp.json": "4c8643336bdafcb18843e5f780f98bbb52c0a5a84b24d1f683236eb80c26ef2c",
     "claude-code/AGENTS.md": "5f083167c024c42ae2005eb900bdc221ffc88c95e6b357e7c38168501aafa9df",
     "claude-code/README.md": "fc27a345e92dd6da4a21375c41039ef0b48b6b325b6ef5aa4d83692e34eb1f9c",
     "claude-code/UPDATE.md": "de60597a1b7954b258df10075d3e1bcebcb2c15ec744faef322c1c03ed43ebad",
-    "codex/.codex-plugin/plugin.json": "a89fd059543669bb03b84523c45064c0bbb7e3da71c2649be8db58a051b9b027",
+    "codex/.codex-plugin/plugin.json": "820adc1eeef1ee235a775be5bae1348b147976730d6bc794c6efc08a280be514",
     "codex/.mcp.json": "a619274456278749885f878164531ae8467a6b25d52436a8e0c68b22539d9cd0",
     "codex/AGENTS.md": "48898ef5649e6ed5f4f8293f2f1867e3bc8f8d8cb69d3b2cc6c74020c4a37d08",
     "codex/README.md": "be5867c821202b4bca30f40fddadf1db5f199871e9d43442da0c91710173f503",
