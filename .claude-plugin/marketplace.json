@@ -8,7 +8,7 @@
     {
       "name": "scene-creator",
       "description": "在 Claude Code 中创建、更新、验证并发布 GoalfyMax 场景包。支持线上资产复用、工具契约取样、依赖与辅助文件准备、单 Workflow 或多 Workflow 编排、输入输出 Schema 校验、预览、bubble、业务界面制作与部署、可选全真项目验证、日志诊断和交付物检查。",
-      "version": "1.0.3",
+      "version": "1.0.5",
       "author": {
         "name": "GoalfyAI"
       },

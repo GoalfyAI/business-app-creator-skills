@@ -1,6 +1,6 @@
 ---
 name: scene-creator
-description: 创建、诊断、优化、验证或发布 GoalfyMax 场景包，并把业务流程、SOP、经验、项目日志或业务档案沉淀为可复用能力。使用经过审计的 scene-creator MCP 复用和维护场景 Skill、普通任务点、Toolset、Tool Group、FastAgent、Dataset、Workflow、当前平台支持的 Workflow 编排与业务界面；适用于场景包效果诊断、真实项目复盘和续作，不用于一次性业务执行。[skill-version:v1.0.3]
+description: 创建、诊断、优化、验证或发布 GoalfyMax 场景包，并把业务流程、SOP、经验、项目日志或业务档案沉淀为可复用能力。使用经过审计的 scene-creator MCP 复用和维护场景 Skill、普通任务点、Toolset、Tool Group、FastAgent、Dataset、Workflow、当前平台支持的 Workflow 编排与业务界面；适用于场景包效果诊断、真实项目复盘和续作，不用于一次性业务执行。[skill-version:v1.0.5]
 ---
 
 # 场景包制作与优化
@@ -172,6 +172,8 @@ description: 创建、诊断、优化、验证或发布 GoalfyMax 场景包，�
 | 节点成功后必须由 Agent 检查或处理异常 | 节点级 `sa_handoff` |
 
 图编排不是任意有环流程引擎。一个 Business 可以先后经历多个 Runtime；每个 Runtime 只执行一个已发布 `orchestration_id`，每条路线内部必须是可达的无环 DAG。用户改稿、重做或改走另一条路线时，冻结当前 Delivery，创建新 Runtime；不得把旧 Runtime 改回 pending，不得覆盖旧 Delivery 或旧文件，也不得在同一 DAG 中画回边模拟循环。
+
+`workflow_runtime_id` 是服务端运行标识，不是业务界面输入。业务界面首次启动只提交已发布的 `orchestration_id` 和入口表单；GoalfyMax 服务端完成校验并创建首批真实 TaskPoint 后，才通过 `business_interaction_result(status=accepted)` 回传 Runtime ID。入口拒绝或首批派发失败不得暴露预留 ID。聊天框、Agent Gate 和路线重入同样由 Max 生成新 ID；单个 Runtime 内的 TaskPoint、交互、Delivery 和运行查询必须沿用同一 ID。
 
 进入图编排前完整读取服务端 `workflow_single` 和 `workflow_multi` 两份 Workflow 指南，并以实时 `scene_package_manage` Schema、Hub 保存错误校准字段。当前知识文档与实时服务不一致时，以实时机器契约为准，记录版本差异并停止提交冲突字段；不能把旧 `schema_version: "1.0"`、顶层单路线对象、旧 Block DSL 或 delivery 强制 handoff 规则混入 2.0 对象。
 
@@ -394,7 +396,7 @@ Tool Group 刷新前先反读旧工具集合，刷新后按工具名比较新增
 4. 逐字段建立 `entry.input_mapping`、节点 `input_mapping` 和 `delivery.mapping`，核对 JSON Path、required、基础类型和 Workspace 文件格式；
 5. 制作期可预知的用户输入全部放入口表单；只有上游节点成功后才知道、且用于未派发下游节点的结构化输入，才使用 `business_interaction`；
 6. 需要 Agent 在节点成功后审查或处理异常时，在该节点声明 `sa_handoff`，写清指令以及继续/接管的可验证标准；
-7. 每条路线都声明 `delivery.review`，`complete_business` 结束 Business，`start_orchestration` 指向真实目标路线及其入口表单，`agent_gate` 交由 Agent 处理；
+7. 每条路线都声明 `delivery.review`：`complete_business` 结束 Business，`fail_business` 以结构化原因拒绝 Delivery 并结束 Business，`start_orchestration` 指向真实目标路线及其入口表单，`agent_gate` 交由 Agent 处理；
 8. 整体替换保存，按 Hub 节点、字段和路径错误精确修正同一对象，不自行发明兼容字段。
 
 所有节点先满足单 Workflow 契约；Hub 保存通过只证明静态结构，不能替代整条路线的运行证据。单 Workflow 场景也按一节点路线理解；没有 Workflow 时不伪造空节点或空图。

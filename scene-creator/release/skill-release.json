@@ -1,8 +1,8 @@
 {
   "skill_name": "scene-creator",
-  "version": "1.0.3",
-  "released_at": "2026-08-17T07:01:31Z",
-  "update_reason": "明确生产内部审查 FastAgent 不属于外部 MCP，并将创建与诊断流程改为直接执行参考清单",
+  "version": "1.0.5",
+  "released_at": "2026-08-17T08:09:43Z",
+  "update_reason": "收紧 Workflow 首次受理与 Delivery 核验：首批 TaskPoint 创建后才回传 Runtime ID，入口失败不泄露预留 ID，fail_business 统一经过内容统计核验",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -14,13 +14,13 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "1e5a14519456fdaf8978201dd428c1a02ef1441476041c81757891ce5343ac47",
+    "SKILL.md": "6f7a4c335185aae212dbaae803002eaa0a820f0341deb7a46eee2687f1f9fc61",
     "agents/openai.yaml": "c074f028f93e3ddbfc29d457279542cb95e09a21d25fcdc8dfc730c8dcece4bd",
     "references/Workflow验收检查清单.md": "cf8895fb40bd63ff30b0e0abd10732a528a36271efb161b7bb8bdf06e2ae41f3",
     "references/external-mcp-tools.md": "bb5e051911b85ca6bff1d0e3aa6d730121c563e0b040af23e1c37030cdacf547",
     "references/业务界面制作契约.md": "1eaebb0f5ad0cd154be056f57c6064bf241796b17567854b3bd016511d63d72c",
     "references/业务界面验收检查清单.md": "c6490bd2e7937090c66d2d9f4d31d8d5acb894067ddf3b7492ef4b23f96832f3",
-    "references/场景包验收检查清单.md": "f4dbc410e1afdd6a6cd7527a7c8b455016c6e4fb60dabd762e880a6529537ef7",
+    "references/场景包验收检查清单.md": "484b1f38998f53f8d35e783c8330f83065d393dda5caa5b06f91c02f400d7a04",
     "references/方案挑战检查清单.md": "be598497af0382f5893d1bfe15b71ed9606370948e1bb9fbd32ceba9adadb1d7"
   },
   "platform_source_files": [
