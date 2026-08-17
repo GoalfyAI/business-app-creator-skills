@@ -3,8 +3,8 @@
   "version": "v1.0.0",
   "package_version": "1.0.0",
   "mcp_endpoint": "https://workflow-mcp.qa.goalfyai.com/mcp",
-  "released_at": "2026-08-14T02:42:05Z",
-  "update_reason": "统一 task_manager 工具契约并保留版本闸门、模式隔离与续作审计语义",
+  "released_at": "2026-08-17T03:30:30Z",
+  "update_reason": "合并最新场景包主线并保留版本闸门、模式隔离与受控升级语义",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -16,7 +16,7 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "e99981ffaa2014c42c3acc8708525ead49465296ee5de458f2eb9c3afe5be7fb",
+    "SKILL.md": "020fbe0129120b3fc1e7df455f756d3de531486a30174131e62d49968e661cfc",
     "agents/openai.yaml": "16239e57465c671035671f5b35957f4fe665c765d4305ea7203e9f7d689b454a",
     "references/Workflow验收检查清单.md": "e04cae5ee4c01743b5d0f719f4effe2a67b3188e89e67f03ee05cafc81a451e1",
     "references/external-mcp-tools.md": "999a7c5b97c71297a2827421ab31f12106c693e0748742c595b1711946d86f44",

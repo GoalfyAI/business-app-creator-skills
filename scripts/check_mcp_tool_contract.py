@@ -31,7 +31,7 @@ def _table_tools(content: str) -> set[str]:
 
 def documented_tool_names() -> set[str]:
     skill = SKILL_PATH.read_text(encoding="utf-8")
-    overview = skill.split("## 九、工具能力与调用纪律", 1)[1].split(
+    overview = skill.split("## 九、场景包资产操作规范", 1)[1].split(
         "## 十、验证、发布与交付", 1
     )[0]
     skill_tools = _table_tools(overview)
