@@ -1,15 +1,15 @@
 {
   "name": "scene-creator",
   "version": "1.0.0",
-  "description": "面向 Codex、Claude Code 等编码 Agent 的 GoalfyMax 场景包制作插件。连接经过审计的 scene-creator 外部 MCP，把业务流程转成可直接使用的单 Workflow 或多 Workflow 场景包，覆盖线上资产复用、工具契约取样、依赖准备、脚本和输入输出 Schema、辅助文件交付、场景编排、预览、bubble 验证、可选全真项目验证、日志诊断、交付物检查、修复和发布。",
+  "description": "面向 Codex、Claude Code 等编码 Agent 的 GoalfyMax 场景包制作插件。连接经过审计的 scene-creator 外部 MCP，把业务目标、候选路线和业务档案沉淀为可直接使用的场景包，按需组合任务点、FastAgent、工具、Dataset、Workflow、当前版本编排和业务界面，覆盖线上资产复用、工具契约取样、输入输出 Schema、预览、bubble 验证、分层验证、日志诊断、修复和发布。",
   "author": {
     "name": "GoalfyAI"
   },
   "skills": "./skills/",
   "interface": {
     "displayName": "场景包制作",
-    "shortDescription": "把业务流程制作成经过预览、bubble 验证并可直接发布的 GoalfyMax 场景包。",
-    "longDescription": "连接经过审计的 scene-creator 外部 MCP，并加载中文场景包制作 Skill。引导编码 Agent 从需求澄清和线上资产复用开始，完成单 Workflow 或多 Workflow 的工具契约取样、依赖准备、脚本与输入输出 Schema、辅助文件交付、场景编排、预览、bubble 验证、可选全真项目验证、日志诊断、交付物检查、问题修复和最终发布；也可用于维护和迭代已有场景包。",
+    "shortDescription": "把业务目标和候选路线制作成经过分层验证、可发布的 GoalfyMax 场景包。",
+    "longDescription": "连接经过审计的 scene-creator 外部 MCP，并加载中文场景包制作 Skill。引导编码 Agent 从业务目标、候选路线、业务档案和线上资产证据开始，按职责选择任务点、FastAgent、工具、Dataset、单 Workflow 或多 Workflow，完成工具契约取样、依赖准备、输入输出 Schema、当前版本编排、预览、bubble、按需业务界面、可选全真项目验证、日志诊断、交付物检查、修复和最终发布；也可用于维护和迭代已有场景包。",
     "developerName": "GoalfyAI",
     "category": "Developer Tools",
     "capabilities": [
@@ -17,7 +17,7 @@
       "scenario-package",
       "mcp"
     ],
-    "defaultPrompt": "使用 $scene-creator 把我的业务流程制作成经过验证、可在 GoalfyMax 使用的 Workflow 场景包。"
+    "defaultPrompt": "使用 $scene-creator 理解我的业务目标和候选路线，制作成经过验证、可在 GoalfyMax 使用的场景包，并按需选择 Workflow 和业务界面。"
   },
   "mcpServers": "./.mcp.json"
 }

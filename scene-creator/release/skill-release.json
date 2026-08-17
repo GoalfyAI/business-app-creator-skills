@@ -1,8 +1,8 @@
 {
   "skill_name": "scene-creator",
   "version": "1.0.0",
-  "released_at": "2026-08-14T05:47:33Z",
-  "update_reason": "重排 Skill 运行主线，明确 MCP 职责、沟通协议、意图启动与能力规划",
+  "released_at": "2026-08-17T04:07:55Z",
+  "update_reason": "重构场景包生命周期，统一工单、编排版本和业务界面边界",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -14,14 +14,14 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "1ab6eae814fde0678506e2d4826f2ec8bda37ab895a7fd1ee264e42195ceedb4",
-    "agents/openai.yaml": "16239e57465c671035671f5b35957f4fe665c765d4305ea7203e9f7d689b454a",
+    "SKILL.md": "eb18b4e354700d71d69cc5e9b017ec2114d7656a16b432f05abc2bf52d96f6c7",
+    "agents/openai.yaml": "8ac16706d60b48086c3d8a08ea6d0cade465a86556cb1637c3492ed5bf04c5ee",
     "references/Workflow验收检查清单.md": "e04cae5ee4c01743b5d0f719f4effe2a67b3188e89e67f03ee05cafc81a451e1",
-    "references/external-mcp-tools.md": "4297c25175a29c28627306cb0536232de3a75f01a62bf00babf743c3f464f1f9",
-    "references/业务界面制作契约.md": "b7aa41869eeb84d0abf3a682b9b7369fce659a7897f5e81736fa3eee949fe733",
-    "references/业务界面验收检查清单.md": "012bd63f06975d8b2837b5e1005f7e18ad2bfbecbfd511396161e3127227b626",
-    "references/场景包验收检查清单.md": "f2cee1176b26efb420878766dd050863078534e45174d27b5022a0d74393e20b",
-    "references/方案挑战检查清单.md": "ce4ce779cb52bb9cea64d3678f9267ad226d40c852993644da35638375adca7c"
+    "references/external-mcp-tools.md": "20b9a63a18085b1d64a62937abf833aa79e87511e77c2e6819d48201bd632bcf",
+    "references/业务界面制作契约.md": "1cb9cec769748821ca4ff87500b76579e1fbf4227e4f8231b695aa1f841ada7c",
+    "references/业务界面验收检查清单.md": "a8885732a5d6708e9e97197388ee14e6da95da205e0c0c27929fa87e3bfb057b",
+    "references/场景包验收检查清单.md": "164dae5dbeecb09a4b8e667d491eca7d09f5be6ad645fcae0a167f94f3cd3c92",
+    "references/方案挑战检查清单.md": "13707e8e824bdf3ae18c875a750487a0b45c82402785d9fcbd0d7b1448cb53b9"
   },
   "platform_source_files": [
     "claude-code/.claude-plugin/plugin.json",
@@ -36,15 +36,15 @@
     "codex/UPDATE.md"
   ],
   "platform_checksums": {
-    "claude-code/.claude-plugin/plugin.json": "545f721cce3f9fee7cbd542e4e54ea3c86612065d1c537d266b597b2781a9cc4",
+    "claude-code/.claude-plugin/plugin.json": "0a0298683c1fa11ceb1b68369aa95cd318dc018fd6628ccd43b3b7e79dfd304c",
     "claude-code/.mcp.json": "056dc4ee8ffd2a7459142b866a2a41ad229a5c0cc6d9d9276362532c40f2dcfd",
-    "claude-code/AGENTS.md": "e019b5e86fc580548b5412344ac0fdb0edcb6cde466cf1011332bdcc7c99f871",
-    "claude-code/README.md": "6338273062a5c9e6d3160508ba353fb9f744bc36c5ceb66dd4eb3463e04f70d6",
+    "claude-code/AGENTS.md": "945a8f29629e704947075b95fc6653da9558db575633318fef00953c1fe4a389",
+    "claude-code/README.md": "a99d9e2dd3c0b46c786ccb15c462f5788d764dfabd185fa1f9bffa505077e2a4",
     "claude-code/UPDATE.md": "15c5f912c84bcb8aae5f25567fd0043b5faaedf3ee195b4e7550951b30b14bd7",
-    "codex/.codex-plugin/plugin.json": "76db76980cb4abcdc60f4fea7906cdd7558160fa03a4d2de1c4e7bdd273ed58b",
+    "codex/.codex-plugin/plugin.json": "a89fd059543669bb03b84523c45064c0bbb7e3da71c2649be8db58a051b9b027",
     "codex/.mcp.json": "9e1c197e836053227e30a9e93c6a033d5a914892e6a0b76e45de21d809876cb6",
-    "codex/AGENTS.md": "759f77e95f9edbc4a1d8c1db8212b91708cf8a772fc9b3fed60b8ec1876dc066",
-    "codex/README.md": "305c0310e70bc6b413f57a435e7de30ff251710bb030223dbf2645bc3ff7e0da",
+    "codex/AGENTS.md": "a7c95a3b55d9aef51063cb3eb9b1b9565b188265f11d05931f44728031880359",
+    "codex/README.md": "bdc1c8c2f4ce169df144b4819b641c7f3882d634cfb0545c3eac3fbe831aaa02",
     "codex/UPDATE.md": "e1256846437a4ad642bf61ae7635548606dc6252018098fbfb7be97c0ca0f683"
   }
 }

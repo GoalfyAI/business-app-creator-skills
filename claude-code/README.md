@@ -53,7 +53,7 @@ claude plugin install scene-creator@scene-creator
 4. 确认 `workflow_tpe_manage` 包含 `bubble` 操作。
 5. 执行一次只读的 `list_assets` 请求。不要为了测试安装而创建或修改资产。
 
-五项全部通过后才能宣布安装完成。知识库主题要求先打开 Workflow 制作工单，应在首次真实
+五项全部通过后才能宣布安装完成。知识库主题要求先打开场景包制作工单，应在首次真实
 制作任务中验证。
 
 不要只把 Skill 复制到 `~/.claude/skills`：Claude Code 不会加载独立 Skill 目录中的 MCP 配置。
@@ -67,7 +67,6 @@ claude plugin install scene-creator@scene-creator
 - `401 Unauthorized`：密钥缺失、已撤销，或新 Claude Code 进程没有继承密钥。只检查配置项
   是否存在，不要输出配置值。
 - `503`：MCP 鉴权或注册中心依赖暂时不可用。等待服务恢复后重试，不要因此更换密钥。
-- 工具数不是 12，或没有 `bubble`：QA 部署尚未提供预期的外部契约。停止测试并记录线上
-  工具 Schema。
+- 缺少 `task_manager`、`workflow_tpe_manage.bubble` 或其他核心工具：QA 部署尚未提供预期的外部契约。停止测试并记录线上工具 Schema；不要用静态工具数量代替实时清单。
 - Skill 已加载但 MCP 未连接：重新安装插件并执行 `/reload-plugins`。只复制 Skill 目录不会安装
   MCP 配置。

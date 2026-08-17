@@ -27,20 +27,6 @@ QA_MCP_ENDPOINT = "https://workflow-mcp.qa.goalfyai.com/mcp"
 REVIEWED_MCP_ENDPOINT = QA_MCP_ENDPOINT
 QA_FIXED_VERSION = "1.0.0"
 SKILL_VERSION_MARKER = f"[skill-version:v{QA_FIXED_VERSION}]"
-REQUIRED_SKILL_KEYWORDS = {
-    "scene package",
-    "scenario package",
-    "场景包",
-    "workflow",
-    "business UI",
-    "业务界面",
-    "GoalfyMax",
-    "MCP",
-    "business archive",
-    "业务档案",
-    "personalized routes",
-    "个性化选路",
-}
 DIRECT_MARKETPLACE_PATHS = {
     "codex": Path(".agents/plugins/marketplace.json"),
     "claude-code": Path(".claude-plugin/marketplace.json"),
@@ -71,9 +57,10 @@ SEMVER_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 MARKETPLACE_DESCRIPTION = (
     "面向编码 Agent 的 GoalfyMax 场景包制作与验证能力。通过经过审计的 scene-creator 外部 MCP，"
-    "把业务流程转成可直接运行的单 Workflow 或多 Workflow 场景包，并维护从线上资产复用、工具契约"
-    "取样、依赖与辅助文件准备、输入输出 Schema、场景编排、预览、bubble 验证、业务界面制作与部署、"
-    "可选全真项目验证、日志与交付物检查到最终发布的完整制作链路。"
+    "把业务目标、候选路线和业务档案沉淀为可直接使用的场景包，并按需组合普通任务点、FastAgent、"
+    "工具、Dataset、单 Workflow 或多 Workflow。覆盖线上资产复用、工具契约取样、依赖与辅助文件准备、"
+    "输入输出 Schema、当前版本编排、预览、bubble 验证、按需业务界面制作与部署、可选全真项目验证、"
+    "日志与交付物检查到最终发布的完整制作链路。"
 )
 
 
@@ -186,9 +173,9 @@ def validate_skill_metadata(skill_root: Path) -> None:
     except ValueError as exc:
         raise ReleaseError("SKILL.md frontmatter 未闭合") from exc
     frontmatter = _load_yaml_mapping("\n".join(lines[1:closing_index]), "SKILL.md frontmatter")
-    if set(frontmatter) != {"name", "description", "keywords"}:
+    if set(frontmatter) != {"name", "description"}:
         raise ReleaseError(
-            "SKILL.md frontmatter 必须且只能包含 name、description 和 keywords"
+            "SKILL.md frontmatter 必须且只能包含 name 和 description"
         )
     if frontmatter["name"] != SKILL_NAME:
         raise ReleaseError(f"SKILL.md 的 name 必须是 {SKILL_NAME!r}")
@@ -199,16 +186,6 @@ def validate_skill_metadata(skill_root: Path) -> None:
         raise ReleaseError(
             f"SKILL.md 的 description 必须包含 {SKILL_VERSION_MARKER}"
         )
-    keywords = frontmatter["keywords"]
-    if not isinstance(keywords, list) or not keywords:
-        raise ReleaseError("SKILL.md 的 keywords 必须是非空列表")
-    if any(not isinstance(keyword, str) or not keyword.strip() for keyword in keywords):
-        raise ReleaseError("SKILL.md 的 keywords 只能包含非空字符串")
-    if len(keywords) != len(set(keywords)):
-        raise ReleaseError("SKILL.md 的 keywords 不允许重复")
-    missing_keywords = sorted(REQUIRED_SKILL_KEYWORDS - set(keywords))
-    if missing_keywords:
-        raise ReleaseError(f"SKILL.md 缺少核心 keywords：{missing_keywords}")
     if not "\n".join(lines[closing_index + 1 :]).strip():
         raise ReleaseError("SKILL.md 正文不能为空")
 

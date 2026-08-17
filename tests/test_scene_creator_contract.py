@@ -6,9 +6,19 @@ import yaml
 
 ROOT = Path(__file__).parents[1]
 SKILL_ROOT = ROOT / "scene-creator"
+SKILL_PATH = SKILL_ROOT / "SKILL.md"
+REFERENCES = SKILL_ROOT / "references"
 
 
-def _skill_frontmatter(content: str) -> dict:
+def _read(path: Path) -> str:
+    return path.read_text(encoding="utf-8")
+
+
+def _skill() -> str:
+    return _read(SKILL_PATH)
+
+
+def _frontmatter(content: str) -> dict:
     return yaml.safe_load(content.split("---", 2)[1])
 
 
@@ -20,193 +30,60 @@ def _local_links(markdown: str) -> list[str]:
     ]
 
 
-def test_skill_local_links_resolve():
-    skill = SKILL_ROOT / "SKILL.md"
-    content = skill.read_text(encoding="utf-8")
+def test_skill_is_progressively_disclosed_and_has_minimal_frontmatter():
+    content = _skill()
+    frontmatter = _frontmatter(content)
 
+    assert set(frontmatter) == {"name", "description"}
+    assert frontmatter["name"] == "scene-creator"
+    assert "[skill-version:v1.0.0]" in frontmatter["description"]
+    assert len(content.splitlines()) < 500
+    assert "# 场景包制作与优化" in content
+    assert "## 按需参考" in content
+
+
+def test_skill_local_links_resolve_and_references_declare_scope():
+    content = _skill()
     for target in _local_links(content):
-        assert (skill.parent / unquote(target)).resolve().is_file(), target
+        assert (SKILL_ROOT / unquote(target)).resolve().is_file(), target
 
-
-def test_skill_routes_to_server_contracts_and_local_review_checklists():
-    content = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-
-    assert "当前 MCP `tools/list` 中的工具名、action、参数和必填字段" in content
-    assert "references/contracts/" not in content
-    for topic in (
-        "workflow_authoring",
-        "workflow_single",
-        "workflow_multi",
-        "workflow_examples",
-    ):
-        assert f'topic="{topic}"' in content or f'`{topic}`' in content
-
-    for filename, marker in (
-        ("方案挑战检查清单.md", "承接 Max `csp_battle_reviewer` 的职责"),
-        ("Workflow验收检查清单.md", "承接 Max `workflow_verify_fa` 的职责"),
-        ("场景包验收检查清单.md", "承接 Max `csp_verify_checker` 的职责"),
-    ):
-        assert f"references/{filename}" in content
-        reference = (SKILL_ROOT / "references" / filename).read_text(encoding="utf-8")
-        assert marker in reference
-        assert "不调用 FastAgent" in reference
-
-    for obsolete_topic in ("scene_package_battle", "workflow_verify", "scene_package_verify"):
-        assert f'topic="{obsolete_topic}"' not in content
-
-
-def test_external_skill_embeds_scene_package_domain_model_before_tool_procedure():
-    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-
-    assert not (SKILL_ROOT / "references" / "场景包核心模型.md").exists()
-    assert skill.index("## 六、场景包核心模型") < skill.index(
-        "## 七、创建场景包"
-    )
-    assert "`scene-creator` 是场景包全生命周期 MCP" in skill
-
-    for required_model in (
-        "场景包是围绕明确业务终点组织的运行时能力包",
-        "### 信息只写在正确层级",
-        "### 资产角色与执行形态",
-        "Workflow",
-        "普通任务点 / TaskAgent",
-        "FastAgent",
-        "### 场景包是一张路线地图",
-        "### 用业务档案支持个性化选路",
-        "### `apc_skill` 的职责",
-    ):
-        assert required_model in skill
-
-
-def test_skill_has_progressive_reference_index_prerequisites_and_hard_gates():
-    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-
-    assert "## 十二、参考资料索引" in skill
-    for reference in (
+    expected = {
         "external-mcp-tools.md",
         "方案挑战检查清单.md",
         "Workflow验收检查清单.md",
         "业务界面制作契约.md",
         "业务界面验收检查清单.md",
         "场景包验收检查清单.md",
-    ):
-        assert f"references/{reference}" in skill
-    assert "以上路径相对于本 `SKILL.md` 所在目录" in skill
-    assert "## 一、使用条件与接入方式" in skill
-    assert "MCP Server：`scene-creator`" in skill
-    assert "外部 MCP 运行在远端，本地文件通过预签名传输流程交接" in skill
-    assert "## 九、场景包资产操作规范" in skill
-    assert "## 十一、异常处理与恢复" in skill
+    }
+    assert {path.name for path in REFERENCES.glob("*.md")} == expected
+    for path in REFERENCES.glob("*.md"):
+        reference = _read(path)
+        assert "本文是 `SKILL.md` 的" in reference
+        assert "\n---\n" in reference
 
 
-def test_each_reference_declares_its_scope_as_a_supplement():
-    references = sorted((SKILL_ROOT / "references").glob("*.md"))
-
-    assert references
-    for reference in references:
-        content = reference.read_text(encoding="utf-8")
-        assert "本文是 `SKILL.md` 的" in content, reference.name
-        assert "\n---\n" in content, reference.name
+def test_authority_order_prefers_live_machine_facts():
+    content = _skill()
+    assert "当前 MCP `tools/list`、线上资产、服务端校验和 Max Runtime 是机器事实" in content
+    assert "`get_diagnosis_doc` 返回的当前契约解释机器事实" in content
+    assert "禁止虚构工具、action、ID、Schema、版本、返回字段、资产状态或运行证据" in content
+    assert "不要把仓库设计稿或集成分支当作线上契约" in content
 
 
-def test_embedded_scene_package_domain_model_excludes_max_runtime_protocols():
-    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    model = skill.split("## 六、场景包核心模型", 1)[1].split(
-        "## 七、创建场景包", 1
-    )[0]
+def test_task_manager_is_the_canonical_first_business_gate():
+    content = _skill()
+    routing = _read(REFERENCES / "external-mcp-tools.md")
 
-    for max_runtime_rule in (
-        "GOALFYAI_STATE_",
-        "project_plan",
-        "memory_maintainer",
-        "sandbox_manage",
-        "agent_wait",
-        "csp_battle_reviewer",
-        "workflow_verify_fa",
-        "project_create_taskpoint_event",
-    ):
-        assert max_runtime_rule not in model
+    assert 'task_manager(action="create", mode=...)' in content
+    assert 'task_manager(action="get")' in content
+    assert 'task_manager(action="list")' in content
+    assert "完整 `skill_version`" in content
+    assert "`read` 诊断转入修复时新建 `write` 工单" in content
+    assert "Gate 成功后再读取服务端制作契约、搜索资产、规划或写入" in content
+    assert "`list_assets/get_asset` 不接收 `task_id`" in content
 
-
-def test_external_skill_preserves_scene_creator_intent_routing_without_max_state_machine():
-    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-
-    assert skill.index("## 三、工作方式与交互协议") < skill.index(
-        "### 6. 创建可审计工单"
-    )
-    for communication_rule in (
-        "业务顾问式工作方式",
-        "渐进式访谈",
-        "在方案、权限、副作用、发布和资金消耗等关键节点获得用户确认",
-        "方案展示采用业务语言",
-        "问题在发现时透明说明",
-        "安全默认明确记录适用条件和影响",
-        "修改前提供清晰的改前、改后和影响范围",
-    ):
-        assert communication_rule in skill
-    for route in (
-        "创建 |",
-        "诊断 |",
-        "优化 |",
-        "续作 |",
-        "Workflow",
-        "分析项目执行日志",
-    ):
-        assert route in skill
-    for gap in (
-        "意图缺失",
-        "关键业务参数缺失",
-        "平台知识缺失",
-        "可选偏好缺失",
-        "用户授权缺失",
-    ):
-        assert gap in skill
-    for context_item in (
-        "业务目标",
-        "业务里程碑",
-        "输入与产出",
-        "参考证据",
-        "权限与副作用",
-        "验收标准",
-    ):
-        assert context_item in skill
-
-    for max_state_protocol in (
-        "GOALFYAI_STATE_FOG",
-        "GOALFYAI_STATE_PLAN",
-        "GOALFYAI_STATE_EXEC",
-        "GOALFYAI_STATE_BLOCK",
-        "GOALFYAI_STATE_DELIVER",
-    ):
-        assert max_state_protocol not in skill
-
-
-def test_external_skill_uses_only_external_procedure_names():
-    content = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-
-    for external_operation in (
-        'workflow_task_manager(action="get", task_id=<task_id>)',
-        'workflow_dependency_manage(action="test_tool", task_id=<task_id>',
-        'workflow_tpe_manage(action="bubble", task_id=',
-        'manage_goalfymax_project(action="run", task_id=<task_id>',
-        'scene_package_manage(action="online", task_id=<task_id>',
-    ):
-        assert external_operation in content
-
-    for max_only_name in (
-        "script_file",
-        "workflow_verify_fa",
-        "project_create_taskpoint_event",
-    ):
-        assert max_only_name not in content
-
-
-def test_external_tool_reference_tracks_exact_profile():
-    content = (SKILL_ROOT / "references" / "external-mcp-tools.md").read_text(
-        encoding="utf-8"
-    )
     expected_tools = {
-        "workflow_task_manager",
+        "task_manager",
         "list_assets",
         "get_asset",
         "get_diagnosis_doc",
@@ -219,129 +96,107 @@ def test_external_tool_reference_tracks_exact_profile():
         "manage_goalfymax_project",
         "get_project_execution_logs",
     }
-    documented_tools = set(re.findall(r"^\| `([^`]+)` \|", content, flags=re.MULTILINE))
+    documented = set(re.findall(r"^\| `([^`]+)` \|", routing, re.MULTILINE))
+    assert documented == expected_tools
+    assert "不要虚构平行的 `list_tools`、`scene_package_task_manage` 或 `workflow_task_manager`" in routing
+    assert routing.index("task_manager(create/get)") < routing.index("get_diagnosis_doc(scene_package)")
+    assert routing.index("get_diagnosis_doc(scene_package)") < routing.index("list_assets / get_asset")
 
-    assert documented_tools == expected_tools
-    assert "当前线上 `tools/list` 为唯一真相" in content
-    assert "不复制完整参数 Schema" in content
-    assert "不要求工具数量永远不变" in content
 
-
-def test_skill_has_platform_discovery_metadata_and_data_style_sections():
-    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    frontmatter = _skill_frontmatter(skill)
-    required_keywords = {
-        "scene package",
-        "scenario package",
-        "场景包",
-        "workflow",
-        "business UI",
-        "业务界面",
-        "GoalfyMax",
-        "MCP",
-        "business archive",
-        "业务档案",
-        "personalized routes",
-        "个性化选路",
-    }
-
-    assert frontmatter["name"] == "scene-creator"
-    assert "[skill-version:v1.0.0]" in frontmatter["description"]
-    assert required_keywords <= set(frontmatter["keywords"])
-    assert len(frontmatter["keywords"]) == len(set(frontmatter["keywords"]))
-    for heading in (
-        "## 一、使用条件与接入方式",
-        "## 二、MCP 定位与职责",
-        "## 三、工作方式与交互协议",
-        "## 四、意图识别与任务启动",
-        "## 五、运行前能力准备与规划",
-        "## 六、场景包核心模型",
-        "## 七、创建场景包",
-        "## 八、诊断和优化场景包",
-        "## 九、场景包资产操作规范",
-        "## 十、验证、发布与交付",
-        "## 十一、异常处理与恢复",
-        "## 十二、参考资料索引",
+def test_scene_package_route_map_precedes_asset_procedure():
+    content = _skill()
+    assert content.index("## 场景包模型") < content.index("## 九阶段制作流程")
+    for marker in (
+        "候选路线",
+        "稳定路段",
+        "选路节点",
+        "到达标准",
+        "当前用户表达优先于历史记录",
+        "Agent 推断保持为假设",
+        "最小充分信息",
     ):
-        assert heading in skill
-
-    expected_tools = {
-        "workflow_task_manager",
-        "list_assets",
-        "get_asset",
-        "get_diagnosis_doc",
-        "dataset_read",
-        "workflow_file_upload",
-        "workflow_dependency_manage",
-        "scene_package_manage",
-        "scene_package_ui_bundle",
-        "workflow_tpe_manage",
-        "manage_goalfymax_project",
-        "get_project_execution_logs",
-    }
-    overview = skill.split("## 九、场景包资产操作规范", 1)[1].split(
-        "## 十、验证、发布与交付", 1
-    )[0]
-    assert set(re.findall(r"^\| `([^`]+)` \|", overview, flags=re.MULTILINE)) == expected_tools
+        assert marker in content
 
 
-def test_business_ui_is_optional_and_independent_from_workflow():
-    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    routing = (SKILL_ROOT / "references" / "external-mcp-tools.md").read_text(
-        encoding="utf-8"
-    )
-    contract = (SKILL_ROOT / "references" / "业务界面制作契约.md").read_text(
-        encoding="utf-8"
-    )
-    checklist = (SKILL_ROOT / "references" / "业务界面验收检查清单.md").read_text(
-        encoding="utf-8"
-    )
-
-    for reference in ("业务界面制作契约.md", "业务界面验收检查清单.md"):
-        assert f"references/{reference}" in skill
-
-    assert "业务界面由开发者根据场景交互需求开发并发布" in skill
-    assert "通过 `entry_url` 与场景包关联" in skill
-    assert "它可以服务普通 SA、单 Workflow、多 Workflow或展示与管理交互" in skill
-    assert skill.index("### 12. 按需制作业务界面") < skill.index(
-        "## 十、验证、发布与交付"
-    )
-
-    for action in (
-        "download_template",
-        "prepare_upload",
-        "complete_upload",
-        "deploy",
-        "status",
-        "get",
+def test_asset_form_is_selected_by_responsibility_not_workflow_first():
+    content = _skill()
+    assert "把场景包作为整体交付，不把某一种资产当成默认答案" in content
+    for form in (
+        "SA 直接执行",
+        "普通任务点 / TaskAgent",
+        "FastAgent",
+        "单 Workflow",
+        "固定 DAG 编排",
+        "图编排",
+        "业务界面能力",
     ):
-        assert action in contract
-    assert "业务界面是场景包面向用户的专属操作层" in contract
-    assert "业务界面没有暴露 MCP 工具" in checklist
-    assert "MCP 工具清单只服务制作 Agent" in contract
+        assert form in content
+    assert "确认需要 Workflow 后读取 `workflow_authoring`" in content
+    assert content.index("形成场景包蓝图") < content.index("按需制作 Workflow 和编排")
 
 
-def test_business_ui_template_download_is_a_mandatory_initialization_gate():
-    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    contract = (SKILL_ROOT / "references" / "业务界面制作契约.md").read_text(
-        encoding="utf-8"
-    )
-    checklist = (SKILL_ROOT / "references" / "业务界面验收检查清单.md").read_text(
-        encoding="utf-8"
-    )
-    routing = (SKILL_ROOT / "references" / "external-mcp-tools.md").read_text(
-        encoding="utf-8"
-    )
-
-    assert 'scene_package_ui_bundle(action="download_template"' in skill
-    assert "返回的当前官方模板初始化项目" in skill
-    for response_field in (
-        "file_name",
-        "size_bytes",
-        "download_url",
-        "expires_in",
+def test_information_ownership_keeps_apc_skill_balanced():
+    content = _skill()
+    for owner in (
+        "Tool Group / 实时工具契约",
+        "Toolset 使用指南",
+        "FastAgent Prompt",
+        "任务点 Prompt",
+        "Workflow 脚本与 IO Schema",
+        "`workflow_orchestration`",
+        "`apc_skill`",
+        "场景 Skill 文件",
+        "Dataset Skill",
+        "业务界面源码和宿主 SDK",
     ):
-        assert response_field in contract
+        assert owner in content
+    assert "不要在 `apc_skill` 复制 DAG、工具完整 Schema或制作说明" in content
+    assert "不要因为避免重复而删掉 SA 必须始终知道的业务路由" in content
+
+
+def test_workflow_and_orchestration_are_version_gated():
+    content = _skill()
+    routing = _read(REFERENCES / "external-mcp-tools.md")
+    checklist = _read(REFERENCES / "场景包验收检查清单.md")
+
+    assert "当前实时 `scene_package_manage` 只公开固定 DAG 时，只制作固定 DAG" in content
+    assert "实时工具和服务端契约出现新版本后" in content
+    assert "不能把固定 DAG 与新图对象混写" in content
+    assert "设计稿、集成分支、旧资产和示例不能证明新图能力已上线" in content
+    assert "workflow_orchestration` 是完整对象整体替换" in routing
+    assert "orchestration_static_validated" in checklist
+    assert "orchestration_runtime_verified" in checklist
+    for draft_only_field in ("capability_key", "user_gate", "gate_policy", "reentry_policy"):
+        assert draft_only_field not in content
+        assert draft_only_field not in routing
+
+
+def test_business_ui_is_optional_but_currently_requires_workflow():
+    content = _skill()
+    contract = _read(REFERENCES / "业务界面制作契约.md")
+    checklist = _read(REFERENCES / "业务界面验收检查清单.md")
+
+    assert "当前 `scene_package_ui_bundle` 要求场景包至少挂载一个 Workflow" in content
+    assert "没有 Workflow 的场景包不能通过该工具制作定制界面" in content
+    assert "当前场景包至少挂载一个真实 Workflow" in checklist
+    assert "不能服务纯 SA 或只有普通任务点的场景包" in contract
+    assert "业务界面是交互层，不执行或解释内部 DAG" in content
+    assert "普通 SA、单 Workflow、多 Workflow或展示与管理" not in content
+    assert "伪造 Workflow" in contract
+
+
+def test_business_ui_uses_live_runtime_mode_and_official_template():
+    content = _skill()
+    contract = _read(REFERENCES / "业务界面制作契约.md")
+    routing = _read(REFERENCES / "external-mcp-tools.md")
+
+    assert "单 Workflow" in contract
+    assert "当前固定 DAG 编排" in contract
+    assert "未来图编排" in contract
+    assert "实时场景包 Schema、版本化服务端契约和模板 SDK 同时支持" in contract
+    assert "download_template" in content
+    for field in ("file_name", "size_bytes", "download_url", "expires_in"):
+        assert field in contract
     for required_file in (
         "AGENTS.md",
         "README.md",
@@ -351,125 +206,83 @@ def test_business_ui_template_download_is_a_mandatory_initialization_gate():
         assert required_file in contract
     assert "路径穿越" in contract
     assert "唯一包含 `goalfy-app.json`" in contract
-    assert "不得用通用 `init_project` 或 Git 克隆替代" in routing
-    assert "模板实际字节数与响应一致" in checklist
+    assert "通用 `init_project`" in contract
 
 
-def test_full_validation_is_optional_and_skips_are_audited():
-    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    routing = (SKILL_ROOT / "references" / "external-mcp-tools.md").read_text(
-        encoding="utf-8"
-    )
-
-    assert "预览 → `bubble` → 语义验收 → 可选全真跑" in skill
-    assert "### 可选的真实 Max 项目验证" in skill
-    assert "必须在用户批准后执行" in skill
-    assert "full_validation_skipped" in skill
-    assert "复用返回的 `project_id`" in skill
-    assert "用户跳过真实项目时，记录 `full_validation_skipped`" in skill
-    assert "发布完成后必须调用 `manage_goalfymax_project" not in skill
-    assert "仅批准覆盖所选路径时" in routing
-
-
-def test_external_review_order_and_runtime_actions_match_current_contract():
-    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    routing = (SKILL_ROOT / "references" / "external-mcp-tools.md").read_text(
-        encoding="utf-8"
-    )
-
-    assert routing.index("get_diagnosis_doc(workflow_multi)") < routing.index(
-        "workflow_tpe_manage(preview → create)"
-    )
-    assert routing.index("Workflow 验收检查清单") < routing.index("场景包验收检查清单")
-    assert routing.index("场景包验收检查清单") < routing.index("分别询问每个 Workflow")
-    assert "运行时控制动作来自当前服务端契约" in skill
+def test_validation_evidence_is_layered_without_overclaiming():
+    content = _skill()
+    routing = _read(REFERENCES / "external-mcp-tools.md")
+    required = {
+        "asset_contract_validated",
+        "workflow_bubble_passed",
+        "orchestration_static_validated",
+        "orchestration_runtime_verified",
+        "ui_deployment_verified",
+        "full_validation_skipped",
+    }
+    for evidence in required:
+        assert evidence in content
+        assert evidence in routing
+    assert "缺少整图运行工具时只能记录静态通过和运行盲区" in content
+    assert "没有整图运行入口或实际日志时，不能声称 `orchestration_runtime_verified`" in routing
 
 
-def test_workflow_dependencies_are_online_before_create_and_empty_arrays_do_not_pass():
-    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    routing = (SKILL_ROOT / "references" / "external-mcp-tools.md").read_text(
-        encoding="utf-8"
-    )
-    checklist = (SKILL_ROOT / "references" / "Workflow验收检查清单.md").read_text(
-        encoding="utf-8"
-    )
+def test_full_validation_and_external_side_effects_require_authorization():
+    content = _skill()
+    assert "只有用户批准覆盖所选路线可能执行的全部 Workflow 后才运行" in content
+    assert "跳过时继续交付并记录 `full_validation_skipped`" in content
+    assert "发布是外部状态变更" in content
+    for action in ("删除资产", "扩大权限", "收费", "真实 Max 全真运行"):
+        assert action in content
+    assert "复用同一 `project_id`" in content
 
-    assert "依赖 Toolset 上线硬门" in skill
-    assert 'get_asset` 反读确认每个 Toolset 的 `is_online=true`' in skill
-    assert routing.index("workflow_dependency_manage(online_toolsets)") < routing.index(
-        "workflow_tpe_manage(preview → create)"
-    )
+
+def test_workflow_semantic_checklist_preserves_runtime_edges():
+    checklist = _read(REFERENCES / "Workflow验收检查清单.md")
+    assert "不调用 FastAgent" in checklist
+    assert "没有终态轨迹只能裁决 `needs_bubble`" in checklist
+    assert "FA 使用 Schema 桩" in checklist
     assert "空数组未执行循环而放行" in checklist
     assert "items.properties" in checklist
+    assert "重新 Preview、bubble 和验收" in checklist
 
 
-def test_runtime_apc_skill_and_file_handoff_rules_remain_in_procedure():
-    content = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-
-    for required_rule in (
-        "场景包解决什么问题、共同业务终点是什么、何时使用",
-        "业务里程碑，以及每阶段目标",
-        "制作说明、调试记录和发布步骤",
-        "必须在 `apc_skill` 中给出明确读取时机",
-        'workflow_file_upload(action="prepare", task_id=<task_id>',
-        'workflow_file_upload(action="complete", task_id=<task_id>',
-        'workflow_file_upload(action="from_url", task_id=<task_id>',
-        'skill_files_mode="merge"',
+def test_local_checklists_replace_obsolete_review_fastagents():
+    content = _skill()
+    for filename, marker in (
+        ("方案挑战检查清单.md", "承接 Max `csp_battle_reviewer` 的职责"),
+        ("Workflow验收检查清单.md", "承接 Max `workflow_verify_fa` 的职责"),
+        ("场景包验收检查清单.md", "承接 Max `csp_verify_checker` 的职责"),
     ):
-        assert required_rule in content
+        assert f"references/{filename}" in content
+        reference = _read(REFERENCES / filename)
+        assert marker in reference
+        assert "不调用 FastAgent" in reference
+    for obsolete_topic in ("scene_package_battle", "workflow_verify", "scene_package_verify"):
+        assert obsolete_topic not in content
 
 
-def test_scene_package_routes_are_personalized_by_business_archives():
-    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    checklist = (SKILL_ROOT / "references" / "场景包验收检查清单.md").read_text(
-        encoding="utf-8"
-    )
-
-    for principle in (
-        "场景包根据用户状态选择路线",
-        "场景包是一张路线地图",
-        "实体档案",
-        "情境档案",
-        "只读取足以影响本次选路的内容",
-        "实质改变本次执行的路线、参数、优先级或解释",
-        "用户当前明确表达和有效约束优先",
-        "Agent 推断以假设标注",
-        "通过现有投稿与审稿机制形成候选事实",
+def test_external_skill_does_not_copy_max_internal_state_machine():
+    content = _skill()
+    for internal_protocol in (
+        "GOALFYAI_STATE_FOG",
+        "GOALFYAI_STATE_PLAN",
+        "GOALFYAI_STATE_EXEC",
+        "GOALFYAI_STATE_BLOCK",
+        "GOALFYAI_STATE_DELIVER",
+        "project_create_taskpoint_event",
+        "memory_maintainer",
+        "agent_wait",
     ):
-        assert principle in skill
-
-    for apc_gate in (
-        "共同业务终点",
-        "候选路线",
-        "业务档案选路规则",
-        "具体私有档案事实",
-        "唯一 SOP",
-        "最小充分信息",
-        "现有投稿与审稿机制",
-    ):
-        assert apc_gate in skill or apc_gate in checklist
-
-    assert skill.index("### 场景包是一张路线地图") < skill.index(
-        "### `apc_skill` 的职责"
-    )
+        assert internal_protocol not in content
 
 
-def test_skill_and_agent_metadata_use_chinese():
-    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    reference = (SKILL_ROOT / "references" / "external-mcp-tools.md").read_text(
-        encoding="utf-8"
-    )
-    metadata = (SKILL_ROOT / "agents" / "openai.yaml").read_text(encoding="utf-8")
+def test_skill_and_agent_metadata_are_chinese_and_invocable():
+    content = _skill()
+    description = _frontmatter(content)["description"]
+    metadata = yaml.safe_load(_read(SKILL_ROOT / "agents" / "openai.yaml"))
 
-    assert "name: scene-creator" in skill
-    assert "# 场景包制作" in skill
-    assert "# 外部 MCP 工具路由" in reference
-    assert 'display_name: "场景包制作"' in metadata
-    assert "$scene-creator" in metadata
-    skill_description = _skill_frontmatter(skill)["description"]
     for capability in (
-        "业务顾问式访谈",
-        "线上资产",
         "场景 Skill",
         "普通任务点",
         "Toolset",
@@ -479,32 +292,10 @@ def test_skill_and_agent_metadata_use_chinese():
         "业务界面",
         "真实项目复盘",
     ):
-        assert capability in skill_description
-    for forbidden_positioning in (
-        "Workflow 只是",
-        "核心职责不是",
-        "默认目标",
-        "不是本 Skill",
-        "你是",
-    ):
-        assert forbidden_positioning not in skill
-    for stale_english in (
-        "Follow the External procedure",
-        "Load knowledge progressively",
-        "Standard call order",
-        "Validation ownership",
-    ):
-        assert stale_english not in skill
-        assert stale_english not in reference
-
-
-def test_openai_metadata_declares_implicit_invocation_and_mcp_dependency():
-    metadata = yaml.safe_load(
-        (SKILL_ROOT / "agents" / "openai.yaml").read_text(encoding="utf-8")
-    )
-
+        assert capability in description
     assert metadata["policy"]["allow_implicit_invocation"] is True
-    assert metadata["interface"]["brand_color"] == "#6366F1"
+    assert "$scene-creator" in metadata["interface"]["default_prompt"]
+    assert "按需" in metadata["interface"]["short_description"]
     assert metadata["dependencies"]["tools"] == [
         {
             "type": "mcp",

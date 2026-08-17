@@ -5,7 +5,6 @@ import zipfile
 from pathlib import Path
 
 import pytest
-import yaml
 
 ROOT = Path(__file__).parents[1]
 SKILL_ROOT = ROOT / "scene-creator"
@@ -161,19 +160,18 @@ def test_release_rejects_invalid_skill_frontmatter(tmp_path: Path):
         )
 
 
-def test_release_rejects_missing_skill_keywords(tmp_path: Path):
+def test_release_rejects_unexpected_skill_frontmatter_field(tmp_path: Path):
     copied = _copy_skill(tmp_path)
     skill_file = copied / "SKILL.md"
     content = skill_file.read_text(encoding="utf-8")
     _, frontmatter_text, body = content.split("---", 2)
-    frontmatter = yaml.safe_load(frontmatter_text)
-    frontmatter.pop("keywords")
+    frontmatter_text += "keywords:\n  - workflow\n"
     skill_file.write_text(
-        f"---\n{yaml.safe_dump(frontmatter, allow_unicode=True, sort_keys=False)}---{body}",
+        f"---{frontmatter_text}---{body}",
         encoding="utf-8",
     )
 
-    with pytest.raises(release_module.ReleaseError, match="keywords"):
+    with pytest.raises(release_module.ReleaseError, match="name 和 description"):
         release_module.release(
             copied, release_module.QA_FIXED_VERSION, "Missing keywords"
         )
@@ -334,7 +332,8 @@ def test_platform_mcp_templates_use_env_key_and_live_external_contract():
         assert "https://workflow-mcp.qa.goalfyai.com/mcp" in mcp_text
         assert "SCENE_CREATOR_API_KEY" in mcp_text
         assert set(json.loads(mcp_text)["mcpServers"]) == {"scene-creator"}
-        assert "12" in docs
+        assert "task_manager" in docs
+        assert "不要用静态工具数量代替实时清单" in docs
         assert "bubble" in docs
         assert "list_assets" in docs
         assert "/developer/api-keys" in docs

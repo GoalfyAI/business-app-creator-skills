@@ -1,8 +1,8 @@
 interface:
   display_name: "场景包制作"
   brand_color: "#6366F1"
-  short_description: "基于完整场景模型访谈、创建、诊断、优化并验证 GoalfyMax 场景包及业务界面"
-  default_prompt: "使用 $scene-creator 按完整场景包模型理解并访谈我的业务，创建或诊断优化一个经过验证、可在 GoalfyMax 使用的场景包及其业务界面。"
+  short_description: "理解、创建、诊断、优化并验证 GoalfyMax 场景包，按需制作 Workflow 业务界面"
+  default_prompt: "使用 $scene-creator 理解我的业务，创建或诊断优化一个经过验证、可在 GoalfyMax 使用的场景包；仅在流程和平台能力需要时制作 Workflow 与业务界面。"
 policy:
   allow_implicit_invocation: true
 dependencies:
