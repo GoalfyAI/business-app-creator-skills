@@ -1,8 +1,8 @@
 {
   "skill_name": "scene-creator",
   "version": "1.0.0",
-  "released_at": "2026-08-17T05:54:13Z",
-  "update_reason": "恢复 csp_prompt 关键业务规则并充实九阶段质量门",
+  "released_at": "2026-08-17T06:21:45Z",
+  "update_reason": "补全场景包领域模型并对齐 Workflow 2.0 多路线图编排契约",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -14,14 +14,14 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "14bbe2b9770f1e95eb9d4d4e4e591999233b0773b63ed3a49bbe104a89195a33",
+    "SKILL.md": "c1092d18ca288cdd8c647b821178e7589a1d055c13bd2abdaba66802ee7aa618",
     "agents/openai.yaml": "8ac16706d60b48086c3d8a08ea6d0cade465a86556cb1637c3492ed5bf04c5ee",
     "references/Workflow验收检查清单.md": "e04cae5ee4c01743b5d0f719f4effe2a67b3188e89e67f03ee05cafc81a451e1",
-    "references/external-mcp-tools.md": "143f2d9d564d2b976183670dc10789b476b662edaccc376b763d828e7bb7ccb5",
-    "references/业务界面制作契约.md": "1cb9cec769748821ca4ff87500b76579e1fbf4227e4f8231b695aa1f841ada7c",
-    "references/业务界面验收检查清单.md": "a8885732a5d6708e9e97197388ee14e6da95da205e0c0c27929fa87e3bfb057b",
-    "references/场景包验收检查清单.md": "be1549660f90c0803b3e5037010dcf548f7fe619e7b633c446f7d5215d0d9242",
-    "references/方案挑战检查清单.md": "96ca26c789e23f0554073973dd4554bf12f390ec72360dc46d9e289156a115cc"
+    "references/external-mcp-tools.md": "6d05141ae91f821f359a8a918ff910f77155aabab1677556c7ff008e599aa3b5",
+    "references/业务界面制作契约.md": "73242e3ed8ac839490c8e289c11f90415d155010540720dae659bcc9088762f6",
+    "references/业务界面验收检查清单.md": "825bbb4c2dcf9bcf68adae9154145f2923e7566dc6322c8f9bfc25b179d63b34",
+    "references/场景包验收检查清单.md": "6a88881828483b0726a3cc8cd8b7347f1db2e08ae7a71f77f9fe50d5602eb9ac",
+    "references/方案挑战检查清单.md": "60ce3697cfae64e9c154b1924fd8915d6b6b3e20bdcd64f1934f3c2b05f80b05"
   },
   "platform_source_files": [
     "claude-code/.claude-plugin/plugin.json",

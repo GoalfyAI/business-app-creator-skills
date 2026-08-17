@@ -232,8 +232,8 @@ def test_asset_form_is_selected_by_responsibility_not_workflow_first():
         "普通任务点 / TaskAgent",
         "FastAgent",
         "单 Workflow",
-        "固定 DAG 编排",
-        "图编排",
+        "一条无环路线",
+        "多路线图编排",
         "业务界面能力",
     ):
         assert form in content
@@ -265,11 +265,15 @@ def test_workflow_and_orchestration_are_version_gated():
     routing = _read(REFERENCES / "external-mcp-tools.md")
     checklist = _read(REFERENCES / "场景包验收检查清单.md")
 
-    assert "当前实时 `scene_package_manage` 只公开固定 DAG 时，只制作固定 DAG" in content
-    assert "实时工具和服务端契约出现新版本后" in content
-    assert "不能把固定 DAG 与新图对象混写" in content
-    assert "设计稿、集成分支、旧资产和示例不能证明新图能力已上线" in content
+    assert '`schema_version: "2.0"` 的多路线图编排' in content
+    assert "每个 Runtime 只执行一个已发布 `orchestration_id`" in content
+    assert "服务端 `workflow_single` 和 `workflow_multi` 两份 Workflow 指南" in content
+    assert "不能把旧 `schema_version: \"1.0\"`" in content
+    assert "中途 `business_interaction`" in checklist
+    assert "`delivery.review`" in checklist
+    assert "最终交付不再要求 Delivery 节点额外声明 `sa_handoff`" in checklist
     assert "workflow_orchestration` 是完整对象整体替换" in routing
+    assert '只接受 `schema_version:"2.0"`' in routing
     assert "orchestration_static_validated" in checklist
     assert "orchestration_runtime_verified" in checklist
     for draft_only_field in ("capability_key", "user_gate", "gate_policy", "reentry_policy"):
@@ -294,12 +298,11 @@ def test_business_ui_is_optional_but_currently_requires_workflow():
 def test_business_ui_uses_live_runtime_mode_and_official_template():
     content = _skill()
     contract = _read(REFERENCES / "业务界面制作契约.md")
-    routing = _read(REFERENCES / "external-mcp-tools.md")
 
     assert "单 Workflow" in contract
-    assert "当前固定 DAG 编排" in contract
-    assert "未来图编排" in contract
-    assert "实时场景包 Schema、版本化服务端契约和模板 SDK 同时支持" in contract
+    assert "2.0 多路线图编排" in contract
+    assert "Business/Runtime 启动、状态、交互和 Delivery Review 契约" in contract
+    assert "Hub 能保存 2.0 但宿主或模板 SDK 尚未支持" in contract
     assert "download_template" in content
     for field in ("file_name", "size_bytes", "download_url", "expires_in"):
         assert field in contract

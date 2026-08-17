@@ -60,8 +60,8 @@ task_manager(create/get)
 → 依赖反读与上线 → workflow_tpe_manage(preview/create/update)
 → workflow_tpe_manage(bubble start/poll) → Workflow 单体验收
 
-→ get_diagnosis_doc(workflow_multi)                       # 确认多 Workflow 后、编排前
-→ scene_package_manage(update, workflow_orchestration)    # 当前固定 DAG 完整替换
+→ get_diagnosis_doc(workflow_multi)                       # 确认多 Workflow、多路线或运行中 Gate 后
+→ scene_package_manage(update, workflow_orchestration)    # 当前 2.0 多路线对象完整替换
 → orchestration_static_validated                          # Hub 保存门，不冒充运行门
 
 → scene_package_ui_bundle(download_template/...)          # 已挂载 Workflow 且需要定制 UI
@@ -76,14 +76,16 @@ task_manager(create/get)
 
 ## 编排版本门
 
-当前线上工具只公开固定 DAG 时：
+当前 Hub 保存契约只接受 `schema_version:"2.0"` 的多路线对象：
 
-- 节点必须引用当前场景包已挂载的 Workflow；
-- 映射、依赖、delivery 和 `sa_handoff` 使用当前 `workflow_multi` 契约；
-- 更新 `workflow_orchestration` 时提交完整对象；
+- 完整对象包含 `orchestrations[]`，每条路线有入口表单、路线 input Schema、无环 Workflow DAG、唯一 Delivery 和最终 Review；
+- 节点必须引用当前场景包已挂载且已完成单体验收的 Workflow；
+- 路线内映射、`business_interaction`、节点级 `sa_handoff` 和 `delivery.review` 使用当前 `workflow_multi` 契约；
+- 路线切换、改稿和重做创建新 Runtime，不在同一 DAG 画回边或覆盖旧 Delivery；
+- 更新 `workflow_orchestration` 时反读原值并提交完整 2.0 对象；
 - Hub 保存只形成 `orchestration_static_validated`。
 
-仓库设计稿、集成分支、旧示例或既有资产中出现的新图字段，只能作为需求背景。多入口、用户 Gate、重入、受控循环或多交付能力，必须同时满足：实时 Schema 已公开、服务端返回版本化契约、目标场景包版本兼容。否则保留业务蓝图并记录 `platform_blocked`，禁止把未来图字段混入固定 DAG，或让前端代替 Runtime 执行图。
+实时 MCP、Hub 与目标 Max Runtime 必须同时支持匹配的 2.0 契约。若 Hub 可保存但目标 Runtime 尚未发布，只能记录静态通过和 `platform_blocked`；禁止把旧 1.0、Block DSL、delivery 强制 handoff 或设计稿未落地 action 混入 2.0，也禁止让前端代替 Runtime 执行图。
 
 ## 标识纪律
 
