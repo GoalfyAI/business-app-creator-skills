@@ -1,108 +1,120 @@
-# 场景包制作技能
+# Scene Creator Skills
 
-本仓库是编码 Agent 制作 GoalfyMax 场景包所用 Skills 的唯一源码仓库。不要在 MCP
-服务端仓库中维护第二份可编辑的 Skill 副本。
+把业务流程沉淀为 GoalfyMax 场景包，诊断、优化并验证已有场景包。
 
-## Skills 列表
+这个仓库提供一个 Skill 和一套外部 MCP 工具，让 Claude Code、Codex 这类编码 Agent 直接为你
+制作场景包——从业务访谈、能力摸底、资产制作，到分层验收和上线发布。
 
-- [`scene-creator`](scene-creator/SKILL.md)：通过经过审计的外部 MCP，把业务流程制作成可在
-  GoalfyMax 直接使用的场景包，或诊断优化已有场景包。Skill 自带场景包资产模型、信息分层和
-  Workflow/普通任务点/FastAgent 选型框架，并覆盖线上资产复用、工具契约取样、依赖和辅助文件
-  准备、输入输出 Schema、场景编排、预览、`bubble` 验证、业务界面同工单制作与部署、可选全真
-  项目验证、日志诊断、交付物检查和最终发布。
+## 场景包是什么
 
-`scene-creator` 负责维护外部 Agent 的制作流程和高风险操作约束。完整的 Workflow 共享契约、
-正反例与诊断文档仍由服务端 MCP 知识库统一维护，运行时通过 `get_diagnosis_doc` 按需加载。
+场景包是 GoalfyMax 上一套可复用的执行能力：把一段原本靠人重复执行的业务流程，连同它需要的
+工具、提示词、编排和验收标准打包起来，之后同类任务交给 Agent 就能跑。
 
-## 校验
+一个场景包通常包含这些资产：
 
-```bash
-uv run pytest -q
-uv run ruff check tests scene-creator/release/build_platform_packages.py
-uv run python scene-creator/release/build_platform_packages.py check
-```
+| 资产 | 作用 |
+|---|---|
+| 普通任务点 | 一个可执行的业务动作 |
+| 工具集 | 完成动作所需的一组工具 |
+| FastAgent | 处理确定性子任务的轻量智能体 |
+| Workflow | 把多个步骤编排成固定路径 |
+| 业务界面 | 面向业务用户的操作入口 |
+| 长期数据集 | 跨任务沉淀的业务数据 |
 
-## 从仓库当前分支验证
+## 快速开始
 
-仓库根目录同时是 Codex 和 Claude Code 的插件市场。`codex/` 与 `claude-code/` 是自动生成并
-提交到仓库的安装目录，只能编辑 `scene-creator/` 下的唯一源文件。下面从 `main` 添加市场只用于
-当前 QA/开发分支验证；正式安装和升级由各平台的插件管理器完成，见下文。
-
-Codex:
+### Claude Code
 
 ```bash
-codex plugin marketplace add \
-  git@codeup.aliyun.com:goalfyai/goalfyagent/scene-creator-skills.git \
-  --ref main
-codex plugin add scene-creator@scene-creator
-```
-
-Claude Code:
-
-```bash
-claude plugin marketplace add \
-  git@codeup.aliyun.com:goalfyai/goalfyagent/scene-creator-skills.git
+claude plugin marketplace add GoalfyAI/scene-creator-skills
 claude plugin install scene-creator@scene-creator
 ```
 
-两个插件连接同一个外部 MCP。请将 GoalfyMax 个人 API 密钥配置到
-`SCENE_CREATOR_API_KEY`，严禁把密钥提交到本仓库。密钥获取入口为 GoalfyMax QA 账号菜单 →
-**开发者工具** → **API 密钥**（`/developer/api-keys`）。插件会把该密钥作为
-Bearer 凭证发送，不需要另行配置用户 ID 鉴权参数。
-
-正式安装和升级不构建、不上传 ZIP，也不克隆仓库：客户端各自的插件管理器从内网插件市场比较
-`plugin.json` 版本并完成更新。各平台的安装和更新说明位于
-[`scene-creator/release/platforms`](scene-creator/release/platforms/)。
-
-## 版本与环境策略
-
-QA 阶段修改 Skill 内容、参考资料或平台模板后，仍需刷新发布清单、校验和与直接安装目录，
-但不得修改 description 中的 `skill-version`：
+### Codex
 
 ```bash
-uv run python scene-creator/release/build_platform_packages.py release \
-  --version "<skill-release.json 中当前 package_version>" \
-  --reason "<已验证的变更说明>"
+codex plugin marketplace add GoalfyAI/scene-creator-skills
+codex plugin add scene-creator@scene-creator
 ```
 
-正式上线时必须作为一次完整变更同时完成。版本号仅由 PROD 流水线执行
-`scripts/prod-release-skill.py` 自动生成，格式与 GoalfyData 一致，为
-`vYYYYMMDD-<6 位随机 hex>`；QA、PRE、
-普通合并和手工构建都不得更新版本号。脚本在 `DEPLOY_ENV` 不是 `prod` 时会直接拒绝执行。
+### 配置访问密钥
 
-1. 在 PROD 流水线注入 `SCENE_SKILL_RELEASE_REGISTRY_TARGETS`，并在手工 PROD job 执行该脚本；
-
-2. 将 Codex 和 Claude Code 的 MCP 配置切换到正式环境地址；
-3. 将全部安装说明中的 API 密钥获取入口由 GoalfyMax QA 改为 GoalfyMax 线上环境；
-4. PROD job 更新仓库中的 Skill 版本标记，统一提升两份 marketplace、两份插件 manifest、
-   `pyproject.toml` 与 `uv.lock` 的 package patch，刷新发布清单和直接安装副本，提交并 tag；
-   推送成功后由脚本幂等登记 Skill 版本。该流程不生成、不上传任何 ZIP 或其他制品。
-
-Codeup Flow 的受控配置源位于 `.yunxiao/scene-creator-skills.yml`。`QA校验` 自动执行且只校验
-当前版本；`PROD发布` 必须人工触发，并强制要求源分支为 `main`。PROD prepare 会把唯一源、OpenAI
-元数据和两套插件模板统一渲染为国内生产 MCP `https://workflow-mcp.goalfyai.cn/mcp`，拒绝任何残留
-QA URL 或 QA 密钥说明，并验证该路由已进入鉴权层；未部署或仍返回 404/5xx 时禁止切版。PROD job
-更新仓库版本并推回 Codeup 后，才通过 HMAC 向各环境 Max Hub 登记版本。
-
-Skill 只有一份、版本号只有一条线，但 Hub 分环境各自持有 registry。只登记生产会让其他环境的
-registry 恒空，闸门在那些环境既不生效也无法验证，因此 `SCENE_SKILL_RELEASE_REGISTRY_TARGETS`
-按行配置全部目标，每行一个 `<url>|<secret>`，脚本逐个登记并在结尾汇总失败：
-
-```text
-https://goalfyhub.qa.goalfyai.com/api/internal/workflow/scene-skill-versions/releases/register|<QA secret>
-https://goalfyhub.goalfyai.cn/api/internal/workflow/scene-skill-versions/releases/register|<CN PROD secret>
-```
-
-各环境使用各自的 S2S 密钥，不得复用 GoalfyData Hub 的地址或密钥。未配置该变量时，脚本回退到
-单目标的 `SCENE_SKILL_RELEASE_REGISTER_URL` 与 `SCENE_SKILL_RELEASE_S2S_SECRET`。
-
-禁止只升级版本而继续连接 QA，或者在正式安装内容中保留 QA API 密钥获取说明。该流程不打包或
-分发制品；升级由插件管理器从内网插件市场完成，仓库内 `codex/`、`claude-code/` 目录即市场内容。
-`skill/<version>` tag 只用于把每个版本定位到一次提交，不作为客户端升级入口。required 策略
-只能在生产 MCP 路由和平台更新说明都可用后开启。
-
-只有在不改变已发布内容、仅需恢复被删除或误改的生成文件时，才运行 `sync`：
+在 GoalfyMax 的**开发者工具 → API 密钥**创建个人密钥，然后写进客户端配置：
 
 ```bash
-uv run python scene-creator/release/build_platform_packages.py sync
+# Claude Code：~/.claude/settings.json 的 env
+"SCENE_CREATOR_API_KEY": "<你的密钥>"
+
+# Codex：~/.codex/.env
+SCENE_CREATOR_API_KEY=<你的密钥>
 ```
+
+重启客户端，然后让 Agent 做一次只读验证，例如「列出我能访问的场景包」。
+
+各平台完整安装说明见 [`platforms/`](platforms/)。
+
+## 怎么用
+
+装好之后直接用自然语言描述你的业务目标，Agent 会按 Skill 里的流程推进：
+
+**从零创建**
+
+> 我们每周要给 20 家门店做一次朋友圈广告投放复盘，把这个流程做成场景包。
+
+Agent 会先访谈业务目标和验收标准，摸清现有能力，再决定用普通任务点还是 Workflow，
+逐层制作并验证。
+
+**诊断已有场景包**
+
+> 这个场景包执行时总是绕弯，你看下哪里配置有问题。
+
+Agent 会创建只读工单，逐层检查提示词、工具契约、编排配置和执行日志，给出定位结论。
+确认要改时再新建写工单进入修复。
+
+**基于执行日志优化**
+
+> 参考项目 xxx 的执行日志，把这个场景包优化一版。
+
+## 这个仓库包含什么
+
+```
+skill/          Skill 内容：SKILL.md、Agent 元数据、参考资料
+platforms/      各平台安装文件模板
+claude-code/    Claude Code 插件市场目录（自动生成）
+codex/          Codex 插件市场目录（自动生成）
+scripts/        构建与发布工具
+docs/           文档
+```
+
+只有 `skill/` 和 `platforms/` 是手工维护的源文件，其余安装目录由发布流程生成。
+
+## 版本与升级
+
+Skill 版本写在 `SKILL.md` 的 description 里（`[skill-version:...]`），服务端据此判断
+你的 Skill 是否需要升级。插件版本走语义化递增，供插件管理器判断有无新版。
+
+日常升级：
+
+```bash
+claude plugin update scene-creator@scene-creator     # Claude Code
+```
+
+被提示版本过期时，按 [`platforms/claude-code/UPDATE.md`](platforms/claude-code/UPDATE.md)
+或 [`platforms/codex/UPDATE.md`](platforms/codex/UPDATE.md) 执行。
+
+## 文档
+
+- [维护者手册](docs/maintainers.md) — 校验、发版、版本策略与流水线
+- [常见问题](FAQ.md)
+- [参与贡献](CONTRIBUTING.md)
+- [安全策略](SECURITY.md)
+
+## 这个仓库不做什么
+
+- 不替你执行一次性业务任务——那是场景包做好之后的事
+- 不是 GoalfyMax 平台本身，只是制作场景包的工具链
+- 不存储任何业务数据、凭证或密钥
+
+## 许可
+
+[Apache License 2.0](LICENSE)。使用 GoalfyMax 服务另受其服务条款约束。

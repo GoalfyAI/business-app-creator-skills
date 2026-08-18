@@ -403,7 +403,7 @@ def test_prod_pipeline_preserves_release_notes_for_hub_registration():
 
     assert 'echo "SCENE_SKILL_RELEASE_NOTES=${CI_COMMIT_TITLE}" >> $FLOW_ENV' in pipeline
     assert (
-        "git add README.md scene-creator codex claude-code .agents .claude-plugin pyproject.toml uv.lock"
+        "git add README.md skill platforms skill-release.json codex claude-code .agents .claude-plugin pyproject.toml uv.lock"
         in pipeline
     )
     register_step = pipeline.split("step_register:", 1)[1]
