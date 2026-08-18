@@ -382,6 +382,19 @@ def test_release_script_covers_the_whole_publish_flow():
 
 
 
+def test_registration_workflow_injects_the_expected_env_name():
+    """workflow 注入的环境变量名必须与脚本读取的一致。
+
+    名字对不上时脚本会退回单目标兜底分支，报缺少 SCENE_SKILL_RELEASE_REGISTER_URL，
+    错误信息完全指向另一个方向。
+    """
+    workflow = (ROOT / ".github/workflows/register-skill-release.yml").read_text(encoding="utf-8")
+    script = (ROOT / "scripts" / "register-skill-release.py").read_text(encoding="utf-8")
+
+    assert 'SCENE_SKILL_RELEASE_REGISTRY_TARGETS: ${{ secrets.SCENE_SKILL_RELEASE_REGISTRY_TARGETS }}' in workflow
+    assert 'os.environ.get("SCENE_SKILL_RELEASE_REGISTRY_TARGETS"' in script
+
+
 def test_registration_workflow_reuses_the_release_script():
     """登记逻辑只保留一份实现，避免签名方式出现第二份。"""
     workflow = (ROOT / ".github/workflows/register-skill-release.yml").read_text(encoding="utf-8")

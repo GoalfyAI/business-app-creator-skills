@@ -41,10 +41,11 @@ jobs:
 
       - name: Register release in Max Hub environments
         env:
-          TARGETS: ${{ secrets.SCENE_SKILL_RELEASE_REGISTRY_TARGETS }}
+          # 变量名必须与 register-skill-release.py 读取的一致
+          SCENE_SKILL_RELEASE_REGISTRY_TARGETS: ${{ secrets.SCENE_SKILL_RELEASE_REGISTRY_TARGETS }}
           SCENE_SKILL_RELEASE_NOTES: ${{ github.event.head_commit.message }}
         run: |
-          if [ -z "${TARGETS}" ]; then
+          if [ -z "${SCENE_SKILL_RELEASE_REGISTRY_TARGETS}" ]; then
             echo "未配置 SCENE_SKILL_RELEASE_REGISTRY_TARGETS，跳过登记"
             exit 0
           fi
