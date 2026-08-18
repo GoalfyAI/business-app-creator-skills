@@ -106,19 +106,23 @@ scripts/        构建与发布工具
 `skill/` 是 Skill 内容的唯一源，发布时复制到四个平台，各平台拿到的 Skill 逐字节相同；
 平台安装文档在各自目录里手工维护。
 
-## 版本与升级
+## 更新
 
-Skill 版本写在 `SKILL.md` 的 description 里（`[skill-version:...]`），服务端据此判断
-你的 Skill 是否需要升级。插件版本走语义化递增，供插件管理器判断有无新版。
+Skill 版本写在 `SKILL.md` 的 description 里（`[skill-version:...]`），服务端据此判断你的
+Skill 是否需要升级；版本过期时写操作会被拒绝。插件版本另走语义化递增，供插件管理器判断有无新版。
 
-日常升级：
+| 平台 | 更新方式 | 详细步骤 |
+|---|---|---|
+| **Claude Code** | `claude plugin update scene-creator@scene-creator` | [claude-code/UPDATE.md](claude-code/UPDATE.md) |
+| **Codex** | `codex plugin marketplace upgrade scene-creator` 后 remove + add | [codex/UPDATE.md](codex/UPDATE.md) |
+| **Manus** | 重新下载 zip，在 Skills 页删旧传新，然后开新对话 | [manus/UPDATE.md](manus/UPDATE.md) |
+| **其他 MCP 客户端** | 重新获取 `SKILL.md` 与 `references/` 并重新载入 | [generic/UPDATE.md](generic/UPDATE.md) |
 
-```bash
-claude plugin update scene-creator@scene-creator     # Claude Code
-```
+被服务端提示版本过期时，按上表对应的 `UPDATE.md` 执行——那些文档是写给 Agent 直接照做的，
+包含读取新版本标记、当前会话内重试、以及何时该提示你重启。
 
-被提示版本过期时，按 [`claude-code/UPDATE.md`](claude-code/UPDATE.md)
-或 [`codex/UPDATE.md`](codex/UPDATE.md) 执行。
+**升级后要重启**（Claude Code 可用 `/reload-plugins`）：版本闸门只校验版本串，读到新标记就能
+继续工作，但 Agent 上下文里加载的 Skill 内容仍是旧版，重启后才真正生效。
 
 ## 文档
 
@@ -128,6 +132,7 @@ claude plugin update scene-creator@scene-creator     # Claude Code
 | [Codex 快速上手](docs/codex-quickstart.md) | 同上 |
 | [Manus 快速上手](docs/manus-quickstart.md) | 连接器与 Skill 上传 |
 | [通用集成指南](generic/README.md) | 其他 MCP 客户端 |
+| 各平台 UPDATE.md | 升级步骤，写给 Agent 直接执行：[Claude Code](claude-code/UPDATE.md) · [Codex](codex/UPDATE.md) · [Manus](manus/UPDATE.md) · [通用](generic/UPDATE.md) |
 | [常见问题](FAQ.md) | 产品与使用问题 |
 | [参与贡献](CONTRIBUTING.md) | 目录职责、本地验证、版本机制 |
 | [安全策略](SECURITY.md) | 漏洞报告与安全约定 |
