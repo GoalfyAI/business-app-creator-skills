@@ -192,7 +192,6 @@ def test_prod_release_updates_repository_copies_without_building_packages(tmp_pa
     assert manifest["version"] == version
     assert manifest["package_version"] == expected_package_version
     assert manifest["mcp_endpoint"] == release_module.PROD_MCP_ENDPOINT
-    release_module.assert_prod_runtime(copied)
     for path in (
         repository_root / ".agents/plugins/marketplace.json",
         repository_root / ".claude-plugin/marketplace.json",
@@ -216,24 +215,28 @@ def test_prod_release_updates_repository_copies_without_building_packages(tmp_pa
     assert not (repository_root / "dist").exists()
 
 
-def test_prod_prepare_rewrites_every_install_surface_to_cn_prod(tmp_path: Path):
-    copied = _copy_skill(tmp_path)
-    _copy_repository_metadata(tmp_path)
-    release_module.sync_direct_install_tree(copied, _manifest(copied))
+def test_every_install_surface_ships_production_endpoint():
+    """仓库里的安装物料必须始终是生产配置。
 
-    release_module.release_prod_source(copied, "PROD release", random_hex="a1b2c3")
-
-    checked_paths = release_module._prod_runtime_paths(copied)
-    combined = "\n".join(path.read_text(encoding="utf-8") for path in checked_paths)
+    发布流程不再做环境渲染，这条不变量改由源文件本身保证：任何测试环境
+    地址或 QA 密钥说明混进来，都会被这里拦住。
+    """
+    surfaces = [
+        *(ROOT / "platforms").rglob("*"),
+        *(ROOT / "claude-code").rglob("*"),
+        *(ROOT / "codex").rglob("*"),
+        SKILL_ROOT / "agents" / "openai.yaml",
+    ]
+    combined = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in surfaces
+        if path.is_file() and path.suffix in {".md", ".json", ".yaml"}
+    )
     assert release_module.PROD_MCP_ENDPOINT in combined
-    assert release_module.QA_MCP_ENDPOINT not in combined
+    assert "workflow-mcp.qa." not in combined
     assert "GoalfyMax QA" not in combined
-    assert release_module.PROD_MCP_ENDPOINT in (
-        tmp_path / "codex/.mcp.json"
-    ).read_text(encoding="utf-8")
-    assert release_module.PROD_MCP_ENDPOINT in (
-        tmp_path / "claude-code/.mcp.json"
-    ).read_text(encoding="utf-8")
+    for name in ("codex/.mcp.json", "claude-code/.mcp.json"):
+        assert release_module.PROD_MCP_ENDPOINT in (ROOT / name).read_text(encoding="utf-8")
 
 
 def test_prod_runtime_probe_requires_auth_layer(monkeypatch, tmp_path: Path):
@@ -542,11 +545,12 @@ def test_platform_mcp_templates_use_env_key_and_live_external_contract():
         assert set(json.loads(mcp_text)["mcpServers"]) == {"scene-creator"}
         # 工具清单以实时加载的工具定义为准，不锁静态数量
         assert "不要用静态工具数量代替实时清单" in docs
-        assert "bubble" in docs
+        # 安装文档必须交代：密钥从哪来、怎么发送、装完怎么验证、从哪装
         assert "list_assets" in docs
         assert "/developer/api-keys" in docs
-        assert "sk_" in docs
         assert "Authorization: Bearer" in docs
+        assert "SCENE_CREATOR_API_KEY" in docs
+        assert "GoalfyAI/scene-creator-skills" in docs
         assert "X-User-ID" in docs
         assert "sk_" not in mcp_text
 

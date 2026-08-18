@@ -2,9 +2,9 @@
   "skill_name": "scene-creator",
   "version": "v1.0.12",
   "package_version": "1.0.12",
-  "mcp_endpoint": "https://workflow-mcp.qa.goalfyai.com/mcp",
-  "released_at": "2026-08-18T02:08:52Z",
-  "update_reason": "补插件安装损坏时的重装兜底路径",
+  "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
+  "released_at": "2026-08-18T03:23:27Z",
+  "update_reason": "平台文档改为公开市场安装；仓库物料切生产配置",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -17,7 +17,7 @@
   ],
   "checksums": {
     "SKILL.md": "1116589c5ad5b7ac54b827e1aca426776d22a6874e4ab2326caf7e7f0f5e25ee",
-    "agents/openai.yaml": "b16a05d8d25daef30c581f294c1fb3a9cc9cd1060edf3278f8e86fc06f270bef",
+    "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "references/Workflow验收检查清单.md": "ca6159075317b6fa2d993b57c5ec3e6dedccfd637d9969188deff6204a7a582c",
     "references/业务界面制作契约.md": "d55b273146a835f6fcac11911a9842bd052044443e44a0500bcef8e13cdac1dd",
     "references/业务界面验收检查清单.md": "66e345d49a76d9af91e4bd58cfab2b79495b7c7c37cd4a6d8cc212b92d69df00",
@@ -39,14 +39,14 @@
   ],
   "platform_checksums": {
     "claude-code/.claude-plugin/plugin.json": "2eb527220ec9ebc5c288e49b1ff193c9d4665608879ac0b641242043397d36f5",
-    "claude-code/.mcp.json": "056dc4ee8ffd2a7459142b866a2a41ad229a5c0cc6d9d9276362532c40f2dcfd",
-    "claude-code/AGENTS.md": "5f083167c024c42ae2005eb900bdc221ffc88c95e6b357e7c38168501aafa9df",
-    "claude-code/README.md": "f42bfbdbe9061965e3689bfc55c6c11bd8e026bbe7fb62d1836c32af8112ac69",
+    "claude-code/.mcp.json": "d33d2ca124e7747cfa4a1d180015d27dfa8fd62d0d20ae44ab178624fee1b7f0",
+    "claude-code/AGENTS.md": "b1a19be7032480efc520742cef15011278c4d3cb5e6a6a77507619c13f4beec8",
+    "claude-code/README.md": "f8549ea4c609a7e1515c2e3d85d6753ce2cfec07deb4e263bb669e7a383aa3f8",
     "claude-code/UPDATE.md": "ab00e8dbec333cf383499797681f8a2d51a6cee970b6c6026d6546e15b7d0c52",
     "codex/.codex-plugin/plugin.json": "820adc1eeef1ee235a775be5bae1348b147976730d6bc794c6efc08a280be514",
-    "codex/.mcp.json": "9e1c197e836053227e30a9e93c6a033d5a914892e6a0b76e45de21d809876cb6",
-    "codex/AGENTS.md": "48898ef5649e6ed5f4f8293f2f1867e3bc8f8d8cb69d3b2cc6c74020c4a37d08",
-    "codex/README.md": "d1e90558b20f6aed09e95490dee43b4e36487d2e906e6a6a29035160b4031002",
+    "codex/.mcp.json": "7872d48a321228e49b5153da1257ddc779208b768240acd64eea2c8ff0d28b1e",
+    "codex/AGENTS.md": "ed38107527bf24f80925bf917d4ba1953ff52903b687661b6467d32472a22e1c",
+    "codex/README.md": "63cf7836d7b159ab2eefc540b126c2194ae0abb47502c73bb6f7a8837460666f",
     "codex/UPDATE.md": "996e7c9ac6cbf40613fc2a2243443e30a3df316ec773805160373ecc286a27fb"
   }
 }

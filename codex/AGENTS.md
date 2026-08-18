@@ -1,111 +1,95 @@
-# 场景包制作安装与更新指南 — Codex
+# 场景包制作安装指南 — Codex（Agent 版）
 
-严格按本指南执行。它会安装一个同时包含外部 MCP 配置和 `scene-creator` Skill 的本地插件。
+本文供 Agent 直接执行。升级已安装的插件请改用 [UPDATE.md](UPDATE.md)。
 
-## 安全规则
+执行本指南时必须遵守：
 
-1. 安装包目录和个人 API 密钥由用户提供；密钥只用于本次本地插件配置。
-2. 不得编造、回显或记录密钥，也不得把密钥复制到仓库、Skill、命令、检查点或聊天回复中。
-3. 用户提供完整密钥后，由 Agent 更新本地 `~/.codex/.env`；不得要求用户自行编辑配置文件。
-4. 验证安装期间，不要创建、更新、发布或运行任何 Goalfy 资产。
-5. 只有在重启后的会话中确认插件、Skill、当前 MCP 工具清单、`bubble` 操作和一次只读资产请求
-   全部正常后，才能宣布安装成功。
+1. 只运行本文列出的命令；只写入 `~/.codex/.env`（保留其他环境变量）和 Codex 的插件目录
+2. 所有安装与配置命令由你自己执行，**禁止**把 shell 命令丢给用户、或让用户自己开终端
+3. 需要用户提供东西或采取行动时，输出对应的「需要用户操作」模板：作为正文输出，
+   **禁止**放进代码块或引用块，一级标题与加粗必须保留
+4. **禁止**编造、回显或记录密钥，也不得把密钥写入仓库、Skill、本文档、命令历史、
+   检查点或聊天回复
+5. 验证期间**禁止**创建、更新、发布或运行任何 Goalfy 资产
+6. 每一步都以检查命令开始：已完成的步骤跳过，任何一步重复执行都是安全的
+7. 在插件已启用、Codex 已重启、`scene-creator` MCP 工具已加载、且一次只读请求成功返回
+   之前，**禁止**宣告安装成功
 
-## 第 0 步：检查当前状态
-
-执行以下只读检查：
+## 第 0 步：判断当前状态
 
 ```bash
 codex --version
 codex plugin marketplace list
 codex plugin list
-codex mcp get scene-creator
-test -f "$HOME/.codex/.env" && grep -q '^SCENE_CREATOR_API_KEY=' "$HOME/.codex/.env"
 ```
 
-不要输出匹配到的环境变量行。如果插件、MCP 和密钥标记都已存在，请按 `UPDATE.md` 更新；否则
-继续安装。
+不要输出匹配到的环境变量行。插件已存在时这是升级场景，改用 [UPDATE.md](UPDATE.md)；
+否则继续安装。
 
-## 第 1 步：校验安装包
-
-安装包解压目录必须由用户提供。确认其中包含：
+## 第 1 步：添加插件市场并安装
 
 ```bash
-export PACKAGE_ROOT="/请替换为/scene-creator-codex/绝对路径"
-test -f "$PACKAGE_ROOT/.agents/plugins/marketplace.json"
-test -f "$PACKAGE_ROOT/plugins/scene-creator/.codex-plugin/plugin.json"
-test -f "$PACKAGE_ROOT/plugins/scene-creator/.mcp.json"
-test -f "$PACKAGE_ROOT/plugins/scene-creator/skills/scene-creator/SKILL.md"
-```
-
-如果不知道 `PACKAGE_ROOT`，询问用户解压后的绝对路径。不要搜索整个用户主目录。运行检查前，
-必须替换示例路径。
-
-## 第 2 步：安装本地插件
-
-```bash
-codex plugin marketplace add "$PACKAGE_ROOT"
+codex plugin marketplace add GoalfyAI/scene-creator-skills
 codex plugin add scene-creator@scene-creator
 ```
 
-如果插件市场已配置，不要重复创建。请按 `UPDATE.md` 卸载并重新安装已有插件。
+市场已存在时不要重复添加。若提示市场已绑定到本地目录，按 [UPDATE.md](UPDATE.md) 的兜底
+步骤重新绑定到公开仓库。
 
-## 第 3 步：获取密钥并由 Agent 配置
+## 第 2 步：取得并配置 API 密钥
+
+先检查是否已配置：
+
+```bash
+test -f "$HOME/.codex/.env" && grep -q '^SCENE_CREATOR_API_KEY=' "$HOME/.codex/.env" && echo "KEY_PRESENT" || echo "KEY_MISSING"
+```
+
+输出 `KEY_PRESENT` 时跳到第 3 步。否则用用户当前对话使用的语言输出下面的模板
+（用户不使用中文时翻译内容，保留标题与加粗结构）：
 
 # 需要用户操作：提供 GoalfyMax 个人 API 密钥
 
-**请在 GoalfyMax 打开账号菜单 → 开发者工具 → API 密钥
-（`/developer/api-keys`），选择新建 API 密钥，输入 1～100 个字符的名称，并保存
-只显示一次的 `sk_...` 密钥。如果没有该菜单，请停止并联系管理员开通开发者权限。不要使用他人的
-密钥。**
+**1. 打开 GoalfyMax 线上环境，进入 开发者工具 → API 密钥（`/developer/api-keys`）。**
 
-**请把完整个人 API 密钥提供给我。我会负责配置，用户不需要自行编辑 `~/.codex/.env`。**
+**2. 创建一个个人 API 密钥（以 `sk_` 开头），完整密钥只显示一次，请立即复制并粘贴到本对话。**
 
-收到密钥后，由 Agent 保留 `~/.codex/.env` 中的其他环境变量，只新增或替换
-`SCENE_CREATOR_API_KEY`，并将文件权限设为 `600`。配置过程不得在执行说明、命令回显、差异、
-检查点或最终回复中展示密钥，也不得显示该文件中的其他环境变量值。
+**3. 我会替你写入本地配置，你不需要自己编辑任何文件。**
 
-配置完成后，只检查密钥是否存在以及文件权限：
+拿到密钥后写入 `~/.codex/.env` 的 `SCENE_CREATOR_API_KEY` 行，保留其他环境变量，然后：
 
 ```bash
-grep -q '^SCENE_CREATOR_API_KEY=.' "$HOME/.codex/.env"
-stat -f '%Lp' "$HOME/.codex/.env" 2>/dev/null || stat -c '%a' "$HOME/.codex/.env"
+chmod 600 ~/.codex/.env
 ```
 
-不要显示文件内容。
+写入后不要回显密钥内容。
 
-不要要求或配置 `user_id`、`X-User-ID` 或 `X-Project-ID` 作为鉴权参数。插件会发送
-`Authorization: Bearer <key>`，外部 MCP 会根据密钥解析用户身份。
+## 第 3 步：重启
 
-## 第 4 步：重启
+输出下面的模板（同样作为正文，翻译时保留结构）：
 
 # 需要用户操作：重启 Codex
 
-**请彻底退出 Codex CLI、Codex App 及所有 IDE 扩展进程，再打开一个新会话。只有重启后，插件
-MCP 才能读取新密钥。**
+**彻底退出 Codex 后重新打开——插件与密钥配置只在新会话中生效。**
 
-**重启后请回到本任务，并让我验证连接。**
+## 第 4 步：在新会话中验证
 
-## 第 5 步：在新会话中验证
+依次确认，全部通过才算安装成功：
 
-自行验证以下全部项目：
+1. `scene-creator` 插件与 Skill 已加载
+2. 你的工具列表里有 `scene-creator` 的 MCP 工具（如 `task_manager`、`list_assets`）
+3. 执行一次只读请求（如列出可访问的场景包）能正常返回
 
-1. `scene-creator` 已安装，且可以选择对应 Skill。
-2. `scene-creator` 已连接。
-3. 线上 `tools/list` 包含安装文档要求的核心工具，且没有使用 Skill 中的静态数量替代实时清单。
-4. 线上 `workflow_tpe_manage` Schema 包含 `bubble`。
-5. 使用只读查询调用 `list_assets` 成功。
+任何一项不通过时，按下表处理，**禁止**在未通过的情况下宣告成功：
 
-不要为了测试安装而打开场景包制作工单。验证失败时，只报告未通过的具体检查项，不得暴露
-密钥或完整资产数据。
+| 现象 | 处理 |
+|---|---|
+| `401 Unauthorized` | 密钥缺失、已撤销，或新进程未继承密钥。只检查变量是否存在，不要输出其值 |
+| `403 Forbidden` | 该账号无目标场景包权限，告知用户在 GoalfyMax 侧确认授权 |
+| `503` | 依赖暂时不可用，等待恢复后重试，不要更换密钥 |
+| 缺少核心工具 | 部署未提供预期的外部契约。停止并记录线上工具 Schema；不要用静态工具数量代替实时清单 |
+| Skill 已加载但 MCP 未连接 | 重新安装插件；只复制 Skill 目录不会安装 MCP 配置 |
 
 ## 完成报告
 
-只报告以下内容：
-
-- 平台和插件版本；
-- MCP 已连接或未连接；
-- Skill 已加载或未加载；
-- 工具数量以及是否存在 `bubble`；
-- 只读请求通过或失败；
-- 如仍需用户操作，说明具体事项。
+向用户报告时说明：插件与 Skill 版本、MCP 连接状态、验证用的只读请求及其结果。
+**禁止**报告密钥内容或其片段。

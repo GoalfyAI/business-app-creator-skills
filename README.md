@@ -83,7 +83,6 @@ platforms/      各平台安装文件模板
 claude-code/    Claude Code 插件市场目录（自动生成）
 codex/          Codex 插件市场目录（自动生成）
 scripts/        构建与发布工具
-docs/           文档
 ```
 
 只有 `skill/` 和 `platforms/` 是手工维护的源文件，其余安装目录由发布流程生成。
@@ -104,7 +103,6 @@ claude plugin update scene-creator@scene-creator     # Claude Code
 
 ## 文档
 
-- [维护者手册](docs/maintainers.md) — 校验、发版、版本策略与流水线
 - [常见问题](FAQ.md)
 - [参与贡献](CONTRIBUTING.md)
 - [安全策略](SECURITY.md)

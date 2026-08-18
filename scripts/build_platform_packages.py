@@ -31,9 +31,10 @@ PLATFORM_KEYWORDS_PLACEHOLDER = "__SCENE_CREATOR_KEYWORDS__"
 # 注入安装文件后会破坏 JSON 的字符
 COPY_UNSAFE_CHARS = ('"', "\\")
 PLATFORM_NAMES = ("codex", "claude-code")
-QA_MCP_ENDPOINT = "https://workflow-mcp.qa.goalfyai.com/mcp"
+# 仓库里的安装物料始终是生产配置。开发者要连测试环境时，改本地已安装插件的
+# .mcp.json，不动仓库源文件——那会让发布校验和失配。
 PROD_MCP_ENDPOINT = "https://workflow-mcp.goalfyai.cn/mcp"
-ALLOWED_MCP_ENDPOINTS = {QA_MCP_ENDPOINT, PROD_MCP_ENDPOINT}
+ALLOWED_MCP_ENDPOINTS = {PROD_MCP_ENDPOINT}
 DATA_SKILL_VERSION_RE = re.compile(r"^v\d{8}-[0-9a-f]{6}$")
 LEGACY_SKILL_VERSION_RE = re.compile(r"^v\d+\.\d+\.\d+$")
 SKILL_VERSION_RE = re.compile(
@@ -113,16 +114,6 @@ def _platform_source_root(skill_root: Path) -> Path:
 def _repository_root(skill_root: Path) -> Path:
     return skill_root.resolve().parent
 
-
-def _prod_runtime_paths(skill_root: Path) -> list[Path]:
-    repository_readme = _repository_root(skill_root) / "README.md"
-    if not repository_readme.is_file():
-        raise ReleaseError(f"缺少仓库安装说明：{repository_readme}")
-    return [
-        *discover_source_files(skill_root),
-        *discover_platform_source_files(skill_root),
-        repository_readme,
-    ]
 
 
 def discover_platform_source_files(skill_root: Path) -> list[Path]:
@@ -378,16 +369,19 @@ def validate_platform_sources(skill_root: Path) -> None:
             (source_root / name).read_text(encoding="utf-8")
             for name in ("README.md", "AGENTS.md", "UPDATE.md")
         )
+        # 只校验安装文档必须交代清楚的事实，不锁具体措辞：
+        # 密钥从哪来、怎么发送、装完怎么验证。
         for required_text in (
-            "tools/list",
-            "bubble",
-            "list_assets",
             "/developer/api-keys",
-            "sk_",
             "Authorization: Bearer",
+            "SCENE_CREATOR_API_KEY",
+            "list_assets",
         ):
             if required_text not in combined_docs:
                 raise ReleaseError(f"{platform} 安装文档必须提到 {required_text!r}")
+        # 公开市场是唯一正式安装来源，文档里必须给出它
+        if "GoalfyAI/scene-creator-skills" not in combined_docs:
+            raise ReleaseError(f"{platform} 安装文档必须给出公开插件市场来源")
 
 
 def _sha256(path: Path) -> str:
@@ -886,80 +880,26 @@ def generate_prod_version(
     return f"v{instant.astimezone(timezone.utc):%Y%m%d}-{suffix}"
 
 
-def render_prod_runtime(skill_root: Path) -> None:
-    """把唯一源和平台模板切到国内生产；生成目录随后统一重建。"""
-    skill_root = skill_root.resolve()
-    replacements = {
-        QA_MCP_ENDPOINT: PROD_MCP_ENDPOINT,
-        "GoalfyMax QA 后端": "GoalfyMax 国内生产后端",
-        "GoalfyMax QA 个人 API 密钥": "GoalfyMax 国内生产个人 API 密钥",
-        "GoalfyMax QA 的": "GoalfyMax 国内生产环境（https://goalfymax.goalfyai.cn）的",
-        "登录 GoalfyMax QA": "登录 GoalfyMax 国内生产环境（https://goalfymax.goalfyai.cn）",
-        "当前连接美国 QA 环境": "当前连接国内生产环境",
-        "在 GoalfyMax QA 中": "在 GoalfyMax 国内生产环境（https://goalfymax.goalfyai.cn）中",
-        "完整的 QA 个人 API 密钥": "完整的国内生产个人 API 密钥",
-        "QA 部署尚未提供": "国内生产部署尚未提供",
-        "GoalfyMax QA": "GoalfyMax 国内生产环境（https://goalfymax.goalfyai.cn）",
-    }
-    paths = _prod_runtime_paths(skill_root)
-    for path in paths:
-        original = path.read_text(encoding="utf-8")
-        updated = original
-        for old, new in replacements.items():
-            updated = updated.replace(old, new)
-        if updated != original:
-            path.write_text(updated, encoding="utf-8")
 
 
-def assert_prod_runtime(skill_root: Path) -> None:
-    """PROD 切版必须只包含国内生产 MCP 和生产密钥说明。"""
-    skill_root = skill_root.resolve()
-    if _configured_mcp_endpoint(skill_root) != PROD_MCP_ENDPOINT:
-        raise ReleaseError("PROD Skill 未连接国内生产 MCP")
-    paths = _prod_runtime_paths(skill_root)
-    forbidden = (QA_MCP_ENDPOINT, "GoalfyMax QA", "QA 个人 API 密钥")
-    stale: list[str] = []
-    for path in paths:
-        content = path.read_text(encoding="utf-8")
-        if any(value in content for value in forbidden):
-            stale.append(str(path.relative_to(skill_root)))
-    if stale:
-        raise ReleaseError(f"PROD Skill 仍包含 QA 安装配置：{sorted(stale)}")
 
 
-def assert_qa_runtime(skill_root: Path) -> None:
-    """QA 切版必须仍连 QA MCP，避免把生产地址发成 QA 包。"""
-    if _configured_mcp_endpoint(skill_root.resolve()) != QA_MCP_ENDPOINT:
-        raise ReleaseError("QA Skill 未连接 QA MCP")
-
-
-def release_runtime_source(
+def release_prod_source(
     skill_root: Path,
     reason: str,
     *,
-    runtime: str,
     now: datetime | None = None,
     random_hex: str | None = None,
 ) -> str:
     """切一个新的随机 Skill 版本，并统一提升所有一方 package version。
 
-    runtime="prod" 把安装物料渲染成国内生产；runtime="qa" 保持 QA 地址不动。
-    两者共用同一套版本生成与校验，闸门机制因此可以在 QA 用真实格式完整验证，
-    而不是等到生产才第一次跑。
+    安装物料本身始终是生产配置，发版只改版本号，不做环境渲染。
     """
-    if runtime not in ("qa", "prod"):
-        raise ReleaseError("runtime 必须是 qa 或 prod")
     skill_root = skill_root.resolve()
     manifest = check_release(skill_root)
     version = generate_prod_version(now, random_hex=random_hex)
     package_version = _next_patch(manifest["package_version"])
     skill_file = skill_root / "SKILL.md"
-    rollback = {
-        path: path.read_bytes()
-        for path in _prod_runtime_paths(skill_root)
-    }
-    if runtime == "prod":
-        render_prod_runtime(skill_root)
     original = skill_file.read_text(encoding="utf-8")
     updated, count = SKILL_VERSION_RE.subn(f"[skill-version:{version}]", original, count=1)
     if count != 1:
@@ -973,28 +913,10 @@ def release_runtime_source(
             skill_version=version,
             allow_package_bump=True,
         )
-        if runtime == "prod":
-            assert_prod_runtime(skill_root)
-        else:
-            assert_qa_runtime(skill_root)
     except Exception:
-        for path, content in rollback.items():
-            path.write_bytes(content)
+        skill_file.write_text(original, encoding="utf-8")
         raise
     return version
-
-
-def release_prod_source(
-    skill_root: Path,
-    reason: str,
-    *,
-    now: datetime | None = None,
-    random_hex: str | None = None,
-) -> str:
-    """按 Data 规则更新 Skill 版本并统一提升所有一方 package version。"""
-    return release_runtime_source(
-        skill_root, reason, runtime="prod", now=now, random_hex=random_hex
-    )
 
 
 def _parser() -> argparse.ArgumentParser:
