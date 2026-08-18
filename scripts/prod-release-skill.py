@@ -36,6 +36,11 @@ def parse_args() -> argparse.Namespace:
         help="register SCENE_SKILL_VERSION after the release commit is pushed",
     )
     actions.add_argument(
+        "--prepare-qa",
+        action="store_true",
+        help="cut a QA release: new random Skill version, install files stay on QA",
+    )
+    actions.add_argument(
         "--verify-runtime-only",
         action="store_true",
         help="verify that the CN PROD MCP route reaches its authentication layer",
@@ -43,13 +48,15 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def prepare_release(root: Path) -> str:
+def prepare_release(root: Path, runtime: str) -> str:
     sys.path.insert(0, str(root / "scene-creator/release"))
-    from build_platform_packages import release_prod_source
+    from build_platform_packages import release_runtime_source
 
-    return release_prod_source(
+    default_notes = f"{runtime.upper()} pipeline release"
+    return release_runtime_source(
         root / "scene-creator",
-        os.environ.get("SCENE_SKILL_RELEASE_NOTES", "PROD pipeline release"),
+        os.environ.get("SCENE_SKILL_RELEASE_NOTES", default_notes),
+        runtime=runtime,
     )
 
 
@@ -155,11 +162,18 @@ def verify_prod_runtime(root: Path) -> None:
 
 def main() -> int:
     args = parse_args()
-    if os.environ.get("DEPLOY_ENV", "").strip().lower() != "prod":
-        raise RuntimeError("refusing to update scene skill version outside PROD")
+    # 切版本的目标运行时必须与执行环境一致：QA 环境只能切 QA 态，PROD 环境只能切生产态，
+    # 防止在 QA 发出连生产地址的包，反之亦然。
+    deploy_env = os.environ.get("DEPLOY_ENV", "").strip().lower()
+    wanted_env = "qa" if args.prepare_qa else "prod"
+    if deploy_env != wanted_env:
+        raise RuntimeError(
+            f"refusing to run: DEPLOY_ENV={deploy_env or '<unset>'}, "
+            f"this action requires {wanted_env}"
+        )
     root = Path(__file__).resolve().parents[1]
-    if args.prepare_only:
-        version = prepare_release(root)
+    if args.prepare_only or args.prepare_qa:
+        version = prepare_release(root, wanted_env)
         print(f"SCENE_SKILL_VERSION={version}")
     elif args.verify_runtime_only:
         verify_prod_runtime(root)

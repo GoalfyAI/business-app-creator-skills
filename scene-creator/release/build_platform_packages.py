@@ -924,14 +924,28 @@ def assert_prod_runtime(skill_root: Path) -> None:
         raise ReleaseError(f"PROD Skill 仍包含 QA 安装配置：{sorted(stale)}")
 
 
-def release_prod_source(
+def assert_qa_runtime(skill_root: Path) -> None:
+    """QA 切版必须仍连 QA MCP，避免把生产地址发成 QA 包。"""
+    if _configured_mcp_endpoint(skill_root.resolve()) != QA_MCP_ENDPOINT:
+        raise ReleaseError("QA Skill 未连接 QA MCP")
+
+
+def release_runtime_source(
     skill_root: Path,
     reason: str,
     *,
+    runtime: str,
     now: datetime | None = None,
     random_hex: str | None = None,
 ) -> str:
-    """按 Data 规则更新 Skill 版本并统一提升所有一方 package version。"""
+    """切一个新的随机 Skill 版本，并统一提升所有一方 package version。
+
+    runtime="prod" 把安装物料渲染成国内生产；runtime="qa" 保持 QA 地址不动。
+    两者共用同一套版本生成与校验，闸门机制因此可以在 QA 用真实格式完整验证，
+    而不是等到生产才第一次跑。
+    """
+    if runtime not in ("qa", "prod"):
+        raise ReleaseError("runtime 必须是 qa 或 prod")
     skill_root = skill_root.resolve()
     manifest = check_release(skill_root)
     version = generate_prod_version(now, random_hex=random_hex)
@@ -941,7 +955,8 @@ def release_prod_source(
         path: path.read_bytes()
         for path in _prod_runtime_paths(skill_root)
     }
-    render_prod_runtime(skill_root)
+    if runtime == "prod":
+        render_prod_runtime(skill_root)
     original = skill_file.read_text(encoding="utf-8")
     updated, count = SKILL_VERSION_RE.subn(f"[skill-version:{version}]", original, count=1)
     if count != 1:
@@ -955,12 +970,28 @@ def release_prod_source(
             skill_version=version,
             allow_package_bump=True,
         )
-        assert_prod_runtime(skill_root)
+        if runtime == "prod":
+            assert_prod_runtime(skill_root)
+        else:
+            assert_qa_runtime(skill_root)
     except Exception:
         for path, content in rollback.items():
             path.write_bytes(content)
         raise
     return version
+
+
+def release_prod_source(
+    skill_root: Path,
+    reason: str,
+    *,
+    now: datetime | None = None,
+    random_hex: str | None = None,
+) -> str:
+    """按 Data 规则更新 Skill 版本并统一提升所有一方 package version。"""
+    return release_runtime_source(
+        skill_root, reason, runtime="prod", now=now, random_hex=random_hex
+    )
 
 
 def _parser() -> argparse.ArgumentParser:
