@@ -1,0 +1,110 @@
+name: Register Skill Release
+
+# 校验发布产物一致性，并把版本登记到各环境 Max Hub。
+# 版本号本身由发布流程生成，这里只负责"已发布的内容与清单相符"和"登记到服务端"。
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'skill-release.json'
+      - 'skill/SKILL.md'
+      - 'claude-code/skills/scene-creator/SKILL.md'
+      - 'codex/skills/scene-creator/SKILL.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # 拦住绕过发布流程的手工编辑：版本号没动时，无法区分新内容与上一版。
+      - name: Verify release manifest matches published files
+        run: |
+          python3 -m pip install --quiet pyyaml
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import re
+          import sys
+          from pathlib import Path
+
+          release = json.load(open('skill-release.json', encoding='utf-8'))
+          version = release['version']
+          marker = re.compile(r"\[skill-version: ?(v(?:\d+\.\d+\.\d+|\d{8}-[0-9a-f]{6}))\]")
+          errors = []
+
+          # Skill 内容文件：版本标记与校验和都必须与清单一致
+          for name, expected in (release.get('checksums') or {}).items():
+              path = Path('skill') / name
+              if not path.exists():
+                  errors.append(f'{path}: 清单中列出但文件缺失')
+                  continue
+              actual = hashlib.sha256(path.read_bytes()).hexdigest()
+              if actual != expected:
+                  errors.append(f'{path}: 内容已变更但未重新发布（sha256 不匹配）')
+
+          # 平台安装文件同样比对
+          for name, expected in (release.get('platform_checksums') or {}).items():
+              path = Path('platforms') / name
+              if not path.exists():
+                  errors.append(f'{path}: 清单中列出但文件缺失')
+                  continue
+              actual = hashlib.sha256(path.read_bytes()).hexdigest()
+              if actual != expected:
+                  errors.append(f'{path}: 内容已变更但未重新发布（sha256 不匹配）')
+
+          # 四份 SKILL.md 的版本标记必须一致
+          for path in (
+              Path('skill/SKILL.md'),
+              Path('claude-code/skills/scene-creator/SKILL.md'),
+              Path('codex/skills/scene-creator/SKILL.md'),
+          ):
+              if not path.exists():
+                  errors.append(f'{path}: 缺失')
+                  continue
+              found = marker.search(path.read_text(encoding='utf-8'))
+              if not found:
+                  errors.append(f'{path}: description 里没有 [skill-version:...] 标记')
+              elif found.group(1) != version:
+                  errors.append(f'{path}: 版本 {found.group(1)} 与清单 {version} 不一致')
+
+          if errors:
+              print('发布校验失败——请执行 scripts/build_platform_packages.py release 重新发布：')
+              for e in errors:
+                  print(f'  - {e}')
+              sys.exit(1)
+          print(f'所有发布产物均为 {version}')
+          PY
+
+      - name: Register release in Max Hub environments
+        env:
+          TARGETS: ${{ secrets.SCENE_SKILL_RELEASE_REGISTRY_TARGETS }}
+          SCENE_SKILL_RELEASE_NOTES: ${{ github.event.head_commit.message }}
+        run: |
+          if [ -z "${TARGETS}" ]; then
+            echo "未配置 SCENE_SKILL_RELEASE_REGISTRY_TARGETS，跳过登记"
+            exit 0
+          fi
+          python3 - <<'PY'
+          import json
+          import os
+          import runpy
+          import sys
+          from pathlib import Path
+
+          release = json.load(open('skill-release.json', encoding='utf-8'))
+          os.environ['SCENE_SKILL_VERSION'] = release['version']
+          sys.argv = ['prod-release-skill.py', '--register-only']
+          # 复用发布脚本的多目标登记逻辑，避免签名实现出现第二份
+          module = runpy.run_path(str(Path('scripts/prod-release-skill.py')))
+          module['register_release'](release['version'])
+          PY

@@ -1,0 +1,50 @@
+name: Publish Skill Release
+
+# 每个 skill/v* tag 发一条 GitHub Release：标题取版本，正文取 skill-release.json 的发布说明。
+# register-skill-release.yml 负责登记到服务端；本流程只发布对外可见的版本记录。
+on:
+  push:
+    tags:
+      - 'skill/v*'
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      # 以 scene-creator-bot 身份创建 Release，不归属到任何个人账号。
+      - uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
+
+      - uses: actions/checkout@v4
+
+      - name: Create GitHub Release from skill-release.json
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          VERSION="${TAG#skill/}"
+          JSON_VERSION="$(python3 -c "import json; print(json.load(open('skill-release.json'))['version'])")"
+          if [ "${VERSION}" != "${JSON_VERSION}" ]; then
+            echo "tag ${TAG} 与 skill-release.json 的版本 ${JSON_VERSION} 不一致" >&2
+            exit 1
+          fi
+          python3 - <<'PY' > /tmp/release-notes.md
+          import json
+          release = json.load(open('skill-release.json', encoding='utf-8'))
+          notes = release.get('update_reason', '')
+          files = ''.join(f'- {name}\n' for name in release.get('source_files', []))
+          print(f"{notes}\n")
+          print(f"插件版本：{release.get('package_version', '')}")
+          print(f"发布时间：{release.get('released_at', '')}\n")
+          print(f"Skill 文件：\n{files}")
+          PY
+          gh release create "${TAG}" \
+            --title "${VERSION}" \
+            --notes-file /tmp/release-notes.md \
+            --verify-tag
