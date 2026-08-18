@@ -1,6 +1,7 @@
 # 场景包制作安装指南 — Codex（Agent 版）
 
-本文供 Agent 直接执行。升级已安装的插件请改用 [UPDATE.md](UPDATE.md)。
+本文供 Agent 直接执行，覆盖安装、更新与密钥轮换三种情况。
+被版本闸门拒单时也可只看 [UPDATE.md](UPDATE.md)，那份是同一套更新流程的独立版本。
 
 ## 沙箱与权限处理
 
@@ -40,7 +41,7 @@ test -f "$HOME/.codex/.env" && grep '^SCENE_CREATOR_API_KEY=' "$HOME/.codex/.env
 
 不要输出匹配到的环境变量行。
 
-- 两项都通过 → 已是完整安装：改走 [UPDATE.md](UPDATE.md)，不要问用户任何事
+- 两项都通过 → 已是完整安装：直接跳到本文末尾的「更新」一节，不要问用户任何事
 - 部分通过 → 只做未通过项对应的步骤
 - 都没通过 → 从第 1 步开始完整安装
 
@@ -141,6 +142,67 @@ MCP 连接只有重启后才生效，重启前无法验证。**逐字输出**下
 ```
 
 **禁止**在报告中出现密钥内容或其片段。
+
+---
+
+## 更新
+
+用户要求更新、或第 0 步判定为已安装时走这里。
+
+### 第 1 步：升级插件
+
+```bash
+codex plugin marketplace upgrade scene-creator
+codex plugin remove scene-creator@scene-creator
+codex plugin add scene-creator@scene-creator
+```
+
+先升级市场再重装，Codex 由此拉到新版本。
+
+失败处理：提示 `marketplace 'scene-creator' is not configured as a Git marketplace`，
+或重装后 `[skill-version:...]` 标记仍是旧值，说明市场当初是从本地目录添加的。
+重新绑定后再执行上面的 remove/add：
+
+```bash
+codex plugin marketplace add GoalfyAI/scene-creator-skills
+```
+
+### 第 2 步：确认新版本已生效
+
+搜索已安装的 `skills/scene-creator/SKILL.md`，从 description 读出 `[skill-version:...]`。
+**不要凭记忆拼装安装路径**——路径里有连续同名层级和中间版本目录。命中多份时取版本目录
+最高或最近修改的那份。
+
+读不到该文件或没有版本标记，说明安装已损坏，回到第 1 步重装。
+
+### 第 3 步：重启生效
+
+**逐字输出**下面的模板：
+
+# 需要用户操作：重启后生效
+
+**彻底退出 Codex 后重新打开——更新后的 Skill 内容只在新会话里生效。**
+
+> 若本次更新是因为创建工单被 `SCENE_SKILL_UPGRADE_REQUIRED` 拒绝：版本闸门只校验版本串，
+> 所以读到新标记后**先在当前会话内用它重试**被拒的 `task_manager` create，重试成功再提示
+> 用户重启。顺序反了会让用户白等一次重启。
+
+---
+
+## 轮换 API 密钥
+
+用户要更换密钥、或旧密钥已被撤销时走这里。
+
+1. 引导用户获取新密钥：执行上面「第 2 步：取得并配置 API 密钥」的模板
+2. 更新 `~/.codex/.env` 的 `SCENE_CREATOR_API_KEY` 行，保留其他环境变量，
+   然后 `chmod 600 "$HOME/.codex/.env"`
+3. **逐字输出**重启模板——环境变量只在新会话生效，不重启的话 MCP 仍用旧密钥
+4. 重启后由你自己跑一次 `list_assets` 只读自检，确认新密钥可用
+5. 确认可用后，提示用户去 GoalfyMax 撤销旧密钥
+
+对比或排查密钥问题时，**禁止**输出新旧密钥的任何片段。
+
+---
 
 ## 装好之后
 

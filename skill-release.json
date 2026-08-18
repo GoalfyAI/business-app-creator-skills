@@ -3,8 +3,8 @@
   "version": "v1.0.12",
   "package_version": "1.0.12",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-18T06:51:39Z",
-  "update_reason": "安装指南补齐沙箱处理、状态分流与自检报告",
+  "released_at": "2026-08-18T06:54:17Z",
+  "update_reason": "安装指南合入更新与密钥轮换，成为自包含运维手册",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
