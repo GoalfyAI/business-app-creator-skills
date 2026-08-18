@@ -11,7 +11,6 @@ import yaml
 ROOT = Path(__file__).parents[1]
 SKILL_ROOT = ROOT / "skill"
 SCRIPT_PATH = ROOT / "scripts" / "build_platform_packages.py"
-PIPELINE_PATH = ROOT / ".yunxiao" / "scene-creator-skills.yml"
 PROD_SCRIPT_PATH = ROOT / "scripts" / "register-skill-release.py"
 
 SPEC = importlib.util.spec_from_file_location("scene_creator_release", SCRIPT_PATH)
@@ -381,15 +380,6 @@ def test_release_script_covers_the_whole_publish_flow():
     # 工作区不干净时无法分辨哪些改动属于本次发布
     assert "git status --porcelain" in script
 
-
-def test_validation_pipeline_does_not_mutate_the_repository():
-    """云效流水线只做校验：不得改版本、不得提交。"""
-    pipeline = PIPELINE_PATH.read_text(encoding="utf-8")
-
-    assert "stage_prod" not in pipeline, "发版已改由本地脚本完成"
-    assert "git commit" not in pipeline and "git push" not in pipeline
-    assert "build_platform_packages.py check" in pipeline
-    assert "git status --porcelain" in pipeline, "缺少仓库未被改动的守卫"
 
 
 def test_registration_workflow_reuses_the_release_script():

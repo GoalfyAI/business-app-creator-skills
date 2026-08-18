@@ -8,6 +8,14 @@ on:
     paths:
       - 'skill-release.json'
       - 'skill/**'
+      # 平台安装文档也参与校验：check 会核对其中的必备事实与 MCP 配置
+      - 'claude-code/**'
+      - 'codex/**'
+      - 'manus/**'
+      - 'generic/**'
+      - 'scripts/**'
+      # bot 提交的 zip 不必再触发一轮登记
+      - '!**/*.zip'
   workflow_dispatch:
 
 permissions:

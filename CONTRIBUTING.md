@@ -107,7 +107,7 @@ git push --follow-tags github main
 | `publish-skill-release` | `skill/v*` tag | 从发布清单创建 GitHub Release |
 | `build-platform-zips` | Skill 内容变更 | 重新打包 Manus 与通用集成的压缩包 |
 
-云效流水线只做校验，不改动仓库任何内容。
+校验只在 GitHub Actions 上跑，推送到 GitHub 后自动触发。
 
 ## 提交信息
 
