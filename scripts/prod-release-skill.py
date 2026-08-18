@@ -49,12 +49,12 @@ def parse_args() -> argparse.Namespace:
 
 
 def prepare_release(root: Path, runtime: str) -> str:
-    sys.path.insert(0, str(root / "scene-creator/release"))
+    sys.path.insert(0, str(root / "scripts"))
     from build_platform_packages import release_runtime_source
 
     default_notes = f"{runtime.upper()} pipeline release"
     return release_runtime_source(
-        root / "scene-creator",
+        root / "skill",
         os.environ.get("SCENE_SKILL_RELEASE_NOTES", default_notes),
         runtime=runtime,
     )
@@ -132,10 +132,10 @@ def register_release(version: str) -> None:
 
 
 def verify_prod_runtime(root: Path) -> None:
-    sys.path.insert(0, str(root / "scene-creator/release"))
+    sys.path.insert(0, str(root / "scripts"))
     from build_platform_packages import PROD_MCP_ENDPOINT, assert_prod_runtime
 
-    assert_prod_runtime(root / "scene-creator")
+    assert_prod_runtime(root / "skill")
     request = urllib.request.Request(
         PROD_MCP_ENDPOINT,
         method="GET",

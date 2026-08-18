@@ -19,9 +19,9 @@ from typing import Any
 import yaml
 
 SKILL_NAME = "scene-creator"
-MANIFEST_RELATIVE_PATH = Path("release/skill-release.json")
+MANIFEST_RELATIVE_PATH = Path("skill-release.json")
 OPENAI_METADATA_RELATIVE_PATH = Path("agents/openai.yaml")
-PLATFORM_SOURCE_RELATIVE_PATH = Path("release/platforms")
+PLATFORM_SOURCE_RELATIVE_PATH = Path("platforms")
 PLATFORM_VERSION_TOKEN = "__SCENE_CREATOR_VERSION__"
 # 对外文案占位符：平台安装文件只写占位符，构建时从唯一源注入，避免同一段文案存多份。
 PLATFORM_DESCRIPTION_PLACEHOLDER = "__SCENE_CREATOR_DESCRIPTION__"
@@ -89,12 +89,17 @@ class ReleaseError(ValueError):
     """仓库中的 Skill 发布信息无效或已过期。"""
 
 
+SKILL_CONTENT_DIR = "skill"
+
+
 def _skill_root() -> Path:
-    return Path(__file__).resolve().parents[1]
+    """Skill 内容目录：只放要发给用户的 SKILL.md / agents / references。"""
+    return Path(__file__).resolve().parents[1] / SKILL_CONTENT_DIR
 
 
 def _manifest_path(skill_root: Path) -> Path:
-    return skill_root / MANIFEST_RELATIVE_PATH
+    # 发布清单与平台模板属于仓库级构建物，不混在 Skill 内容目录里。
+    return _repository_root(skill_root) / MANIFEST_RELATIVE_PATH
 
 
 def _relative(path: Path, skill_root: Path) -> str:
@@ -102,7 +107,7 @@ def _relative(path: Path, skill_root: Path) -> str:
 
 
 def _platform_source_root(skill_root: Path) -> Path:
-    return skill_root / PLATFORM_SOURCE_RELATIVE_PATH
+    return _repository_root(skill_root) / PLATFORM_SOURCE_RELATIVE_PATH
 
 
 def _repository_root(skill_root: Path) -> Path:
@@ -158,8 +163,6 @@ def discover_source_files(skill_root: Path) -> list[Path]:
     files = []
     for path in skill_root.rglob("*"):
         relative_path = path.relative_to(skill_root)
-        if relative_path.parts[0] == "release":
-            continue
         if path.is_symlink():
             raise ReleaseError(f"Skill 发布文件不允许使用符号链接：{path}")
         if not path.is_file():

@@ -10,8 +10,8 @@ import tomllib
 import yaml
 
 ROOT = Path(__file__).parents[1]
-SKILL_ROOT = ROOT / "scene-creator"
-SCRIPT_PATH = SKILL_ROOT / "release" / "build_platform_packages.py"
+SKILL_ROOT = ROOT / "skill"
+SCRIPT_PATH = ROOT / "scripts" / "build_platform_packages.py"
 PIPELINE_PATH = ROOT / ".yunxiao" / "scene-creator-skills.yml"
 PROD_SCRIPT_PATH = ROOT / "scripts" / "prod-release-skill.py"
 
@@ -27,8 +27,18 @@ PROD_SPEC.loader.exec_module(prod_release_module)
 
 
 def _copy_skill(tmp_path: Path) -> Path:
-    copied = tmp_path / "scene-creator"
+    """复制 Skill 内容目录，并带上同级的仓库级构建物。
+
+    发布清单与平台模板不在 Skill 内容目录里，构建时从仓库根解析，
+    所以临时仓库必须把这两样一起搬过去。
+    """
+    copied = tmp_path / "skill"
     shutil.copytree(SKILL_ROOT, copied)
+    shutil.copytree(ROOT / "platforms", tmp_path / "platforms")
+    shutil.copy2(ROOT / "skill-release.json", tmp_path / "skill-release.json")
+    # prod-release-skill.py 从 <repo>/scripts 导入构建模块，临时仓库要保持同样布局
+    (tmp_path / "scripts").mkdir(exist_ok=True)
+    shutil.copy2(SCRIPT_PATH, tmp_path / "scripts" / SCRIPT_PATH.name)
     return copied
 
 
@@ -39,7 +49,9 @@ def _copy_repository_metadata(tmp_path: Path) -> None:
 
 
 def _manifest(skill_root: Path = SKILL_ROOT) -> dict:
-    return json.loads((skill_root / "release" / "skill-release.json").read_text(encoding="utf-8"))
+    return json.loads(
+        (skill_root.parent / "skill-release.json").read_text(encoding="utf-8")
+    )
 
 
 def _package_version(skill_root: Path = SKILL_ROOT) -> str:
@@ -73,7 +85,7 @@ def test_new_reference_requires_a_new_release(tmp_path: Path):
 
 def test_platform_install_change_requires_a_new_release(tmp_path: Path):
     copied = _copy_skill(tmp_path)
-    readme = copied / "release" / "platforms" / "codex" / "README.md"
+    readme = copied.parent / "platforms" / "codex" / "README.md"
     readme.write_text(readme.read_text(encoding="utf-8") + "\n", encoding="utf-8")
 
     with pytest.raises(release_module.ReleaseError, match="平台发布校验和已过期"):
@@ -518,7 +530,7 @@ def test_platform_packages_share_one_source_and_exclude_release_files(tmp_path: 
 
 def test_platform_mcp_templates_use_env_key_and_live_external_contract():
     for platform in ("codex", "claude-code"):
-        platform_root = SKILL_ROOT / "release" / "platforms" / platform
+        platform_root = ROOT / "platforms" / platform
         mcp_text = (platform_root / ".mcp.json").read_text(encoding="utf-8")
         docs = "\n".join(
             (platform_root / name).read_text(encoding="utf-8")
