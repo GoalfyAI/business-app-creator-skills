@@ -1,14 +1,14 @@
 {
   "name": "scene-creator",
-  "description": "面向编码 Agent 的 GoalfyMax 场景包制作与验证能力。通过经过审计的 scene-creator 外部 MCP，把业务目标、候选路线和业务档案沉淀为可直接使用的场景包，并按需组合普通任务点、FastAgent、工具、Dataset、单 Workflow 或多 Workflow。覆盖线上资产复用、工具契约取样、依赖与辅助文件准备、输入输出 Schema、当前版本编排、预览、bubble 验证、所有 Workflow 场景包的业务界面制作与部署、可选全真项目验证、日志与交付物检查到最终发布的完整制作链路。",
+  "description": "把业务流程沉淀为 GoalfyMax 场景包，诊断、优化并验证已有场景包",
   "owner": {
     "name": "GoalfyAI"
   },
   "plugins": [
     {
       "name": "scene-creator",
-      "description": "在 Codex 中创建、更新、验证并发布 GoalfyMax 场景包。支持线上资产复用、工具契约取样、依赖与辅助文件准备、单 Workflow 或多 Workflow 编排、输入输出 Schema 校验、预览、bubble、业务界面制作与部署、可选全真项目验证、日志诊断和交付物检查。",
-      "version": "1.0.10",
+      "description": "当用户需要把业务流程、SOP、实操经验、已执行项目或业务档案沉淀为可复用的 GoalfyMax 场景包，或需要排查一个已有场景包为什么效果差、绕弯多、执行失败时使用——典型场景包括：从零创建场景包、基于参考项目的执行日志复盘并优化、逐层诊断配置问题、修复后回归验证、上线发布、续作此前未完成的制作工单。覆盖业务访谈、里程碑与候选路线提炼、能力摸底、资产制作（普通任务点 / 工具集 / FastAgent / Workflow / 多 Workflow 编排 / 业务界面）、分层验收到交付的完整制作链路。仅执行一次性业务任务、仅咨询平台概念、或开发与场景包无关的应用时不要使用。",
+      "version": "1.0.13",
       "author": {
         "name": "GoalfyAI"
       },

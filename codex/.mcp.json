@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "scene-creator": {
-      "url": "https://workflow-mcp.goalfyai.com/mcp",
+      "url": "https://workflow-mcp.goalfyai.cn/mcp",
       "transport": "streamable_http",
       "bearer_token_env_var": "SCENE_CREATOR_API_KEY"
     }

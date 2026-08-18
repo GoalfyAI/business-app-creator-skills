@@ -1,0 +1,68 @@
+name: Register Skill Release
+
+# 校验发布产物一致性，并把版本登记到各环境 Max Hub。
+# 版本号本身由发布流程生成，这里只负责"已发布的内容与清单相符"和"登记到服务端"。
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'skill-release.json'
+      - 'skill/**'
+      # 平台安装文档也参与校验：check 会核对其中的必备事实与 MCP 配置
+      - 'claude-code/**'
+      - 'codex/**'
+      - 'manus/**'
+      - 'generic/**'
+      - 'scripts/**'
+      # bot 提交的 zip 不必再触发一轮登记
+      - '!**/*.zip'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # 拦住绕过发布流程的手工编辑：版本号没动时，无法区分新内容与上一版。
+      # 直接调用仓库脚本，校验逻辑只有一份——单独在这里重写会漏掉新增平台。
+      - name: Verify release manifest matches published files
+        run: |
+          python3 -m pip install --quiet pyyaml
+          python3 scripts/build_platform_packages.py check
+
+      - name: Register release in Max Hub environments
+        env:
+          # 变量名必须与 register-skill-release.py 读取的一致
+          SCENE_SKILL_RELEASE_REGISTRY_TARGETS: ${{ secrets.SCENE_SKILL_RELEASE_REGISTRY_TARGETS }}
+
+        run: |
+          if [ -z "${SCENE_SKILL_RELEASE_REGISTRY_TARGETS}" ]; then
+            echo "未配置 SCENE_SKILL_RELEASE_REGISTRY_TARGETS，跳过登记"
+            exit 0
+          fi
+          python3 - <<'PY'
+          import json
+          import os
+          import runpy
+          import sys
+          from pathlib import Path
+
+          release = json.load(open('skill-release.json', encoding='utf-8'))
+          os.environ['SCENE_SKILL_VERSION'] = release['version']
+          # 发布说明取清单里的 update_reason：它是发版时填的变更说明，
+          # 手动触发（workflow_dispatch）没有 commit 上下文，用 commit message 会是空的
+          os.environ['SCENE_SKILL_RELEASE_NOTES'] = release.get('update_reason', '')
+          sys.argv = ['register-skill-release.py', '--register-only']
+          # 复用发布脚本的多目标登记逻辑，避免签名实现出现第二份
+          module = runpy.run_path(str(Path('scripts/register-skill-release.py')))
+          module['register_release'](release['version'])
+          PY

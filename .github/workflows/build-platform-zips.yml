@@ -1,0 +1,63 @@
+name: Build Platform ZIPs
+
+# Manus 与通用集成没有插件管理器，靠 zip 分发。Skill 内容变更后自动重新打包提交，
+# 避免仓库里的 zip 与 SKILL.md 不同步。
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'manus/skill/**'
+      - 'generic/SKILL.md'
+      - 'generic/references/**'
+      - 'generic/.mcp.json'
+      - '!**/*.zip'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # 以 scene-creator-bot 身份提交，自动化产物不归属任何个人账号。
+      - uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
+
+      - name: Resolve bot user id
+        id: bot-user
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: echo "id=$(gh api "/users/${{ steps.app-token.outputs.app-slug }}%5Bbot%5D" --jq .id)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # 用仓库脚本打包，与本地 `build_platform_packages.py zip` 产出完全一致：
+      # 确定性时间戳 + UTF-8 文件名，内容不变时不会产生无谓提交。
+      - name: Build ZIPs
+        run: |
+          python3 -m pip install --quiet pyyaml
+          python3 scripts/build_platform_packages.py zip
+
+      - name: Commit and push ZIPs
+        run: |
+          git config user.name "${{ steps.app-token.outputs.app-slug }}[bot]"
+          git config user.email "${{ steps.bot-user.outputs.id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com"
+          git add manus/scene-creator-skill.zip generic/scene-creator-generic.zip
+          if git diff --cached --quiet; then
+            echo "ZIP 无变化，跳过提交。"
+          else
+            git commit -m "chore: auto-build platform zips"
+            git pull --rebase origin main
+            git push
+          fi
