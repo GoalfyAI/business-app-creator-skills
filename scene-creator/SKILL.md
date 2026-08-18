@@ -1316,8 +1316,10 @@ task_manager(create)
 标记，原样填入 `skill_version` 重试。
 
 合法版本串**只能**来自升级后已安装的 SKILL.md。拒单响应里不含可用于重试的版本串，
-**禁止**从响应、changelog 或记忆里取值重试。升级成功并重试通过之后，才提示用户重启客户端
-让新 Skill 内容生效——重试只解除闸门，你上下文里的 Skill 内容仍是旧版。
+**禁止**从响应、changelog 或记忆里取值重试。搜不到已安装的 SKILL.md、或文件里没有
+`[skill-version:...]` 标记，说明插件安装已损坏，按 `metadata.update.reinstall_commands`
+彻底重装后再读标记，**禁止**因为读不到就编造一个版本串。升级成功并重试通过之后，才提示
+用户重启客户端让新 Skill 内容生效——重试只解除闸门，你上下文里的 Skill 内容仍是旧版。
 
 **`SCENE_SKILL_UPGRADE_RECOMMENDED`** — 有新版本但**不阻断**，工单已正常创建，`task_id` 可直接使用。
 继续当前任务，交付时顺带提示用户升级即可。

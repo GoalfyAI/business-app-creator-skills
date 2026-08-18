@@ -3,8 +3,8 @@
   "version": "v1.0.12",
   "package_version": "1.0.12",
   "mcp_endpoint": "https://workflow-mcp.qa.goalfyai.com/mcp",
-  "released_at": "2026-08-17T14:17:53Z",
-  "update_reason": "合并 T-2775 版本机制；升级引导改用插件管理器，拒单响应不再透出版本串；对外文案收敛为唯一源",
+  "released_at": "2026-08-18T02:08:52Z",
+  "update_reason": "补插件安装损坏时的重装兜底路径",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -16,7 +16,7 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "9815e71b76051fd4e90e1690444d457834959014afdbb88adf6e0f1c73564238",
+    "SKILL.md": "1116589c5ad5b7ac54b827e1aca426776d22a6874e4ab2326caf7e7f0f5e25ee",
     "agents/openai.yaml": "b16a05d8d25daef30c581f294c1fb3a9cc9cd1060edf3278f8e86fc06f270bef",
     "references/Workflow验收检查清单.md": "ca6159075317b6fa2d993b57c5ec3e6dedccfd637d9969188deff6204a7a582c",
     "references/业务界面制作契约.md": "d55b273146a835f6fcac11911a9842bd052044443e44a0500bcef8e13cdac1dd",
@@ -42,11 +42,11 @@
     "claude-code/.mcp.json": "056dc4ee8ffd2a7459142b866a2a41ad229a5c0cc6d9d9276362532c40f2dcfd",
     "claude-code/AGENTS.md": "5f083167c024c42ae2005eb900bdc221ffc88c95e6b357e7c38168501aafa9df",
     "claude-code/README.md": "f42bfbdbe9061965e3689bfc55c6c11bd8e026bbe7fb62d1836c32af8112ac69",
-    "claude-code/UPDATE.md": "49d6b58f8cda467049c32b76cffd5cedb25a492897f8b3631baf7d6b6fa4e6ae",
+    "claude-code/UPDATE.md": "ab00e8dbec333cf383499797681f8a2d51a6cee970b6c6026d6546e15b7d0c52",
     "codex/.codex-plugin/plugin.json": "820adc1eeef1ee235a775be5bae1348b147976730d6bc794c6efc08a280be514",
     "codex/.mcp.json": "9e1c197e836053227e30a9e93c6a033d5a914892e6a0b76e45de21d809876cb6",
     "codex/AGENTS.md": "48898ef5649e6ed5f4f8293f2f1867e3bc8f8d8cb69d3b2cc6c74020c4a37d08",
     "codex/README.md": "d1e90558b20f6aed09e95490dee43b4e36487d2e906e6a6a29035160b4031002",
-    "codex/UPDATE.md": "ff6c1fa9868384a888ef6aa34c006f2d2fb4e7d836d0679b5a4863b07839e122"
+    "codex/UPDATE.md": "996e7c9ac6cbf40613fc2a2243443e30a3df316ec773805160373ecc286a27fb"
   }
 }

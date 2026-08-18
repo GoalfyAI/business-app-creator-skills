@@ -26,6 +26,15 @@ claude plugin marketplace add git@codeup.aliyun.com:goalfyai/goalfyagent/scene-c
 市场副本），取版本目录最高或最近修改的那份。从它的 description 读出 `[skill-version:...]`，
 原样填入 `skill_version` 重试刚才失败的 `task_manager` create。
 
+搜不到该文件、或文件里没有 `[skill-version:...]` 标记，说明插件安装已损坏，执行下面的命令彻底重装后
+再回到本步，**不要**因为读不到就编造一个版本串：
+
+```bash
+claude plugin uninstall scene-creator@scene-creator
+claude plugin marketplace add git@codeup.aliyun.com:goalfyai/goalfyagent/scene-creator-skills.git
+claude plugin install scene-creator@scene-creator
+```
+
 拒单响应和 changelog 里都不含可用于重试的版本串，唯一合法来源是上面读到的已安装 SKILL.md 标记。
 
 ### 第 3 步：让新 Skill 完整加载
