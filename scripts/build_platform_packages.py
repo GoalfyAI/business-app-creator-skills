@@ -493,6 +493,33 @@ def build_platform_zips(skill_root: Path) -> list[Path]:
     return built
 
 
+def check_platform_zips(skill_root: Path) -> None:
+    """校验已提交的 zip 与当前源文件一致。
+
+    zip 是确定性打包的，所以重新打一份逐字节比对即可。少了这道校验，
+    改完源文件忘记重新打包时本地校验会放行，只能等 CI 兜底。
+    """
+    repository_root = _repository_root(skill_root)
+    stale = []
+    existing = {}
+    for platform, layout in PLATFORM_LAYOUTS.items():
+        spec = layout.get("zip")
+        if not spec:
+            continue
+        path = repository_root / platform / spec[0]
+        existing[path] = path.read_bytes() if path.is_file() else None
+    for path, previous in existing.items():
+        if previous is None:
+            stale.append(f"{path.name}（缺失）")
+    build_platform_zips(skill_root)
+    for path, previous in existing.items():
+        if previous is not None and path.read_bytes() != previous:
+            path.write_bytes(previous)  # 校验不改仓库状态
+            stale.append(path.name)
+    if stale:
+        raise ReleaseError(f"平台压缩包已过期，请执行 release 或 zip：{sorted(stale)}")
+
+
 def check_release(skill_root: Path) -> dict[str, Any]:
     """校验发布清单、Skill 内容校验和与各平台副本。"""
     skill_root = skill_root.resolve()
@@ -536,6 +563,7 @@ def check_release(skill_root: Path) -> dict[str, Any]:
         raise ReleaseError(f"发布校验和已过期：{stale}")
 
     check_platform_skills(skill_root)
+    check_platform_zips(skill_root)
     return manifest
 
 

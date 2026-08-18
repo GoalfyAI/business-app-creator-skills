@@ -122,6 +122,16 @@ def test_zip_packages_are_deterministic_and_utf8(tmp_path: Path):
                 assert info.flag_bits & 0x800, f"中文文件名缺少 UTF-8 标志：{info.filename}"
 
 
+def test_stale_zip_is_rejected(tmp_path: Path):
+    """源文件改了但没重新打包时必须报错，否则只能等 CI 兜底。"""
+    copied = _copy_repo(tmp_path)
+    readme = tmp_path / "generic" / "README.md"
+    readme.write_text(readme.read_text(encoding="utf-8") + "\n补充说明\n", encoding="utf-8")
+
+    with pytest.raises(release_module.ReleaseError, match="平台压缩包已过期"):
+        release_module.check_release(copied)
+
+
 def test_install_docs_state_the_required_facts():
     """安装文档必须交代：密钥从哪来、装完怎么验证、从哪装。"""
     for platform, layout in release_module.PLATFORM_LAYOUTS.items():
