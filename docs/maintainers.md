@@ -91,9 +91,11 @@ registry 恒空，闸门在那些环境既不生效也无法验证，因此 `SCE
 按行配置全部目标，每行一个 `<url>|<secret>`，脚本逐个登记并在结尾汇总失败：
 
 ```text
-https://goalfyhub.qa.goalfyai.com/api/internal/workflow/scene-skill-versions/releases/register|<QA secret>
-https://goalfyhub.goalfyai.cn/api/internal/workflow/scene-skill-versions/releases/register|<CN PROD secret>
+<QA Hub 登记接口 URL>|<QA secret>
+<生产 Hub 登记接口 URL>|<生产 secret>
 ```
+
+实际 URL 与密钥由流水线变量下发，不写进仓库。
 
 各环境使用各自的 S2S 密钥，不得复用 GoalfyData Hub 的地址或密钥。未配置该变量时，脚本回退到
 单目标的 `SCENE_SKILL_RELEASE_REGISTER_URL` 与 `SCENE_SKILL_RELEASE_S2S_SECRET`。
