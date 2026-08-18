@@ -49,7 +49,7 @@ test -f "$HOME/.codex/.env" && grep -q '^SCENE_CREATOR_API_KEY=' "$HOME/.codex/.
 
 # 需要用户操作：提供 GoalfyMax 个人 API 密钥
 
-**1. 打开 GoalfyMax 线上环境，进入 开发者工具 → API 密钥（`/developer/api-keys`）。**
+**1. 打开 GoalfyMax 线上环境，进入 [开发者工具 → API 密钥](https://goalfymax.goalfyai.cn/developer/api-keys)。**
 
 **2. 创建一个个人 API 密钥（以 `sk_` 开头），完整密钥只显示一次，请立即复制并粘贴到本对话。**
 

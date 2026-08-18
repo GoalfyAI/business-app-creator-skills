@@ -7,9 +7,7 @@ on:
     branches: [main]
     paths:
       - 'skill-release.json'
-      - 'skill/SKILL.md'
-      - 'claude-code/skills/scene-creator/SKILL.md'
-      - 'codex/skills/scene-creator/SKILL.md'
+      - 'skill/**'
   workflow_dispatch:
 
 permissions:
@@ -27,53 +25,11 @@ jobs:
           python-version: '3.12'
 
       # 拦住绕过发布流程的手工编辑：版本号没动时，无法区分新内容与上一版。
+      # 直接调用仓库脚本，校验逻辑只有一份——单独在这里重写会漏掉新增平台。
       - name: Verify release manifest matches published files
         run: |
           python3 -m pip install --quiet pyyaml
-          python3 - <<'PY'
-          import hashlib
-          import json
-          import re
-          import sys
-          from pathlib import Path
-
-          release = json.load(open('skill-release.json', encoding='utf-8'))
-          version = release['version']
-          marker = re.compile(r"\[skill-version: ?(v(?:\d+\.\d+\.\d+|\d{8}-[0-9a-f]{6}))\]")
-          errors = []
-
-          # Skill 内容文件：版本标记与校验和都必须与清单一致
-          for name, expected in (release.get('checksums') or {}).items():
-              path = Path('skill') / name
-              if not path.exists():
-                  errors.append(f'{path}: 清单中列出但文件缺失')
-                  continue
-              actual = hashlib.sha256(path.read_bytes()).hexdigest()
-              if actual != expected:
-                  errors.append(f'{path}: 内容已变更但未重新发布（sha256 不匹配）')
-
-          # 四份 SKILL.md 的版本标记必须一致
-          for path in (
-              Path('skill/SKILL.md'),
-              Path('claude-code/skills/scene-creator/SKILL.md'),
-              Path('codex/skills/scene-creator/SKILL.md'),
-          ):
-              if not path.exists():
-                  errors.append(f'{path}: 缺失')
-                  continue
-              found = marker.search(path.read_text(encoding='utf-8'))
-              if not found:
-                  errors.append(f'{path}: description 里没有 [skill-version:...] 标记')
-              elif found.group(1) != version:
-                  errors.append(f'{path}: 版本 {found.group(1)} 与清单 {version} 不一致')
-
-          if errors:
-              print('发布校验失败——请执行 scripts/build_platform_packages.py release 重新发布：')
-              for e in errors:
-                  print(f'  - {e}')
-              sys.exit(1)
-          print(f'所有发布产物均为 {version}')
-          PY
+          python3 scripts/build_platform_packages.py check
 
       - name: Register release in Max Hub environments
         env:

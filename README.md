@@ -23,12 +23,17 @@
 
 ## 支持的平台
 
-| 平台 | 安装方式 | 快速上手 |
-|---|---|---|
-| **Claude Code** | 插件市场 | [Claude Code 快速上手](docs/claude-code-quickstart.md) |
-| **Codex** | 插件市场 | [Codex 快速上手](docs/codex-quickstart.md) |
-| **Manus** | 网页添加连接器 + 上传 Skill | [Manus 快速上手](docs/manus-quickstart.md) |
-| **其他 MCP 客户端** | 手工配置 MCP + 加载 Skill | [通用集成指南](generic/README.md) |
+先在 [开发者工具 → API 密钥](https://goalfymax.goalfyai.cn/developer/api-keys) 创建个人密钥，密钥以 `sk_` 开头且只显示一次。
+然后按下表选择你的平台。
+
+| 平台 | 最快上手 | 详细指南 | 状态 |
+|---|---|---|---|
+| **Claude Code** | 插件市场一行安装，把密钥交给 Agent 配置 | [Claude Code 快速上手](docs/claude-code-quickstart.md) | 可用 |
+| **Codex** | 插件市场一行安装，把密钥交给 Agent 配置 | [Codex 快速上手](docs/codex-quickstart.md) | 可用 |
+| **Manus** | 在网页添加 MCP 连接器，上传 Skill 压缩包 | [Manus 快速上手](docs/manus-quickstart.md) | 可用，需手工操作 |
+| **其他 MCP 客户端** | 手工配置远端 MCP，加载通用 Skill | [通用集成指南](generic/README.md) | 可用，步骤因客户端而异 |
+
+> Manus 目前只能在其网页界面手工配置，无法把安装说明丢给 Agent 自动完成。
 
 ## 快速开始
 
@@ -50,7 +55,7 @@ Manus 与其他客户端请看上表对应的指南。
 
 ### 配置访问密钥
 
-在 GoalfyMax 的**开发者工具 → API 密钥**创建个人密钥，然后写进客户端配置：
+在 GoalfyMax 的 [开发者工具 → API 密钥](https://goalfymax.goalfyai.cn/developer/api-keys) 创建个人密钥，然后写进客户端配置：
 
 ```bash
 # Claude Code：~/.claude/settings.json 的 env

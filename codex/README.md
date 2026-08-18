@@ -20,8 +20,8 @@
 - 一个 GoalfyMax 账号，且有权访问目标场景包
 - 一个 GoalfyMax 个人 API 密钥
 
-获取密钥：登录 GoalfyMax 线上环境，打开账号菜单 → **开发者工具** → **API 密钥**
-（`/developer/api-keys`），选择 **新建 API 密钥** 并输入 1～100 个字符的名称。
+获取密钥：登录 GoalfyMax 线上环境，打开 [开发者工具 → API 密钥](https://goalfymax.goalfyai.cn/developer/api-keys)，
+选择 **新建 API 密钥** 并输入 1～100 个字符的名称。
 
 密钥以 `sk_` 开头，其完整内容就是 Bearer 凭证。**完整密钥只显示一次**，关闭弹窗前务必保存。
 当前最多允许 10 个有效密钥，支持命名、重命名和撤销。菜单中没有该入口说明账号尚未获得开发者

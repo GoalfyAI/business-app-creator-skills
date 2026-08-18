@@ -47,7 +47,7 @@ grep -q "SCENE_CREATOR_API_KEY" ~/.claude/settings.json 2>/dev/null && echo "KEY
 
 # 需要用户操作：提供 GoalfyMax 个人 API 密钥
 
-**1. 打开 GoalfyMax 线上环境，进入 开发者工具 → API 密钥（`/developer/api-keys`）。**
+**1. 打开 GoalfyMax 线上环境，进入 [开发者工具 → API 密钥](https://goalfymax.goalfyai.cn/developer/api-keys)。**
 
 **2. 创建一个个人 API 密钥，把完整密钥粘贴到本对话中。**
 
