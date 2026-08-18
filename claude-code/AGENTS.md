@@ -2,87 +2,147 @@
 
 本文供 Agent 直接执行。升级已安装的插件请改用 [UPDATE.md](UPDATE.md)。
 
-执行本指南时必须遵守：
+## 沙箱与权限处理
 
-1. 只运行本文列出的命令；只写入 `~/.claude/settings.json`（合并写入，保留其他配置）和
-   Claude Code 的插件目录
-2. 所有安装与配置命令由你自己执行，**禁止**把 shell 命令丢给用户、或让用户自己开终端
-3. 需要用户提供东西或采取行动时，输出对应的「需要用户操作」模板：作为正文输出，
-   **禁止**放进代码块或引用块，一级标题与加粗必须保留
-4. **禁止**回显密钥、在命令输出或 diff 中暴露密钥，也不得把密钥写入仓库、Skill、
-   本文档、检查点或日志
-5. 每一步都以检查命令开始：已完成的步骤跳过，任何一步重复执行都是安全的
-6. 在插件已启用、Claude Code 已重启、`scene-creator` MCP 工具已加载、且一次只读请求
-   成功返回之前，**禁止**宣告安装成功
+这段对话运行在 Claude Code 的沙箱和权限体系里，不是用户之后使用的终端。当前会话对需要
+网络访问或工作区外写入的命令，有内置的权限申请通道。
 
-## 第 0 步：判断当前状态
+1. 本文所有检查和命令**由你自己执行**。
+2. 遇到网络被拦、或写入 `~/.claude/settings.json` 与插件目录被拒，**先按沙箱限制处理**，
+   不要据此判断服务不可用、密钥无效或用户网络有问题。
+3. 命令被沙箱拦住时，用 Bash 工具的 `dangerouslyDisableSandbox: true` 参数自己重试，
+   走平台的正常权限流程。一次安装最多发起一次提权申请：申请够用的最小范围，
+   然后复用它完成余下步骤。
+4. 平台的授权弹窗是唯一可接受的提权交互。**禁止**把失败的命令贴进对话让用户自己跑。
+5. 获批后重跑检查并自动继续。只有在平台禁用免沙箱命令、用户拒绝授权、或提权后重试仍失败时，
+   才如实报告这个结果，**禁止**把命令转交给用户。
+
+## 通用规则
+
+1. 只运行本文列出的命令；只写入 `~/.claude/settings.json`（合并写入）和 Claude Code 插件目录。
+2. 需要用户提供东西或采取行动时，**逐字输出**对应的「需要用户操作」模板：作为正文输出，
+   **禁止**放进代码块或引用块，一级标题与加粗必须保留。用户不使用中文时翻译内容，
+   保留结构与强调。
+3. **禁止**回显密钥、在命令输出或 diff 中暴露密钥，也不得把密钥写入仓库、Skill、本文档、
+   检查点或日志。
+4. 每一步都以检查命令开始：已完成的跳过，任何一步重复执行都是安全的。
+5. 在插件已启用、Claude Code 已重启、MCP 工具已加载、且一次只读请求成功之前，
+   **禁止**宣告安装成功。
+
+## 第 0 步：判断当前状态（安装还是升级）
+
+以下都是检查命令，不需要用户参与。按结果分流：
 
 ```bash
-claude plugin list 2>/dev/null | grep -i scene-creator || echo "NOT_INSTALLED"
+claude plugin list | grep scene-creator                      # 插件装了吗？
+grep SCENE_CREATOR_API_KEY "$HOME/.claude/settings.json"     # 密钥配了吗？
 ```
 
-- 输出 `NOT_INSTALLED`：按本文继续安装
-- 已列出插件：这是升级场景，改用 [UPDATE.md](UPDATE.md)
+- 两项都通过 → 已是完整安装：改走 [UPDATE.md](UPDATE.md)，不要问用户任何事
+- 部分通过 → 只做未通过项对应的步骤
+- 都没通过 → 从第 1 步开始完整安装
 
-## 第 1 步：添加插件市场并安装
+## 第 1 步：安装插件
+
+检查：`claude plugin list | grep scene-creator` —— 有输出就跳到第 2 步。
 
 ```bash
 claude plugin marketplace add GoalfyAI/scene-creator-skills
 claude plugin install scene-creator@scene-creator
 ```
 
-市场已存在时不要重复添加。若提示市场已绑定到本地目录，按 [UPDATE.md](UPDATE.md) 的兜底
-步骤重新绑定到公开仓库。
+失败处理：
+
+- 提示市场已存在 → 不要重复添加，直接执行 install
+- 提示市场不是 Git 市场，或装完后读不到 `[skill-version:...]` 标记 → 市场当初是从本地目录
+  添加的，重新执行上面的 `marketplace add` 绑回公开仓库后再装
 
 ## 第 2 步：取得并配置 API 密钥
 
-先检查是否已配置：
+检查：`grep SCENE_CREATOR_API_KEY "$HOME/.claude/settings.json"` —— 已存在则跳到第 3 步。
 
-```bash
-grep -q "SCENE_CREATOR_API_KEY" ~/.claude/settings.json 2>/dev/null && echo "KEY_PRESENT" || echo "KEY_MISSING"
-```
-
-输出 `KEY_PRESENT` 时跳到第 3 步。否则用用户当前对话使用的语言输出下面的模板
-（用户不使用中文时翻译内容，保留标题与加粗结构）：
+否则**逐字输出**下面的模板：
 
 # 需要用户操作：提供 GoalfyMax 个人 API 密钥
 
-**1. 打开 GoalfyMax 线上环境，进入 [开发者工具 → API 密钥](https://goalfymax.goalfyai.cn/developer/api-keys)。**
+**1. 打开 https://goalfymax.goalfyai.cn/developer/api-keys ，点击「新建 API 密钥」并输入一个名称。**
 
-**2. 创建一个个人 API 密钥，把完整密钥粘贴到本对话中。**
+**2. 完整密钥以 `sk_` 开头且只显示一次，创建后立即复制并粘贴到本对话中。**
 
 **3. 我会替你写入本地配置，你不需要自己编辑任何文件。**
 
-拿到密钥后，合并写入 `~/.claude/settings.json` 的 `env.SCENE_CREATOR_API_KEY`，
-保留文件中其他全部配置。写入后不要回显密钥内容。
+菜单里没有该入口，说明账号尚未获得开发者权限，请用户联系管理员开通——不要借用他人密钥。
 
-## 第 3 步：重启
+拿到密钥后，把它**合并写入** `~/.claude/settings.json` 的 `env.SCENE_CREATOR_API_KEY`：
 
-输出下面的模板（同样作为正文，翻译时保留结构）：
+```json
+{
+  "env": {
+    "SCENE_CREATOR_API_KEY": "<用户提供的密钥>"
+  }
+}
+```
+
+要求：
+
+- 这个文件是用户 Claude Code 的全部配置，**必须合并写入**，保留其余所有内容，不得整体覆盖
+- 文件不存在时创建所需结构
+- 写入后重跑一次 grep 检查，确认找到 `SCENE_CREATOR_API_KEY` 再继续
+- 全程不回显密钥内容
+
+## 第 3 步：重启并验证
+
+MCP 连接只有重启后才生效，重启前无法验证。**逐字输出**下面的模板：
 
 # 需要用户操作：重启 Claude Code
 
-**执行 `/reload-plugins`，或彻底退出 Claude Code 后重新打开——插件与密钥配置在重启后才生效。**
+**1. 在会话中执行 `/reload-plugins`，或彻底退出 Claude Code 后重新打开。**
 
-## 第 4 步：在新会话中验证
+**2. 回到这个对话告诉我你已经重启（任意消息即可）——我会自己验证连接。**
 
-依次确认，全部通过才算安装成功：
+用户确认重启后，**由你自己验证**，不要让用户去检查任何东西：
 
-1. `scene-creator` 插件与 Skill 已加载
-2. 你的工具列表里有 `scene-creator` 的 MCP 工具（如 `task_manager`、`list_assets`）
-3. 执行一次只读请求（如列出可访问的场景包）能正常返回
+1. 确认 `scene-creator` 插件与 Skill 已加载
+2. 确认你的工具列表里有 `scene-creator` 的 MCP 工具（如 `task_manager`、`list_assets`）
+3. 用 `list_assets` 做一次只读请求作为自检——**禁止**为了测试连通性去创建、修改或删除任何资产
 
-任何一项不通过时，按下表处理，**禁止**在未通过的情况下宣告成功：
+自检失败时按下表处理：
 
 | 现象 | 处理 |
 |---|---|
-| `401 Unauthorized` | 密钥缺失、已撤销，或新进程未继承密钥。只检查变量是否存在，不要输出其值 |
-| `403 Forbidden` | 该账号无目标场景包权限，告知用户在 GoalfyMax 侧确认授权 |
-| `503` | 依赖暂时不可用，等待恢复后重试，不要更换密钥 |
-| 缺少核心工具 | 部署未提供预期的外部契约。停止并记录线上工具 Schema；不要用静态工具数量代替实时清单 |
-| Skill 已加载但 MCP 未连接 | 重新安装插件；只复制 Skill 目录不会安装 MCP 配置 |
+| `401 Unauthorized` | 确认 `~/.claude/settings.json` 里有 `SCENE_CREATOR_API_KEY`，且该密钥在 GoalfyMax 未被撤销，然后请用户再彻底重启一次。只检查变量是否存在，不要输出其值 |
+| `403 Forbidden` | 该账号没有目标场景包的访问权限，告知用户在 GoalfyMax 侧确认授权 |
+| `503` | 依赖暂时不可用，等待恢复后重试，**不要**更换密钥 |
+| 缺少 `task_manager` 等核心工具 | 部署未提供预期的外部契约。记录线上工具 Schema 并停止，**不要**用静态工具数量代替实时清单 |
+| 插件已加载但 MCP 未连接 | 重新安装插件；只复制 Skill 目录不会安装 MCP 配置 |
 
 ## 完成报告
 
-向用户报告时说明：插件与 Skill 版本、MCP 连接状态、验证用的只读请求及其结果。
-**禁止**报告密钥内容或其片段。
+全部步骤结束后，按此模板报告：
+
+```
+场景包制作 Skill 安装结果：
+
+[已完成]
+- 插件 scene-creator 已安装（版本 = plugin list 的实际输出）
+- Skill 版本 = SKILL.md description 里 [skill-version:...] 的实际值
+- API 密钥已写入 ~/.claude/settings.json
+- scene-creator MCP 工具已加载，只读请求成功
+
+[需要你操作]
+-（无 / 重启 Claude Code 后告诉我，我来验证连接）
+
+[未完成]
+-（无 / 列出原因）
+```
+
+**禁止**在报告中出现密钥内容或其片段。
+
+## 装好之后
+
+告诉用户可以直接用自然语言描述业务目标，例如：
+
+- 「我们每周要给 20 家门店做朋友圈广告投放复盘，把这个流程做成场景包」
+- 「这个场景包执行时总绕弯，你看下哪里配置有问题」
+
+Skill 会先带着做业务访谈、给出方案，用户确认后才动手制作。
