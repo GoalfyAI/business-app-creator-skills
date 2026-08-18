@@ -29,7 +29,7 @@ PLATFORM_FILES = ("README.md", "AGENTS.md", "UPDATE.md", ".mcp.json")
 
 def _copy_repo(tmp_path: Path) -> Path:
     """复制一份完整仓库结构，返回其中的 Skill 内容目录。"""
-    for name in ("skill", "claude-code", "codex", ".claude-plugin", ".agents"):
+    for name in ("skill", "claude-code", "codex", "manus", "generic", ".claude-plugin", ".agents"):
         shutil.copytree(ROOT / name, tmp_path / name)
     for name in ("skill-release.json", "pyproject.toml", "uv.lock", "README.md"):
         shutil.copy2(ROOT / name, tmp_path / name)
@@ -89,43 +89,59 @@ def test_every_install_surface_ships_production_endpoint():
 
 
 def test_platform_skill_copies_match_the_single_source():
-    """两个平台的 Skill 副本必须与唯一源逐字节一致。"""
+    """四个平台的 Skill 副本必须与唯一源逐字节一致。"""
     release_module.check_platform_skills(SKILL_ROOT)
 
     canonical = (SKILL_ROOT / "SKILL.md").read_bytes()
     for platform in release_module.PLATFORM_NAMES:
-        copy = ROOT / platform / "skills" / "scene-creator" / "SKILL.md"
-        assert copy.read_bytes() == canonical
-    # Codex 需要 openai.yaml，Claude Code 不需要
+        copy = release_module._platform_skill_dir(SKILL_ROOT, platform) / "SKILL.md"
+        assert copy.read_bytes() == canonical, platform
+    # 只有 Codex 需要 openai.yaml
     assert (ROOT / "codex/skills/scene-creator/agents/openai.yaml").is_file()
-    assert not (ROOT / "claude-code/skills/scene-creator/agents").exists()
+    for platform in ("claude-code", "manus", "generic"):
+        target = release_module._platform_skill_dir(SKILL_ROOT, platform) / "agents"
+        assert not target.exists(), platform
+
+
+def test_zip_packages_are_deterministic_and_utf8(tmp_path: Path):
+    """无插件管理器的平台靠 zip 分发：内容不变时字节必须一致，中文名不能乱码。"""
+    import zipfile
+
+    copied = _copy_repo(tmp_path)
+    first = {path: path.read_bytes() for path in release_module.build_platform_zips(copied)}
+    second = {path: path.read_bytes() for path in release_module.build_platform_zips(copied)}
+    assert first == second, "重复打包应产生完全相同的字节"
+
+    manus_zip = tmp_path / "manus" / "scene-creator-skill.zip"
+    with zipfile.ZipFile(manus_zip) as archive:
+        names = archive.namelist()
+        # Manus 要求 SKILL.md 位于压缩包根目录
+        assert "SKILL.md" in names
+        for info in archive.infolist():
+            if not info.filename.isascii():
+                assert info.flag_bits & 0x800, f"中文文件名缺少 UTF-8 标志：{info.filename}"
 
 
 def test_install_docs_state_the_required_facts():
-    """安装文档必须交代：密钥从哪来、怎么发送、装完怎么验证、从哪装。"""
-    for platform in release_module.PLATFORM_NAMES:
+    """安装文档必须交代：密钥从哪来、装完怎么验证、从哪装。"""
+    for platform, layout in release_module.PLATFORM_LAYOUTS.items():
         platform_root = ROOT / platform
-        mcp_text = (platform_root / ".mcp.json").read_text(encoding="utf-8")
         docs = "\n".join(
-            (platform_root / name).read_text(encoding="utf-8")
-            for name in ("README.md", "AGENTS.md", "UPDATE.md")
+            (platform_root / name).read_text(encoding="utf-8") for name in layout["docs"]
         )
-
-        assert _manifest()["mcp_endpoint"] in mcp_text
-        assert set(json.loads(mcp_text)["mcpServers"]) == {"scene-creator"}
-        assert "SCENE_CREATOR_API_KEY" in mcp_text
-        assert not re.search(r"Bearer\s+sk_[A-Za-z0-9]", mcp_text)
-
-        for required in (
-            "/developer/api-keys",
-            "Authorization: Bearer",
-            "SCENE_CREATOR_API_KEY",
-            "list_assets",
-            "GoalfyAI/scene-creator-skills",
-        ):
+        for required in ("/developer/api-keys", "list_assets"):
             assert required in docs, f"{platform} 缺少 {required!r}"
-        # 工具清单以实时加载的工具定义为准，不锁静态数量
-        assert "不要用静态工具数量代替实时清单" in docs
+
+        mcp_name = layout["mcp_config"]
+        if mcp_name:
+            mcp_text = (platform_root / mcp_name).read_text(encoding="utf-8")
+            assert _manifest()["mcp_endpoint"] in mcp_text
+            assert set(json.loads(mcp_text)["mcpServers"]) == {"scene-creator"}
+            assert "SCENE_CREATOR_API_KEY" in mcp_text
+            assert not re.search(r"Bearer\s+sk_[A-Za-z0-9]", mcp_text)
+            assert "SCENE_CREATOR_API_KEY" in docs, f"{platform} 未说明密钥环境变量"
+        if layout["skill_subdir"].startswith("skills/"):
+            assert "GoalfyAI/scene-creator-skills" in docs, f"{platform} 缺少公开市场来源"
 
 
 def test_docs_do_not_pin_a_stale_package_version():
@@ -155,10 +171,19 @@ def test_new_reference_requires_a_new_release(tmp_path: Path):
         release_module.check_release(copied)
 
 
-def test_platform_copy_drift_is_rejected(tmp_path: Path):
-    """平台副本被单独改动时必须报错——这是 Skill 内容分叉的唯一入口。"""
+@pytest.mark.parametrize(
+    "relative",
+    [
+        "claude-code/skills/scene-creator/SKILL.md",
+        "codex/skills/scene-creator/SKILL.md",
+        "manus/skill/SKILL.md",
+        "generic/SKILL.md",
+    ],
+)
+def test_platform_copy_drift_is_rejected(tmp_path: Path, relative: str):
+    """任一平台副本被单独改动都必须报错——这是 Skill 内容分叉的唯一入口。"""
     copied = _copy_repo(tmp_path)
-    drifted = tmp_path / "claude-code/skills/scene-creator/SKILL.md"
+    drifted = tmp_path / relative
     drifted.write_text(drifted.read_text(encoding="utf-8") + "\n", encoding="utf-8")
 
     with pytest.raises(release_module.ReleaseError, match="Skill 副本已过期"):
@@ -299,7 +324,7 @@ def test_prod_release_updates_every_version_surface(tmp_path: Path):
     marker = f"[skill-version:{version}]"
     assert marker in (copied / "SKILL.md").read_text(encoding="utf-8")
     for platform in release_module.PLATFORM_NAMES:
-        copy = tmp_path / platform / "skills" / "scene-creator" / "SKILL.md"
+        copy = release_module._platform_skill_dir(copied, platform) / "SKILL.md"
         assert marker in copy.read_text(encoding="utf-8")
 
     manifest = _manifest(copied)

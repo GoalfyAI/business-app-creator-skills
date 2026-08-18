@@ -3,8 +3,8 @@
   "version": "v1.0.12",
   "package_version": "1.0.12",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-18T03:23:27Z",
-  "update_reason": "平台文档改为公开市场安装；仓库物料切生产配置",
+  "released_at": "2026-08-18T03:42:53Z",
+  "update_reason": "新增 Manus 与通用集成两个平台",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",

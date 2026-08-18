@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "scene-creator": {
+      "type": "streamable-http",
+      "url": "https://workflow-mcp.goalfyai.cn/mcp",
+      "headers": {
+        "Authorization": "Bearer ${SCENE_CREATOR_API_KEY}"
+      }
+    }
+  }
+}

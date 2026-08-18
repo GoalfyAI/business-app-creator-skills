@@ -21,6 +21,15 @@
 | 业务界面 | 面向业务用户的操作入口 |
 | 长期数据集 | 跨任务沉淀的业务数据 |
 
+## 支持的平台
+
+| 平台 | 安装方式 | 快速上手 |
+|---|---|---|
+| **Claude Code** | 插件市场 | [Claude Code 快速上手](docs/claude-code-quickstart.md) |
+| **Codex** | 插件市场 | [Codex 快速上手](docs/codex-quickstart.md) |
+| **Manus** | 网页添加连接器 + 上传 Skill | [Manus 快速上手](docs/manus-quickstart.md) |
+| **其他 MCP 客户端** | 手工配置 MCP + 加载 Skill | [通用集成指南](generic/README.md) |
+
 ## 快速开始
 
 ### Claude Code
@@ -36,6 +45,8 @@ claude plugin install scene-creator@scene-creator
 codex plugin marketplace add GoalfyAI/scene-creator-skills
 codex plugin add scene-creator@scene-creator
 ```
+
+Manus 与其他客户端请看上表对应的指南。
 
 ### 配置访问密钥
 
@@ -81,11 +92,14 @@ Agent 会创建只读工单，逐层检查提示词、工具契约、编排配�
 skill/          Skill 内容唯一源：SKILL.md、Agent 元数据、参考资料
 claude-code/    Claude Code 插件目录：安装文档 + Skill 副本
 codex/          Codex 插件目录：安装文档 + Skill 副本
+manus/          Manus 集成说明 + 可上传的 Skill 压缩包
+generic/        通用集成指南 + MCP 配置 + Skill 文件
+docs/           各平台快速上手
 scripts/        构建与发布工具
 ```
 
-`skill/` 是 Skill 内容的唯一源，发布时复制到两个平台的 `skills/` 下；平台安装文档
-（`README.md`、`AGENTS.md`、`UPDATE.md`、`.mcp.json`）在各平台目录里手工维护。
+`skill/` 是 Skill 内容的唯一源，发布时复制到四个平台，各平台拿到的 Skill 逐字节相同；
+平台安装文档在各自目录里手工维护。
 
 ## 版本与升级
 
@@ -103,9 +117,15 @@ claude plugin update scene-creator@scene-creator     # Claude Code
 
 ## 文档
 
-- [常见问题](FAQ.md)
-- [参与贡献](CONTRIBUTING.md)
-- [安全策略](SECURITY.md)
+| 文档 | 用途 |
+|---|---|
+| [Claude Code 快速上手](docs/claude-code-quickstart.md) | 安装、验证、更新与排障 |
+| [Codex 快速上手](docs/codex-quickstart.md) | 同上 |
+| [Manus 快速上手](docs/manus-quickstart.md) | 连接器与 Skill 上传 |
+| [通用集成指南](generic/README.md) | 其他 MCP 客户端 |
+| [常见问题](FAQ.md) | 产品与使用问题 |
+| [参与贡献](CONTRIBUTING.md) | 目录职责、本地验证、版本机制 |
+| [安全策略](SECURITY.md) | 漏洞报告与安全约定 |
 
 ## 这个仓库不做什么
 

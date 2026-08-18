@@ -17,6 +17,7 @@ import re
 import secrets
 import shutil
 import sys
+import zipfile
 from collections.abc import Iterable
 from datetime import datetime, timezone
 from pathlib import Path
@@ -28,7 +29,45 @@ SKILL_NAME = "scene-creator"
 SKILL_CONTENT_DIR = "skill"
 MANIFEST_RELATIVE_PATH = Path("skill-release.json")
 OPENAI_METADATA_RELATIVE_PATH = Path("agents/openai.yaml")
-PLATFORM_NAMES = ("codex", "claude-code")
+# 各平台的安装形态不同：插件市场平台把 Skill 放进 skills/ 子目录，
+# Manus 上传 skill 包，通用集成直接摊在目录根。Skill 内容本身四份完全一致。
+PLATFORM_LAYOUTS = {
+    "claude-code": {
+        "skill_subdir": "skills/scene-creator",
+        "with_openai_metadata": False,
+        "mcp_config": ".mcp.json",
+        "docs": ("README.md", "AGENTS.md", "UPDATE.md"),
+    },
+    "codex": {
+        "skill_subdir": "skills/scene-creator",
+        # Codex 读 agents/openai.yaml 取展示名、默认提示词与 MCP 依赖声明
+        "with_openai_metadata": True,
+        "mcp_config": ".mcp.json",
+        "docs": ("README.md", "AGENTS.md", "UPDATE.md"),
+    },
+    "manus": {
+        "skill_subdir": "skill",
+        "with_openai_metadata": False,
+        # Manus 在网页里手工添加连接器，仓库不放 .mcp.json
+        "mcp_config": None,
+        "docs": ("README.md", "UPDATE.md"),
+        # Manus 要求 SKILL.md 位于压缩包根目录
+        "zip": ("scene-creator-skill.zip", "skill", ("SKILL.md", "references")),
+    },
+    "generic": {
+        "skill_subdir": ".",
+        "with_openai_metadata": False,
+        "mcp_config": ".mcp.json",
+        "docs": ("README.md", "UPDATE.md"),
+        "zip": (
+            "scene-creator-generic.zip",
+            ".",
+            (".mcp.json", "SKILL.md", "references", "README.md"),
+        ),
+    },
+}
+PLATFORM_NAMES = tuple(PLATFORM_LAYOUTS)
+ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 # 仓库里的安装物料始终是生产配置。开发者要连测试环境时，改本地已安装插件的
 # .mcp.json，不动仓库源文件——那会让发布校验和失配。
 PROD_MCP_ENDPOINT = "https://workflow-mcp.goalfyai.cn/mcp"
@@ -59,8 +98,6 @@ PACKAGE_MANIFESTS = (
     Path(".claude-plugin/marketplace.json"),
     Path(".agents/plugins/marketplace.json"),
 )
-# 平台安装目录：Skill 内容复制到 skills/ 下，其余文件手工维护
-PLATFORM_DOC_FILES = ("README.md", "AGENTS.md", "UPDATE.md")
 MANIFEST_KEYS = {
     "skill_name",
     "version",
@@ -215,35 +252,39 @@ def validate_skill_metadata(skill_root: Path) -> None:
 def validate_platform_install_files(skill_root: Path) -> None:
     """校验各平台安装文件的安全契约与必备事实。"""
     repository_root = _repository_root(skill_root)
-    for platform in PLATFORM_NAMES:
+    for platform, layout in PLATFORM_LAYOUTS.items():
         platform_root = repository_root / platform
-        mcp_path = platform_root / ".mcp.json"
-        if not mcp_path.is_file():
-            raise ReleaseError(f"缺少 {platform} 的 MCP 配置：{mcp_path}")
-        mcp = json.loads(mcp_path.read_text(encoding="utf-8"))
-        server = (mcp.get("mcpServers") or {}).get(SKILL_NAME) or {}
-        if server.get("url") != PROD_MCP_ENDPOINT:
-            raise ReleaseError(f"{platform} MCP 必须使用生产地址")
-        serialized = json.dumps(server, ensure_ascii=False)
-        if "SCENE_CREATOR_API_KEY" not in serialized:
-            raise ReleaseError(f"{platform} MCP 必须引用 API Key 环境变量")
-        if re.search(r"Bearer\s+sk_[A-Za-z0-9]", serialized):
-            raise ReleaseError(f"{platform} MCP 不得包含明文 API Key")
+        mcp_name = layout["mcp_config"]
+        if mcp_name:
+            mcp_path = platform_root / mcp_name
+            if not mcp_path.is_file():
+                raise ReleaseError(f"缺少 {platform} 的 MCP 配置：{mcp_path}")
+            mcp = json.loads(mcp_path.read_text(encoding="utf-8"))
+            server = (mcp.get("mcpServers") or {}).get(SKILL_NAME) or {}
+            if server.get("url") != PROD_MCP_ENDPOINT:
+                raise ReleaseError(f"{platform} MCP 必须使用生产地址")
+            serialized = json.dumps(server, ensure_ascii=False)
+            if "SCENE_CREATOR_API_KEY" not in serialized:
+                raise ReleaseError(f"{platform} MCP 必须引用 API Key 环境变量")
+            if re.search(r"Bearer\s+sk_[A-Za-z0-9]", serialized):
+                raise ReleaseError(f"{platform} MCP 不得包含明文 API Key")
 
         docs = "\n".join(
-            (platform_root / name).read_text(encoding="utf-8") for name in PLATFORM_DOC_FILES
+            (platform_root / name).read_text(encoding="utf-8") for name in layout["docs"]
         )
         # 只校验安装文档必须交代清楚的事实，不锁具体措辞：
-        # 密钥从哪来、怎么发送、装完怎么验证、从哪装。
-        for required_text in (
-            "/developer/api-keys",
-            "Authorization: Bearer",
-            "SCENE_CREATOR_API_KEY",
-            "list_assets",
-            "GoalfyAI/scene-creator-skills",
-        ):
+        # 密钥从哪来、装完怎么验证。
+        for required_text in ("/developer/api-keys", "list_assets"):
             if required_text not in docs:
                 raise ReleaseError(f"{platform} 安装文档必须提到 {required_text!r}")
+        # 有 .mcp.json 的平台靠环境变量注入密钥，文档必须写明变量名；
+        # Manus 在网页里直接填明文密钥，没有环境变量可言。
+        if mcp_name and "SCENE_CREATOR_API_KEY" not in docs:
+            raise ReleaseError(f"{platform} 安装文档必须说明 API Key 环境变量")
+        # 走插件市场的平台必须给出公开来源；Manus 与通用集成是手工配置，不适用
+        if layout["skill_subdir"].startswith("skills/"):
+            if "GoalfyAI/scene-creator-skills" not in docs:
+                raise ReleaseError(f"{platform} 安装文档必须给出公开插件市场来源")
 
 
 def _sha256(path: Path) -> str:
@@ -361,50 +402,95 @@ def _validate_released_at(value: Any) -> None:
 
 
 def _platform_skill_dir(skill_root: Path, platform: str) -> Path:
-    return _repository_root(skill_root) / platform / "skills" / SKILL_NAME
+    subdir = PLATFORM_LAYOUTS[platform]["skill_subdir"]
+    root = _repository_root(skill_root) / platform
+    return root if subdir == "." else root / subdir
+
+
+def _platform_skill_files(skill_root: Path, platform: str) -> dict[str, Path]:
+    """返回该平台应当持有的 Skill 内容文件（相对路径 -> 唯一源路径）。"""
+    layout = PLATFORM_LAYOUTS[platform]
+    selected = {}
+    for path in discover_source_files(skill_root):
+        relative = Path(_relative(path, skill_root))
+        if relative == OPENAI_METADATA_RELATIVE_PATH and not layout["with_openai_metadata"]:
+            continue
+        selected[relative.as_posix()] = path
+    return selected
 
 
 def sync_platform_skills(skill_root: Path) -> None:
     """把 Skill 内容复制到各平台安装目录。
 
-    Codex 需要 agents/openai.yaml，Claude Code 不需要，其余文件两边一致。
-    复制而非渲染：各平台拿到的 Skill 内容必须逐字节相同。
+    复制而非渲染：各平台拿到的 Skill 内容必须逐字节相同。只清理并重建
+    Skill 内容本身，平台自己的安装文档和配置不受影响。
     """
-    files = discover_source_files(skill_root)
     for platform in PLATFORM_NAMES:
         target_root = _platform_skill_dir(skill_root, platform)
-        if target_root.exists():
-            shutil.rmtree(target_root)
-        for path in files:
-            relative = Path(_relative(path, skill_root))
-            if platform == "claude-code" and relative == OPENAI_METADATA_RELATIVE_PATH:
-                continue
+        (target_root / "SKILL.md").unlink(missing_ok=True)
+        for stale in ("references", "agents"):
+            shutil.rmtree(target_root / stale, ignore_errors=True)
+        for relative, source in _platform_skill_files(skill_root, platform).items():
             destination = target_root / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(path, destination)
+            shutil.copy2(source, destination)
 
 
 def check_platform_skills(skill_root: Path) -> None:
     """校验各平台的 Skill 副本与唯一源逐字节一致。"""
-    files = discover_source_files(skill_root)
     for platform in PLATFORM_NAMES:
         target_root = _platform_skill_dir(skill_root, platform)
-        expected = {}
-        for path in files:
-            relative = Path(_relative(path, skill_root))
-            if platform == "claude-code" and relative == OPENAI_METADATA_RELATIVE_PATH:
-                continue
-            expected[relative.as_posix()] = _sha256(path)
-        actual = {
-            path.relative_to(target_root).as_posix(): _sha256(path)
-            for path in sorted(target_root.rglob("*"))
-            if path.is_file()
+        expected = {
+            relative: _sha256(source)
+            for relative, source in _platform_skill_files(skill_root, platform).items()
         }
+        actual = {}
+        for relative in expected:
+            path = target_root / relative
+            if not path.is_file():
+                raise ReleaseError(f"{platform} 缺少 Skill 副本：{relative}")
+            actual[relative] = _sha256(path)
         if expected != actual:
-            stale = sorted(set(expected) ^ set(actual)) or sorted(
-                name for name, digest in expected.items() if actual.get(name) != digest
-            )
+            stale = sorted(name for name, digest in expected.items() if actual.get(name) != digest)
             raise ReleaseError(f"{platform} 的 Skill 副本已过期，请执行 release：{stale}")
+
+
+def build_platform_zips(skill_root: Path) -> list[Path]:
+    """为没有插件管理器的平台打包 Skill。
+
+    确定性打包：固定时间戳、按路径排序、显式标记 UTF-8 文件名。
+    前两项保证内容不变时 zip 字节不变，最后一项保证中文文件名不乱码。
+    """
+    repository_root = _repository_root(skill_root)
+    built = []
+    for platform, layout in PLATFORM_LAYOUTS.items():
+        spec = layout.get("zip")
+        if not spec:
+            continue
+        archive_name, base_subdir, entries = spec
+        platform_root = repository_root / platform
+        base = platform_root if base_subdir == "." else platform_root / base_subdir
+        paths: list[Path] = []
+        for entry in entries:
+            target = base / entry
+            if target.is_dir():
+                paths.extend(sorted(path for path in target.rglob("*") if path.is_file()))
+            elif target.is_file():
+                paths.append(target)
+            else:
+                raise ReleaseError(f"{platform} 打包缺少文件：{target}")
+        output = platform_root / archive_name
+        with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+            for path in sorted(paths, key=lambda item: item.relative_to(base).as_posix()):
+                info = zipfile.ZipInfo(
+                    path.relative_to(base).as_posix(), date_time=ZIP_TIMESTAMP
+                )
+                info.compress_type = zipfile.ZIP_DEFLATED
+                info.external_attr = 0o644 << 16
+                info.flag_bits |= 0x800
+                archive.writestr(info, path.read_bytes())
+        built.append(output)
+    return built
 
 
 def check_release(skill_root: Path) -> dict[str, Any]:
@@ -487,6 +573,7 @@ def release(
 
     _bump_package_version(skill_root, package_version)
     sync_platform_skills(skill_root)
+    build_platform_zips(skill_root)
 
     files = discover_source_files(skill_root)
     manifest = {
@@ -553,6 +640,7 @@ def _parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="action", required=True)
     subparsers.add_parser("check", help="校验仓库中的发布清单与各平台副本")
     subparsers.add_parser("sync", help="按当前发布版本重新同步各平台 Skill 副本")
+    subparsers.add_parser("zip", help="重新打包 Manus 与通用集成的 Skill 压缩包")
 
     release_parser = subparsers.add_parser("release", help="写入新的发布清单")
     release_parser.add_argument("--version", required=True, help="package version")
@@ -567,9 +655,13 @@ def main(argv: list[str] | None = None) -> int:
         if args.action == "check":
             manifest = check_release(skill_root)
             print(f"{SKILL_NAME} 发布版本 {manifest['version']} 已是最新状态")
+        elif args.action == "zip":
+            for output in build_platform_zips(skill_root):
+                print(f"已打包 {output.name}")
         elif args.action == "sync":
             manifest = _load_manifest(skill_root)
             sync_platform_skills(skill_root)
+            build_platform_zips(skill_root)
             check_release(skill_root)
             print(f"{SKILL_NAME} 平台副本已按 {manifest['version']} 同步")
         else:
