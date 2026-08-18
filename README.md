@@ -28,10 +28,14 @@
 
 | 平台 | 最快上手 | 详细指南 | 状态 |
 |---|---|---|---|
-| **Claude Code** | 插件市场一行安装，把密钥交给 Agent 配置 | [Claude Code 快速上手](docs/claude-code-quickstart.md) | 可用 |
-| **Codex** | 插件市场一行安装，把密钥交给 Agent 配置 | [Codex 快速上手](docs/codex-quickstart.md) | 可用 |
+| **Claude Code** | 把 [安装指南](https://raw.githubusercontent.com/GoalfyAI/scene-creator-skills/main/claude-code/AGENTS.md) 发给 Agent，它会自己装完并验证 | [Claude Code 快速上手](docs/claude-code-quickstart.md) | 可用 |
+| **Codex** | 把 [安装指南](https://raw.githubusercontent.com/GoalfyAI/scene-creator-skills/main/codex/AGENTS.md) 发给 Agent，它会自己装完并验证 | [Codex 快速上手](docs/codex-quickstart.md) | 可用 |
 | **Manus** | 在网页添加 MCP 连接器，上传 Skill 压缩包 | [Manus 快速上手](docs/manus-quickstart.md) | 可用，需手工操作 |
 | **其他 MCP 客户端** | 手工配置远端 MCP，加载通用 Skill | [通用集成指南](generic/README.md) | 可用，步骤因客户端而异 |
+
+**最省事的装法**：把上表「最快上手」里的安装指南链接直接发给你的 Agent，让它照着执行——
+它会自己添加插件市场、安装插件、引导你提供密钥、写入配置，并在重启后验证工具是否可用。
+你不需要自己敲任何命令。
 
 > Manus 目前只能在其网页界面手工配置，无法把安装说明丢给 Agent 自动完成。
 
@@ -51,6 +55,7 @@ codex plugin marketplace add GoalfyAI/scene-creator-skills
 codex plugin add scene-creator@scene-creator
 ```
 
+不想自己敲命令的话，把对应平台的安装指南链接发给 Agent 即可（见上表）。
 Manus 与其他客户端请看上表对应的指南。
 
 ### 配置访问密钥
@@ -132,6 +137,7 @@ Skill 是否需要升级；版本过期时写操作会被拒绝。插件版本�
 | [Codex 快速上手](docs/codex-quickstart.md) | 同上 |
 | [Manus 快速上手](docs/manus-quickstart.md) | 连接器与 Skill 上传 |
 | [通用集成指南](generic/README.md) | 其他 MCP 客户端 |
+| 各平台 AGENTS.md | 交给 Agent 直接执行的安装流程：[Claude Code](https://raw.githubusercontent.com/GoalfyAI/scene-creator-skills/main/claude-code/AGENTS.md) · [Codex](https://raw.githubusercontent.com/GoalfyAI/scene-creator-skills/main/codex/AGENTS.md) |
 | 各平台 UPDATE.md | 升级步骤，写给 Agent 直接执行：[Claude Code](claude-code/UPDATE.md) · [Codex](codex/UPDATE.md) · [Manus](manus/UPDATE.md) · [通用](generic/UPDATE.md) |
 | [常见问题](FAQ.md) | 产品与使用问题 |
 | [参与贡献](CONTRIBUTING.md) | 目录职责、本地验证、版本机制 |
