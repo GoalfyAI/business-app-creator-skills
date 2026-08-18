@@ -40,15 +40,21 @@
 版本闸门只校验版本串，所以升级后读到新标记就能在当前会话内继续工作。但 Agent 上下文里
 加载的 Skill 内容仍是旧版，需要重启（或 Claude Code 的 `/reload-plugins`）才真正生效。
 
-### 9. 我可以手工编辑 `claude-code/` 或 `codex/` 目录吗？
+### 9. 我可以手工编辑各平台目录吗？
 
-平台安装文档（`README.md`、`AGENTS.md`、`UPDATE.md`、`.mcp.json`）可以直接编辑。
-但 `skills/` 子目录是发布流程从 `skill/` 复制的，手工修改会被下次发布覆盖，
+各平台的集成文档（`README.md`、`AGENTS.md`、`UPDATE.md`、`.mcp.json`）可以直接编辑。
+但 Skill 副本和 `.zip` 是发布流程从 `skill/` 生成的，手工修改会被下次发布覆盖，
 而且会导致校验失败——要改 Skill 内容请改 `skill/` 下的唯一源。
 
 ### 10. 支持哪些客户端？
 
-目前支持 Claude Code 和 Codex，两者都通过各自的插件管理器安装和升级。
+| 客户端 | 安装与升级方式 |
+|---|---|
+| Claude Code、Codex | 各自的插件管理器，一行命令安装与升级 |
+| Manus | 网页添加 MCP 连接器 + 上传 Skill 压缩包，更新需重新上传并开新对话 |
+| 其他 MCP 客户端 | 手工配置 MCP + 加载 Skill 文件 |
+
+四个平台拿到的 Skill 内容逐字节相同。
 
 ### 11. 需要什么权限才能用？
 

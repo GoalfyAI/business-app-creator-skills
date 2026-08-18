@@ -99,7 +99,7 @@ stages:
                 python3 -m uv run pytest -q
                 git config user.name "goalfymax-release-bot"
                 git config user.email "goalfymax-release-bot@goalfy.ai"
-                git add README.md skill platforms skill-release.json codex claude-code .agents .claude-plugin pyproject.toml uv.lock
+                git add README.md skill skill-release.json claude-code codex manus generic .agents .claude-plugin pyproject.toml uv.lock
                 git commit -m "chore(skill): release ${version} [skip ci]"
                 git tag -a "skill/${version}" -m "${CI_COMMIT_TITLE}"
                 git push origin HEAD:main

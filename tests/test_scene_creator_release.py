@@ -370,6 +370,26 @@ def test_sync_restores_platform_copies(tmp_path: Path):
 # ---------------------------------------------------------------- 流水线契约
 
 
+def test_pipeline_commits_every_release_artifact():
+    """发版提交必须覆盖所有会被 release 改动的路径，漏一个就会发出半份版本。"""
+    pipeline = PIPELINE_PATH.read_text(encoding="utf-8")
+    add_line = next(
+        line for line in pipeline.splitlines() if line.strip().startswith("git add ")
+    )
+    for required in (
+        "skill",
+        "skill-release.json",
+        *release_module.PLATFORM_NAMES,
+        ".agents",
+        ".claude-plugin",
+        "pyproject.toml",
+        "uv.lock",
+    ):
+        assert f" {required}" in add_line, f"发版提交漏了 {required}"
+    # 已删除的模板目录不该再出现
+    assert " platforms" not in add_line
+
+
 def test_pipeline_keeps_release_notes_for_hub_registration():
     pipeline = PIPELINE_PATH.read_text(encoding="utf-8")
 

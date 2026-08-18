@@ -20,16 +20,19 @@
 | `skill/` | Skill 内容唯一源：`SKILL.md`、`agents/openai.yaml`、`references/` |
 | `scripts/` | 构建与发布工具 |
 | `tests/` | 测试 |
-| `claude-code/`、`codex/` | 平台安装文档手工维护；其中 `skills/` 由发布流程从 `skill/` 复制，**不要手工编辑** |
+| `claude-code/`、`codex/` | 插件安装文档手工维护；`skills/` 子目录由发布流程复制，**不要手工编辑** |
+| `manus/`、`generic/` | 集成说明手工维护；Skill 副本与 `.zip` 由发布流程生成，**不要手工编辑** |
 | `.claude-plugin/`、`.agents/` | 插件市场清单，版本号由发布流程更新 |
 
-`skills/` 副本由发布流程重建，手工改动会被覆盖并导致校验失败。
+Skill 副本与压缩包由发布流程重建，手工改动会被覆盖并导致校验失败。要改 Skill 内容
+请改 `skill/` 下的唯一源，然后执行 `release` 重新生成。
 
 ## 提交代码
 
 只修改 `skill/`、各平台目录下的安装文档、`scripts/`、`tests/`。
 
-改完源文件后必须刷新发布清单，否则校验不通过：
+改完源文件后必须刷新发布清单，否则校验不通过——这一步会同时重建四个平台的 Skill
+副本和两个压缩包：
 
 ```bash
 uv run python scripts/build_platform_packages.py release \
