@@ -85,9 +85,29 @@ uv run python scripts/build_platform_packages.py check
 
 Skill 版本必须不可预测，插件版本必须可比大小，两个要求冲突，所以分成两个号。
 
-**版本号只能由发布流水线更新**，日常提交、本地验证都不得修改。原因是 `main` 本身就是插件
-市场：版本号一进 `main` 就分发给所有用户，若服务端未登记该版本，用户会被判定过期且升级无解。
-锁住之后，改版本号与登记必然成对发生。
+**版本号只由发版脚本更新**，日常提交不要手工改动。原因是 `main` 本身就是插件市场：版本号
+一进 `main` 就分发给所有用户，若服务端未登记该版本，用户会被判定过期且升级无解。
+
+## 发版
+
+```bash
+./scripts/release-skill.sh "变更说明"
+git push --follow-tags origin main
+git push --follow-tags github main
+```
+
+脚本会切一个新的随机 Skill 版本、提升所有插件版本、重建四个平台的 Skill 副本与压缩包、
+刷新发布清单，然后提交并打 `skill/<version>` tag。发版前工作区必须干净。
+
+推送后由 GitHub Actions 接手：
+
+| Workflow | 触发 | 作用 |
+|---|---|---|
+| `register-skill-release` | push main | 校验产物一致后，向各环境 Hub 登记版本 |
+| `publish-skill-release` | `skill/v*` tag | 从发布清单创建 GitHub Release |
+| `build-platform-zips` | Skill 内容变更 | 重新打包 Manus 与通用集成的压缩包 |
+
+云效流水线只做校验，不改动仓库任何内容。
 
 ## 提交信息
 

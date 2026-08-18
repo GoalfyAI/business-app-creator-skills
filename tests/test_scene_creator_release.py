@@ -12,7 +12,7 @@ ROOT = Path(__file__).parents[1]
 SKILL_ROOT = ROOT / "skill"
 SCRIPT_PATH = ROOT / "scripts" / "build_platform_packages.py"
 PIPELINE_PATH = ROOT / ".yunxiao" / "scene-creator-skills.yml"
-PROD_SCRIPT_PATH = ROOT / "scripts" / "prod-release-skill.py"
+PROD_SCRIPT_PATH = ROOT / "scripts" / "register-skill-release.py"
 
 SPEC = importlib.util.spec_from_file_location("scene_creator_release", SCRIPT_PATH)
 assert SPEC and SPEC.loader
@@ -370,31 +370,36 @@ def test_sync_restores_platform_copies(tmp_path: Path):
 # ---------------------------------------------------------------- 流水线契约
 
 
-def test_pipeline_commits_every_release_artifact():
-    """发版提交必须覆盖所有会被 release 改动的路径，漏一个就会发出半份版本。"""
-    pipeline = PIPELINE_PATH.read_text(encoding="utf-8")
-    add_line = next(
-        line for line in pipeline.splitlines() if line.strip().startswith("git add ")
-    )
-    for required in (
-        "skill",
-        "skill-release.json",
-        *release_module.PLATFORM_NAMES,
-        ".agents",
-        ".claude-plugin",
-        "pyproject.toml",
-        "uv.lock",
-    ):
-        assert f" {required}" in add_line, f"发版提交漏了 {required}"
-    # 已删除的模板目录不该再出现
-    assert " platforms" not in add_line
+def test_release_script_covers_the_whole_publish_flow():
+    """本地发版脚本必须完成：切版本、校验、提交、打 tag，并提示推送两个远程。"""
+    script = (ROOT / "scripts" / "release-skill.sh").read_text(encoding="utf-8")
+
+    assert "release_prod_source" in script, "未切版本"
+    assert "build_platform_packages.py check" in script, "未在提交前校验"
+    assert "git commit" in script and "git tag" in script, "未提交或未打 tag"
+    assert "origin main" in script and "github main" in script, "未提示推送两个远程"
+    # 工作区不干净时无法分辨哪些改动属于本次发布
+    assert "git status --porcelain" in script
 
 
-def test_pipeline_keeps_release_notes_for_hub_registration():
+def test_validation_pipeline_does_not_mutate_the_repository():
+    """云效流水线只做校验：不得改版本、不得提交。"""
     pipeline = PIPELINE_PATH.read_text(encoding="utf-8")
 
-    assert 'echo "SCENE_SKILL_RELEASE_NOTES=${CI_COMMIT_TITLE}" >> $FLOW_ENV' in pipeline
-    assert "--register-only" in pipeline
+    assert "stage_prod" not in pipeline, "发版已改由本地脚本完成"
+    assert "git commit" not in pipeline and "git push" not in pipeline
+    assert "build_platform_packages.py check" in pipeline
+    assert "git status --porcelain" in pipeline, "缺少仓库未被改动的守卫"
+
+
+def test_registration_workflow_reuses_the_release_script():
+    """登记逻辑只保留一份实现，避免签名方式出现第二份。"""
+    workflow = (ROOT / ".github/workflows/register-skill-release.yml").read_text(encoding="utf-8")
+
+    assert "build_platform_packages.py check" in workflow, "登记前必须校验产物"
+    assert "scripts/register-skill-release.py" in workflow
+    assert "register_release" in workflow
+
 
 
 def test_prod_runtime_probe_requires_auth_layer(monkeypatch, tmp_path: Path):

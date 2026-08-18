@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""PROD pipeline entrypoint: update repository version or register Max Hub."""
+"""把已发布的 Skill 版本登记到各环境 Max Hub，并探测生产 MCP 是否就绪。
+
+版本切换由 scripts/release-skill.sh 在本地完成，本脚本只负责发布之后的事：
+--register-only 由 GitHub Actions 在推送后调用；--verify-runtime-only 供发版前手工检查。
+"""
 
 from __future__ import annotations
 
@@ -26,11 +30,6 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     actions = parser.add_mutually_exclusive_group(required=True)
     actions.add_argument(
-        "--prepare-only",
-        action="store_true",
-        help="update the repository Skill marker without creating a package",
-    )
-    actions.add_argument(
         "--register-only",
         action="store_true",
         help="register SCENE_SKILL_VERSION after the release commit is pushed",
@@ -42,15 +41,6 @@ def parse_args() -> argparse.Namespace:
     )
     return parser.parse_args()
 
-
-def prepare_release(root: Path) -> str:
-    sys.path.insert(0, str(root / "scripts"))
-    from build_platform_packages import release_prod_source
-
-    return release_prod_source(
-        root / "skill",
-        os.environ.get("SCENE_SKILL_RELEASE_NOTES", "PROD pipeline release"),
-    )
 
 
 def _registry_targets() -> list[tuple[str, str]]:
@@ -154,14 +144,8 @@ def verify_prod_runtime(root: Path) -> None:
 
 def main() -> int:
     args = parse_args()
-    # 版本号只能由生产发布流水线生成，并与登记成对发生。
-    if os.environ.get("DEPLOY_ENV", "").strip().lower() != "prod":
-        raise RuntimeError("refusing to update scene skill version outside PROD")
     root = Path(__file__).resolve().parents[1]
-    if args.prepare_only:
-        version = prepare_release(root)
-        print(f"SCENE_SKILL_VERSION={version}")
-    elif args.verify_runtime_only:
+    if args.verify_runtime_only:
         verify_prod_runtime(root)
         print("CN PROD scene-creator MCP route is ready")
     else:
@@ -169,6 +153,7 @@ def main() -> int:
         register_release(version)
         print(version)
     return 0
+
 
 
 if __name__ == "__main__":

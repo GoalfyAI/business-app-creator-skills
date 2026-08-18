@@ -1,6 +1,7 @@
 # template=true
-# GoalfyMax scene-creator Skill 独立流水线（T-2775）。
-# QA/main push 只校验、不更新版本；只有手工进入 PROD job 才更新仓库版本并登记 CN Max Hub。
+# GoalfyMax scene-creator Skill 持续校验流水线。
+# 发版由本地 scripts/release-skill.sh 完成，推送后 GitHub Actions 负责登记与发布 Release；
+# 本流水线只做校验，不改动仓库任何内容。
 sources:
   repo_0:
     type: codeup
@@ -52,65 +53,20 @@ stages:
               run: |
                 set -euo pipefail
                 cd ${PROJECT_DIR}
-                python3 -m pip install --user uv
-                python3 -m uv sync --group dev
-                python3 -m uv run ruff check scripts/build_platform_packages.py scripts/prod-release-skill.py tests
-                python3 -m uv run pytest -q
-                python3 -m uv run python scripts/build_platform_packages.py check
-                if DEPLOY_ENV=qa scripts/prod-release-skill.py --prepare-only; then
-                  echo "非 PROD 环境错误地更新了版本" >&2
+                # 构建镜像的系统 Python 受 PEP 668 保护，pip 装不进去（--user 同样被拦）。
+                # 用官方安装脚本装独立二进制，不碰系统 Python。已装则跳过。
+                if ! command -v uv >/dev/null 2>&1; then
+                  curl -LsSf https://astral.sh/uv/install.sh | sh
+                fi
+                export PATH="$HOME/.local/bin:$PATH"
+                uv sync --group dev
+                uv run ruff check scripts tests
+                uv run pytest -q
+                # check 覆盖：发布清单、四平台 Skill 副本一致性、压缩包时效、安装文档必备事实
+                uv run python scripts/build_platform_packages.py check
+                # 校验流水线不得改动仓库任何内容
+                if [ -n "$(git status --porcelain)" ]; then
+                  echo "校验过程改动了仓库文件：" >&2
+                  git status --short >&2
                   exit 1
                 fi
-
-  stage_prod:
-    name: PROD发布
-    needs:
-      - stage_validate
-    jobs:
-      job_prod:
-        name: 更新仓库版本并登记CN Max Hub
-        driven: manual
-        runsOn:
-          group: private/o3yZdT0POoGmFbak
-          labels: linux,amd64
-          vm: true
-        steps:
-          step_release:
-            name: 仅在main更新PROD版本
-            step: Command
-            with:
-              run: |
-                set -euo pipefail
-                cd ${PROJECT_DIR}
-                test "${CI_COMMIT_REF_NAME}" = "main"
-                RELEASE_SHA=$(git rev-parse HEAD)
-                python3 -m pip install --user uv
-                python3 -m uv sync --group dev
-                git fetch origin main --depth=1 --force
-                test "$(git rev-parse origin/main)" = "${RELEASE_SHA}"
-                output=$(DEPLOY_ENV=prod SCENE_SKILL_RELEASE_NOTES="${CI_COMMIT_TITLE}" \
-                  python3 -m uv run python scripts/prod-release-skill.py --prepare-only)
-                version=$(printf '%s\n' "${output}" | sed -n 's/^SCENE_SKILL_VERSION=//p')
-                test -n "${version}"
-                echo "SCENE_SKILL_VERSION=${version}" >> $FLOW_ENV
-                echo "SCENE_SKILL_RELEASE_NOTES=${CI_COMMIT_TITLE}" >> $FLOW_ENV
-                python3 -m uv run python scripts/build_platform_packages.py check
-                DEPLOY_ENV=prod python3 -m uv run python scripts/prod-release-skill.py --verify-runtime-only
-                python3 -m uv run pytest -q
-                git config user.name "goalfymax-release-bot"
-                git config user.email "goalfymax-release-bot@goalfy.ai"
-                git add README.md skill skill-release.json claude-code codex manus generic .agents .claude-plugin pyproject.toml uv.lock
-                git commit -m "chore(skill): release ${version} [skip ci]"
-                git tag -a "skill/${version}" -m "${CI_COMMIT_TITLE}"
-                git push origin HEAD:main
-                git push origin "skill/${version}"
-          step_register:
-            name: 仓库版本推送成功后登记CN Max Hub
-            step: Command
-            with:
-              run: |
-                set -euo pipefail
-                cd ${PROJECT_DIR}
-                DEPLOY_ENV=prod SCENE_SKILL_VERSION=${SCENE_SKILL_VERSION} \
-                  SCENE_SKILL_RELEASE_NOTES="${SCENE_SKILL_RELEASE_NOTES}" \
-                  python3 -m uv run python scripts/prod-release-skill.py --register-only

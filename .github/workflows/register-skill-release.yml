@@ -49,8 +49,8 @@ jobs:
 
           release = json.load(open('skill-release.json', encoding='utf-8'))
           os.environ['SCENE_SKILL_VERSION'] = release['version']
-          sys.argv = ['prod-release-skill.py', '--register-only']
+          sys.argv = ['register-skill-release.py', '--register-only']
           # 复用发布脚本的多目标登记逻辑，避免签名实现出现第二份
-          module = runpy.run_path(str(Path('scripts/prod-release-skill.py')))
+          module = runpy.run_path(str(Path('scripts/register-skill-release.py')))
           module['register_release'](release['version'])
           PY
