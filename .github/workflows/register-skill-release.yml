@@ -43,7 +43,7 @@ jobs:
         env:
           # 变量名必须与 register-skill-release.py 读取的一致
           SCENE_SKILL_RELEASE_REGISTRY_TARGETS: ${{ secrets.SCENE_SKILL_RELEASE_REGISTRY_TARGETS }}
-          SCENE_SKILL_RELEASE_NOTES: ${{ github.event.head_commit.message }}
+
         run: |
           if [ -z "${SCENE_SKILL_RELEASE_REGISTRY_TARGETS}" ]; then
             echo "未配置 SCENE_SKILL_RELEASE_REGISTRY_TARGETS，跳过登记"
@@ -58,6 +58,9 @@ jobs:
 
           release = json.load(open('skill-release.json', encoding='utf-8'))
           os.environ['SCENE_SKILL_VERSION'] = release['version']
+          # 发布说明取清单里的 update_reason：它是发版时填的变更说明，
+          # 手动触发（workflow_dispatch）没有 commit 上下文，用 commit message 会是空的
+          os.environ['SCENE_SKILL_RELEASE_NOTES'] = release.get('update_reason', '')
           sys.argv = ['register-skill-release.py', '--register-only']
           # 复用发布脚本的多目标登记逻辑，避免签名实现出现第二份
           module = runpy.run_path(str(Path('scripts/register-skill-release.py')))
