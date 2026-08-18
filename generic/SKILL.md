@@ -1311,15 +1311,16 @@ task_manager(create)
 工单 Gate 失败时按 `reason` 判别，三种处理方式互不相同。**禁止**新建平行工单或改名重试来绕过。
 
 **`SCENE_SKILL_UPGRADE_REQUIRED`** — Skill 版本过期，工单**未创建**。立即停止所有写操作，
-按 `metadata.update` 里的升级步骤，在**本次会话内**完成升级：先执行所在平台的升级命令，
-再搜索已安装的 `skills/scene-creator/SKILL.md`，从它的 description 读出 `[skill-version:...]`
-标记，原样填入 `skill_version` 重试。
+在**本次会话内**完成升级：先判断所在平台，从 `metadata.update.update_guides` 取该平台的
+升级文档链接，拉取后逐步照做；再搜索已安装的 SKILL.md，从 description 读出
+`[skill-version:...]` 标记，原样填入 `skill_version` 重试。
 
 合法版本串**只能**来自升级后已安装的 SKILL.md。拒单响应里不含可用于重试的版本串，
 **禁止**从响应、changelog 或记忆里取值重试。搜不到已安装的 SKILL.md、或文件里没有
-`[skill-version:...]` 标记，说明插件安装已损坏，按 `metadata.update.reinstall_commands`
-彻底重装后再读标记，**禁止**因为读不到就编造一个版本串。升级成功并重试通过之后，才提示
-用户重启客户端让新 Skill 内容生效——重试只解除闸门，你上下文里的 Skill 内容仍是旧版。
+`[skill-version:...]` 标记，说明未安装或安装已损坏，改取 `metadata.update.install_guides`
+里该平台的安装文档重新安装后再读标记，**禁止**因为读不到就编造一个版本串。升级成功并重试
+通过之后，才提示用户重启客户端让新 Skill 内容生效——重试只解除闸门，你上下文里的 Skill
+内容仍是旧版。
 
 **`SCENE_SKILL_UPGRADE_RECOMMENDED`** — 有新版本但**不阻断**，工单已正常创建，`task_id` 可直接使用。
 继续当前任务，交付时顺带提示用户升级即可。
