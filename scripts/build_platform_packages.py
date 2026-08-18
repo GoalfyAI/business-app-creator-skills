@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""校验、发布并打包 scene-creator Skill。"""
+"""校验并发布 scene-creator Skill。
+
+模型很简单：`skill/` 是唯一源，发布时把它复制到各平台的 `skills/scene-creator/`，
+再给所有 SKILL.md 副本打上同一个版本标记。平台安装文档（README/AGENTS/UPDATE/.mcp.json）
+和插件 manifest 都是手工维护的最终文件，不做模板渲染。
+
+发布清单 `skill-release.json` 记录版本与校验和，用来发现"改了内容但没发布"。
+"""
 
 from __future__ import annotations
 
@@ -10,7 +17,6 @@ import re
 import secrets
 import shutil
 import sys
-import zipfile
 from collections.abc import Iterable
 from datetime import datetime, timezone
 from pathlib import Path
@@ -19,27 +25,18 @@ from typing import Any
 import yaml
 
 SKILL_NAME = "scene-creator"
+SKILL_CONTENT_DIR = "skill"
 MANIFEST_RELATIVE_PATH = Path("skill-release.json")
 OPENAI_METADATA_RELATIVE_PATH = Path("agents/openai.yaml")
-PLATFORM_SOURCE_RELATIVE_PATH = Path("platforms")
-PLATFORM_VERSION_TOKEN = "__SCENE_CREATOR_VERSION__"
-# 对外文案占位符：平台安装文件只写占位符，构建时从唯一源注入，避免同一段文案存多份。
-PLATFORM_DESCRIPTION_PLACEHOLDER = "__SCENE_CREATOR_DESCRIPTION__"
-PLATFORM_SHORT_DESCRIPTION_PLACEHOLDER = "__SCENE_CREATOR_SHORT_DESCRIPTION__"
-PLATFORM_DEFAULT_PROMPT_PLACEHOLDER = "__SCENE_CREATOR_DEFAULT_PROMPT__"
-PLATFORM_KEYWORDS_PLACEHOLDER = "__SCENE_CREATOR_KEYWORDS__"
-# 注入安装文件后会破坏 JSON 的字符
-COPY_UNSAFE_CHARS = ('"', "\\")
 PLATFORM_NAMES = ("codex", "claude-code")
 # 仓库里的安装物料始终是生产配置。开发者要连测试环境时，改本地已安装插件的
 # .mcp.json，不动仓库源文件——那会让发布校验和失配。
 PROD_MCP_ENDPOINT = "https://workflow-mcp.goalfyai.cn/mcp"
-ALLOWED_MCP_ENDPOINTS = {PROD_MCP_ENDPOINT}
 DATA_SKILL_VERSION_RE = re.compile(r"^v\d{8}-[0-9a-f]{6}$")
 LEGACY_SKILL_VERSION_RE = re.compile(r"^v\d+\.\d+\.\d+$")
-SKILL_VERSION_RE = re.compile(
-    r"\[skill-version:(v(?:\d+\.\d+\.\d+|\d{8}-[0-9a-f]{6}))\]"
-)
+SKILL_VERSION_RE = re.compile(r"\[skill-version:(v(?:\d+\.\d+\.\d+|\d{8}-[0-9a-f]{6}))\]")
+SEMVER_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
+PACKAGE_VERSION_RE = re.compile(r'("version":\s*")(\d+)\.(\d+)\.(\d+)(")')
 REQUIRED_SKILL_KEYWORDS = {
     "scene package",
     "scenario package",
@@ -54,22 +51,16 @@ REQUIRED_SKILL_KEYWORDS = {
     "personalized routes",
     "个性化选路",
 }
-DIRECT_MARKETPLACE_PATHS = {
-    "codex": Path(".agents/plugins/marketplace.json"),
-    "claude-code": Path(".claude-plugin/marketplace.json"),
-}
-PLATFORM_FILES = {
-    "codex/.codex-plugin/plugin.json",
-    "codex/.mcp.json",
-    "codex/AGENTS.md",
-    "codex/README.md",
-    "codex/UPDATE.md",
-    "claude-code/.claude-plugin/plugin.json",
-    "claude-code/.mcp.json",
-    "claude-code/AGENTS.md",
-    "claude-code/README.md",
-    "claude-code/UPDATE.md",
-}
+# 每次发布都要同步提升的插件 manifest：Claude 与 Codex 靠 plugin.json 的版本
+# 判断有无新版，漏掉任何一个都会让已安装用户收不到更新。
+PACKAGE_MANIFESTS = (
+    Path("claude-code/.claude-plugin/plugin.json"),
+    Path("codex/.codex-plugin/plugin.json"),
+    Path(".claude-plugin/marketplace.json"),
+    Path(".agents/plugins/marketplace.json"),
+)
+# 平台安装目录：Skill 内容复制到 skills/ 下，其余文件手工维护
+PLATFORM_DOC_FILES = ("README.md", "AGENTS.md", "UPDATE.md")
 MANIFEST_KEYS = {
     "skill_name",
     "version",
@@ -79,18 +70,11 @@ MANIFEST_KEYS = {
     "update_reason",
     "source_files",
     "checksums",
-    "platform_source_files",
-    "platform_checksums",
 }
-SEMVER_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
-ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 
 
 class ReleaseError(ValueError):
     """仓库中的 Skill 发布信息无效或已过期。"""
-
-
-SKILL_CONTENT_DIR = "skill"
 
 
 def _skill_root() -> Path:
@@ -98,42 +82,16 @@ def _skill_root() -> Path:
     return Path(__file__).resolve().parents[1] / SKILL_CONTENT_DIR
 
 
+def _repository_root(skill_root: Path) -> Path:
+    return skill_root.resolve().parent
+
+
 def _manifest_path(skill_root: Path) -> Path:
-    # 发布清单与平台模板属于仓库级构建物，不混在 Skill 内容目录里。
     return _repository_root(skill_root) / MANIFEST_RELATIVE_PATH
 
 
 def _relative(path: Path, skill_root: Path) -> str:
     return path.relative_to(skill_root).as_posix()
-
-
-def _platform_source_root(skill_root: Path) -> Path:
-    return _repository_root(skill_root) / PLATFORM_SOURCE_RELATIVE_PATH
-
-
-def _repository_root(skill_root: Path) -> Path:
-    return skill_root.resolve().parent
-
-
-
-def discover_platform_source_files(skill_root: Path) -> list[Path]:
-    """返回经过审查的平台安装文件和插件模板。"""
-    platform_root = _platform_source_root(skill_root.resolve())
-    if not platform_root.is_dir():
-        raise ReleaseError(f"缺少平台源文件目录：{platform_root}")
-
-    files = []
-    for path in platform_root.rglob("*"):
-        if path.is_symlink():
-            raise ReleaseError(f"平台发布文件不允许使用符号链接：{path}")
-        if path.is_file():
-            files.append(path)
-    relative_files = {path.relative_to(platform_root).as_posix() for path in files}
-    if relative_files != PLATFORM_FILES:
-        missing = sorted(PLATFORM_FILES - relative_files)
-        extra = sorted(relative_files - PLATFORM_FILES)
-        raise ReleaseError(f"平台源文件不一致：缺少={missing}，多出={extra}")
-    return sorted(files, key=lambda path: path.relative_to(platform_root).as_posix())
 
 
 def discover_source_files(skill_root: Path) -> list[Path]:
@@ -191,13 +149,13 @@ def _configured_mcp_endpoint(skill_root: Path) -> str:
     if not isinstance(tools, list) or len(tools) != 1 or not isinstance(tools[0], dict):
         raise ReleaseError("agents/openai.yaml 必须声明唯一的 scene-creator MCP 依赖")
     endpoint = tools[0].get("url")
-    if endpoint not in ALLOWED_MCP_ENDPOINTS:
-        raise ReleaseError("agents/openai.yaml 必须使用经过审查的 QA 或国内生产 MCP 地址")
+    if endpoint != PROD_MCP_ENDPOINT:
+        raise ReleaseError("agents/openai.yaml 必须使用生产 MCP 地址")
     return endpoint
 
 
 def validate_skill_metadata(skill_root: Path) -> None:
-    """在发布或构建前校验必需的 Skill 与 Codex 元数据。"""
+    """校验 SKILL.md frontmatter 与 Codex 元数据。"""
     skill_root = skill_root.resolve()
     skill_file = skill_root / "SKILL.md"
     try:
@@ -212,16 +170,19 @@ def validate_skill_metadata(skill_root: Path) -> None:
     except ValueError as exc:
         raise ReleaseError("SKILL.md frontmatter 未闭合") from exc
     frontmatter = _load_yaml_mapping("\n".join(lines[1:closing_index]), "SKILL.md frontmatter")
+
     if set(frontmatter) != {"name", "description", "keywords"}:
         raise ReleaseError("SKILL.md frontmatter 必须且只能包含 name、description 和 keywords")
     if frontmatter["name"] != SKILL_NAME:
         raise ReleaseError(f"SKILL.md 的 name 必须是 {SKILL_NAME!r}")
+
     description = frontmatter["description"]
     if not isinstance(description, str) or not description.strip():
         raise ReleaseError("SKILL.md 的 description 不能为空")
     markers = SKILL_VERSION_RE.findall(description)
     if len(markers) != 1:
         raise ReleaseError("SKILL.md 的 description 必须且只能包含一个有效 skill-version 标记")
+
     keywords = frontmatter["keywords"]
     if not isinstance(keywords, list) or not keywords:
         raise ReleaseError("SKILL.md 的 keywords 必须是非空列表")
@@ -235,153 +196,54 @@ def validate_skill_metadata(skill_root: Path) -> None:
     if not "\n".join(lines[closing_index + 1 :]).strip():
         raise ReleaseError("SKILL.md 正文不能为空")
 
-    metadata_path = skill_root / OPENAI_METADATA_RELATIVE_PATH
-    try:
-        metadata = _load_yaml_mapping(
-            metadata_path.read_text(encoding="utf-8"), "agents/openai.yaml"
-        )
-    except FileNotFoundError as exc:
-        raise ReleaseError(f"缺少 Codex 元数据：{metadata_path}") from exc
+    metadata = _load_yaml_mapping(
+        (skill_root / OPENAI_METADATA_RELATIVE_PATH).read_text(encoding="utf-8"),
+        "agents/openai.yaml",
+    )
     interface = metadata.get("interface")
     if not isinstance(interface, dict):
-        raise ReleaseError("agents/openai.yaml 的 interface 必须是 YAML 对象")
+        raise ReleaseError("agents/openai.yaml 必须包含 interface 配置")
     for field in ("display_name", "short_description", "default_prompt"):
         value = interface.get(field)
         if not isinstance(value, str) or not value.strip():
             raise ReleaseError(f"agents/openai.yaml 的 interface.{field} 不能为空")
     if not 25 <= len(interface["short_description"]) <= 64:
         raise ReleaseError("agents/openai.yaml 的 short_description 必须包含 25～64 个字符")
-    if f"${SKILL_NAME}" not in interface["default_prompt"]:
-        raise ReleaseError(f"agents/openai.yaml 的 default_prompt 必须包含 ${SKILL_NAME}")
-
-    policy = metadata.get("policy")
-    if not isinstance(policy, dict) or policy.get("allow_implicit_invocation") is not True:
-        raise ReleaseError("agents/openai.yaml 必须启用 policy.allow_implicit_invocation")
-
-    dependencies = metadata.get("dependencies")
-    tools = dependencies.get("tools") if isinstance(dependencies, dict) else None
-    if not isinstance(tools, list) or len(tools) != 1:
-        raise ReleaseError("agents/openai.yaml 必须声明唯一的 scene-creator MCP 依赖")
-    dependency = tools[0]
-    expected_dependency = {
-        "type": "mcp",
-        "value": "scene-creator",
-        "transport": "streamable_http",
-        "url": _configured_mcp_endpoint(skill_root),
-        "bearer_token_env_var": "SCENE_CREATOR_API_KEY",
-    }
-    if dependency != expected_dependency:
-        raise ReleaseError("agents/openai.yaml 的 scene-creator MCP 依赖配置不正确")
+    _configured_mcp_endpoint(skill_root)
 
 
-def _skill_copy(skill_root: Path) -> dict[str, str]:
-    """读取对外文案的唯一源。
-
-    长描述来自 SKILL.md 的 description（剥掉版本标记），短描述和默认指令来自
-    agents/openai.yaml。平台安装文件通过占位符引用它们，不再各存一份。
-    """
-    content = (skill_root / "SKILL.md").read_text(encoding="utf-8")
-    lines = content.splitlines()
-    closing_index = lines.index("---", 1)
-    frontmatter = _load_yaml_mapping("\n".join(lines[1:closing_index]), "SKILL.md frontmatter")
-    description = SKILL_VERSION_RE.sub("", frontmatter["description"]).strip()
-
-    metadata = _load_yaml_mapping(
-        (skill_root / OPENAI_METADATA_RELATIVE_PATH).read_text(encoding="utf-8"),
-        "agents/openai.yaml",
-    )
-    interface = metadata["interface"]
-    copy = {
-        "description": description,
-        "short_description": interface["short_description"].strip(),
-        "default_prompt": interface["default_prompt"].strip(),
-    }
-    for field, value in copy.items():
-        if not value:
-            raise ReleaseError(f"对外文案 {field} 不能为空")
-        for char in COPY_UNSAFE_CHARS:
-            if char in value:
-                raise ReleaseError(
-                    f"对外文案 {field} 不能包含 {char!r}，否则注入安装文件后会破坏 JSON"
-                )
-
-    keywords = frontmatter.get("keywords") or []
-    for item in keywords:
-        for char in COPY_UNSAFE_CHARS:
-            if char in item:
-                raise ReleaseError(
-                    f"关键词 {item!r} 不能包含 {char!r}，否则注入安装文件后会破坏 JSON"
-                )
-    # 关键词按 JSON 元素序列注入，模板保持 ["占位符"] 形态，因此模板本身仍是合法 JSON
-    copy["keywords"] = ", ".join(json.dumps(item, ensure_ascii=False) for item in keywords)
-    return copy
-
-
-def _render_copy(text: str, version: str, copy: dict[str, str]) -> str:
-    """把版本和对外文案注入平台安装文件模板。"""
-    return (
-        text.replace(PLATFORM_VERSION_TOKEN, version)
-        .replace(PLATFORM_DESCRIPTION_PLACEHOLDER, copy["description"])
-        .replace(PLATFORM_SHORT_DESCRIPTION_PLACEHOLDER, copy["short_description"])
-        .replace(PLATFORM_DEFAULT_PROMPT_PLACEHOLDER, copy["default_prompt"])
-        .replace(f'"{PLATFORM_KEYWORDS_PLACEHOLDER}"', copy["keywords"])
-    )
-
-
-def validate_platform_sources(skill_root: Path) -> None:
-    """校验插件模板和共用的远程 MCP 安全契约。"""
-    platform_root = _platform_source_root(skill_root.resolve())
-    expected_endpoint = _configured_mcp_endpoint(skill_root)
-    discover_platform_source_files(skill_root)
-    copy = _skill_copy(skill_root)
+def validate_platform_install_files(skill_root: Path) -> None:
+    """校验各平台安装文件的安全契约与必备事实。"""
+    repository_root = _repository_root(skill_root)
     for platform in PLATFORM_NAMES:
-        source_root = platform_root / platform
-        manifest_relative = (
-            Path(".codex-plugin/plugin.json")
-            if platform == "codex"
-            else Path(".claude-plugin/plugin.json")
-        )
-        manifest = json.loads(
-            _render_copy(
-                (source_root / manifest_relative).read_text(encoding="utf-8"), "0.0.0", copy
-            )
-        )
-        if manifest.get("name") != SKILL_NAME:
-            raise ReleaseError(f"{platform} 插件名称必须是 {SKILL_NAME!r}")
-        if manifest.get("version") != "0.0.0":
-            raise ReleaseError(f"{platform} 插件版本必须使用发布占位符")
-        if manifest.get("skills") != "./skills/":
-            raise ReleaseError(f"{platform} 插件必须加载 ./skills/")
-        if manifest.get("mcpServers") != "./.mcp.json":
-            raise ReleaseError(f"{platform} 插件必须加载 ./.mcp.json")
-
-        mcp = json.loads((source_root / ".mcp.json").read_text(encoding="utf-8"))
-        server = (mcp.get("mcpServers") or {}).get("scene-creator") or {}
-        if server.get("url") != expected_endpoint:
-            raise ReleaseError(f"{platform} MCP 必须使用经过审查的环境地址")
+        platform_root = repository_root / platform
+        mcp_path = platform_root / ".mcp.json"
+        if not mcp_path.is_file():
+            raise ReleaseError(f"缺少 {platform} 的 MCP 配置：{mcp_path}")
+        mcp = json.loads(mcp_path.read_text(encoding="utf-8"))
+        server = (mcp.get("mcpServers") or {}).get(SKILL_NAME) or {}
+        if server.get("url") != PROD_MCP_ENDPOINT:
+            raise ReleaseError(f"{platform} MCP 必须使用生产地址")
         serialized = json.dumps(server, ensure_ascii=False)
         if "SCENE_CREATOR_API_KEY" not in serialized:
             raise ReleaseError(f"{platform} MCP 必须引用 API Key 环境变量")
         if re.search(r"Bearer\s+sk_[A-Za-z0-9]", serialized):
             raise ReleaseError(f"{platform} MCP 不得包含明文 API Key")
 
-        combined_docs = "\n".join(
-            (source_root / name).read_text(encoding="utf-8")
-            for name in ("README.md", "AGENTS.md", "UPDATE.md")
+        docs = "\n".join(
+            (platform_root / name).read_text(encoding="utf-8") for name in PLATFORM_DOC_FILES
         )
         # 只校验安装文档必须交代清楚的事实，不锁具体措辞：
-        # 密钥从哪来、怎么发送、装完怎么验证。
+        # 密钥从哪来、怎么发送、装完怎么验证、从哪装。
         for required_text in (
             "/developer/api-keys",
             "Authorization: Bearer",
             "SCENE_CREATOR_API_KEY",
             "list_assets",
+            "GoalfyAI/scene-creator-skills",
         ):
-            if required_text not in combined_docs:
+            if required_text not in docs:
                 raise ReleaseError(f"{platform} 安装文档必须提到 {required_text!r}")
-        # 公开市场是唯一正式安装来源，文档里必须给出它
-        if "GoalfyAI/scene-creator-skills" not in combined_docs:
-            raise ReleaseError(f"{platform} 安装文档必须给出公开插件市场来源")
 
 
 def _sha256(path: Path) -> str:
@@ -397,21 +259,21 @@ def _checksums(skill_root: Path, files: Iterable[Path]) -> dict[str, str]:
 
 
 def _load_manifest(skill_root: Path) -> dict[str, Any]:
-    path = _manifest_path(skill_root)
+    manifest_path = _manifest_path(skill_root)
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     except FileNotFoundError as exc:
-        raise ReleaseError(f"缺少发布清单：{path}") from exc
+        raise ReleaseError(f"缺少发布清单：{manifest_path}") from exc
     except json.JSONDecodeError as exc:
         raise ReleaseError(f"发布清单不是有效的 JSON：{exc}") from exc
-    if not isinstance(data, dict):
+    if not isinstance(manifest, dict):
         raise ReleaseError("发布清单必须是 JSON 对象")
-    return data
+    return manifest
 
 
 def _validate_package_version(version: Any) -> tuple[int, int, int]:
     if not isinstance(version, str) or not SEMVER_RE.fullmatch(version):
-        raise ReleaseError("版本号必须使用 MAJOR.MINOR.PATCH 格式")
+        raise ReleaseError("package version 必须是 MAJOR.MINOR.PATCH")
     return tuple(int(part) for part in version.split("."))  # type: ignore[return-value]
 
 
@@ -419,7 +281,7 @@ def _validate_skill_version(version: Any) -> str:
     if not isinstance(version, str) or not (
         DATA_SKILL_VERSION_RE.fullmatch(version) or LEGACY_SKILL_VERSION_RE.fullmatch(version)
     ):
-        raise ReleaseError("Skill 版本必须使用 vYYYYMMDD-6位小写hex；仅兼容初始 vMAJOR.MINOR.PATCH")
+        raise ReleaseError("Skill version 必须是 vYYYYMMDD-6位小写hex 或 vMAJOR.MINOR.PATCH")
     return version
 
 
@@ -432,82 +294,124 @@ def _current_skill_version(skill_root: Path) -> str:
     content = (skill_root / "SKILL.md").read_text(encoding="utf-8")
     markers = SKILL_VERSION_RE.findall(content)
     if len(markers) != 1:
-        raise ReleaseError("SKILL.md 必须且只能包含一个有效 skill-version 标记")
-    return _validate_skill_version(markers[0])
+        raise ReleaseError("SKILL.md 必须且只能包含一个 skill-version 标记")
+    return markers[0]
 
 
-def _repository_package_version(skill_root: Path) -> str | None:
+def _repository_package_version(skill_root: Path) -> str:
+    """读取仓库中各插件 manifest 的 package version，要求完全一致。"""
     repository_root = _repository_root(skill_root)
-    pyproject = repository_root / "pyproject.toml"
-    lockfile = repository_root / "uv.lock"
-    if not pyproject.exists() and not lockfile.exists():
-        return None
-    if not pyproject.is_file() or not lockfile.is_file():
-        raise ReleaseError("仓库 package version 要求 pyproject.toml 与 uv.lock 同时存在")
-
-    project_match = re.search(
-        r"(?ms)^\[project\]\n.*?^version = \"([^\"]+)\"",
-        pyproject.read_text(encoding="utf-8"),
-    )
-    lock_match = re.search(
-        rf'(?ms)^\[\[package\]\]\nname = "{re.escape("scene-creator-skills")}"\nversion = "([^"]+)"',
-        lockfile.read_text(encoding="utf-8"),
-    )
-    if not project_match or not lock_match:
-        raise ReleaseError("无法读取仓库自身的 package version")
-    project_version = project_match.group(1)
-    lock_version = lock_match.group(1)
-    _validate_package_version(project_version)
-    _validate_package_version(lock_version)
-    if project_version != lock_version:
-        raise ReleaseError("pyproject.toml 与 uv.lock 的仓库 package version 不一致")
-    return project_version
+    versions = {}
+    for relative in PACKAGE_MANIFESTS:
+        path = repository_root / relative
+        if not path.is_file():
+            raise ReleaseError(f"缺少插件 manifest：{path}")
+        found = PACKAGE_VERSION_RE.search(path.read_text(encoding="utf-8"))
+        if not found:
+            raise ReleaseError(f"{relative} 缺少 version 字段")
+        versions[relative.as_posix()] = f"{found.group(2)}.{found.group(3)}.{found.group(4)}"
+    unique = set(versions.values())
+    if len(unique) != 1:
+        raise ReleaseError(f"插件 manifest 版本不一致：{versions}")
+    return unique.pop()
 
 
-def _sync_repository_package_version(skill_root: Path, version: str) -> None:
-    repository_root = _repository_root(skill_root)
-    pyproject = repository_root / "pyproject.toml"
-    lockfile = repository_root / "uv.lock"
-    if not pyproject.exists() and not lockfile.exists():
-        return
-    if not pyproject.is_file() or not lockfile.is_file():
-        raise ReleaseError("仓库 package version 要求 pyproject.toml 与 uv.lock 同时存在")
+def _bump_package_version(skill_root: Path, version: str) -> None:
+    """把所有插件 manifest 与 Python 包版本统一写成同一个值。"""
     _validate_package_version(version)
+    repository_root = _repository_root(skill_root)
+    for relative in PACKAGE_MANIFESTS:
+        path = repository_root / relative
+        content = path.read_text(encoding="utf-8")
+        updated, count = PACKAGE_VERSION_RE.subn(
+            lambda match, new=version: f"{match.group(1)}{new}{match.group(5)}", content, count=1
+        )
+        if count != 1:
+            raise ReleaseError(f"{relative} 的 version 字段替换失败")
+        path.write_text(updated, encoding="utf-8")
 
-    pyproject_text, project_count = re.subn(
-        r'(?ms)^(\[project\]\n.*?^version = ")[^"]+("$)',
-        rf"\g<1>{version}\g<2>",
-        pyproject.read_text(encoding="utf-8"),
-        count=1,
-    )
-    lock_text, lock_count = re.subn(
-        rf'(?ms)^(\[\[package\]\]\nname = "{re.escape("scene-creator-skills")}"\nversion = ")[^"]+("$)',
-        rf"\g<1>{version}\g<2>",
-        lockfile.read_text(encoding="utf-8"),
-        count=1,
-    )
-    if project_count != 1 or lock_count != 1:
-        raise ReleaseError("仓库 package version 必须且只能各更新一次")
-    pyproject.write_text(pyproject_text, encoding="utf-8")
-    lockfile.write_text(lock_text, encoding="utf-8")
+    pyproject = repository_root / "pyproject.toml"
+    if pyproject.is_file():
+        content = pyproject.read_text(encoding="utf-8")
+        updated, count = re.subn(
+            r'(?m)^version = "\d+\.\d+\.\d+"$', f'version = "{version}"', content, count=1
+        )
+        if count == 1:
+            pyproject.write_text(updated, encoding="utf-8")
+    lockfile = repository_root / "uv.lock"
+    if lockfile.is_file():
+        content = lockfile.read_text(encoding="utf-8")
+        updated, count = re.subn(
+            r'(?ms)(name = "scene-creator-skills"\nversion = ")\d+\.\d+\.\d+(")',
+            lambda match, new=version: f"{match.group(1)}{new}{match.group(2)}",
+            content,
+            count=1,
+        )
+        if count == 1:
+            lockfile.write_text(updated, encoding="utf-8")
 
 
 def _validate_released_at(value: Any) -> None:
-    if not isinstance(value, str) or not value:
-        raise ReleaseError("released_at 必须是非空的 ISO-8601 时间戳")
+    if not isinstance(value, str):
+        raise ReleaseError("released_at 必须是 ISO-8601 字符串")
     try:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
     except ValueError as exc:
-        raise ReleaseError("released_at 必须是有效的 ISO-8601 时间戳") from exc
-    if parsed.tzinfo is None:
-        raise ReleaseError("released_at 必须包含时区")
+        raise ReleaseError("released_at 必须形如 2026-01-01T00:00:00Z") from exc
 
 
-def check_release(skill_root: Path, *, check_direct_install: bool = True) -> dict[str, Any]:
-    """校验发布清单元数据和所有唯一源文件的校验和。"""
+def _platform_skill_dir(skill_root: Path, platform: str) -> Path:
+    return _repository_root(skill_root) / platform / "skills" / SKILL_NAME
+
+
+def sync_platform_skills(skill_root: Path) -> None:
+    """把 Skill 内容复制到各平台安装目录。
+
+    Codex 需要 agents/openai.yaml，Claude Code 不需要，其余文件两边一致。
+    复制而非渲染：各平台拿到的 Skill 内容必须逐字节相同。
+    """
+    files = discover_source_files(skill_root)
+    for platform in PLATFORM_NAMES:
+        target_root = _platform_skill_dir(skill_root, platform)
+        if target_root.exists():
+            shutil.rmtree(target_root)
+        for path in files:
+            relative = Path(_relative(path, skill_root))
+            if platform == "claude-code" and relative == OPENAI_METADATA_RELATIVE_PATH:
+                continue
+            destination = target_root / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(path, destination)
+
+
+def check_platform_skills(skill_root: Path) -> None:
+    """校验各平台的 Skill 副本与唯一源逐字节一致。"""
+    files = discover_source_files(skill_root)
+    for platform in PLATFORM_NAMES:
+        target_root = _platform_skill_dir(skill_root, platform)
+        expected = {}
+        for path in files:
+            relative = Path(_relative(path, skill_root))
+            if platform == "claude-code" and relative == OPENAI_METADATA_RELATIVE_PATH:
+                continue
+            expected[relative.as_posix()] = _sha256(path)
+        actual = {
+            path.relative_to(target_root).as_posix(): _sha256(path)
+            for path in sorted(target_root.rglob("*"))
+            if path.is_file()
+        }
+        if expected != actual:
+            stale = sorted(set(expected) ^ set(actual)) or sorted(
+                name for name, digest in expected.items() if actual.get(name) != digest
+            )
+            raise ReleaseError(f"{platform} 的 Skill 副本已过期，请执行 release：{stale}")
+
+
+def check_release(skill_root: Path) -> dict[str, Any]:
+    """校验发布清单、Skill 内容校验和与各平台副本。"""
     skill_root = skill_root.resolve()
     validate_skill_metadata(skill_root)
-    validate_platform_sources(skill_root)
+    validate_platform_install_files(skill_root)
     manifest = _load_manifest(skill_root)
     if set(manifest) != MANIFEST_KEYS:
         missing = sorted(MANIFEST_KEYS - set(manifest))
@@ -522,9 +426,8 @@ def check_release(skill_root: Path, *, check_direct_install: bool = True) -> dic
         raise ReleaseError("skill-release.json.mcp_endpoint 与当前 Skill MCP 环境不一致")
     if _current_skill_version(skill_root) != skill_version:
         raise ReleaseError("SKILL.md 标记必须等于 skill-release.json.version")
-    repository_package_version = _repository_package_version(skill_root)
-    if repository_package_version is not None and repository_package_version != package_version:
-        raise ReleaseError("仓库 package version 必须等于 skill-release.json.package_version")
+    if _repository_package_version(skill_root) != package_version:
+        raise ReleaseError("插件 manifest 版本必须等于 skill-release.json.package_version")
     _validate_released_at(manifest["released_at"])
 
     reason = manifest["update_reason"]
@@ -546,25 +449,7 @@ def check_release(skill_root: Path, *, check_direct_install: bool = True) -> dic
         )
         raise ReleaseError(f"发布校验和已过期：{stale}")
 
-    platform_root = _platform_source_root(skill_root)
-    platform_files = discover_platform_source_files(skill_root)
-    expected_platform_files = [
-        path.relative_to(platform_root).as_posix() for path in platform_files
-    ]
-    if manifest["platform_source_files"] != expected_platform_files:
-        raise ReleaseError("platform_source_files 与经过审查的安装文件不一致，请执行 release 操作")
-    actual_platform_checksums = {
-        path.relative_to(platform_root).as_posix(): _sha256(path) for path in platform_files
-    }
-    if manifest["platform_checksums"] != actual_platform_checksums:
-        stale = sorted(
-            path
-            for path in set(manifest["platform_checksums"]) | set(actual_platform_checksums)
-            if manifest["platform_checksums"].get(path) != actual_platform_checksums.get(path)
-        )
-        raise ReleaseError(f"平台发布校验和已过期：{stale}")
-    if check_direct_install:
-        check_direct_install_tree(skill_root, manifest)
+    check_platform_skills(skill_root)
     return manifest
 
 
@@ -576,10 +461,10 @@ def release(
     skill_version: str | None = None,
     allow_package_bump: bool = False,
 ) -> dict[str, Any]:
-    """写入新的明确版本发布清单，不执行 Git 操作。"""
+    """写入新的发布清单并同步各平台副本，不执行 Git 操作。"""
     skill_root = skill_root.resolve()
     validate_skill_metadata(skill_root)
-    validate_platform_sources(skill_root)
+    validate_platform_install_files(skill_root)
     _validate_package_version(package_version)
     skill_version = _validate_skill_version(skill_version or _current_skill_version(skill_root))
     reason = reason.strip()
@@ -589,7 +474,7 @@ def release(
     manifest_path = _manifest_path(skill_root)
     if manifest_path.exists():
         current = _load_manifest(skill_root)
-        current_package_version = current.get("package_version", current.get("version"))
+        current_package_version = current.get("package_version")
         _validate_package_version(current_package_version)
         if skill_version != current.get("version") and not allow_package_bump:
             raise ReleaseError("只有 PROD 发布可以更新 Skill version")
@@ -600,288 +485,35 @@ def release(
         if allow_package_bump and not DATA_SKILL_VERSION_RE.fullmatch(skill_version):
             raise ReleaseError("PROD Skill version 必须使用 vYYYYMMDD-6位小写hex")
 
+    _bump_package_version(skill_root, package_version)
+    sync_platform_skills(skill_root)
+
     files = discover_source_files(skill_root)
-    platform_root = _platform_source_root(skill_root)
-    platform_files = discover_platform_source_files(skill_root)
     manifest = {
         "skill_name": SKILL_NAME,
         "version": skill_version,
         "package_version": package_version,
         "mcp_endpoint": _configured_mcp_endpoint(skill_root),
-        "released_at": datetime.now(timezone.utc)
-        .isoformat(timespec="seconds")
-        .replace("+00:00", "Z"),
+        "released_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "update_reason": reason,
         "source_files": [_relative(path, skill_root) for path in files],
         "checksums": _checksums(skill_root, files),
-        "platform_source_files": [
-            path.relative_to(platform_root).as_posix() for path in platform_files
-        ],
-        "platform_checksums": {
-            path.relative_to(platform_root).as_posix(): _sha256(path) for path in platform_files
-        },
     }
-    manifest_path.parent.mkdir(parents=True, exist_ok=True)
-    temporary_path = manifest_path.with_suffix(".json.tmp")
-    temporary_path.write_text(
+    manifest_path.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
-    temporary_path.replace(manifest_path)
-    _sync_repository_package_version(skill_root, package_version)
-    sync_direct_install_tree(skill_root, manifest)
-    return check_release(skill_root)
-
-
-def _write_member(archive: zipfile.ZipFile, archive_path: str, data: bytes) -> None:
-    info = zipfile.ZipInfo(archive_path, ZIP_TIMESTAMP)
-    info.compress_type = zipfile.ZIP_DEFLATED
-    info.external_attr = 0o100644 << 16
-    archive.writestr(info, data, compress_type=zipfile.ZIP_DEFLATED, compresslevel=9)
-
-
-def _write_zip(output_path: Path, skill_root: Path, source_files: Iterable[str]) -> None:
-    with zipfile.ZipFile(
-        output_path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
-    ) as archive:
-        for relative_path in source_files:
-            data = (skill_root / relative_path).read_bytes()
-            archive_path = f"{SKILL_NAME}/{relative_path}"
-            _write_member(archive, archive_path, data)
-
-
-def _bundle_marketplace(platform: str, version: str, copy: dict[str, str]) -> tuple[str, bytes]:
-    plugin_description = copy["description"]
-    if platform == "codex":
-        path = ".agents/plugins/marketplace.json"
-        body = {
-            "name": "scene-creator",
-            "description": copy["short_description"],
-            "interface": {"displayName": "场景包制作"},
-            "plugins": [
-                {
-                    "name": SKILL_NAME,
-                    "description": plugin_description,
-                    "version": version,
-                    "author": {"name": "GoalfyAI"},
-                    "source": {
-                        "source": "local",
-                        "path": f"./plugins/{SKILL_NAME}",
-                    },
-                    "policy": {
-                        "installation": "AVAILABLE",
-                        "authentication": "ON_INSTALL",
-                    },
-                    "category": "Developer Tools",
-                }
-            ],
-        }
-    else:
-        path = ".claude-plugin/marketplace.json"
-        body = {
-            "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-            "name": "scene-creator",
-            "description": copy["short_description"],
-            "owner": {"name": "GoalfyAI"},
-            "plugins": [
-                {
-                    "name": SKILL_NAME,
-                    "description": plugin_description,
-                    "version": version,
-                    "author": {"name": "GoalfyAI"},
-                    "source": f"./plugins/{SKILL_NAME}",
-                    "category": "development",
-                }
-            ],
-        }
-    return path, (json.dumps(body, ensure_ascii=False, indent=2) + "\n").encode()
-
-
-def _direct_marketplace(platform: str, version: str, copy: dict[str, str]) -> bytes:
-    body: dict[str, Any] = {
-        "name": "scene-creator",
-        "description": copy["short_description"],
-        "owner": {"name": "GoalfyAI"},
-        "plugins": [
-            {
-                "name": SKILL_NAME,
-                "description": copy["description"],
-                "version": version,
-                "author": {"name": "GoalfyAI"},
-                "source": f"./{platform}",
-            }
-        ],
-    }
-    if platform == "claude-code":
-        body["$schema"] = "https://anthropic.com/claude-code/marketplace.schema.json"
-        body["plugins"][0]["category"] = "development"
-    return (json.dumps(body, ensure_ascii=False, indent=2) + "\n").encode()
-
-
-def _direct_install_files(skill_root: Path, manifest: dict[str, Any]) -> dict[Path, bytes]:
-    """根据唯一 Skill 源文件渲染需要提交到仓库的插件市场目录。"""
-    version = manifest["package_version"]
-    platform_root = _platform_source_root(skill_root)
-    common_files = [
-        path
-        for path in manifest["source_files"]
-        if path == "SKILL.md" or path.startswith("references/")
-    ]
-    copy = _skill_copy(skill_root)
-    rendered: dict[Path, bytes] = {}
-    for platform in PLATFORM_NAMES:
-        rendered[DIRECT_MARKETPLACE_PATHS[platform]] = _direct_marketplace(platform, version, copy)
-        for source_path in sorted((platform_root / platform).rglob("*")):
-            if not source_path.is_file():
-                continue
-            relative_path = source_path.relative_to(platform_root / platform)
-            rendered[Path(platform) / relative_path] = _render_copy(
-                source_path.read_text(encoding="utf-8"), version, copy
-            ).encode()
-        source_files = list(manifest["source_files"]) if platform == "codex" else common_files
-        for relative_path in source_files:
-            rendered[Path(platform) / "skills" / SKILL_NAME / relative_path] = (
-                skill_root / relative_path
-            ).read_bytes()
-    return rendered
-
-
-def sync_direct_install_tree(
-    skill_root: Path, manifest: dict[str, Any] | None = None
-) -> list[Path]:
-    """重新生成仓库中的插件市场文件；生成副本不得直接编辑。"""
-    skill_root = skill_root.resolve()
-    manifest = manifest or _load_manifest(skill_root)
-    repository_root = _repository_root(skill_root)
-    rendered = _direct_install_files(skill_root, manifest)
-
-    for generated_directory in (
-        repository_root / "codex",
-        repository_root / "claude-code",
-        repository_root / ".agents",
-        repository_root / ".claude-plugin",
-    ):
-        if generated_directory.exists():
-            shutil.rmtree(generated_directory)
-
-    written = []
-    for relative_path, data in sorted(rendered.items(), key=lambda item: str(item[0])):
-        target = repository_root / relative_path
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_bytes(data)
-        written.append(target)
-    return written
-
-
-def check_direct_install_tree(skill_root: Path, manifest: dict[str, Any] | None = None) -> None:
-    """拒绝生成目录中缺失、被修改或多出的文件。"""
-    skill_root = skill_root.resolve()
-    manifest = manifest or _load_manifest(skill_root)
-    repository_root = _repository_root(skill_root)
-    expected = _direct_install_files(skill_root, manifest)
-    actual_paths: set[Path] = set()
-    for generated_directory in (
-        repository_root / "codex",
-        repository_root / "claude-code",
-        repository_root / ".agents",
-        repository_root / ".claude-plugin",
-    ):
-        if not generated_directory.exists():
-            continue
-        actual_paths.update(
-            path.relative_to(repository_root)
-            for path in generated_directory.rglob("*")
-            if path.is_file()
-        )
-    expected_paths = set(expected)
-    if actual_paths != expected_paths:
-        missing = sorted(str(path) for path in expected_paths - actual_paths)
-        extra = sorted(str(path) for path in actual_paths - expected_paths)
-        raise ReleaseError(f"直接安装的插件市场文件不一致：缺少={missing}，多出={extra}")
-    stale = sorted(
-        str(relative_path)
-        for relative_path, data in expected.items()
-        if (repository_root / relative_path).read_bytes() != data
-    )
-    if stale:
-        raise ReleaseError(f"直接安装的插件市场文件已过期：{stale}")
-
-
-def _write_platform_zip(
-    output_path: Path,
-    skill_root: Path,
-    platform: str,
-    version: str,
-    skill_files: Iterable[str],
-) -> None:
-    bundle_root = f"{SKILL_NAME}-{platform}"
-    plugin_root = f"{bundle_root}/plugins/{SKILL_NAME}"
-    platform_root = _platform_source_root(skill_root) / platform
-    copy = _skill_copy(skill_root)
-    with zipfile.ZipFile(
-        output_path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
-    ) as archive:
-        marketplace_path, marketplace_data = _bundle_marketplace(platform, version, copy)
-        _write_member(archive, f"{bundle_root}/{marketplace_path}", marketplace_data)
-        for source_path in sorted(platform_root.rglob("*")):
-            if not source_path.is_file():
-                continue
-            relative_path = source_path.relative_to(platform_root).as_posix()
-            data = _render_copy(
-                source_path.read_text(encoding="utf-8"), version, copy
-            ).encode()
-            _write_member(archive, f"{plugin_root}/{relative_path}", data)
-            if relative_path in {"README.md", "AGENTS.md", "UPDATE.md"}:
-                _write_member(archive, f"{bundle_root}/{relative_path}", data)
-        for relative_path in skill_files:
-            data = (skill_root / relative_path).read_bytes()
-            _write_member(
-                archive,
-                f"{plugin_root}/skills/{SKILL_NAME}/{relative_path}",
-                data,
-            )
-
-
-def build_packages(skill_root: Path, output_dir: Path) -> list[Path]:
-    """只根据已校验的发布版本构建可复现安装包。"""
-    skill_root = skill_root.resolve()
-    manifest = check_release(skill_root)
-    common_files = [
-        path
-        for path in manifest["source_files"]
-        if path == "SKILL.md" or path.startswith("references/")
-    ]
-    output_dir.mkdir(parents=True, exist_ok=True)
-    outputs = []
-    for platform in PLATFORM_NAMES:
-        output_path = output_dir / f"{SKILL_NAME}-{platform}-{manifest['package_version']}.zip"
-        source_files = list(manifest["source_files"]) if platform == "codex" else common_files
-        _write_platform_zip(
-            output_path,
-            skill_root,
-            platform,
-            manifest["package_version"],
-            source_files,
-        )
-        outputs.append(output_path)
-    generic_path = output_dir / f"{SKILL_NAME}-generic-{manifest['package_version']}.zip"
-    _write_zip(generic_path, skill_root, common_files)
-    outputs.append(generic_path)
-    return outputs
+    return manifest
 
 
 def generate_prod_version(
     now: datetime | None = None, *, random_hex: str | None = None
 ) -> str:
-    """按 GoalfyData 规则生成 UTC 日期加 3 随机字节的生产版本。"""
+    """生成 UTC 日期加 3 随机字节的生产版本。"""
     instant = now or datetime.now(timezone.utc)
     suffix = random_hex or secrets.token_hex(3)
     if not re.fullmatch(r"[0-9a-f]{6}", suffix):
         raise ReleaseError("生产发布随机后缀必须是 6 位小写 hex")
     return f"v{instant.astimezone(timezone.utc):%Y%m%d}-{suffix}"
-
-
-
-
 
 
 def release_prod_source(
@@ -891,10 +523,7 @@ def release_prod_source(
     now: datetime | None = None,
     random_hex: str | None = None,
 ) -> str:
-    """切一个新的随机 Skill 版本，并统一提升所有一方 package version。
-
-    安装物料本身始终是生产配置，发版只改版本号，不做环境渲染。
-    """
+    """切一个新的随机 Skill 版本，并统一提升所有插件 package version。"""
     skill_root = skill_root.resolve()
     manifest = check_release(skill_root)
     version = generate_prod_version(now, random_hex=random_hex)
@@ -922,29 +551,12 @@ def release_prod_source(
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="action", required=True)
-    subparsers.add_parser("check", help="校验仓库中的发布清单")
-    subparsers.add_parser("sync", help="根据已校验的发布版本重新生成直接安装的插件市场文件")
+    subparsers.add_parser("check", help="校验仓库中的发布清单与各平台副本")
+    subparsers.add_parser("sync", help="按当前发布版本重新同步各平台 Skill 副本")
 
     release_parser = subparsers.add_parser("release", help="写入新的发布清单")
-    release_parser.add_argument(
-        "--version",
-        required=True,
-        help="仓库当前 package version；只有 PROD 发布可以提升 patch",
-    )
-    release_parser.add_argument("--reason", required=True, help="发布原因")
-
-    build_parser = subparsers.add_parser("build", help="构建所有平台的 ZIP 安装包")
-    build_parser.add_argument(
-        "--output-dir",
-        type=Path,
-        default=None,
-        help="输出目录（默认：仓库 dist/）",
-    )
-
-    prod_parser = subparsers.add_parser(
-        "prod-release", help="仅供 PROD 流水线更新仓库内版本标记；不生成安装包"
-    )
-    prod_parser.add_argument("--reason", required=True)
+    release_parser.add_argument("--version", required=True, help="package version")
+    release_parser.add_argument("--reason", required=True, help="变更说明")
     return parser
 
 
@@ -956,24 +568,15 @@ def main(argv: list[str] | None = None) -> int:
             manifest = check_release(skill_root)
             print(f"{SKILL_NAME} 发布版本 {manifest['version']} 已是最新状态")
         elif args.action == "sync":
-            manifest = check_release(skill_root, check_direct_install=False)
-            for path in sync_direct_install_tree(skill_root, manifest):
-                print(path)
+            manifest = _load_manifest(skill_root)
+            sync_platform_skills(skill_root)
             check_release(skill_root)
-        elif args.action == "release":
+            print(f"{SKILL_NAME} 平台副本已按 {manifest['version']} 同步")
+        else:
             manifest = release(skill_root, args.version, args.reason)
             print(f"已发布 {SKILL_NAME} {manifest['version']}")
-        elif args.action == "build":
-            output_dir = args.output_dir or skill_root.parent / "dist"
-            for path in build_packages(skill_root, output_dir):
-                print(path)
-        elif args.action == "prod-release":
-            version = release_prod_source(skill_root, args.reason)
-            print(f"SCENE_SKILL_VERSION={version}")
-        else:
-            raise ReleaseError(f"不支持的动作：{args.action}")
-    except ReleaseError as exc:
-        print(f"错误：{exc}", file=sys.stderr)
+    except ReleaseError as error:
+        print(f"错误：{error}", file=sys.stderr)
         return 1
     return 0
 

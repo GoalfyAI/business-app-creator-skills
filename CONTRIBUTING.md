@@ -18,16 +18,16 @@
 | 目录 | 说明 |
 |---|---|
 | `skill/` | Skill 内容唯一源：`SKILL.md`、`agents/openai.yaml`、`references/` |
-| `platforms/` | 各平台安装文件模板：`.mcp.json`、`README.md`、`AGENTS.md`、`UPDATE.md` |
 | `scripts/` | 构建与发布工具 |
 | `tests/` | 测试 |
-| `claude-code/`、`codex/`、`.claude-plugin/`、`.agents/` | **自动生成，不要手工编辑** |
+| `claude-code/`、`codex/` | 平台安装文档手工维护；其中 `skills/` 由发布流程从 `skill/` 复制，**不要手工编辑** |
+| `.claude-plugin/`、`.agents/` | 插件市场清单，版本号由发布流程更新 |
 
-生成目录由发布流程重建，手工改动会被覆盖并导致校验和失配。
+`skills/` 副本由发布流程重建，手工改动会被覆盖并导致校验失败。
 
 ## 提交代码
 
-只修改 `skill/`、`platforms/`、`scripts/`、`tests/`。
+只修改 `skill/`、各平台目录下的安装文档、`scripts/`、`tests/`。
 
 改完源文件后必须刷新发布清单，否则校验不通过：
 

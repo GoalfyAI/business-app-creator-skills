@@ -24,29 +24,5 @@
     "references/依赖与MCP接入.md": "8f1bff91998d147695a29bb82b78c6ad7e115171e2bd29ba00dbe9c0d69b91c5",
     "references/场景包验收检查清单.md": "4173740ce12778b22888ab9b3dd8e2cf3d84d9cd25366a4ff269bd1454f900d8",
     "references/方案挑战检查清单.md": "4df6b5382023c3956193aedd09613d14c64ccdc2ed79720152db7e83d9c3d1d6"
-  },
-  "platform_source_files": [
-    "claude-code/.claude-plugin/plugin.json",
-    "claude-code/.mcp.json",
-    "claude-code/AGENTS.md",
-    "claude-code/README.md",
-    "claude-code/UPDATE.md",
-    "codex/.codex-plugin/plugin.json",
-    "codex/.mcp.json",
-    "codex/AGENTS.md",
-    "codex/README.md",
-    "codex/UPDATE.md"
-  ],
-  "platform_checksums": {
-    "claude-code/.claude-plugin/plugin.json": "2eb527220ec9ebc5c288e49b1ff193c9d4665608879ac0b641242043397d36f5",
-    "claude-code/.mcp.json": "d33d2ca124e7747cfa4a1d180015d27dfa8fd62d0d20ae44ab178624fee1b7f0",
-    "claude-code/AGENTS.md": "b1a19be7032480efc520742cef15011278c4d3cb5e6a6a77507619c13f4beec8",
-    "claude-code/README.md": "f8549ea4c609a7e1515c2e3d85d6753ce2cfec07deb4e263bb669e7a383aa3f8",
-    "claude-code/UPDATE.md": "ab00e8dbec333cf383499797681f8a2d51a6cee970b6c6026d6546e15b7d0c52",
-    "codex/.codex-plugin/plugin.json": "820adc1eeef1ee235a775be5bae1348b147976730d6bc794c6efc08a280be514",
-    "codex/.mcp.json": "7872d48a321228e49b5153da1257ddc779208b768240acd64eea2c8ff0d28b1e",
-    "codex/AGENTS.md": "ed38107527bf24f80925bf917d4ba1953ff52903b687661b6467d32472a22e1c",
-    "codex/README.md": "63cf7836d7b159ab2eefc540b126c2194ae0abb47502c73bb6f7a8837460666f",
-    "codex/UPDATE.md": "996e7c9ac6cbf40613fc2a2243443e30a3df316ec773805160373ecc286a27fb"
   }
 }

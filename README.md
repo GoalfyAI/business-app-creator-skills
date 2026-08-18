@@ -51,7 +51,7 @@ SCENE_CREATOR_API_KEY=<你的密钥>
 
 重启客户端，然后让 Agent 做一次只读验证，例如「列出我能访问的场景包」。
 
-各平台完整安装说明见 [`platforms/`](platforms/)。
+各平台完整安装说明见 [`claude-code/`](claude-code/README.md) 与 [`codex/`](codex/README.md)。
 
 ## 怎么用
 
@@ -78,14 +78,14 @@ Agent 会创建只读工单，逐层检查提示词、工具契约、编排配�
 ## 这个仓库包含什么
 
 ```
-skill/          Skill 内容：SKILL.md、Agent 元数据、参考资料
-platforms/      各平台安装文件模板
-claude-code/    Claude Code 插件市场目录（自动生成）
-codex/          Codex 插件市场目录（自动生成）
+skill/          Skill 内容唯一源：SKILL.md、Agent 元数据、参考资料
+claude-code/    Claude Code 插件目录：安装文档 + Skill 副本
+codex/          Codex 插件目录：安装文档 + Skill 副本
 scripts/        构建与发布工具
 ```
 
-只有 `skill/` 和 `platforms/` 是手工维护的源文件，其余安装目录由发布流程生成。
+`skill/` 是 Skill 内容的唯一源，发布时复制到两个平台的 `skills/` 下；平台安装文档
+（`README.md`、`AGENTS.md`、`UPDATE.md`、`.mcp.json`）在各平台目录里手工维护。
 
 ## 版本与升级
 
@@ -98,8 +98,8 @@ Skill 版本写在 `SKILL.md` 的 description 里（`[skill-version:...]`），�
 claude plugin update scene-creator@scene-creator     # Claude Code
 ```
 
-被提示版本过期时，按 [`platforms/claude-code/UPDATE.md`](platforms/claude-code/UPDATE.md)
-或 [`platforms/codex/UPDATE.md`](platforms/codex/UPDATE.md) 执行。
+被提示版本过期时，按 [`claude-code/UPDATE.md`](claude-code/UPDATE.md)
+或 [`codex/UPDATE.md`](codex/UPDATE.md) 执行。
 
 ## 文档
 

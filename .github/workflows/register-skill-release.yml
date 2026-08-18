@@ -52,16 +52,6 @@ jobs:
               if actual != expected:
                   errors.append(f'{path}: 内容已变更但未重新发布（sha256 不匹配）')
 
-          # 平台安装文件同样比对
-          for name, expected in (release.get('platform_checksums') or {}).items():
-              path = Path('platforms') / name
-              if not path.exists():
-                  errors.append(f'{path}: 清单中列出但文件缺失')
-                  continue
-              actual = hashlib.sha256(path.read_bytes()).hexdigest()
-              if actual != expected:
-                  errors.append(f'{path}: 内容已变更但未重新发布（sha256 不匹配）')
-
           # 四份 SKILL.md 的版本标记必须一致
           for path in (
               Path('skill/SKILL.md'),
