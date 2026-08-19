@@ -3,8 +3,8 @@
   "version": "v20260818-baba94",
   "package_version": "1.0.13",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-19T07:58:50Z",
-  "update_reason": "合并 Workflow 产物结束语义与业务界面 Schema/编排双阶段校验",
+  "released_at": "2026-08-19T08:04:06Z",
+  "update_reason": "重构5.5业务界面章节为分阶段正式执行规范",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -17,7 +17,7 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "9c620f243b94901b8d5e38cc20bc9c6ed00d111d1336000df227b5cb1aac5d12",
+    "SKILL.md": "db86595c9a2f5cbb2b498440027e33d06beb94e50e5ef3c258675bd1f43a0c71",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "references/Workflow验收检查清单.md": "423c08dcfacee3ee1714fcdee01030a0cd2ecd9bf34076ccb7be915a4ee426b6",
     "references/业务界面制作契约.md": "37749e435322063ca5df7616b71151be0aebc2511f35ccb89f6ce99597d7d3f3",
