@@ -115,6 +115,26 @@ def test_workflow_guidance_distinguishes_output_end_states():
     assert "只删除文件字段的 `required`" in checklist
 
 
+def test_workflow_guidance_separates_delivery_verification_from_business_acceptance():
+    """最终交付必须先核验真实结果，再由明确责任方完成业务审阅。"""
+    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    challenge = (SKILL_ROOT / "references" / "方案挑战检查清单.md").read_text(
+        encoding="utf-8"
+    )
+    acceptance = (SKILL_ROOT / "references" / "场景包验收检查清单.md").read_text(
+        encoding="utf-8"
+    )
+    ui_contract = (
+        SKILL_ROOT / "references" / "业务界面设计与制作契约.md"
+    ).read_text(encoding="utf-8")
+
+    assert "交付核验回答" in skill
+    assert "最终审阅回答" in skill
+    assert "质量检查 Workflow" in challenge
+    assert "若声明了修订、重做或改路线" in acceptance
+    assert "待最终审阅" in ui_contract
+
+
 def test_zip_packages_are_deterministic_and_utf8(tmp_path: Path):
     """无插件管理器的平台靠 zip 分发：内容不变时字节必须一致，中文名不能乱码。"""
     import zipfile
