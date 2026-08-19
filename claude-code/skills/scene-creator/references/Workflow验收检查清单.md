@@ -20,8 +20,9 @@
 3. 证据不足时按需读取实际引用的 FastAgent、Tool Group 或工具 Schema，不凭名称猜参数。
 4. 检查 input/output Schema 均为根对象，脚本为 `async def run(input, ctx)`，最终直接返回匹配对象。
 5. 检查每个 `tool()` 的真实调用名、required 参数、类型、来源、最小 `_output` 和业务化 `_rationale`。“最小”仍**必须**覆盖代码实际读取的完整嵌套路径；读数组元素字段时核对 `items.type=object`、`items.properties` 和未做缺省处理的 `items.required`。
-6. 检查文件只来自 input 文件字段、`ctx.skill_dir` 或本轮过程/输出目录；正式文件位于 `ctx.output_dir` 并以 `workspace-file-path` 返回。
-7. 对照轨迹逐步核对 kind、状态、错误、输出形状、字段衔接和最终输出。
+6. 检查文件只来自 input 文件字段、`ctx.skill_dir` 或本轮过程/输出目录；正式文件位于 `ctx.output_dir` 并以 `workspace-file-path` 返回。工具或 FastAgent 真正生成并返回的文件可以继续传递；仅计划使用的目标路径或目录不能冒充已经存在的交付文件。
+7. 区分三种结束语义：成功产物必须真实存在且满足成功契约；技术失败必须让异常冒泡；合法无产物必须有明确业务状态并省略文件字段，成功分支仍条件化要求产物。
+8. 对照轨迹逐步核对 kind、状态、错误、输出形状、字段衔接和最终输出。
 
 ## 必查反模式
 
@@ -30,6 +31,7 @@
 - 工具参数类型不符合实时 Schema，例如把对象传给 string 字段。
 - 示例不满足 input Schema，或者用测试分支绕过 FastAgent 桩值暴露的真实下游依赖。
 - 返回 URL、`/tmp`、固定共享路径或并不存在的文件作为正式产出。
+- 用 `""`、占位路径或虚构路径表示技术失败；或者只删除文件字段的 `required`，导致成功分支也可以无产物通过。
 
 ## 输出
 

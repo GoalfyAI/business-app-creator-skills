@@ -102,6 +102,19 @@ def test_platform_skill_copies_match_the_single_source():
         assert not target.exists(), platform
 
 
+def test_workflow_guidance_distinguishes_output_end_states():
+    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    checklist = (SKILL_ROOT / "references" / "Workflow验收检查清单.md").read_text(
+        encoding="utf-8"
+    )
+
+    for document in (skill, checklist):
+        assert "技术失败" in document
+        assert "合法无产物" in document
+    assert "禁止用空字符串或虚构路径凑成功对象" in skill
+    assert "只删除文件字段的 `required`" in checklist
+
+
 def test_zip_packages_are_deterministic_and_utf8(tmp_path: Path):
     """无插件管理器的平台靠 zip 分发：内容不变时字节必须一致，中文名不能乱码。"""
     import zipfile

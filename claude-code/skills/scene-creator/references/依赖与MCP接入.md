@@ -146,7 +146,11 @@
 
 只对**安全只读**的工具取样，且**只在**确实缺少可信返回结构定义时才做。可以同时提交一个候选的输出结构一起校验本次样本。
 
-依赖项目上下文的工具还要传项目标识——服务端会把它和可信身份一起作为运行请求头传给目标 MCP，不会因此启动新项目。
+只依赖已有业务项目上下文的工具还要传项目标识——服务端会把它和可信身份一起作为运行请求头传给目标 MCP，不会因此启动新项目。
+
+目标工具需要读取 `/workspace` 测试文件时，不要借用用户项目。先对 Agent 本地文件调用 `file_to_url(purpose="tool_test_fixture")`，完成 `prepare → 客户端 PUT → complete`，取得 `data.file_ref`。再给 `workflow_tool_test` 提供两组相互独立的信息：`workspace_files` 只接收这些文件引用；`workspace_bindings` 负责把某个文件的真实路径或父目录注入目标工具顶层参数。服务端会复用 Workflow 冒泡使用的隐藏验证项目，从临时 HTTPS URL 下载文件、写入真实工作区、完成一次 `tools/call`，随后无论成功或失败都释放隐藏项目。这种模式下不要再传 `project_id`。
+
+示例用途：测试目录扫描工具时，分别上传 `docs/a.md` 与 `docs/b.md`，在 `workspace_files` 中提供两个文件引用，只需在 `workspace_bindings` 中把其中一个文件的 `parent_dir` 绑定到 `path`，并在普通 `input` 中保留 `pattern: "*.md"`；测试单文件读取工具时，把对应文件的 `file_path` 绑定到文件参数。文件准备数量与参数绑定数量彼此独立，不要为了第二个文件虚构 `path2` 或 `urls`。该样本只能证明这一次真实调用和返回结构，不能代替整条 Workflow 冒泡验证。
 
 ## 依赖变更后的连带处理
 
