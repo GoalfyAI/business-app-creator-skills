@@ -635,7 +635,7 @@ Workflow 是做业务界面的**前提条件，不是理由**。两者的关系�
 | `create_toolset` | 创建工具集 |
 | `online_toolsets` | 工具集上线 |
 | `create_tpe` | 创建普通任务点，**必须**先有工具集 |
-| `workflow_tool_test` | 对已有 MCP 工具做一次**真实调用取样**，拿回真实返回结构；依赖 `/workspace` 时可自动使用临时隐藏验证项目落入文本夹具，调用结束后清理。不会修改场景包资产 |
+| `workflow_tool_test` | 对已有 MCP 工具做一次**真实调用取样**，拿回真实返回结构；依赖 `/workspace` 时可把 `file_to_url` 上传的真实文件落入临时隐藏验证项目，调用结束后清理。不会修改场景包资产 |
 
 前置依赖顺序（工具定义里看不到，但漏了就会失败）：
 
@@ -645,14 +645,14 @@ Workflow 是做业务界面的**前提条件，不是理由**。两者的关系�
 | `upload_and_register_tool_group`、`import_skill_package` | 先用 `file_to_url` 取得文件引用 |
 | `create_toolset` | 成员工具组或 FastAgent 已存在 |
 | `create_tpe` | 工具集已备好**并已上线** |
-| `workflow_tool_test` | 已知目标工具组与工具标识；目标工具需要文件时同时提供 `workspace_files`，不要再传 `project_id` |
+| `workflow_tool_test` | 已知目标工具组与工具标识；目标工具需要文件时，先用 `file_to_url(purpose="tool_test_fixture")` 上传，再同时提供 `workspace_files` 与 `workspace_bindings`，不要再传 `project_id` |
 | 授权卡三件套 | 都要工具组注册返回的授权绑定标识（**不是**工具组标识） |
 
 完整的注册流程、调试循环、私有包处理、授权卡配置和上线检查见 **[依赖与 MCP 接入](references/依赖与MCP接入.md)**。
 
 **什么时候用取样**：写 Workflow 脚本时需要知道某个工具的真实返回结构——光看工具描述推不出嵌套字段的实际形状，猜错会导致下游步骤读不到字段。取样一次拿回真实样本，再据此写脚本里的输出声明。可以同时提交一个候选的输出结构，让本次样本顺带校验它。
 
-工具只依赖已有业务项目上下文时传项目标识，这不会启动新项目。工具需要读取测试文件时，使用 `workspace_files` 提供相对路径、UTF-8 文本、接收路径的顶层参数名，以及 `file_path` 或 `parent_dir` 绑定方式；服务端会复用冒泡验证的隐藏项目，生成真实项目上下文，将文本直接写入 `/workspace` 后再调用工具，并在成功或失败后自动清理。此路径不需要先调用 `file_to_url`，也不要同时传 `project_id`。
+工具只依赖已有业务项目上下文时传项目标识，这不会启动新项目。工具需要读取测试文件时，先用 `file_to_url(purpose="tool_test_fixture")` 把 Agent 本地文件换成临时文件引用；把返回的 `data.file_ref` 放进 `workspace_files`，再用 `workspace_bindings` 声明由哪个目标工具顶层参数接收该文件路径或父目录。服务端会复用冒泡验证的隐藏项目，从临时 HTTPS URL 下载真实文件、写入 `/workspace` 后调用工具，并在成功或失败后自动清理。此模式不要同时传 `project_id`。
 
 **取样会真实调用供应商接口。** 破坏性、发布、凭证、金融或任何不可逆的工具**禁止**取样，只对**安全只读**的工具做。
 
@@ -682,6 +682,7 @@ Workflow 是做业务界面的**前提条件，不是理由**。两者的关系�
 | `skill_package` | 要导入成工具集的标准 Skill 包 |
 | `mcp_package` | 要注册成工具组的私有 MCP 包 |
 | `scene_package_logo` | 场景包 Logo 图片 |
+| `tool_test_fixture` | 真实工具取样时需要落入隐藏 `/workspace` 的本地测试文件 |
 
 三个 action：
 
