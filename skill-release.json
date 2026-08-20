@@ -3,8 +3,8 @@
   "version": "v20260819-62072c",
   "package_version": "1.0.14",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-19T09:54:20Z",
-  "update_reason": "补充最终业务审阅门槛、三类产物返回规范及相关验收约束",
+  "released_at": "2026-08-20T03:26:43Z",
+  "update_reason": "区分场景资产契约与 Max Runtime 内部控制实现",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -16,13 +16,13 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "7ee636febeb07b5aa473828e60833355ef1699e5546d23cc6996e19cdb82a2eb",
+    "SKILL.md": "e2560cb7bf8ae6c30d3d83c169243feb802f720ef85de23f84139d096612466e",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "references/Workflow验收检查清单.md": "423c08dcfacee3ee1714fcdee01030a0cd2ecd9bf34076ccb7be915a4ee426b6",
     "references/业务界面设计与制作契约.md": "cdae7b1d5f6ec044460bfb216187e54db8baabaf0221124f86cce05c57c387e0",
     "references/业务界面验收检查清单.md": "bb46b4c140f4b39f0b0e41a5ae4eaa22aac661647d72723d2a3939f7e25de5f5",
     "references/依赖与MCP接入.md": "9a52684d8a97a284bcf8e381671509c5143d7535e22276b1c9fa5077d0fd2e2a",
     "references/场景包验收检查清单.md": "3f864df673d4c2cb4f4b7a9fc971a9199f2d00ec03fe368348c646d287d623d0",
-    "references/方案挑战检查清单.md": "f81dc9b3eae1857a78d4b98aad49b4e91f816e93a47ea8b97837eab6608b205e"
+    "references/方案挑战检查清单.md": "e738bf45b75d367059be1d26ed31a594bc174a406a0824b651818cc125cce3b2"
   }
 }
