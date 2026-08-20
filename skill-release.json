@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260820-cb97fb",
-  "package_version": "1.0.20",
+  "version": "v20260820-bbb188",
+  "package_version": "1.0.21",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-20T13:53:16Z",
-  "update_reason": "明确业务事件 Workflow 的单节点路线与 Runtime 身份边界",
+  "released_at": "2026-08-20T13:57:43Z",
+  "update_reason": "明确业务事件 Workflow 的单节点业务路线与 Runtime 身份边界",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -16,7 +16,7 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "7b9269fae0d6d73f677922abb3ab4ed31aef90d288d6469ecc751b8ad2921c2b",
+    "SKILL.md": "3fccf774662c490e4ffcc425837b5854ddd79306368b145846347f7efdbaff28",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "references/Workflow验收检查清单.md": "8b21cd9834467774a7d99bf0c8f80601a27b42364bcf2e653f74296a0ca11337",
     "references/业务界面设计与制作契约.md": "fe5cb930b2c56b184201f86fde282fa2044061c81a20e35af9bdd486c31f7d0f",
