@@ -3,8 +3,8 @@
   "version": "v20260820-3ecfc5",
   "package_version": "1.0.15",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-20T03:27:03Z",
-  "update_reason": "对齐 Workflow 最终审阅，并区分场景资产契约与 Max Runtime 内部控制",
+  "released_at": "2026-08-20T07:24:30Z",
+  "update_reason": "明确 Workflow 业务事件硬门与业务界面可选事件设计",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -16,13 +16,13 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "1616c18cea8bba5103f50c9b2901b1c76a19a550995bfe9cc63395913939ff3b",
+    "SKILL.md": "2f6af0e61ca844c7368e316ee5bcba2fb4b1e9f536454f1522058cb39c9a2512",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
-    "references/Workflow验收检查清单.md": "423c08dcfacee3ee1714fcdee01030a0cd2ecd9bf34076ccb7be915a4ee426b6",
-    "references/业务界面设计与制作契约.md": "cdae7b1d5f6ec044460bfb216187e54db8baabaf0221124f86cce05c57c387e0",
-    "references/业务界面验收检查清单.md": "bb46b4c140f4b39f0b0e41a5ae4eaa22aac661647d72723d2a3939f7e25de5f5",
+    "references/Workflow验收检查清单.md": "3b5c1aad24853f4e86e5d59f9860ccdb6cd73d35d1fb10be139b572bc42476ea",
+    "references/业务界面设计与制作契约.md": "e1792beda8dac658c1efc91193f5d2814b245f438104c75d7c1da6be89bccc16",
+    "references/业务界面验收检查清单.md": "69e2e8f29bd1daa4113d9752ecf2af2c4d9a44368d8d09636314e678161295d1",
     "references/依赖与MCP接入.md": "9a52684d8a97a284bcf8e381671509c5143d7535e22276b1c9fa5077d0fd2e2a",
-    "references/场景包验收检查清单.md": "3f864df673d4c2cb4f4b7a9fc971a9199f2d00ec03fe368348c646d287d623d0",
+    "references/场景包验收检查清单.md": "70ea65d6a36b88b1bd11998f2c79c3a5c58ff716c06a77bdce8312ca88b63264",
     "references/方案挑战检查清单.md": "e738bf45b75d367059be1d26ed31a594bc174a406a0824b651818cc125cce3b2"
   }
 }

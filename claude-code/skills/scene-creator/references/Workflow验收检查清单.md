@@ -16,13 +16,26 @@
 ## 检查步骤
 
 1. 读取 bubble 的 `steps`、`run_trace`、`coverage`、`unreached_tools`、`final_output` 和 `error`。
-2. 用 `get_asset(asset_type="tpe")` 读取当前脚本、input/output Schema、preload Toolset 和 `io_table`。
+2. 用 `get_asset(asset_type="tpe")` 读取当前脚本、input/output Schema、业务事件契约、preload Toolset 和 `io_table`。
 3. 证据不足时按需读取实际引用的 FastAgent、Tool Group 或工具 Schema，不凭名称猜参数。
 4. 检查 input/output Schema 均为根对象，脚本为 `async def run(input, ctx)`，最终直接返回匹配对象。
 5. 检查每个 `tool()` 的真实调用名、required 参数、类型、来源、最小 `_output` 和业务化 `_rationale`。“最小”仍**必须**覆盖代码实际读取的完整嵌套路径；读数组元素字段时核对 `items.type=object`、`items.properties` 和未做缺省处理的 `items.required`。
 6. 检查文件只来自 input 文件字段、`ctx.skill_dir` 或本轮过程/输出目录；正式文件位于 `ctx.output_dir` 并以 `workspace-file-path` 返回。工具或 FastAgent 真正生成并返回的文件可以继续传递；仅计划使用的目标路径或目录不能冒充已经存在的交付文件。
 7. 区分三种结束语义：成功产物必须真实存在且满足成功契约；技术失败必须让异常冒泡；合法无产物必须有明确业务状态并省略文件字段，成功分支仍条件化要求产物。
 8. 对照轨迹逐步核对 kind、状态、错误、输出形状、字段衔接和最终输出。
+
+## 业务事件覆盖
+
+业务事件是面向业务界面的公开事实，不是运行日志。验收时按脚本全部可达终态分支逐项检查：
+
+- 脚本进入业务执行后、首个业务动作前，***必须***发布一个已声明的 `stage_started`。
+- 每个正常 `return` 分支，***必须***在结果真实成立后发布已声明的 `stage_result`；事件不能替代符合 `output_schema` 的最终返回对象。
+- 产生文件交付物时，***必须***在文件已持久化且拥有公开交付引用后逐份发布 `artifact_ready`；载荷不得出现 Workspace 路径、临时 URL 或存储密钥。
+- 承担整条业务路线最终交付的 Workflow，***必须***在全部结果与交付物就绪后发布 `delivery_ready`；非最终节点不得把中间结果冒充最终交付。
+- 脚本明确处理的业务失败终态，***必须***发布 `stage_failed`；未被安全解释的技术异常必须继续冒泡。
+- 细分阶段、客观进度、中间结果和非表单提醒，***建议结合业务界面考虑***是否分别使用额外 `stage_started`、`stage_progress`、`stage_result` 和 `attention_required`。未设计这些可选事件不单独判失败；已经声明却在代表性路径未触达时，必须列为盲区并说明界面影响。
+
+同时核对：脚本只能发布资产中已声明的事件；`event_key` 是稳定字面量；Payload 满足对应根对象 Schema；载荷不含内部 ID、原始工具结果、提示词、脚本、敏感数据或内部错误；`attention_required` 不复制运行中表单，`delivery_ready` 不代替最终审阅。发现脚本直接打印、发送普通消息或调用未公开内部接口模拟业务事件时，裁决为 `blocked`。
 
 ## 必查反模式
 
@@ -32,6 +45,9 @@
 - 示例不满足 input Schema，或者用测试分支绕过 FastAgent 桩值暴露的真实下游依赖。
 - 返回 URL、`/tmp`、固定共享路径或并不存在的文件作为正式产出。
 - 用 `""`、占位路径或虚构路径表示技术失败；或者只删除文件字段的 `required`，导致成功分支也可以无产物通过。
+- 只返回最终对象而没有开始与结束事件，或有交付物却没有 `artifact_ready` / `delivery_ready`。
+- 在每个工具步骤后机械发送事件，或者用运行时长猜测 `stage_progress` 百分比。
+- 用业务事件代替入口表单、运行中表单、Runtime 恢复或 Delivery Review。
 
 ## 输出
 
@@ -39,7 +55,7 @@
 
 - `裁决`：`passed`、`blocked` 或 `needs_bubble`。
 - `关键问题`：步骤、期望、实际、后果和应更新的原 Workflow 字段。
-- `盲区`：未触达步骤、动态字段、FastAgent 内容质量和需要全真验证的事项。
+- `盲区`：未触达步骤、业务事件、动态字段、FastAgent 内容质量和需要全真验证的事项。
 - `证据`：Workflow ID、run_id、冒泡状态、覆盖率和读取的资产 ID。
 
 裁决为 `blocked` 时更新原 Workflow，重新 Preview、bubble 和验收；**不得**新建资产规避问题。
