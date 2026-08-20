@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260819-62072c",
-  "package_version": "1.0.14",
+  "version": "v20260820-3ecfc5",
+  "package_version": "1.0.15",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-20T03:26:43Z",
-  "update_reason": "区分场景资产契约与 Max Runtime 内部控制实现",
+  "released_at": "2026-08-20T03:27:03Z",
+  "update_reason": "对齐 Workflow 最终审阅，并区分场景资产契约与 Max Runtime 内部控制",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -16,7 +16,7 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "e2560cb7bf8ae6c30d3d83c169243feb802f720ef85de23f84139d096612466e",
+    "SKILL.md": "1616c18cea8bba5103f50c9b2901b1c76a19a550995bfe9cc63395913939ff3b",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "references/Workflow验收检查清单.md": "423c08dcfacee3ee1714fcdee01030a0cd2ecd9bf34076ccb7be915a4ee426b6",
     "references/业务界面设计与制作契约.md": "cdae7b1d5f6ec044460bfb216187e54db8baabaf0221124f86cce05c57c387e0",
