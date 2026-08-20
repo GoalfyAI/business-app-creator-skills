@@ -30,7 +30,7 @@
 
 - 脚本进入业务执行后、首个业务动作前，***必须***发布一个已声明的 `stage_started`。
 - 每个正常 `return` 分支，***必须***在结果真实成立后发布已声明的 `stage_result`；事件不能替代符合 `output_schema` 的最终返回对象。
-- 产生文件交付物时，***必须***在文件已持久化且拥有公开交付引用后逐份发布 `artifact_ready`；载荷不得出现 Workspace 路径、临时 URL 或存储密钥。
+- 产生文件交付物时，脚本只写入 `ctx.output_dir` 并按 `output_schema` 返回路径；Runtime 在正式 Artifact 登记后逐份自动发布 `artifact_ready`。脚本不得自行发布该平台事件，公开载荷不得出现 Workspace 路径、临时 URL 或存储密钥。
 - 承担整条业务路线最终交付的 Workflow，***必须***在全部结果与交付物就绪后发布 `delivery_ready`；非最终节点不得把中间结果冒充最终交付。
 - 脚本明确处理的业务失败终态，***必须***发布 `stage_failed`；未被安全解释的技术异常必须继续冒泡。
 - 细分阶段、客观进度、中间结果和非表单提醒，***建议结合业务界面考虑***是否分别使用额外 `stage_started`、`stage_progress`、`stage_result` 和 `attention_required`。未设计这些可选事件不单独判失败；已经声明却在代表性路径未触达时，必须列为盲区并说明界面影响。
@@ -45,7 +45,7 @@
 - 示例不满足 input Schema，或者用测试分支绕过 FastAgent 桩值暴露的真实下游依赖。
 - 返回 URL、`/tmp`、固定共享路径或并不存在的文件作为正式产出。
 - 用 `""`、占位路径或虚构路径表示技术失败；或者只删除文件字段的 `required`，导致成功分支也可以无产物通过。
-- 只返回最终对象而没有开始与结束事件，或有交付物却没有 `artifact_ready` / `delivery_ready`。
+- 只返回最终对象而没有脚本侧开始与结束事件，或承担路线交付却没有 `delivery_ready`；文件交付还需核对 Runtime 是否成功登记 Artifact 并自动产生 `artifact_ready`。
 - 在每个工具步骤后机械发送事件，或者用运行时长猜测 `stage_progress` 百分比。
 - 用业务事件代替入口表单、运行中表单、Runtime 恢复或 Delivery Review。
 

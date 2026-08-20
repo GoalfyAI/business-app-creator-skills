@@ -1160,15 +1160,17 @@ JSON Schema 与 SDK 能力只是设计事实，不能直接推导页面模块。
 |---|---|
 | 脚本开始执行 | 在必要的输入读取后、首个业务动作前，***必须***发布 `stage_started`，名称使用用户能理解的业务阶段，不使用 Workflow、节点或工具名称 |
 | 正常结束 | 每一个可能正常 `return` 的分支，在结果已经真实成立后，***必须***发布 `stage_result`；事件载荷与最终返回对象分别遵守各自契约，不能用事件替代返回值 |
-| 产生文件交付物 | 文件已真实持久化并进入公开交付索引后，***必须***为每份可交付文件发布 `artifact_ready`；禁止发送 Workspace 路径、临时地址或存储密钥 |
+| 产生文件交付物 | 脚本只把真实文件写入 `ctx.output_dir` 并按 `output_schema` 返回路径；Runtime 完成 Artifact 登记后自动发布 `artifact_ready`。脚本不得自行发布该平台事件，也不得发送 Workspace 路径、临时地址或存储密钥 |
 | 路线最终结果可交付 | 只有承担本条业务路线最终交付的 Workflow，才在全部结果与交付物就绪后、正常返回前，***必须***发布 `delivery_ready`；该事件只表示具备审阅条件，不表示用户已经接受 |
 | 可控业务失败 | 脚本明确识别并以业务失败结束的分支，***必须***发布 `stage_failed`；无法在脚本内可靠解释的技术异常仍让异常冒泡，禁止捕获后伪装成业务成功 |
 
 除上述硬门外，事件密度由业务可见性决定：细分业务阶段的额外 `stage_started`、具有客观分母的 `stage_progress`、值得单独展示的中间 `stage_result`，以及不要求用户回答的 `attention_required`，均***建议结合业务界面考虑***。只有界面确实需要据此更新进度、结果模块或提醒时才声明；**禁止**在每个 `tool()` 后机械发事件，禁止用运行时长猜进度百分比。
 
-所有事件都**必须**先在 Workflow 资产中声明稳定的 `event_key`、平台事件类型、版本、成立条件和根对象 Payload Schema，再由脚本调用当前受控业务事件原语。脚本不得动态拼接事件名，不得把内部 ID、原始工具返回、提示词、脚本、敏感信息或未脱敏错误放进载荷。事件声明有不兼容变化时升级事件版本；存在已选或已绑定业务界面时，同时把界面契约视为已变化重新验收。
+除 Runtime 自有的 `artifact_ready` 外，脚本发布的事件都**必须**先在 Workflow 资产中声明稳定的 `event_key`、平台事件类型、版本、成立条件和根对象 Payload Schema，再由脚本调用当前受控业务事件原语。脚本不得动态拼接事件名，不得把内部 ID、原始工具返回、提示词、脚本、敏感信息或未脱敏错误放进载荷。事件声明有不兼容变化时升级事件版本；存在已选或已绑定业务界面时，同时把界面契约视为已变化重新验收。
 
 当前受控原语为 `emit_business_event(event_type=..., event_key=..., payload=...)`。`event_type` 与 `event_key` **必须**使用非空字符串字面量，`payload` **必须**是对象；调用只能引用资产中同名、同类型的已发布事件契约。业务事件契约的每一项包含 `event_key`、`event_type`、`event_version`、`description` 和根对象 `payload_schema`，且 `payload_schema.additionalProperties` 必须为 `false`。具体字段仍以实时 Schema 和 `workflow_single` 为最终事实源。
+
+创建或更新 Workflow 时，直接通过 `workflow_tpe_manage(action="create"|"update", business_event_contracts=[...])` 随执行契约一并写入；写入后使用 `get_asset(asset_type="tpe", id=...)` 反读确认脚本与事件契约一致。不要另建事件配置文件，也不要用脚本常量代替资产契约。
 
 业务事件是单向可观察性，不改变既有交互职责：入口表单、运行中补充表单、Runtime 恢复和最终审阅继续使用编排的 Business/Runtime 握手。`attention_required` **不得**复制一个正在等待用户填写的 `business_interaction`，`delivery_ready` **不得**代替 Delivery Review。
 
