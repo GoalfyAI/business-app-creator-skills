@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260820-d25b58",
-  "package_version": "1.0.17",
+  "version": "v20260820-622bf7",
+  "package_version": "1.0.18",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-20T08:32:53Z",
-  "update_reason": "业务界面改为用户可选能力并移除 Workflow 强制交付校验",
+  "released_at": "2026-08-20T08:35:16Z",
+  "update_reason": "业务界面改为由用户选择制作，不再由 Workflow 强制交付或参与场景包验收",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -16,7 +16,7 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "4104fea189cf41ccd8a9e6d83c05ff1be7b7e258ed4e2dda9e29024292f2318e",
+    "SKILL.md": "6cd50efbec7e9e3d0a066ebbeed6e6d8f0e62af8eb0656e8cf7d004b57dfdfc1",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "references/Workflow验收检查清单.md": "b8913d9a336b1416278c28cc2ac774e3708500a799354b1993ecacd88e79d6f3",
     "references/业务界面设计与制作契约.md": "dfe2c425736b1228385f9dcf6a4fa7a136f5b21ebf27353a5363a8bd758ee285",
