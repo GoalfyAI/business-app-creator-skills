@@ -282,9 +282,11 @@ def validate_platform_install_files(skill_root: Path) -> None:
         if mcp_name and "SCENE_CREATOR_API_KEY" not in docs:
             raise ReleaseError(f"{platform} 安装文档必须说明 API Key 环境变量")
         # 走插件市场的平台必须给出公开来源；Manus 与通用集成是手工配置，不适用
-        if layout["skill_subdir"].startswith("skills/"):
-            if "GoalfyAI/scene-creator-skills" not in docs:
-                raise ReleaseError(f"{platform} 安装文档必须给出公开插件市场来源")
+        if (
+            layout["skill_subdir"].startswith("skills/")
+            and "GoalfyAI/scene-creator-skills" not in docs
+        ):
+            raise ReleaseError(f"{platform} 安装文档必须给出公开插件市场来源")
 
 
 def _sha256(path: Path) -> str:
@@ -396,7 +398,7 @@ def _validate_released_at(value: Any) -> None:
     if not isinstance(value, str):
         raise ReleaseError("released_at 必须是 ISO-8601 字符串")
     try:
-        datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
+        datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
     except ValueError as exc:
         raise ReleaseError("released_at 必须形如 2026-01-01T00:00:00Z") from exc
 

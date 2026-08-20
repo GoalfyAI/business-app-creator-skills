@@ -105,7 +105,7 @@ def register_release(version: str) -> None:
                 if response.status != 200:
                     raise RuntimeError(f"HTTP {response.status}")
             print(f"registered {version} at {endpoint}")
-        except Exception as exc:
+        except (OSError, RuntimeError) as exc:
             print(f"FAILED {endpoint}: {exc}")
             failures.append(endpoint)
     if failures:
