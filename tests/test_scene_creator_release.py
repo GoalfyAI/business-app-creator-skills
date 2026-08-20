@@ -160,6 +160,34 @@ def test_docs_do_not_pin_a_stale_package_version():
         assert version not in path.read_text(encoding="utf-8")
 
 
+def test_skill_separates_delivery_qualification_from_final_review():
+    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    checklist = (
+        SKILL_ROOT / "references" / "场景包验收检查清单.md"
+    ).read_text(encoding="utf-8")
+    challenge = (
+        SKILL_ROOT / "references" / "方案挑战检查清单.md"
+    ).read_text(encoding="utf-8")
+    ui_contract = (
+        SKILL_ROOT / "references" / "业务界面制作契约.md"
+    ).read_text(encoding="utf-8")
+
+    for marker in (
+        "交付核验与业务验收是两个独立阶段",
+        "业务完成标准包含用户批准",
+        "才可由 Agent 完成最终审阅",
+        "审阅明确接受前",
+        "新建运行实例",
+    ):
+        assert marker in skill
+
+    assert "交付核验和最终审阅为两个独立阶段" in checklist
+    assert "接受后 Business 才进入完成终态" in checklist
+    assert "最终审阅接受前" in challenge
+    assert "待最终审阅" in ui_contract
+    assert "先发送结果再接管结束" in skill
+
+
 # ---------------------------------------------------------------- 防手改
 
 
