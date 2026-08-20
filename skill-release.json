@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260820-622bf7",
-  "package_version": "1.0.18",
+  "version": "v20260820-c47e83",
+  "package_version": "1.0.19",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-20T10:11:23Z",
-  "update_reason": "Workflow 事件契约写入与 Runtime Artifact 事件职责对齐",
+  "released_at": "2026-08-20T10:23:31Z",
+  "update_reason": "Workflow 事件契约写入与 Runtime Artifact 职责正式发布",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -16,7 +16,7 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "64b452b1aedf39e0390cd0535e389dc23c92a2a06032ba2fe5fcb1eef0703691",
+    "SKILL.md": "6460aab52e59fd43fde561779d6f8413e442b1dae7947f24debc4a2c1d4e78a3",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "references/Workflow验收检查清单.md": "fc9d95ad472cdf088fe1e229769706206ff97940a59073b418b470ed8773fbf0",
     "references/业务界面设计与制作契约.md": "0387eeeacb47006acb3723cfed1c2cd962e5048d789f6732c72aaabcf1c9dd7d",
