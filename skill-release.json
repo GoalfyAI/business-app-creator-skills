@@ -3,8 +3,8 @@
   "version": "v20260820-49d7d9",
   "package_version": "1.0.16",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-20T07:32:47Z",
-  "update_reason": "新增 Workflow 业务事件硬门与业务界面事件设计规范",
+  "released_at": "2026-08-20T08:15:44Z",
+  "update_reason": "收敛 Workflow 场景业务界面时序、图编排冒泡证据和整包全真验收规则",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -16,13 +16,13 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "c5f00d49a8afa62cc427801918650be5132e5e6373bab071976ab6e68e0048e5",
+    "SKILL.md": "34238476b0688cc17ca8c67ea95dcd4f5274d8e4220b2d57bf96ea094eadb9d5",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
-    "references/Workflow验收检查清单.md": "3b5c1aad24853f4e86e5d59f9860ccdb6cd73d35d1fb10be139b572bc42476ea",
-    "references/业务界面设计与制作契约.md": "e1792beda8dac658c1efc91193f5d2814b245f438104c75d7c1da6be89bccc16",
-    "references/业务界面验收检查清单.md": "69e2e8f29bd1daa4113d9752ecf2af2c4d9a44368d8d09636314e678161295d1",
+    "references/Workflow验收检查清单.md": "b8913d9a336b1416278c28cc2ac774e3708500a799354b1993ecacd88e79d6f3",
+    "references/业务界面设计与制作契约.md": "c01b283112f774e8774c0decfcffec64194e864d7990a8c9395df01ac2c34da7",
+    "references/业务界面验收检查清单.md": "68ecc4c245105e2e1206d376009ca9031ba7ffdb1cc9195ee5e5aff6a0884566",
     "references/依赖与MCP接入.md": "9a52684d8a97a284bcf8e381671509c5143d7535e22276b1c9fa5077d0fd2e2a",
-    "references/场景包验收检查清单.md": "70ea65d6a36b88b1bd11998f2c79c3a5c58ff716c06a77bdce8312ca88b63264",
+    "references/场景包验收检查清单.md": "fe7bc2ee5b29727eda3ba8e25a0cba24a9a28161c1c4a017d18866df39370ca9",
     "references/方案挑战检查清单.md": "e738bf45b75d367059be1d26ed31a594bc174a406a0824b651818cc125cce3b2"
   }
 }

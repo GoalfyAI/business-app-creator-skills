@@ -35,7 +35,7 @@
 - 脚本明确处理的业务失败终态，***必须***发布 `stage_failed`；未被安全解释的技术异常必须继续冒泡。
 - 细分阶段、客观进度、中间结果和非表单提醒，***建议结合业务界面考虑***是否分别使用额外 `stage_started`、`stage_progress`、`stage_result` 和 `attention_required`。未设计这些可选事件不单独判失败；已经声明却在代表性路径未触达时，必须列为盲区并说明界面影响。
 
-同时核对：脚本只能发布资产中已声明的事件；`event_key` 是稳定字面量；Payload 满足对应根对象 Schema；载荷不含内部 ID、原始工具结果、提示词、脚本、敏感数据或内部错误；`attention_required` 不复制运行中表单，`delivery_ready` 不代替最终审阅。发现脚本直接打印、发送普通消息或调用未公开内部接口模拟业务事件时，裁决为 `blocked`。
+同时核对：脚本只通过 `emit_business_event(event_type=..., event_key=..., payload=...)` 发布资产中已声明的事件；`event_type` 与 `event_key` 都是稳定非空字符串字面量；Payload 是对象并满足对应根对象 Schema；事件契约包含版本、描述和 `additionalProperties:false` 的 Payload Schema；载荷不含内部 ID、原始工具结果、提示词、脚本、敏感数据或内部错误；`attention_required` 不复制运行中表单，`delivery_ready` 不代替最终审阅。发现脚本直接打印、发送普通消息、自造 `print_event` 或调用未公开内部接口模拟业务事件时，裁决为 `blocked`。
 
 ## 必查反模式
 
