@@ -115,6 +115,24 @@ def test_workflow_guidance_distinguishes_output_end_states():
     assert "只删除文件字段的 `required`" in checklist
 
 
+def test_workflow_guidance_routes_event_workflows_through_business_runtime():
+    """业务事件必须触发正式业务路线；无事件单 Workflow 仍可直接派发。"""
+    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    checklist = (SKILL_ROOT / "references" / "Workflow验收检查清单.md").read_text(
+        encoding="utf-8"
+    )
+    acceptance = (SKILL_ROOT / "references" / "场景包验收检查清单.md").read_text(
+        encoding="utf-8"
+    )
+
+    for document in (skill, checklist, acceptance):
+        assert "单节点业务路线" in document
+        assert "直接派发" in document
+    assert "验证身份只用于本次 Bubble" in skill
+    assert "不得让脚本、Agent、业务界面或 MCP 调用方伪造" in checklist
+    assert "只由服务端在正式路线运行中持久化生成" in acceptance
+
+
 def test_workflow_guidance_separates_delivery_verification_from_business_acceptance():
     """最终交付必须先核验真实结果，再由明确责任方完成业务审阅。"""
     skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")

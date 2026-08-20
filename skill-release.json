@@ -3,8 +3,8 @@
   "version": "v20260820-cb97fb",
   "package_version": "1.0.20",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-20T13:19:24Z",
-  "update_reason": "收敛 Workflow 四层验证并补齐业务事件静态与运行验收",
+  "released_at": "2026-08-20T13:53:16Z",
+  "update_reason": "明确业务事件 Workflow 的单节点路线与 Runtime 身份边界",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -16,13 +16,13 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "1eaa40446a5c14584a564cd37ce3115263f59c82a9349455e3d18335da7cf21a",
+    "SKILL.md": "7b9269fae0d6d73f677922abb3ab4ed31aef90d288d6469ecc751b8ad2921c2b",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
-    "references/Workflow验收检查清单.md": "426386eb9d8acfc6225808d40f0101f0324aa1756ebc5dd6b0211de6c249c2a3",
+    "references/Workflow验收检查清单.md": "8b21cd9834467774a7d99bf0c8f80601a27b42364bcf2e653f74296a0ca11337",
     "references/业务界面设计与制作契约.md": "fe5cb930b2c56b184201f86fde282fa2044061c81a20e35af9bdd486c31f7d0f",
     "references/业务界面验收检查清单.md": "a085d184da0690d2ce3ec08d96b78d01f5824e864bfff74d3146bc489407b6a2",
     "references/依赖与MCP接入.md": "9a52684d8a97a284bcf8e381671509c5143d7535e22276b1c9fa5077d0fd2e2a",
-    "references/场景包验收检查清单.md": "8096bf636729c34fff568d33065c84d6b1e71267efd8958b799c6ca77ee048d0",
+    "references/场景包验收检查清单.md": "f17cb130dbc2f600656813a71edd2a3ba9d5552d3981c9b6df186a6bbbb4ccc8",
     "references/方案挑战检查清单.md": "360d252d0af9c9cd419840bd9facd6770360049a2202208643e97b55741c4b40"
   }
 }

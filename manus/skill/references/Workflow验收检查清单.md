@@ -15,7 +15,7 @@
 
 ## 检查步骤
 
-1. 读取 bubble 的 `steps`、`run_trace`、`coverage`、`unreached_tools`、`run_evidence.business_events`、`final_output` 和 `error`。
+1. 读取 bubble 的 `steps`、`run_trace`、`coverage`、`unreached_tools`、`run_evidence.business_events`、`final_output` 和 `error`；无业务事件契约且脚本未调用 `emit_business_event` 时，把事件检查记为“不适用”，不得虚构空事件证据。
 2. 用 `get_asset(asset_type="tpe")` 读取当前脚本、input/output Schema、业务事件契约、preload Toolset 和 `io_table`。
 3. 证据不足时按需读取实际引用的 FastAgent、Tool Group 或工具 Schema，不凭名称猜参数。
 4. 检查 input/output Schema 均为根对象，脚本为 `async def run(input, ctx)`，最终直接返回匹配对象。
@@ -24,11 +24,18 @@
 7. 区分三种结束语义：成功产物必须真实存在且满足成功契约；技术失败必须让异常冒泡；合法无产物必须有明确业务状态并省略文件字段，成功分支仍条件化要求产物。
 8. 对照轨迹逐步核对 kind、状态、错误、输出形状、字段衔接和最终输出。
 
-## 业务事件覆盖
+## 业务事件与正式运行入口
 
-业务事件是面向业务界面的公开事实，不是运行日志。验收时按脚本全部可达终态分支逐项检查：
+先同时反读 `business_event_contracts` 和脚本：
 
-- Preview 已拒绝空事件契约，并静态证明必需声明、声明—调用一致、开始事件位于首个业务动作前，以及每条可达 `return` 前存在结果或受控失败事件。
+- 两者都不含业务事件时，该 Workflow 可以按实时工具契约直接派发，本节其余事件覆盖项不适用。
+- 任一方出现业务事件时，另一方也必须形成一致的完整契约，并将该 Workflow 标记为“正式运行必须进入 Business Runtime”。单条 Workflow 也必须建立单节点业务路线，禁止直接派发。
+- Bubble 使用服务端分配的验证 Business/Runtime 身份；该身份不是正式业务身份，禁止复制、缓存或写入脚本。
+- 出现 `Workflow business event requires persisted Runtime identity` 时，正式运行优先检查是否误走直接派发；Bubble 则检查服务端是否分配验证身份。不得让脚本、Agent、业务界面或 MCP 调用方伪造 `business_id`、`orchestration_id` 或 `workflow_runtime_id`。
+
+业务事件是面向 Business Runtime 和业务界面的公开事实，不是运行日志。对带事件 Workflow，按脚本全部可达终态分支逐项检查：
+
+- Preview 已证明事件契约和原语调用要么同时为空，要么声明—调用一致且生命周期闭合；带事件时，开始事件位于首个业务动作前，每条可达 `return` 前存在结果或受控失败事件。
 - Bubble 的 `run_evidence.business_events` 已给出 `declared/emitted/missing_required/unreached_event_keys/order_valid/persistence_verified/passed`；只有数据库持久化成功的事件计入 `emitted`，实时推送不作为替代证据。
 - `delivery_ready` 只在本次 Bubble 走正常 `stage_result` 的成功交付路径时强制命中；走 `stage_failed` 的失败路径不要求发布交付就绪事件。
 
@@ -49,9 +56,10 @@
 - 示例不满足 input Schema，或者用测试分支绕过 FastAgent 桩值暴露的真实下游依赖。
 - 返回 URL、`/tmp`、固定共享路径或并不存在的文件作为正式产出。
 - 用 `""`、占位路径或虚构路径表示技术失败；或者只删除文件字段的 `required`，导致成功分支也可以无产物通过。
-- 只返回最终对象而没有脚本侧开始与结束事件，或承担路线交付却没有 `delivery_ready`；文件交付还需核对 Runtime 是否成功登记 Artifact 并自动产生 `artifact_ready`。
+- 已声明业务事件，却只返回最终对象而没有脚本侧开始与结束事件，或承担路线交付却没有 `delivery_ready`；文件交付还需核对 Runtime 是否成功登记 Artifact 并自动产生 `artifact_ready`。
 - 在每个工具步骤后机械发送事件，或者用运行时长猜测 `stage_progress` 百分比。
 - 用业务事件代替入口表单、运行中表单、Runtime 恢复或 Delivery Review。
+- 带业务事件的单 Workflow 在正式运行时直接派发，随后通过补写或猜测 Runtime ID 绕过持久化身份门。
 
 ## 输出
 
@@ -60,6 +68,6 @@
 - `裁决`：`passed`、`blocked` 或 `needs_bubble`。
 - `关键问题`：步骤、期望、实际、后果和应更新的原 Workflow 字段。
 - `盲区`：未触达步骤、业务事件、动态字段、FastAgent 内容质量和需要全真验证的事项。
-- `证据`：Workflow ID、run_id、冒泡状态、工具覆盖率、业务事件覆盖与读取的资产 ID。
+- `证据`：Workflow ID、run_id、冒泡状态、工具覆盖率、业务事件适用性与覆盖、正式运行入口裁决，以及读取的资产 ID。
 
 裁决为 `blocked` 时更新原 Workflow，重新 Preview、bubble 和验收；**不得**新建资产规避问题。
