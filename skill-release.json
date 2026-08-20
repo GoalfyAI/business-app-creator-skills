@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260820-3ecfc5",
-  "package_version": "1.0.15",
+  "version": "v20260820-49d7d9",
+  "package_version": "1.0.16",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-20T07:24:30Z",
-  "update_reason": "明确 Workflow 业务事件硬门与业务界面可选事件设计",
+  "released_at": "2026-08-20T07:32:47Z",
+  "update_reason": "新增 Workflow 业务事件硬门与业务界面事件设计规范",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -16,7 +16,7 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "2f6af0e61ca844c7368e316ee5bcba2fb4b1e9f536454f1522058cb39c9a2512",
+    "SKILL.md": "c5f00d49a8afa62cc427801918650be5132e5e6373bab071976ab6e68e0048e5",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "references/Workflow验收检查清单.md": "3b5c1aad24853f4e86e5d59f9860ccdb6cd73d35d1fb10be139b572bc42476ea",
     "references/业务界面设计与制作契约.md": "e1792beda8dac658c1efc91193f5d2814b245f438104c75d7c1da6be89bccc16",
