@@ -15,7 +15,7 @@
 
 ## 检查步骤
 
-1. 读取 bubble 的 `steps`、`run_trace`、`coverage`、`unreached_tools`、`final_output` 和 `error`。
+1. 读取 bubble 的 `steps`、`run_trace`、`coverage`、`unreached_tools`、`run_evidence.business_events`、`final_output` 和 `error`。
 2. 用 `get_asset(asset_type="tpe")` 读取当前脚本、input/output Schema、业务事件契约、preload Toolset 和 `io_table`。
 3. 证据不足时按需读取实际引用的 FastAgent、Tool Group 或工具 Schema，不凭名称猜参数。
 4. 检查 input/output Schema 均为根对象，脚本为 `async def run(input, ctx)`，最终直接返回匹配对象。
@@ -27,6 +27,10 @@
 ## 业务事件覆盖
 
 业务事件是面向业务界面的公开事实，不是运行日志。验收时按脚本全部可达终态分支逐项检查：
+
+- Preview 已拒绝空事件契约，并静态证明必需声明、声明—调用一致、开始事件位于首个业务动作前，以及每条可达 `return` 前存在结果或受控失败事件。
+- Bubble 的 `run_evidence.business_events` 已给出 `declared/emitted/missing_required/unreached_event_keys/order_valid/persistence_verified/passed`；只有数据库持久化成功的事件计入 `emitted`，实时推送不作为替代证据。
+- `delivery_ready` 只在本次 Bubble 走正常 `stage_result` 的成功交付路径时强制命中；走 `stage_failed` 的失败路径不要求发布交付就绪事件。
 
 - 脚本进入业务执行后、首个业务动作前，***必须***发布一个已声明的 `stage_started`。
 - 每个正常 `return` 分支，***必须***在结果真实成立后发布已声明的 `stage_result`；事件不能替代符合 `output_schema` 的最终返回对象。
@@ -56,6 +60,6 @@
 - `裁决`：`passed`、`blocked` 或 `needs_bubble`。
 - `关键问题`：步骤、期望、实际、后果和应更新的原 Workflow 字段。
 - `盲区`：未触达步骤、业务事件、动态字段、FastAgent 内容质量和需要全真验证的事项。
-- `证据`：Workflow ID、run_id、冒泡状态、覆盖率和读取的资产 ID。
+- `证据`：Workflow ID、run_id、冒泡状态、工具覆盖率、业务事件覆盖与读取的资产 ID。
 
 裁决为 `blocked` 时更新原 Workflow，重新 Preview、bubble 和验收；**不得**新建资产规避问题。
