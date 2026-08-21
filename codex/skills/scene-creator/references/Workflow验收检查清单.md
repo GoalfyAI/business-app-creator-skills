@@ -37,16 +37,16 @@
 
 - Preview 已证明事件契约和原语调用要么同时为空，要么声明—调用一致且生命周期闭合；带事件时，开始事件位于首个业务动作前，每条可达 `return` 前存在结果或受控失败事件。
 - Bubble 的 `run_evidence.business_events` 已给出 `declared/emitted/missing_required/unreached_event_keys/order_valid/persistence_verified/passed`；只有数据库持久化成功的事件计入 `emitted`，实时推送不作为替代证据。
-- `delivery_ready` 只在本次 Bubble 走正常 `stage_result` 的成功交付路径时强制命中；走 `stage_failed` 的失败路径不要求发布交付就绪事件。
+- 单条 Workflow Bubble 只校验脚本自有事件的生命周期。Runtime 自有的 `artifact_ready` 与 `delivery_ready` 不要求脚本声明或命中；它们分别在路线级 Bubble 的 Artifact 登记与 Delivery 冻结之后校验。
 
 - 脚本进入业务执行后、首个业务动作前，***必须***发布一个已声明的 `stage_started`。
 - 每个正常 `return` 分支，***必须***在结果真实成立后发布已声明的 `stage_result`；事件不能替代符合 `output_schema` 的最终返回对象。
-- 产生文件交付物时，脚本只写入 `ctx.output_dir` 并按 `output_schema` 返回路径；Runtime 在正式 Artifact 登记后逐份自动发布 `artifact_ready`。脚本不得自行发布该平台事件，公开载荷不得出现 Workspace 路径、临时 URL 或存储密钥。
-- 承担整条业务路线最终交付的 Workflow，***必须***在全部结果与交付物就绪后发布 `delivery_ready`；非最终节点不得把中间结果冒充最终交付。
+- 产生文件交付物时，脚本只写入 `ctx.output_dir` 并按 `output_schema` 返回路径；Runtime 在正式 Artifact 登记后逐份自动发布 `artifact_ready`。脚本不得声明或发布该平台事件。
+- 最终节点正常返回后，编排必须完成 Delivery mapping、文件登记与冻结；随后由 Runtime 自动发布 `delivery_ready`。脚本不得声明或发布该平台事件，非最终节点不得把中间结果冒充最终交付。
 - 脚本明确处理的业务失败终态，***必须***发布 `stage_failed`；未被安全解释的技术异常必须继续冒泡。
 - 细分阶段、客观进度、中间结果和非表单提醒，***建议结合业务界面考虑***是否分别使用额外 `stage_started`、`stage_progress`、`stage_result` 和 `attention_required`。未设计这些可选事件不单独判失败；已经声明却在代表性路径未触达时，必须列为盲区并说明界面影响。
 
-同时核对：脚本只通过 `emit_business_event(event_type=..., event_key=..., payload=...)` 发布资产中已声明的事件；`event_type` 与 `event_key` 都是稳定非空字符串字面量；Payload 是对象并满足对应根对象 Schema；事件契约包含版本、描述和 `additionalProperties:false` 的 Payload Schema；载荷不含内部 ID、原始工具结果、提示词、脚本、敏感数据或内部错误；`attention_required` 不复制运行中表单，`delivery_ready` 不代替最终审阅。发现脚本直接打印、发送普通消息、自造 `print_event` 或调用未公开内部接口模拟业务事件时，裁决为 `blocked`。
+同时核对：脚本只通过 `emit_business_event(event_type=..., event_key=..., payload=...)` 发布资产中已声明的脚本事件；`event_type` 与 `event_key` 都是稳定非空字符串字面量；Payload 是对象并满足对应根对象 Schema；事件契约包含版本、描述和 `additionalProperties:false` 的 Payload Schema；载荷不含内部 ID、原始工具结果、提示词、脚本、敏感数据或内部错误；`attention_required` 不复制运行中表单。脚本若声明或调用 Runtime 自有的 `artifact_ready`/`delivery_ready`，或直接打印、发送普通消息、自造 `print_event`、调用未公开内部接口模拟业务事件，裁决为 `blocked`。Runtime 的 `delivery_ready` 仍不得代替最终审阅。
 
 ## 必查反模式
 
@@ -56,7 +56,7 @@
 - 示例不满足 input Schema，或者用测试分支绕过 FastAgent 桩值暴露的真实下游依赖。
 - 返回 URL、`/tmp`、固定共享路径或并不存在的文件作为正式产出。
 - 用 `""`、占位路径或虚构路径表示技术失败；或者只删除文件字段的 `required`，导致成功分支也可以无产物通过。
-- 已声明业务事件，却只返回最终对象而没有脚本侧开始与结束事件，或承担路线交付却没有 `delivery_ready`；文件交付还需核对 Runtime 是否成功登记 Artifact 并自动产生 `artifact_ready`。
+- 已声明脚本业务事件，却只返回最终对象而没有脚本侧开始与结束事件；路线交付还需核对 Runtime 是否成功登记 Artifact、冻结 Delivery，并自动产生 `artifact_ready` 与 `delivery_ready`。
 - 在每个工具步骤后机械发送事件，或者用运行时长猜测 `stage_progress` 百分比。
 - 用业务事件代替入口表单、运行中表单、Runtime 恢复或 Delivery Review。
 - 带业务事件的单 Workflow 在正式运行时直接派发，随后通过补写或猜测 Runtime ID 绕过持久化身份门。

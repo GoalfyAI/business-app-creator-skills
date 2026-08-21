@@ -399,7 +399,7 @@ Workflow 与业务界面是两个独立的方案选择。场景包包含 Workflo
 - `output_schema` 描述脚本**正常返回**的业务结果：成功产物必须返回真实文件路径；技术失败让异常冒泡，禁止用空字符串或虚构路径凑成功对象
 - “合法无产物”只有在没有产物本身是合法业务结果时才能正常返回：用明确状态区分，并省略不存在的文件字段；成功分支仍必须条件化要求其真实产物
 - 业务事件不是所有 Workflow 的无条件必配项；未声明业务事件且脚本未调用 `emit_business_event` 的 Workflow 可以按当前直接派发契约运行
-- Workflow 一旦声明业务事件或调用 `emit_business_event`，就进入 Business Runtime 语义：必须覆盖运行开始和全部终态分支；产生交付物或承担路线最终交付时，还必须覆盖交付物就绪和最终交付就绪事件。正式运行必须通过业务路线，单条 Workflow 也要建立单节点路线。事件设计见 5.4.4
+- Workflow 一旦声明业务事件或调用 `emit_business_event`，就进入 Business Runtime 语义：脚本必须覆盖运行开始和全部可解释终态分支；`artifact_ready` 与 `delivery_ready` 由 Runtime 在 Artifact 登记、Delivery 冻结后自动发布，脚本不得声明或调用。正式运行必须通过业务路线，单条 Workflow 也要建立单节点路线。事件设计见 5.4.4
 - 制作期可以做运行验证并取得终态轨迹（见 5.4.3）
 - **自带**文件、命令、邮件能力
 
@@ -1160,7 +1160,7 @@ Preview 对业务事件采用**条件硬门**：业务事件契约和 `emit_busi
 
 **运行返回"执行完成"不等于业务验证通过。** 它只说明脚本在本次输入下正常返回并满足已声明的契约。**禁止**据此标记通过或向用户宣称验证完成——未触达的工具和分支**必须**列为盲区。
 
-带业务事件的 Workflow，Bubble 必须读取 `run_evidence.business_events`：核对已声明事件、已持久化事件、缺失必需事件、未触达事件、顺序与持久化裁决。只有数据库持久化成功的事件才能计入；实时投递成功本身不算证据。本次路径缺少 `stage_started`、缺少 `stage_result/stage_failed` 终态、成功交付路径声明了 `delivery_ready` 却未发布，或顺序错误时，Bubble 必须失败。走 `stage_failed` 的失败路径不要求发布 `delivery_ready`。无业务事件的 Workflow 记录事件检查为“不适用”，不得虚构空事件证据。
+带业务事件的 Workflow，单条 Bubble 必须读取 `run_evidence.business_events`：核对脚本声明的事件、已持久化事件、缺失必需事件、未触达事件、顺序与持久化裁决。只有数据库持久化成功的事件才能计入；实时投递成功本身不算证据。本次路径缺少 `stage_started`、缺少 `stage_result/stage_failed` 终态或顺序错误时，Bubble 必须失败。Runtime 自有的 `artifact_ready` 与 `delivery_ready` 不属于单条脚本生命周期门；它们在路线级 Bubble 中分别以 Artifact 登记和 Delivery 冻结后的真实事件为证。无业务事件的 Workflow 记录脚本事件检查为“不适用”，不得虚构空事件证据。
 
 单条 Workflow 的 Preview、bubble 和语义验收属于自动制作门，不需要向用户逐条申请全真运行。FastAgent 内容、未触达分支和外部副作用盲区保留到整包端到端全真验证阶段统一处理。
 
@@ -1185,19 +1185,19 @@ Preview 对业务事件采用**条件硬门**：业务事件契约和 `emit_busi
 |---|---|
 | 脚本开始执行 | 在必要的输入读取后、首个业务动作前，***必须***发布 `stage_started`，名称使用用户能理解的业务阶段，不使用 Workflow、节点或工具名称 |
 | 正常结束 | 每一个可能正常 `return` 的分支，在结果已经真实成立后，***必须***发布 `stage_result`；事件载荷与最终返回对象分别遵守各自契约，不能用事件替代返回值 |
-| 产生文件交付物 | 脚本只把真实文件写入 `ctx.output_dir` 并按 `output_schema` 返回路径；Runtime 完成 Artifact 登记后自动发布 `artifact_ready`。脚本不得自行发布该平台事件，也不得发送 Workspace 路径、临时地址或存储密钥 |
-| 路线最终结果可交付 | 只有承担本条业务路线最终交付的 Workflow，才在全部结果与交付物就绪后、正常返回前，***必须***发布 `delivery_ready`；该事件只表示具备审阅条件，不表示用户已经接受 |
+| 产生文件交付物 | 脚本只把真实文件写入 `ctx.output_dir` 并按 `output_schema` 返回路径；Runtime 完成 Artifact 登记后自动发布 `artifact_ready`。脚本不得声明或发布该平台事件 |
+| 路线最终结果可交付 | 最终节点按 `output_schema` 正常返回，编排完成 Delivery mapping、文件登记和冻结后，Runtime ***必须***自动发布 `delivery_ready`；脚本不得声明或发布。该事件只表示具备审阅条件，不表示用户已经接受 |
 | 可控业务失败 | 脚本明确识别并以业务失败结束的分支，***必须***发布 `stage_failed`；无法在脚本内可靠解释的技术异常仍让异常冒泡，禁止捕获后伪装成业务成功 |
 
 除上述硬门外，事件密度由业务可见性决定：细分业务阶段的额外 `stage_started`、具有客观分母的 `stage_progress`、值得单独展示的中间 `stage_result`，以及不要求用户回答的 `attention_required`，均***建议结合业务界面考虑***。只有界面确实需要据此更新进度、结果模块或提醒时才声明；**禁止**在每个 `tool()` 后机械发事件，禁止用运行时长猜进度百分比。
 
-除 Runtime 自有的 `artifact_ready` 外，脚本发布的事件都**必须**先在 Workflow 资产中声明稳定的 `event_key`、平台事件类型、版本、成立条件和根对象 Payload Schema，再由脚本调用当前受控业务事件原语。脚本不得动态拼接事件名，不得把内部 ID、原始工具返回、提示词、脚本、敏感信息或未脱敏错误放进载荷。事件声明有不兼容变化时升级事件版本；存在已选或已绑定业务界面时，同时把界面契约视为已变化重新验收。
+除 Runtime 自有的 `artifact_ready` 与 `delivery_ready` 外，脚本发布的事件都**必须**先在 Workflow 资产中声明稳定的 `event_key`、平台事件类型、版本、成立条件和根对象 Payload Schema，再由脚本调用当前受控业务事件原语。脚本不得动态拼接事件名，不得把内部 ID、原始工具返回、提示词、脚本、敏感信息或未脱敏错误放进载荷。事件声明有不兼容变化时升级事件版本；存在已选或已绑定业务界面时，同时把界面契约视为已变化重新验收。
 
 当前受控原语为 `emit_business_event(event_type=..., event_key=..., payload=...)`。`event_type` 与 `event_key` **必须**使用非空字符串字面量，`payload` **必须**是对象；调用只能引用资产中同名、同类型的已发布事件契约。业务事件契约的每一项包含 `event_key`、`event_type`、`event_version`、`description` 和根对象 `payload_schema`，且 `payload_schema.additionalProperties` 必须为 `false`。具体字段仍以实时 Schema 和 `workflow_single` 为最终事实源。
 
 创建或更新 Workflow 时，直接通过 `workflow_tpe_manage(action="create"|"update", business_event_contracts=[...])` 随执行契约一并写入；写入后使用 `get_asset(asset_type="tpe", id=...)` 反读确认脚本与事件契约一致。不要另建事件配置文件，也不要用脚本常量代替资产契约。
 
-业务事件是单向可观察性，不改变既有交互职责：入口表单、运行中补充表单、Runtime 恢复和最终审阅继续使用编排的 Business/Runtime 握手。`attention_required` **不得**复制一个正在等待用户填写的 `business_interaction`，`delivery_ready` **不得**代替 Delivery Review。
+业务事件是单向可观察性，不改变既有交互职责：入口表单、运行中补充表单、Runtime 恢复和最终审阅继续使用编排的 Business/Runtime 握手。`attention_required` **不得**复制一个正在等待用户填写的 `business_interaction`，Runtime 发布的 `delivery_ready` **不得**代替 Delivery Review。用户选择制作业务界面时，还必须按 [业务界面设计与制作契约](references/业务界面设计与制作契约.md) 冻结 `runtime.delivery_ready` 的 `PublicDelivery` 与固定 `delivery.review` 表单契约；不得要求界面从 Workflow 自定义事件或原始消息帧猜交付结构。
 
 #### 5.4.5 对外声明来源类 Workflow 的证据要求
 
@@ -1276,7 +1276,11 @@ Preview 对业务事件采用**条件硬门**：业务事件契约和 `emit_busi
 
 #### 5.5.4 实现、检查与打包
 
-按已冻结的设计与运行契约，完成业务控件、文件上传、提交与受理、等待、权限、错误恢复、结果展示和回落路径。业务进度在共享协调层只建立一次 `onBusinessEvent` 订阅，三类批次使用同一纯归约器；订阅后对当前 Runtime 读取一次快照，由 SDK 负责排序、去重、缺口补拉和回放。禁止使用定时器、事件回调查询或 `getBusinessEvents` 轮询进度；Runtime 终态、表单握手和 Delivery Review 仍是各自领域的权威事实。正式打包前：
+按已冻结的设计与运行契约，完成业务控件、文件上传、提交与受理、等待、权限、错误恢复、结果展示和回落路径。业务进度在共享协调层只建立一次 `onBusinessEvent` 订阅，三类批次使用同一纯归约器；订阅后对当前 Runtime 读取一次快照，由 SDK 负责排序、去重、缺口补拉和回放。禁止使用定时器、事件回调查询或 `getBusinessEvents` 轮询进度；Runtime 终态、表单握手和 Delivery Review 仍是各自领域的权威事实。
+
+最终交付必须按 [业务界面设计与制作契约](references/业务界面设计与制作契约.md) 的固定契约处理：`runtime.delivery_ready` 由 Runtime 自动发布，Payload 中的 `PublicDelivery` 可用于结果与文件展示；`delivery.review` 通过模板已有的通用 `BusinessCall`/`reply` 通道完成，不修改固定 SDK，不另造协议或静态表单 Schema。业务代码读取同级的 `call.formId` 与 `call.arguments`，不得假设存在额外 `interaction` 包装层。当前模板若连通用 `onCall/pending/reply` 或文件展示能力都未公开，才裁决为 `platform_blocked`。
+
+正式打包前：
 
 1. 移除演示页面、演示路由、演示契约和占位文案；
 2. 开发过程执行模板当前要求的 `npm run check`，交付前执行 `npm run check:release`；除非当前模板明确改变流程，不在本地执行独立 build 或发布；
