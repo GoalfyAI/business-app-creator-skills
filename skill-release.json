@@ -3,8 +3,8 @@
   "version": "v20260820-bbb188",
   "package_version": "1.0.21",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-21T02:52:50Z",
-  "update_reason": "补充路线级 Bubble 制作与验收规范",
+  "released_at": "2026-08-21T03:27:45Z",
+  "update_reason": "补充路线 Bubble 精简证据与按需完整排障规则",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -16,7 +16,7 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "71779bcadb12f07868303c6b8459f784033808580ab989446cf84944c3655ac7",
+    "SKILL.md": "a4b1e66de9a99eddd187fa488110f5e142908b58f2fab1e6ec9cbf788cd74371",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "references/Workflow验收检查清单.md": "8b21cd9834467774a7d99bf0c8f80601a27b42364bcf2e653f74296a0ca11337",
     "references/业务界面设计与制作契约.md": "fe5cb930b2c56b184201f86fde282fa2044061c81a20e35af9bdd486c31f7d0f",

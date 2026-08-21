@@ -743,7 +743,7 @@ Workflow 与业务界面是两个独立的方案选择。场景包包含 Workflo
 
 | 工具 | 用途 |
 |---|---|
-| `scene_package_manage` | 场景包 `create` / `get` / `update` / `online`。`create` 默认克隆官方基础场景包并返回未上线草稿；`get` 不需要 `task_id` |
+| `scene_package_manage` | 场景包 `create` / `get` / `update` / `online`，以及业务路线级 `bubble`。`create` 默认克隆官方基础场景包并返回未上线草稿；`get` 不需要 `task_id`；`bubble` 对已保存路线执行制作期整图演练，默认返回精简证据，仅在失败排障时用 `evidence_level="full"` 读取完整轨迹；它不代替单 Workflow Bubble 或端到端全真运行 |
 | `workflow_tpe_manage` | Workflow 的 `preview` / `create` / `update` / `attach` / `online` / `bubble` |
 | `update_scenario_package_logo` | 设置场景包 Logo。**必须**先用 `file_to_url` 声明 Logo 用途上传图片，拿到文件引用后再调用本工具 |
 | `scene_package_ui_bundle` | 业务界面：下载官方模板、上传定制源码、部署、查状态 |
@@ -816,6 +816,7 @@ task_manager(create)
   → get_diagnosis_doc(workflow_multi)                单节点业务路线或多 Workflow 路线
   → scene_package_manage(update, 编排整体替换)       仅需要业务路线时
   → 编排静态反读与接缝检查                          单节点也检查入口、映射、Delivery 与 Review
+  → scene_package_manage(bubble) → 路线级 Bubble     每条发布路线验证图控制、表单、事件、交付与 Review 接缝
   → 冻结最终界面契约 → scene_package_ui_bundle(...)  仅用户选择制作时下载模板、编码、部署与验收
 
   → 整包分层验收 → scene_package_manage(online)      仅已获发布授权
@@ -1234,6 +1235,8 @@ Preview 对业务事件采用**条件硬门**：业务事件契约和 `emit_busi
 3. 回填：返回 `status="waiting_input"` 时，读取当次 `interaction.form_id/arguments`，再用同一 `task_id/run_id` 和 `formdata` 回复；每次只回答当前表单。
 4. 终态：只有 `status="success"` 且 `validation.status="passed"` 才算路线 Bubble 通过；失败时按节点、事件、交付或审核证据修复原资产后重新启动，不复用已结束的 `run_id`。
 
+路线 Bubble 默认 `evidence_level="summary"`：只读取路线终态、节点与步骤计数、失败步骤错误、输出字段、事件覆盖摘要、Artifact 引用、Delivery 验证和 Review 结果。完整步骤输出、最终输出值和业务事件 Payload 仍保存在 Runtime；只有精简证据不足以定位失败时，才对同一 `run_id` 显式使用 `evidence_level="full"`。不得把完整证据默认塞入工单、记忆或最终交付，也不得因为默认响应精简就重复执行路线。
+
 路线 Bubble 复用真实图 Runtime，检查节点依赖、mapping、扇出/汇合、运行中业务表单、持久化业务事件、Delivery 冻结、Artifact 登记和最终 Review。各节点仍使用既有 dry-run Bubble 语义：FastAgent 为桩，显式外部副作用由 `ctx.dry_run` 阻断；声明的 `sa_handoff` 只验证边界可跨越并记录为桩，不声称验证 Agent 判断；用户表单和 `user_gate` 使用真实结构化握手。当前路线 Bubble 的 Review 只接受终止本业务的 `complete_business` 或 `fail_business` 动作，不演练 `start_orchestration` 跳转；含跳转的路线保留到第四层全真运行验证。路线 Bubble 因此能证明本次输入下整图控制和交付接缝成立，不能证明 FastAgent 内容质量、被阻断的外部副作用或未触达分支。
 
 用户已选择制作业务界面时，编排完成还要冻结一份面向界面的公开语义：每条路线的业务名称、适用条件、入口表单目的、用户可理解的里程碑、可能出现的用户交互、最终交付和到达标准。它们是后续界面设计的事实输入，**不得**用 Workflow 名称、节点 ID 或工具步骤代替。
@@ -1409,6 +1412,7 @@ macOS 环境中，解压后必须清理 `._*`、`.DS_Store` 和 `__MACOSX`；打
 | `platform_blocked` | 平台能力不支持已选交付范围，已停止对应交付 | 5.5、7.4 |
 | `full_validation_skipped` | 用户选择跳过真机运行验证 | 5.7.1 |
 | `orchestration_static_validated` | 编排静态保存通过，运行未验证 | 5.6 |
+| `orchestration_bubble_validated` | 发布范围内每条业务路线均取得独立路线 Bubble 通过证据；不表示已经全真运行 | 5.4.6、5.6 |
 | `orchestration_runtime_verified` | 编排已被真实运行命中并验证 | 5.6 |
 | `needs_bubble` | 缺终态运行轨迹，无法判定该 Workflow 是否通过 | 5.4.3 |
 | `ui_predesign_brief` | 用户选择制作业务界面后，在 Workflow 制作前冻结的用户旅程、模块、状态—行动与事件响应设计 | 5.5.1 |
