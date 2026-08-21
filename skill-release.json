@@ -3,8 +3,8 @@
   "version": "v20260821-daa9dc",
   "package_version": "1.0.23",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-21T09:34:56Z",
-  "update_reason": "同步官方脚手架 Delivery 契约并移除业务界面进度条设计",
+  "released_at": "2026-08-21T10:13:47Z",
+  "update_reason": "明确开发者决策权与 Plan 确认机制",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -16,13 +16,13 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "55e7c77a532d4a806c09562fae324ad7e63c4493b05af92c4704ab9e2fc57c0e",
+    "SKILL.md": "8a96c896132bb700bf5f488e2742eb2ea52a562a10ea2d3b79fc5c93f423aaf2",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "references/Workflow验收检查清单.md": "ef1f64a580ffdc58a89e49bb42f88aff2396c6bc41c0266131733227e4e4cdaf",
-    "references/业务界面设计与制作契约.md": "399721de301a8a3953f1ba04a2802527efc93f894aa49e88f59252a6a524984c",
-    "references/业务界面验收检查清单.md": "d51f7e8904e454752fb6491f778b214dd63f3abf98c0754790e17003a1e49719",
-    "references/依赖与MCP接入.md": "9a52684d8a97a284bcf8e381671509c5143d7535e22276b1c9fa5077d0fd2e2a",
-    "references/场景包验收检查清单.md": "75afc43b9c2095677dab5661e8127971a646ea60f672a710a22d7e87cab5472e",
-    "references/方案挑战检查清单.md": "360d252d0af9c9cd419840bd9facd6770360049a2202208643e97b55741c4b40"
+    "references/业务界面设计与制作契约.md": "6f75e0728e47fcdf7ed3e6c58b403998a271eddd67536584b2c7b59af27e4803",
+    "references/业务界面验收检查清单.md": "b30faed974b8acac503f8ccf20f8adc21862af84e24175d845b52393f0d92e35",
+    "references/依赖与MCP接入.md": "5b5a5caf44aa402bf5f0c44681cbe8b1bd919865b83fd629396eab1161a25438",
+    "references/场景包验收检查清单.md": "e62ffc4b37b6209f841c9ab10a875162bb4953dda1abc36eb94df59386a1d073",
+    "references/方案挑战检查清单.md": "3f9caebed61ba1e5faf429b0a01fecb7e78d3d1392d39ee61e0eb3210c92e493"
   }
 }
