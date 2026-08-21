@@ -235,7 +235,7 @@ Workflow 节点全部建好并各自通过单体验收后，才能写业务路�
 
 Workflow 与业务界面是两个独立的方案选择。场景包包含 Workflow 时，说明平台具备制作专属业务界面的前提，**不代表业务界面自动成为必交付资产，也不得据此阻断场景包验收**。
 
-确认方案将包含 Workflow 后，使用场景包助手 MCP 向用户说明业务界面可以提供专属表单、进度、交互与结果展示，并询问本次是否制作：
+确认方案将包含 Workflow 后，使用场景包助手 MCP 向用户说明业务界面可以提供专属表单、阶段状态、交互与结果展示，并询问本次是否制作：
 
 - 用户选择制作：把业务界面纳入已确认范围，先完成预设计，待 Workflow、Schema、事件和编排稳定后再制作、绑定、部署和验收；未取得当前契约对应的部署证据时，只能说场景包资产已完成，**不得**宣称业务界面已交付
 - 用户选择不制作：记录用户决定，继续制作和验收场景包；业务界面缺失不构成 warning、blocked 或 `platform_blocked`，场景包验收也不检查是否存在业务界面
@@ -1010,7 +1010,7 @@ task_manager(create)
 
 #### 5.1.9 业务界面预设计
 
-用户确认的方案包含一条或多条 Workflow 时，先通过场景包助手 MCP 询问本次是否制作业务界面。说明其可以承载专属输入、执行进度、运行中交互、结果与交付物，也说明不制作仍可正常完成和使用场景包；不得默认替用户选择。
+用户确认的方案包含一条或多条 Workflow 时，先通过场景包助手 MCP 询问本次是否制作业务界面。说明其可以承载专属输入、业务阶段状态、运行中交互、结果与交付物，也说明不制作仍可正常完成和使用场景包；不得默认替用户选择。
 
 用户选择制作时，**必须**在编写脚本和创建 Workflow 资产前完整读取 [业务界面设计与制作契约](references/业务界面设计与制作契约.md)，形成 `ui_predesign_brief`。此阶段只做产品设计，不下载模板、不编码、不冻结尚未稳定的运行标识。用户选择不制作时，记录决定并直接进入后续资产制作，不生成占位设计、不把缺少界面列为验收问题。
 
@@ -1189,7 +1189,7 @@ Preview 对业务事件采用**条件硬门**：业务事件契约和 `emit_busi
 | 路线最终结果可交付 | 最终节点按 `output_schema` 正常返回，编排完成 Delivery mapping、文件登记和冻结后，Runtime ***必须***自动发布 `delivery_ready`；脚本不得声明或发布。该事件只表示具备审阅条件，不表示用户已经接受 |
 | 可控业务失败 | 脚本明确识别并以业务失败结束的分支，***必须***发布 `stage_failed`；无法在脚本内可靠解释的技术异常仍让异常冒泡，禁止捕获后伪装成业务成功 |
 
-除上述硬门外，事件密度由业务可见性决定：细分业务阶段的额外 `stage_started`、具有客观分母的 `stage_progress`、值得单独展示的中间 `stage_result`，以及不要求用户回答的 `attention_required`，均***建议结合业务界面考虑***。只有界面确实需要据此更新进度、结果模块或提醒时才声明；**禁止**在每个 `tool()` 后机械发事件，禁止用运行时长猜进度百分比。
+除上述硬门外，事件密度由业务可见性决定：细分业务阶段的额外 `stage_started`、值得单独展示的中间 `stage_result`，以及不要求用户回答的 `attention_required`，均***建议结合业务界面考虑***。只有界面确实需要据此更新阶段、结果模块或提醒时才声明；**禁止**在每个 `tool()` 后机械发事件。业务界面不制作进度条，也不声明 `stage_progress` 作为界面契约。
 
 除 Runtime 自有的 `artifact_ready` 与 `delivery_ready` 外，脚本发布的事件都**必须**先在 Workflow 资产中声明稳定的 `event_key`、平台事件类型、版本、成立条件和根对象 Payload Schema，再由脚本调用当前受控业务事件原语。脚本不得动态拼接事件名，不得把内部 ID、原始工具返回、提示词、脚本、敏感信息或未脱敏错误放进载荷。事件声明有不兼容变化时升级事件版本；存在已选或已绑定业务界面时，同时把界面契约视为已变化重新验收。
 
@@ -1269,16 +1269,16 @@ Preview 对业务事件采用**条件硬门**：业务事件契约和 `emit_busi
 业务界面开发必须以 `scene_package_ui_bundle` 返回的当前官方模板为唯一起点：
 
 1. 下载当前官方模板，校验归档类型、字节数、安全路径和唯一模板根目录；
-2. 完整读取模板声明的必读文件；使用业务事件时继续读取当前 `src/sdk/docs/business.md` 和类型文档，以实际 SDK 版本为准；
+2. 完整读取模板声明的必读文件；使用业务事件与最终交付时，继续读取当前 `src/sdk/docs/business.md`、`src/sdk/delivery.ts` 和 `src/sdk/business-types.ts`，并把 `src/pages/demo2/DeliveryReviewPage.tsx` 作为实现参考，以实际 SDK 版本为准；
 3. 在模板声明的业务代码范围内实现，保持 SDK、启动入口、桥接协议、错误边界和模板保留件不变。
 
 不得从空目录、通用脚手架、仓库克隆或历史源码副本初始化。业务界面仅消费宿主公开的运行契约；任务点标识、工具清单、提示词、脚本、依赖图和 Agent 控制动作均不属于前端契约。
 
 #### 5.5.4 实现、检查与打包
 
-按已冻结的设计与运行契约，完成业务控件、文件上传、提交与受理、等待、权限、错误恢复、结果展示和回落路径。业务进度在共享协调层只建立一次 `onBusinessEvent` 订阅，三类批次使用同一纯归约器；订阅后对当前 Runtime 读取一次快照，由 SDK 负责排序、去重、缺口补拉和回放。禁止使用定时器、事件回调查询或 `getBusinessEvents` 轮询进度；Runtime 终态、表单握手和 Delivery Review 仍是各自领域的权威事实。
+按已冻结的设计与运行契约，完成业务控件、文件上传、提交与受理、等待、权限、错误恢复、结果展示和回落路径。业务阶段状态在共享协调层只建立一次 `onBusinessEvent` 订阅，三类批次使用同一纯归约器；订阅后对当前 Runtime 读取一次快照，由 SDK 负责排序、去重、缺口补拉和回放。禁止使用定时器、事件回调查询或 `getBusinessEvents` 轮询状态；Runtime 终态、表单握手和 Delivery Review 仍是各自领域的权威事实。
 
-最终交付必须按 [业务界面设计与制作契约](references/业务界面设计与制作契约.md) 的固定契约处理：`runtime.delivery_ready` 由 Runtime 自动发布，Payload 中的 `PublicDelivery` 可用于结果与文件展示；`delivery.review` 通过模板已有的通用 `BusinessCall`/`reply` 通道完成，不修改固定 SDK，不另造协议或静态表单 Schema。业务代码读取同级的 `call.formId` 与 `call.arguments`，不得假设存在额外 `interaction` 包装层。当前模板若连通用 `onCall/pending/reply` 或文件展示能力都未公开，才裁决为 `platform_blocked`。
+最终交付必须按 [业务界面设计与制作契约](references/业务界面设计与制作契约.md) 的固定契约处理：`runtime.delivery_ready` 由 Runtime 自动发布，`delivery.review` 通过既有 Business Call 三次握手完成；业务代码使用当前模板导出的 `isRuntimeDeliveryReadyEvent`、`isDeliveryReviewCall` 及对应常量识别两条通道，不手写协议判断或修改固定 SDK。事件和 Call 未通过守卫时分别降级为普通业务提示和普通 Call，不得当作交付渲染。`PublicDelivery.output.display` 按 `schema_version/headline/facts/notices/sections` 的标准结构渲染主标题、事实、提醒和正文；文件只把 `workspace_path` 交给 `sdk.file.*`，`output_paths` 仅作结果字段归属标签。`delivery.*` 是平台保留表单命名空间，不另造协议或静态表单 Schema；`call.formId` 与 `call.arguments` 同级，不存在额外 `interaction` 包装层。当前模板缺少这些 Delivery 守卫、Business `onCall/pending/reply` 或文件能力时，记录具体缺口并裁决为 `platform_blocked`，不得在业务代码中补造兼容层。
 
 正式打包前：
 
