@@ -1233,9 +1233,11 @@ Preview 对业务事件采用**条件硬门**：业务事件契约和 `emit_busi
 1. 启动：`scene_package_manage(action="bubble", task_id=..., scene_package_id=..., orchestration_id=..., workflow_input=..., review_action_key=...)`。`workflow_input` 使用该路线的代表性入口根对象；只有 `delivery.review.type="agent_gate"` 时才传一个已声明的具体 `review_action_key`。
 2. 轮询：后续只传同一 `task_id` 和服务端返回的 `run_id`，不得重复入口输入，不得创建或补写项目、Business、Runtime、表单或消息标识。
 3. 回填：返回 `status="waiting_input"` 时，读取当次 `interaction.form_id/arguments`，再用同一 `task_id/run_id` 和 `formdata` 回复；每次只回答当前表单。
-4. 终态：只有 `status="success"` 且 `validation.status="passed"` 才算路线 Bubble 通过；失败时按节点、事件、交付或审核证据修复原资产后重新启动，不复用已结束的 `run_id`。
+4. 终态：只有 `status="success"` 且 `validation.status="passed"` 才算路线 Bubble 通过；失败时优先读取 `failure_stage`、`repair_target`、`repair_action` 和可选的 `failed_node_id/failed_step_key`，按 `repair_action` 修正它指向的原 Workflow 或编排，再重新启动；只有 `repair_target="platform_runtime"` 时才按平台故障处理。禁止只看笼统错误自行猜修改入口，也不复用已结束的 `run_id`。
 
 路线 Bubble 默认 `evidence_level="summary"`：只读取路线终态、节点与步骤计数、失败步骤错误、输出字段、事件覆盖摘要、Artifact 引用、Delivery 验证和 Review 结果。完整步骤输出、最终输出值和业务事件 Payload 仍保存在 Runtime；只有精简证据不足以定位失败时，才对同一 `run_id` 显式使用 `evidence_level="full"`。不得把完整证据默认塞入工单、记忆或最终交付，也不得因为默认响应精简就重复执行路线。
+
+每条路线通过后，用 `task_manager(insert, entry_type="checkpoint")` 写一条精简证据，并把以下结构放入 `metadata`：`{"evidence_type":"orchestration_bubble_validated","scene_package_id":<真实场景包标识>,"orchestration_id":"<真实路线标识>","run_id":"<本次通过的真实 run_id>"}`。这不是人工自证：`task_manager(complete)` 会读取同一工单已有的工具调用审计，核对当前编排路线、`run_id` 和终态；缺失、失败、属于其他路线或早于最后一次编排修改的证据都会拒绝结单。结单成功响应中的 `completion_evidence.route_bubbles` 才是机器确认结果。
 
 路线 Bubble 复用真实图 Runtime，检查节点依赖、mapping、扇出/汇合、运行中业务表单、持久化业务事件、Delivery 冻结、Artifact 登记和最终 Review。各节点仍使用既有 dry-run Bubble 语义：FastAgent 为桩，显式外部副作用由 `ctx.dry_run` 阻断；声明的 `sa_handoff` 只验证边界可跨越并记录为桩，不声称验证 Agent 判断；用户表单和 `user_gate` 使用真实结构化握手。当前路线 Bubble 的 Review 只接受终止本业务的 `complete_business` 或 `fail_business` 动作，不演练 `start_orchestration` 跳转；含跳转的路线保留到第四层全真运行验证。路线 Bubble 因此能证明本次输入下整图控制和交付接缝成立，不能证明 FastAgent 内容质量、被阻断的外部副作用或未触达分支。
 
@@ -1345,7 +1347,7 @@ macOS 环境中，解压后必须清理 `._*`、`.DS_Store` 和 `__MACOSX`；打
 - 能力缺口
 - 剩余盲区和后续条件
 
-用 `task_manager(insert)` 记录最终资产、验证层级、全真决定和盲区，再 `task_manager(complete)`。**禁止**用完整日志、凭证或临时地址充当工单交付内容。
+用 `task_manager(insert)` 记录最终资产、验证层级、全真决定和盲区，再 `task_manager(complete)`。有业务路线时，必须检查结单响应中的 `completion_evidence.route_bubbles` 与发布范围逐条一致；返回 `WORKFLOW_TASK_ROUTE_BUBBLE_EVIDENCE_REQUIRED` 时，按其中的路线状态补跑或修复同一资产，禁止删标签、改文字或另开工单绕过。**禁止**用完整日志、凭证或临时地址充当工单交付内容。
 
 ### 5.8 维护已上线场景包
 
@@ -1419,9 +1421,9 @@ macOS 环境中，解压后必须清理 `._*`、`.DS_Store` 和 `__MACOSX`；打
 | `ui_contract_snapshot` | 业务界面契约的冻结快照 | 5.5 |
 | `template_identity` | 官方界面模板的身份记录 | 5.5 |
 
-这些标签**不是**任何工具的参数，**禁止**传给工具，它们只出现在工单检查点里。
+这些标签不是工具的顶层参数，只出现在工单检查点里。`orchestration_bubble_validated` 必须作为 `task_manager(insert).metadata.evidence_type` 的值，并同时携带真实的场景包标识、路线标识和 `run_id`；其他标签仍按普通工单内容记录。禁止把标签作为未知顶层字段传给资产工具。
 
-标签的准确性完全取决于你如实记录。**禁止**为了让工单看起来完整而标记未真实取得的证据（约束 10）。
+除路线 Bubble 标签由结单 Gate 根据审计记录机器核验外，其他标签的准确性仍取决于你如实记录。**禁止**为了让工单看起来完整而标记未真实取得的证据（约束 10）。
 
 ---
 
