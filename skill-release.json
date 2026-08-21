@@ -1,9 +1,9 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260820-bbb188",
-  "package_version": "1.0.21",
+  "version": "v20260821-66d761",
+  "package_version": "1.0.22",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-21T05:49:27Z",
+  "released_at": "2026-08-21T05:49:53Z",
   "update_reason": "增加路线 Bubble 结单证据闸门与失败定位",
   "source_files": [
     "SKILL.md",
@@ -16,7 +16,7 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "7b9e33be9c658767145b246804f14a1a01824b4d26856db435217c059a2c49e9",
+    "SKILL.md": "e2638d3dd4761dd302efd6a18a1be8c54fe79f15cbace496f198dde6106f823a",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "references/Workflow验收检查清单.md": "8b21cd9834467774a7d99bf0c8f80601a27b42364bcf2e653f74296a0ca11337",
     "references/业务界面设计与制作契约.md": "fe5cb930b2c56b184201f86fde282fa2044061c81a20e35af9bdd486c31f7d0f",
