@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260821-daa9dc",
-  "package_version": "1.0.23",
+  "version": "v20260821-62fa2f",
+  "package_version": "1.0.24",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-21T10:13:47Z",
-  "update_reason": "明确开发者决策权与 Plan 确认机制",
+  "released_at": "2026-08-21T10:43:36Z",
+  "update_reason": "同步 Workflow delivery_ready Runtime 职责与运行配置补齐规则",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -16,7 +16,7 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "8a96c896132bb700bf5f488e2742eb2ea52a562a10ea2d3b79fc5c93f423aaf2",
+    "SKILL.md": "0501f1a12b4cf635726619d8ca5776a74738c77554bfefed6edcf6d729db20fa",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "references/Workflow验收检查清单.md": "ef1f64a580ffdc58a89e49bb42f88aff2396c6bc41c0266131733227e4e4cdaf",
     "references/业务界面设计与制作契约.md": "6f75e0728e47fcdf7ed3e6c58b403998a271eddd67536584b2c7b59af27e4803",
