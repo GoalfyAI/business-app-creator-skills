@@ -1225,7 +1225,16 @@ Preview 对业务事件采用**条件硬门**：业务事件契约和 `emit_busi
 
 保存成功**只证明静态结构合法**，不能替代整条路线的运行证据（见 5.6）。
 
-保存并反读编排后，完成静态接缝检查：入口、节点依赖、扇出汇合、mapping、运行中交互、Delivery 和 Review 必须引用真实资产并满足当前契约；单节点路线也必须检查入口映射、唯一 Delivery 和 Review。该证据仍属于第一层 Preview/静态契约，不能证明路线已经执行。不得用一条或多条单 Workflow 轨迹拼接成路线证据，也不得自行创建图执行器或伪造 Runtime 身份。`emit_business_event` 在单 Workflow bubble 中仍必须取得服务端分配的验证 Business/Runtime 身份；缺失时该 Workflow 的 bubble 裁决为 `platform_blocked`。正式运行时，带业务事件的单 Workflow 不能直接派发，必须通过单节点路线取得持久化 Business Runtime。真实路线控制、表单、事件消费、Delivery、`artifact_ready` 和 Review 统一留到第四层端到端全真运行验证。
+保存并反读编排后，完成静态接缝检查：入口、节点依赖、扇出汇合、mapping、运行中交互、Delivery 和 Review 必须引用真实资产并满足当前契约；单节点路线也必须检查入口映射、唯一 Delivery 和 Review。该证据仍属于第一层 Preview/静态契约，不能证明路线已经执行。不得用一条或多条单 Workflow 轨迹拼接成路线证据，也不得自行创建图执行器或伪造 Runtime 身份。`emit_business_event` 在单 Workflow bubble 中仍必须取得服务端分配的验证 Business/Runtime 身份；缺失时该 Workflow 的 bubble 裁决为 `platform_blocked`。正式运行时，带业务事件的单 Workflow 不能直接派发，必须通过单节点路线取得持久化 Business Runtime。FastAgent 真实内容、显式外部副作用、业务界面事件消费和跨路线跳转统一留到第四层端到端全真运行验证。
+
+全部节点完成单 Workflow Bubble、编排保存反读并通过静态接缝检查后，对发布范围内的每条路线执行一次**路线级 Bubble**。它仍属于第三层制作期演练，不需要用户批准，也不替代第四层全真运行。调用顺序固定为：
+
+1. 启动：`scene_package_manage(action="bubble", task_id=..., scene_package_id=..., orchestration_id=..., workflow_input=..., review_action_key=...)`。`workflow_input` 使用该路线的代表性入口根对象；只有 `delivery.review.type="agent_gate"` 时才传一个已声明的具体 `review_action_key`。
+2. 轮询：后续只传同一 `task_id` 和服务端返回的 `run_id`，不得重复入口输入，不得创建或补写项目、Business、Runtime、表单或消息标识。
+3. 回填：返回 `status="waiting_input"` 时，读取当次 `interaction.form_id/arguments`，再用同一 `task_id/run_id` 和 `formdata` 回复；每次只回答当前表单。
+4. 终态：只有 `status="success"` 且 `validation.status="passed"` 才算路线 Bubble 通过；失败时按节点、事件、交付或审核证据修复原资产后重新启动，不复用已结束的 `run_id`。
+
+路线 Bubble 复用真实图 Runtime，检查节点依赖、mapping、扇出/汇合、运行中业务表单、持久化业务事件、Delivery 冻结、Artifact 登记和最终 Review。各节点仍使用既有 dry-run Bubble 语义：FastAgent 为桩，显式外部副作用由 `ctx.dry_run` 阻断；声明的 `sa_handoff` 只验证边界可跨越并记录为桩，不声称验证 Agent 判断；用户表单和 `user_gate` 使用真实结构化握手。当前路线 Bubble 的 Review 只接受终止本业务的 `complete_business` 或 `fail_business` 动作，不演练 `start_orchestration` 跳转；含跳转的路线保留到第四层全真运行验证。路线 Bubble 因此能证明本次输入下整图控制和交付接缝成立，不能证明 FastAgent 内容质量、被阻断的外部副作用或未触达分支。
 
 用户已选择制作业务界面时，编排完成还要冻结一份面向界面的公开语义：每条路线的业务名称、适用条件、入口表单目的、用户可理解的里程碑、可能出现的用户交互、最终交付和到达标准。它们是后续界面设计的事实输入，**不得**用 Workflow 名称、节点 ID 或工具步骤代替。
 
@@ -1291,7 +1300,7 @@ macOS 环境中，解压后必须清理 `._*`、`.DS_Store` 和 `__MACOSX`；打
 |---|---|---|---|
 | 1. Preview / 静态契约 | 资产反读、脚本、输入输出 Schema、工具引用、按需业务事件声明与静态生命周期、按需编排保存与接缝 | 当前资产和静态契约可保存、引用闭合 | Provider 真实返回、事件持久化、路线运行 |
 | 2. 工具取样 / 依赖证据 | 安全低副作用工具的真实输入输出、依赖状态和权限 | 代表性依赖在当前环境可调用，候选 `_output` 有真实样本 | 整条 Workflow 或其他输入正确 |
-| 3. 单 Workflow Bubble | 当前路径的步骤、文件、输入输出、按需持久化业务事件、覆盖率与未触达项 | 当前版本当前输入的数据管路成立；带事件时可证明验证事件链成立 | FastAgent 真实内容、未触达分支、正式业务路线 |
+| 3. 制作期 Bubble | 先逐 Workflow 检查当前路径的步骤、文件、输入输出、按需持久化业务事件和覆盖率，再逐路线检查真实图控制、表单、Delivery/Artifact 与终态 Review 接缝 | 当前版本当前输入的节点数据管路与路线控制接缝成立；带事件时可证明验证事件链成立 | FastAgent 真实内容、被阻断的外部副作用、未触达分支、正式业务运行 |
 | 4. 业务路线端到端全真运行 | 真实图控制、表单、Agent 介入、业务界面事件消费、Delivery、Runtime `artifact_ready`、Review、最终产物 | 被批准路线的真实业务闭环 | 未运行路线和未来输入都正确 |
 
 业务界面部署是第四层开始前的工程前置证据，不单独构成第五层。没有第四层真实日志时，只能记录前三层通过和整图运行盲区；**禁止**用多条单 Workflow 的运行证据拼接成整图运行证据。业务界面仅在用户选择制作后，才根据宿主、事件和运行契约能力裁决是否 `platform_blocked`；未选择制作不做此项校验。
