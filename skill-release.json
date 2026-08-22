@@ -3,8 +3,8 @@
   "version": "v20260822-52c9b4",
   "package_version": "1.0.26",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-22T06:34:06Z",
-  "update_reason": "支持创作型长文本 URL 输入与脚本多来源提交",
+  "released_at": "2026-08-22T08:09:48Z",
+  "update_reason": "收敛场景包制作决策与资产创建顺序",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -16,13 +16,13 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "b5388b0b006d7a55e05321c3c113d380b74933c27f208f36de745d18f8951a32",
+    "SKILL.md": "60af442da5e84675cdb76ecec6da7bb175b50b521b8c01e98280a546cc7ef2c0",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "references/Workflow验收检查清单.md": "ef1f64a580ffdc58a89e49bb42f88aff2396c6bc41c0266131733227e4e4cdaf",
-    "references/业务界面设计与制作契约.md": "a2239f02549d14a4c917a885d1a7dcc677858e9adfd8528c8c8ceb592ce4b2ca",
+    "references/业务界面设计与制作契约.md": "57d7490b8208cc54a9c3e3e62bb4bc9c901478f8d36661d7aa063895b6a1dcf2",
     "references/业务界面验收检查清单.md": "b30faed974b8acac503f8ccf20f8adc21862af84e24175d845b52393f0d92e35",
     "references/依赖与MCP接入.md": "5b5a5caf44aa402bf5f0c44681cbe8b1bd919865b83fd629396eab1161a25438",
     "references/场景包验收检查清单.md": "ba822032a93d7c5da397f708a37168f081f013b549d9caaa030e290ae4334e42",
-    "references/方案挑战检查清单.md": "3f9caebed61ba1e5faf429b0a01fecb7e78d3d1392d39ee61e0eb3210c92e493"
+    "references/方案挑战检查清单.md": "cb405e71bd908a9355efb83c377be34063ff2e7bcb2c66e65acc20652bfb37e7"
   }
 }
