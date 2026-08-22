@@ -3,8 +3,8 @@
   "version": "v20260821-62fa2f",
   "package_version": "1.0.24",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-21T10:43:36Z",
-  "update_reason": "同步 Workflow delivery_ready Runtime 职责与运行配置补齐规则",
+  "released_at": "2026-08-22T06:08:22Z",
+  "update_reason": "明确 user_gate 由 Runtime 收敛且仅 agent_gate 唤起 Agent",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -16,13 +16,13 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "0501f1a12b4cf635726619d8ca5776a74738c77554bfefed6edcf6d729db20fa",
+    "SKILL.md": "a509e4daf5d28497ca659d5ee793c72e88ba49850ce2b8c8f19209696b673707",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "references/Workflow验收检查清单.md": "ef1f64a580ffdc58a89e49bb42f88aff2396c6bc41c0266131733227e4e4cdaf",
-    "references/业务界面设计与制作契约.md": "6f75e0728e47fcdf7ed3e6c58b403998a271eddd67536584b2c7b59af27e4803",
+    "references/业务界面设计与制作契约.md": "a2239f02549d14a4c917a885d1a7dcc677858e9adfd8528c8c8ceb592ce4b2ca",
     "references/业务界面验收检查清单.md": "b30faed974b8acac503f8ccf20f8adc21862af84e24175d845b52393f0d92e35",
     "references/依赖与MCP接入.md": "5b5a5caf44aa402bf5f0c44681cbe8b1bd919865b83fd629396eab1161a25438",
-    "references/场景包验收检查清单.md": "e62ffc4b37b6209f841c9ab10a875162bb4953dda1abc36eb94df59386a1d073",
+    "references/场景包验收检查清单.md": "ba822032a93d7c5da397f708a37168f081f013b549d9caaa030e290ae4334e42",
     "references/方案挑战检查清单.md": "3f9caebed61ba1e5faf429b0a01fecb7e78d3d1392d39ee61e0eb3210c92e493"
   }
 }

@@ -154,6 +154,9 @@ def test_workflow_guidance_separates_delivery_verification_from_business_accepta
     assert "场景包制作只声明对外稳定的资产契约" in skill
     assert "属于平台实现细节" in skill
     assert "没有把 Max Runtime 的 Agent 边界通知" in challenge
+    assert "Runtime 直接执行所选" in skill
+    assert "只有已声明的 `agent_gate` 边界" in acceptance
+    assert "不得等待一条额外的 Agent 消息" in ui_contract
 
 
 def test_zip_packages_are_deterministic_and_utf8(tmp_path: Path):
