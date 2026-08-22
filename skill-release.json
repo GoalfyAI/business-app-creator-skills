@@ -3,8 +3,8 @@
   "version": "v20260822-cc9c00",
   "package_version": "1.0.25",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-22T06:13:06Z",
-  "update_reason": "明确 user_gate 由 Runtime 收敛，仅 agent_gate 唤起 Agent",
+  "released_at": "2026-08-22T06:21:57Z",
+  "update_reason": "同步创作型长文本 URL 输入契约",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -16,7 +16,7 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "6d3a9f3fcaa3ff5ec6b0104c9580846eea917c5ebe6c43a62e56b242971f33bf",
+    "SKILL.md": "76d474faebced3452a8938b07f827894feaa054e33a7a3656cf2490174413bb7",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "references/Workflow验收检查清单.md": "ef1f64a580ffdc58a89e49bb42f88aff2396c6bc41c0266131733227e4e4cdaf",
     "references/业务界面设计与制作契约.md": "a2239f02549d14a4c917a885d1a7dcc677858e9adfd8528c8c8ceb592ce4b2ca",

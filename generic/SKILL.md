@@ -687,10 +687,10 @@ Workflow 与业务界面是两个独立的方案选择。场景包包含 Workflo
 | `register_and_refresh_tool_group` | 注册新工具组，或刷新已有工具组的工具列表 |
 | `upload_and_register_tool_group` | 上传自有包并注册（开发者提供的私有包） |
 | `import_skill_package` | 导入标准 Skill 包，自动创建离线工具集 |
-| `create_fast_agent` | 创建 FastAgent |
-| `create_toolset` | 创建工具集 |
+| `create_fast_agent` | 创建 FastAgent；长提示词可在实时 Schema 支持时通过 `prompt_content_url` 提交 |
+| `create_toolset` | 创建工具集；长使用指南可在实时 Schema 支持时通过 `tool_usage_guide_url` 提交 |
 | `online_toolsets` | 工具集上线 |
-| `create_tpe` | 创建普通任务点，**必须**先有工具集 |
+| `create_tpe` | 创建普通任务点，**必须**先有工具集；长提示词模板可在实时 Schema 支持时通过 `prompt_template_url` 提交 |
 | `workflow_tool_test` | 对已有 MCP 工具做一次**真实调用取样**，拿回真实返回结构；依赖 `/workspace` 时可把 `file_to_url` 上传的真实文件落入临时隐藏验证项目，调用结束后清理。不会修改场景包资产 |
 
 前置依赖顺序（工具定义里看不到，但漏了就会失败）：
@@ -724,11 +724,24 @@ Workflow 与业务界面是两个独立的方案选择。场景包包含 Workflo
 
 **禁止**把任何个人令牌写入 Skill 文本、脚本或工单。详细配置见 [依赖与 MCP 接入](references/依赖与MCP接入.md)。
 
-### 4.6 文件准备
+### 4.6 文件与创作型长文本准备
 
-任何本地文件进入平台都要走两步：**先用 `file_to_url` 换取文件引用，再把引用绑定到资产。**
+先判断提交内容属于哪一类，二者的生命周期不同，**禁止**混用：
 
-#### 第一步：换取文件引用
+| 类型 | 典型内容 | 提交方式 | 平台保存结果 |
+|---|---|---|---|
+| 资产文件 | Skill 文件、辅助脚本、模板、样例、私有包、Logo、工具取样文件 | `file_to_url` 换取文件引用，再把引用绑定到资产或验证项目 | 文件作为独立资产或附件保留 |
+| 创作型文本 | Workflow 脚本、`apc_skill`、业务路线编排 JSON、FastAgent 提示词、工具集使用指南、普通任务点提示词、待更新字段全文 | 短内容直接传原文本字段；长内容或需要反复维护时，在实时 Schema 暴露对应 `*_url` 后传服务端可访问的 HTTPS 文本地址 | 服务端只读取一次正文，再按原文本字段的校验、确认、保存和上线链路处理；URL 本身不绑定为资产文件，也不作为配置保存 |
+
+创作型文本 URL 只是一种**输入传输方式**，不产生新的资产类型。使用时遵守以下规则：
+
+- 原文本字段与对应 `*_url` **二选一**；Workflow 的局部补丁还要遵守实时 Schema 中与完整脚本来源的互斥关系
+- URL 必须是服务端可访问的 HTTPS 文本地址，不得指向内网、客户端本地路径或需要浏览器登录的页面；编码、大小、重定向和地址安全限制以实时 Schema 为准
+- 外部 Agent 的本地 `/workspace` 不属于 Max 沙箱，**禁止**作为 `script_file` 传入；内部 Max Agent 只有在实时 Schema 暴露 `script_file` 时才可使用
+- 提交成功后**必须**反读最终正文、JSON 对象或脚本摘要，确认平台保存的是解析后的内容而不是 URL；下载、解析或校验失败时停止提交，禁止截断正文后伪装成功
+- URL、临时上传地址和带签名的查询参数**禁止**写入工单；工单只记录目标资产、内容用途和反读结论
+
+#### 资产文件：第一步换取文件引用
 
 `file_to_url` 是唯一的文件通道，**必须**声明用途，服务端按用途决定大小、类型和存储规则：
 
@@ -750,7 +763,7 @@ Workflow 与业务界面是两个独立的方案选择。场景包包含 Workflo
 
 **不接收** base64。临时上传地址**禁止**写入工单。
 
-#### 第二步：绑定到资产
+#### 资产文件：第二步绑定到资产
 
 | 情况 | 做法 |
 |---|---|
@@ -765,8 +778,8 @@ Workflow 与业务界面是两个独立的方案选择。场景包包含 Workflo
 
 | 工具 | 用途 |
 |---|---|
-| `scene_package_manage` | 场景包 `create` / `get` / `update` / `online`，以及业务路线级 `bubble`。`create` 默认克隆官方基础场景包并返回未上线草稿；`get` 不需要 `task_id`；`bubble` 对已保存路线执行制作期整图演练，默认返回精简证据，仅在失败排障时用 `evidence_level="full"` 读取完整轨迹；它不代替单 Workflow Bubble 或端到端全真运行 |
-| `workflow_tpe_manage` | Workflow 的 `preview` / `create` / `update` / `attach` / `online` / `bubble` |
+| `scene_package_manage` | 场景包 `create` / `get` / `update` / `online`，以及业务路线级 `bubble`。`create` 默认克隆官方基础场景包并返回未上线草稿；`get` 不需要 `task_id`；`bubble` 对已保存路线执行制作期整图演练，默认返回精简证据，仅在失败排障时用 `evidence_level="full"` 读取完整轨迹；它不代替单 Workflow Bubble 或端到端全真运行。长 `apc_skill` 或完整编排 JSON 可在实时 Schema 支持时分别通过 `apc_skill_url`、`workflow_orchestration_url` 提交 |
+| `workflow_tpe_manage` | Workflow 的 `preview` / `create` / `update` / `attach` / `online` / `bubble`。外部 Agent 可按变更范围选择内联 `script`、完整 `script_url` 或更新时的 `script_patch`；内部 Max Agent 还可在实时 Schema 支持时使用 `script_file` |
 | `update_scenario_package_logo` | 设置场景包 Logo。**必须**先用 `file_to_url` 声明 Logo 用途上传图片，拿到文件引用后再调用本工具 |
 | `scene_package_ui_bundle` | 业务界面：下载官方模板、上传定制源码、部署、查状态 |
 
@@ -780,7 +793,7 @@ Workflow 与业务界面是两个独立的方案选择。场景包包含 Workflo
 
 | 工具 | 用途 |
 |---|---|
-| `update_asset_field` | 修改资产的文本字段，需要传改前与改后内容 |
+| `update_asset_field` | 修改资产的文本字段，需要传改前内容，并通过 `new_string` 或实时 Schema 支持的 `new_string_url` 提交改后完整文本；平台仍沿用原有 diff 确认和保存链路 |
 | `update_asset_relations` | 修改资产关联关系，按集合增删 |
 | `upload_skill_files` | 给已有资产补挂或替换 Skill 文件（见 4.6 第二步） |
 | `clone_asset` | 克隆资产，也可克隆官方资产 |
@@ -1062,9 +1075,13 @@ JSON Schema 与 SDK 能力只是设计事实，不能直接推导页面模块；
 
 新建工具组后按需配授权卡（4.5）。为需要最终用户各自授权的能力配卡是正式依赖，不是可选项。
 
+创建 FastAgent、工具集或普通任务点时，提示词或使用指南较长，可以按 4.6 使用实时 Schema 暴露的 `prompt_content_url`、`tool_usage_guide_url` 或 `prompt_template_url`。服务端解析后仍按对应原字段创建；创建完成后反读正文和资产关系，URL 成功下载不能替代资产反读。
+
 #### 5.1.11 场景包草稿组装
 
 调 `scene_package_manage(create)` 建离线草稿。当前 `create` 默认克隆官方基础场景包，**必须**立即反读继承到的能力、关系和告警，只改真正需要改的部分。
+
+写入较长的 `apc_skill` 时，可以按 4.6 在实时 Schema 支持后使用 `apc_skill_url`；平台解析后保存的仍是 `apc_skill` 正文。反读时按 3.8 检查正文完整性、颗粒度和禁写内容，不以调用成功或 URL 可访问作为验收。
 
 保存场景包标识，后续修复**更新同一草稿**，**禁止**新建平行资产来绕过错误。
 
@@ -1167,6 +1184,17 @@ JSON Schema 与 SDK 能力只是设计事实，不能直接推导页面模块；
 
 #### 5.4.3 单条 Workflow 的完整闭环
 
+提交脚本前先按运行环境与变更范围选择来源，**不要**为了改一处重新生成并重传整份脚本：
+
+| 场景 | 选择 |
+|---|---|
+| 脚本较短，或首次提交时正文已在当前上下文中稳定生成 | 直接传内联 `script` |
+| 外部 Agent 已在自己的工作区维护完整脚本，或脚本较长、需要多轮修改 | 把完整 UTF-8 脚本放在服务端可访问的 HTTPS 地址，通过 `script_url` 提交 |
+| 外部 Agent 只修改服务端现有脚本中的一个精确片段 | 在实时 Schema 支持时使用 `script_patch`，携带当前脚本摘要和唯一匹配的改前、改后文本，避免覆盖并发更新 |
+| 内部 Max Agent 在同一项目 `/workspace` 中维护脚本文件 | 仅在内部实时 Schema 暴露时使用 `script_file`；外部 Agent 禁止使用 |
+
+完整脚本来源、局部补丁和路径参数的互斥关系以实时 Schema 为准。只修改输入输出定义、依赖或其他配置时，**不要**顺带重传未变化的脚本；使用 URL 或补丁后仍进入同一套 Preview、保存、上线和反读流程，不得降低验证层级。
+
 1. 从前期确认的方案冻结业务职责、根对象输入输出定义、是否需要业务事件及其契约、正式运行入口、代表性输入、文件与副作用边界
 2. 反读工具集成员和上线状态，确认全部可用
 3. 有辅助文件时完成上传
@@ -1244,7 +1272,7 @@ Preview 对业务事件采用**条件硬门**：业务事件契约和 `emit_busi
 7. 把 3.4 的三种最终审阅形态、推荐理由、最终用户体验和风险提交开发者确认，并记录开发者选择；质量检查、内容核验或节点 `sa_handoff` 不能代替最终审阅
 8. 把每条路线的最终交付动作候选提交开发者确认后，声明唯一的最终交付与审阅动作。当前有四种动作：结束业务、以结构化原因拒绝交付并结束业务、跳转到另一条路线（**必须**指向真实存在的路线且入口匹配）、交由 Agent 处理；Agent 不得根据实现便利自行删减动作
 9. 按开发者确认的动作设计最终审阅接受路径；存在最终用户修订、重做或改路线语义时，同时设计一条新建 Runtime 且保留当前 Delivery 的路径
-10. 整体替换保存，按服务端返回的节点、字段和路径错误精确修**同一个对象**，**禁止**自行发明兼容字段
+10. 整体替换保存；对象较长时可按 4.6 在实时 Schema 支持后通过 `workflow_orchestration_url` 提交完整 JSON。按服务端返回的节点、字段和路径错误精确修**同一个对象**，**禁止**自行发明兼容字段
 
 保存成功**只证明静态结构合法**，不能替代整条路线的运行证据（见 5.6）。
 
