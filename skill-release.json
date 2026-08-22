@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260822-cc9c00",
-  "package_version": "1.0.25",
+  "version": "v20260822-52c9b4",
+  "package_version": "1.0.26",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-22T06:21:57Z",
-  "update_reason": "同步创作型长文本 URL 输入契约",
+  "released_at": "2026-08-22T06:34:06Z",
+  "update_reason": "支持创作型长文本 URL 输入与脚本多来源提交",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -16,7 +16,7 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "76d474faebced3452a8938b07f827894feaa054e33a7a3656cf2490174413bb7",
+    "SKILL.md": "b5388b0b006d7a55e05321c3c113d380b74933c27f208f36de745d18f8951a32",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "references/Workflow验收检查清单.md": "ef1f64a580ffdc58a89e49bb42f88aff2396c6bc41c0266131733227e4e4cdaf",
     "references/业务界面设计与制作契约.md": "a2239f02549d14a4c917a885d1a7dcc677858e9adfd8528c8c8ceb592ce4b2ca",
