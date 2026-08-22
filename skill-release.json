@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260822-52c9b4",
-  "package_version": "1.0.26",
+  "version": "v20260822-3658fd",
+  "package_version": "1.0.27",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-22T08:25:31Z",
-  "update_reason": "将业务路线图、交付对象、审阅责任与动作纳入创建前统一确认门",
+  "released_at": "2026-08-22T08:29:10Z",
+  "update_reason": "新增创建前业务路线图与完整交付方案统一确认门",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -16,7 +16,7 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "face1d7c1c865ab77377ca997393bf17f07fa15d1462c3d99231a0e2c832b7bb",
+    "SKILL.md": "291d3fb5ff58ce5d7d0732ffa2fc23361b69fa063e8130cf3b2e2998d6ac01c9",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "references/Workflow验收检查清单.md": "ef1f64a580ffdc58a89e49bb42f88aff2396c6bc41c0266131733227e4e4cdaf",
     "references/业务界面设计与制作契约.md": "57d7490b8208cc54a9c3e3e62bb4bc9c901478f8d36661d7aa063895b6a1dcf2",
