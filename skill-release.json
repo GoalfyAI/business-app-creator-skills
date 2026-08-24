@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260822-3658fd",
-  "package_version": "1.0.27",
+  "version": "v20260824-00818e",
+  "package_version": "1.0.28",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-24T07:41:46Z",
-  "update_reason": "统一业务界面平台阻断的能力复核、重试、上线与结单门",
+  "released_at": "2026-08-24T08:04:29Z",
+  "update_reason": "统一业务界面能力复核、上线与结单门",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -16,7 +16,7 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "5268c8f7b66503e26081ee350d45a2a7a489ee258e83034d162df3661bdf1b22",
+    "SKILL.md": "d45d9ba63c3d0fd7794606373bdd9565cfc624bf4d813790e8156a29aef36d42",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "references/Workflow验收检查清单.md": "ef1f64a580ffdc58a89e49bb42f88aff2396c6bc41c0266131733227e4e4cdaf",
     "references/业务界面设计与制作契约.md": "5871b722245a3361feb9fb09b29029551f4f5195384f41425ddbaeb9dd2c2f9c",
