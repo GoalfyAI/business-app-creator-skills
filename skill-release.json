@@ -3,8 +3,8 @@
   "version": "v20260822-3658fd",
   "package_version": "1.0.27",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-22T08:29:10Z",
-  "update_reason": "新增创建前业务路线图与完整交付方案统一确认门",
+  "released_at": "2026-08-24T06:58:23Z",
+  "update_reason": "统一业务界面预设计下载脚手架与路线 Bubble 后工程实现时序",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -16,11 +16,11 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "291d3fb5ff58ce5d7d0732ffa2fc23361b69fa063e8130cf3b2e2998d6ac01c9",
+    "SKILL.md": "a8fcf26341940b5ae05b5baa8800b988ba83ef466edad23ebc996db6f9a461ed",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "references/Workflow验收检查清单.md": "ef1f64a580ffdc58a89e49bb42f88aff2396c6bc41c0266131733227e4e4cdaf",
-    "references/业务界面设计与制作契约.md": "57d7490b8208cc54a9c3e3e62bb4bc9c901478f8d36661d7aa063895b6a1dcf2",
-    "references/业务界面验收检查清单.md": "b30faed974b8acac503f8ccf20f8adc21862af84e24175d845b52393f0d92e35",
+    "references/业务界面设计与制作契约.md": "3c7f5e7a2c62a3e381eaf73e522a1795e643d0add40d496f20f6e042577d8b3a",
+    "references/业务界面验收检查清单.md": "e5b4e5e335ada142beef9887eea080400e68294bfda9d664919a386112c8a88f",
     "references/依赖与MCP接入.md": "5b5a5caf44aa402bf5f0c44681cbe8b1bd919865b83fd629396eab1161a25438",
     "references/场景包验收检查清单.md": "5f34ba7dfb77bd9327da5c999b9c385d53fd94c4ae9e34738cd006419b43455f",
     "references/方案挑战检查清单.md": "d19cc5e49a166411bbb7b9e5c13675184df35c53b47484c4f4c29f65d5558f4c"
