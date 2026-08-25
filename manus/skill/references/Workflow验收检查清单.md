@@ -39,6 +39,8 @@
 - Bubble 的 `run_evidence.business_events` 已给出 `declared/emitted/missing_required/unreached_event_keys/order_valid/persistence_verified/passed`；只有数据库持久化成功的事件计入 `emitted`，实时推送不作为替代证据。
 - 单条 Workflow Bubble 只校验脚本自有事件的生命周期。Runtime 自有的 `artifact_ready` 与 `delivery_ready` 不要求脚本声明或命中；它们分别在路线级 Bubble 的 Artifact 登记与 Delivery 冻结之后校验。
 
+Preview 对事件生命周期采用保守的静态证明。用于满足生命周期门禁的事件发布，应当直接出现在 `run(input, ctx)` 的可达控制流中；不要依赖 Preview 无法证明的模块级函数、嵌套辅助函数或动态调用。只在循环体中发布事件不能证明事件必达，因为循环可能执行零次；条件分支、`try/except`、`match` 和提前返回中的每条可达正常结束或受控失败路径，都必须在本路径内形成对应终态事件。Preview 无法证明时，应把脚本改写为可证明的结构，而不是假定运行时会执行到。Bubble 仍只证明本次输入走过的路径，未触达分支继续列为盲区。
+
 - 脚本进入业务执行后、首个业务动作前，***必须***发布一个已声明的 `stage_started`。
 - 每个正常 `return` 分支，***必须***在结果真实成立后发布已声明的 `stage_result`；事件不能替代符合 `output_schema` 的最终返回对象。
 - 产生文件交付物时，脚本只写入 `ctx.output_dir` 并按 `output_schema` 返回路径；Runtime 在正式 Artifact 登记后逐份自动发布 `artifact_ready`。脚本不得声明或发布该平台事件。

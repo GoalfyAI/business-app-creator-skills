@@ -3,8 +3,8 @@
   "version": "v20260824-00818e",
   "package_version": "1.0.28",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-24T08:04:29Z",
-  "update_reason": "统一业务界面能力复核、上线与结单门",
+  "released_at": "2026-08-25T02:40:48Z",
+  "update_reason": "补充 Workflow 事件静态证明与业务表单参数语义",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -18,8 +18,8 @@
   "checksums": {
     "SKILL.md": "d45d9ba63c3d0fd7794606373bdd9565cfc624bf4d813790e8156a29aef36d42",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
-    "references/Workflow验收检查清单.md": "ef1f64a580ffdc58a89e49bb42f88aff2396c6bc41c0266131733227e4e4cdaf",
-    "references/业务界面设计与制作契约.md": "5871b722245a3361feb9fb09b29029551f4f5195384f41425ddbaeb9dd2c2f9c",
+    "references/Workflow验收检查清单.md": "78fc7fedc3e679274684708cb992c41086ade56778d94023b8dce3cd4fedf90f",
+    "references/业务界面设计与制作契约.md": "24f28748b06744a8122972c3f3655ee9269ba3bbd762c3b4861b3d2ce1fdb542",
     "references/业务界面验收检查清单.md": "69e1768242bd135d07720dacf571df50a7f8e66405f4c6fca038524e8f63753d",
     "references/依赖与MCP接入.md": "5b5a5caf44aa402bf5f0c44681cbe8b1bd919865b83fd629396eab1161a25438",
     "references/场景包验收检查清单.md": "c164af526f973d1e7edec9580106e928e2801808f2601a5605c72dd63162a4ce",
