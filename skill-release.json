@@ -1,9 +1,9 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260824-00818e",
-  "package_version": "1.0.28",
+  "version": "v20260825-1351ad",
+  "package_version": "1.0.29",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-25T02:40:48Z",
+  "released_at": "2026-08-25T02:43:15Z",
   "update_reason": "补充 Workflow 事件静态证明与业务表单参数语义",
   "source_files": [
     "SKILL.md",
@@ -16,7 +16,7 @@
     "references/方案挑战检查清单.md"
   ],
   "checksums": {
-    "SKILL.md": "d45d9ba63c3d0fd7794606373bdd9565cfc624bf4d813790e8156a29aef36d42",
+    "SKILL.md": "2ff087f1a3575c880f1df57ec10f0d931481b2e66fe7f0eab44c1be8dd59ca1b",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "references/Workflow验收检查清单.md": "78fc7fedc3e679274684708cb992c41086ade56778d94023b8dce3cd4fedf90f",
     "references/业务界面设计与制作契约.md": "24f28748b06744a8122972c3f3655ee9269ba3bbd762c3b4861b3d2ce1fdb542",
