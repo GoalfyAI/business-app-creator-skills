@@ -43,7 +43,7 @@ Preview 对事件生命周期采用保守的静态证明。用于满足生命周
 
 - 脚本进入业务执行后、首个业务动作前，***必须***发布一个已声明的 `stage_started`。
 - 每个正常 `return` 分支，***必须***在结果真实成立后发布已声明的 `stage_result`；事件不能替代符合 `output_schema` 的最终返回对象。
-- 产生文件交付物时，脚本只写入 `ctx.output_dir` 并按 `output_schema` 返回路径——但**只在 `output_schema` 里声明并返回，不会被登记为 Artifact**：文件登记的输入是最终节点 `delivery.mapping` 的求值结果，文件路径字段**必须同时**出现在 `output_schema` 与 `delivery.mapping` 中。最终节点正常返回后，编排完成 Delivery mapping、文件登记（对 mapping 求值结果中的文件路径逐份登记，登记证据即 `artifacts[].output_paths` 中的 mapping 表达式）与冻结；Runtime 随后逐份自动发布 `artifact_ready`，并发布 `delivery_ready`。脚本不得声明或发布这两个平台事件，非最终节点不得把中间结果冒充最终交付。
+- 产生文件交付物时，脚本只写入 `ctx.output_dir` 并按 `output_schema` 返回路径——但**只在 `output_schema` 里声明并返回，不会被登记为 Artifact**：文件登记的输入是最终节点 `delivery.mapping` 的求值结果，文件路径字段**必须同时**出现在 `output_schema` 与 `delivery.mapping` 中。最终节点正常返回后，编排完成 Delivery mapping、文件登记与冻结（登记来源即 mapping 求值结果）；Runtime 随后逐份自动发布 `artifact_ready`，并发布 `delivery_ready`。脚本不得声明或发布这两个平台事件，非最终节点不得把中间结果冒充最终交付。
 - 脚本明确处理的业务失败终态，***必须***发布 `stage_failed`；未被安全解释的技术异常必须继续冒泡。
 - 细分阶段、中间结果和非表单提醒，***建议结合业务界面考虑***是否分别使用额外 `stage_started`、`stage_result` 和 `attention_required`。未设计这些可选事件不单独判失败；已经声明却在代表性路径未触达时，必须列为盲区并说明界面影响。`stage_progress` 不作为业务界面契约。
 
