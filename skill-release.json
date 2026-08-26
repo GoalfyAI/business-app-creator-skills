@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260826-48c646",
-  "package_version": "1.1.4",
+  "version": "v20260826-06af29",
+  "package_version": "1.1.5",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-26T09:45:17Z",
-  "update_reason": "反同质化：端到端案例禁复制界面风格、S3-2 视觉方向取材规则（领域真实产品取参考点）、验收清单加高度相似判定",
+  "released_at": "2026-08-26T10:05:06Z",
+  "update_reason": "审查修正：upload_skill_files 缺省 replace 与场景包更新缺省 merge 分立表述（原文误写默认合并）、file_to_url 补 export、版本命名双轨（resource_group_id/apc_display_id、scenario_pack/scenario_package）、426 升级定位命令提示",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -26,7 +26,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "e721040a31e0af3f2f3a5ea002e13fe37cf6f99a3cafbcc83d46e1ad840bb632",
+    "SKILL.md": "d0a8b43ae2f861bc23e02cfe5b28da6715660517a136d34f75ee5fac8f1d67f3",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "checklists/Workflow验收检查清单.md": "968f040e11ab7e4a6c48d5ff6ca61f25225978d75db0637f0bc2d7ee8b6a2eb7",
     "checklists/业务界面验收检查清单.md": "614d33acc68e607b478d15f8b2efe065c58e18e769d7297e209fcd8e4609ed6e",
@@ -34,11 +34,11 @@
     "checklists/方案挑战检查清单.md": "579786d1778ef7600c8705079d9c1d1f49a45c2db4b6348ffa87481da50749a0",
     "references/业务界面设计方法论.md": "c77256ce4f4d9266e660fdd5a176a41ffe0064c1291cd7c0bc25bb70a815aa84",
     "references/依赖与MCP接入.md": "4886916beb004032e975776146733a476b5bca1f3c4f509717e3d9d3071ee318",
-    "references/场景包版本体系与发布逻辑.md": "e147876de1f8d91ec05d395c2eb60bacb9ff37b17cd567ecbc1dee237172c078",
+    "references/场景包版本体系与发布逻辑.md": "949e24e755c5a6cd0e6831be280bf6c076aa3d0f6edcf135a5471f8bb83b4a78",
     "references/表结构与累加机制.md": "305d99c9e80ab4fd608e62f5bdb78efd67821b95f994585706f529a1a7644471",
     "references/运行模型与渲染语义.md": "964b51d1e0e551235c5b6f4cf0a4bd71bb24864ba4b49189cf87144964926a39",
     "stages/S1-业务设计.md": "5fe498704dcb1312be5c2be1fa6398c42b907f5fe93df34af8874a3c07570a5e",
-    "stages/S2-资产制作.md": "6018860dd3570adf8dd51bbbfdc145721c1abf98a4d02a71ac8b730feab73beb",
+    "stages/S2-资产制作.md": "cbe67995a1b162e917fe11387ea76dce50737ecb072d676c49b3387e5b05fdbe",
     "stages/S3-业务界面.md": "cd0d669248b48afb43a62874afcedd197dc45e0710939902d38b1b7e90f8bf0a",
     "stages/S4-验证与修正.md": "eeea533e15f4f68390b2f83d84b957d99ec9e6f16df45e41e9b411eff63dda3b",
     "stages/S5-发布与交付.md": "2c06db4785733bc49ffe95b9a14636f0345cd5e00c54225f63ed4c475803eddd",
