@@ -52,7 +52,7 @@ PLATFORM_LAYOUTS = {
         "mcp_config": None,
         "docs": ("README.md", "UPDATE.md"),
         # Manus 要求 SKILL.md 位于压缩包根目录
-        "zip": ("scene-creator-skill.zip", "skill", ("SKILL.md", "references")),
+        "zip": ("scene-creator-skill.zip", "skill", ("SKILL.md", "references", "stages", "checklists")),
     },
     "generic": {
         "skill_subdir": ".",
@@ -62,7 +62,7 @@ PLATFORM_LAYOUTS = {
         "zip": (
             "scene-creator-generic.zip",
             ".",
-            (".mcp.json", "SKILL.md", "references", "README.md"),
+            (".mcp.json", "SKILL.md", "references", "stages", "checklists", "README.md"),
         ),
     },
 }
@@ -142,9 +142,9 @@ def discover_source_files(skill_root: Path) -> list[Path]:
     if not openai_metadata.is_file():
         raise ReleaseError(f"缺少 Codex 元数据：{openai_metadata}")
 
-    references = skill_root / "references"
-    if not references.is_dir():
-        raise ReleaseError(f"缺少 Skill 目录：{references}")
+    for required_dir in ("references", "stages", "checklists"):
+        if not (skill_root / required_dir).is_dir():
+            raise ReleaseError(f"缺少 Skill 目录：{skill_root / required_dir}")
 
     files = []
     for path in skill_root.rglob("*"):
@@ -158,7 +158,7 @@ def discover_source_files(skill_root: Path) -> list[Path]:
         if relative_path == Path("SKILL.md") or relative_path == OPENAI_METADATA_RELATIVE_PATH:
             files.append(path)
             continue
-        if relative_path.parts[0] == "references" and path.suffix.lower() == ".md":
+        if relative_path.parts[0] in ("references", "stages", "checklists") and path.suffix.lower() == ".md":
             files.append(path)
             continue
         raise ReleaseError(f"不支持的 Skill 文件：{relative_path.as_posix()}")
@@ -333,6 +333,16 @@ def _next_patch(version: str) -> str:
     return f"{major}.{minor}.{patch + 1}"
 
 
+def _valid_bumps(version: str) -> set[str]:
+    """合法的下一个 package version：patch+1、minor+1（patch 归零）或 major+1（minor/patch 归零）。"""
+    major, minor, patch = _validate_package_version(version)
+    return {
+        f"{major}.{minor}.{patch + 1}",
+        f"{major}.{minor + 1}.0",
+        f"{major + 1}.0.0",
+    }
+
+
 def _current_skill_version(skill_root: Path) -> str:
     content = (skill_root / "SKILL.md").read_text(encoding="utf-8")
     markers = SKILL_VERSION_RE.findall(content)
@@ -430,7 +440,7 @@ def sync_platform_skills(skill_root: Path) -> None:
     for platform in PLATFORM_NAMES:
         target_root = _platform_skill_dir(skill_root, platform)
         (target_root / "SKILL.md").unlink(missing_ok=True)
-        for stale in ("references", "agents"):
+        for stale in ("references", "stages", "checklists", "agents"):
             shutil.rmtree(target_root / stale, ignore_errors=True)
         for relative, source in _platform_skill_files(skill_root, platform).items():
             destination = target_root / relative
@@ -596,8 +606,8 @@ def release(
             raise ReleaseError("只有 PROD 发布可以更新 Skill version")
         if package_version != current_package_version and not allow_package_bump:
             raise ReleaseError("只有 PROD 发布可以提升 package version")
-        if allow_package_bump and package_version != _next_patch(current_package_version):
-            raise ReleaseError("PROD 发布必须把所有插件 package version 统一提升一个 patch")
+        if allow_package_bump and package_version not in _valid_bumps(current_package_version):
+            raise ReleaseError("PROD 发布必须把所有插件 package version 统一递增（patch+1、minor+1 或 major+1）")
         if allow_package_bump and not DATA_SKILL_VERSION_RE.fullmatch(skill_version):
             raise ReleaseError("PROD Skill version 必须使用 vYYYYMMDD-6位小写hex")
 
