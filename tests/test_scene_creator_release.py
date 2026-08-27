@@ -104,7 +104,7 @@ def test_platform_skill_copies_match_the_single_source():
 
 def test_workflow_guidance_distinguishes_output_end_states():
     skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    checklist = (SKILL_ROOT / "references" / "Workflow验收检查清单.md").read_text(
+    checklist = (SKILL_ROOT / "checklists" / "Workflow验收检查清单.md").read_text(
         encoding="utf-8"
     )
 
@@ -118,45 +118,67 @@ def test_workflow_guidance_distinguishes_output_end_states():
 def test_workflow_guidance_routes_event_workflows_through_business_runtime():
     """业务事件必须触发正式业务路线；无事件单 Workflow 仍可直接派发。"""
     skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    checklist = (SKILL_ROOT / "references" / "Workflow验收检查清单.md").read_text(
+    asset_stage = (SKILL_ROOT / "stages" / "S2-资产制作.md").read_text(encoding="utf-8")
+    checklist = (SKILL_ROOT / "checklists" / "Workflow验收检查清单.md").read_text(
         encoding="utf-8"
     )
-    acceptance = (SKILL_ROOT / "references" / "场景包验收检查清单.md").read_text(
+    acceptance = (SKILL_ROOT / "checklists" / "场景包验收检查清单.md").read_text(
         encoding="utf-8"
     )
 
     for document in (skill, checklist, acceptance):
         assert "单节点业务路线" in document
         assert "直接派发" in document
-    assert "验证身份只用于本次 Bubble" in skill
+    assert "验证身份只用于本次 Bubble" in asset_stage
     assert "不得让脚本、Agent、业务界面或 MCP 调用方伪造" in checklist
     assert "只由服务端在正式路线运行中持久化生成" in acceptance
 
 
 def test_workflow_guidance_separates_delivery_verification_from_business_acceptance():
     """最终交付必须先核验真实结果，再由明确责任方完成业务审阅。"""
-    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    challenge = (SKILL_ROOT / "references" / "方案挑战检查清单.md").read_text(
+    design = (SKILL_ROOT / "stages" / "S1-业务设计.md").read_text(encoding="utf-8")
+    challenge = (SKILL_ROOT / "checklists" / "方案挑战检查清单.md").read_text(
         encoding="utf-8"
     )
-    acceptance = (SKILL_ROOT / "references" / "场景包验收检查清单.md").read_text(
+    acceptance = (SKILL_ROOT / "checklists" / "场景包验收检查清单.md").read_text(
         encoding="utf-8"
     )
     ui_contract = (
-        SKILL_ROOT / "references" / "业务界面设计与制作契约.md"
+        SKILL_ROOT / "references" / "业务界面设计方法论.md"
     ).read_text(encoding="utf-8")
 
-    assert "交付核验回答" in skill
-    assert "最终审阅回答" in skill
+    assert "交付核验回答" in design
+    assert "最终审阅回答" in design
     assert "质量检查 Workflow" in challenge
     assert "若声明了修订、重做或改路线" in acceptance
     assert "待最终审阅" in ui_contract
-    assert "场景包制作只声明对外稳定的资产契约" in skill
-    assert "属于平台实现细节" in skill
+    assert "场景包制作只声明对外稳定的资产契约" in design
+    assert "属于平台实现细节" in design
     assert "没有把 Max Runtime 的 Agent 边界通知" in challenge
-    assert "Runtime 直接执行所选" in skill
+    assert "Runtime 直接执行所选" in design
     assert "只有已声明的 `agent_gate` 边界" in acceptance
     assert "不得等待一条额外的 Agent 消息" in ui_contract
+
+
+def test_business_ui_guidance_requires_dynamic_playwright_gate():
+    """业务界面生成后必须跑页面专属用例，基础冒烟和静态检查不能代替。"""
+    stage = (SKILL_ROOT / "stages" / "S3-业务界面.md").read_text(encoding="utf-8")
+    checklist = (SKILL_ROOT / "checklists" / "业务界面验收检查清单.md").read_text(
+        encoding="utf-8"
+    )
+    correction = (SKILL_ROOT / "stages" / "S4-验证与修正.md").read_text(encoding="utf-8")
+
+    for document in (stage, checklist):
+        assert "npm run test:e2e:external" in document
+        assert "基础冒烟通过" in document
+        assert "GOALFY_DEV_EXTERNAL_MOCK_URL" in document
+        assert "GOALFY_DEV_MOCK_BACKEND_DIR" in document
+        assert "data-goalfy-*" in document
+    assert "每个业务表单的每种实际调用模式" in stage
+    assert "可填顶层字符串字段" in stage
+    assert "保持 `pending`" in stage
+    assert "动态 Playwright 未通过" in checklist
+    assert "仅凭 mock 数据或契约静态比对**不足以**闭合" in correction
 
 
 def test_zip_packages_are_deterministic_and_utf8(tmp_path: Path):
