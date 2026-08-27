@@ -5,7 +5,7 @@ description: Design, build, restyle, rescue, or review product frontends through
 
 # Frontend Product Studio
 
-> 在 GoalfyMax 脚手架项目内使用时，服从该仓库 AGENTS.md 的「设计与优化边界」。
+> 在 GoalfyMax 脚手架项目内使用时，服从该仓库 AGENTS.md 的工程与安全约束，以及 scene-creator Skill S3 的平台硬约束。
 
 Own the frontend outcome from product understanding through the final rendered review. Operate autonomously: make reasonable design assumptions, state them briefly, and continue unless the environment itself requires approval. Do not ask the user to choose among routine design options.
 

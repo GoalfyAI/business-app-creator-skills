@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260827-c4c469",
-  "package_version": "1.2.0",
+  "version": "v20260827-8fa2f5",
+  "package_version": "1.2.1",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-27T06:13:23Z",
-  "update_reason": "S3 新增「设计与原型」节（需求基线/竞品调研/产品设计文档/本地原型/设计确认门）+ 动效纪律与冲突回路 + 验收判界；挂载 frontend-product-studio（第二 skill）与 impeccable（vendor 插件，v4.1.2 钉版）",
+  "released_at": "2026-08-27T06:21:52Z",
+  "update_reason": "边界声明修正：外部设计 skill 服从对象改为脚手架既有 AGENTS.md 工程与安全约束 + S3 平台硬约束（撤销脚手架新增设计类小节的计划——脚手架只提供功能不参与设计）",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -26,7 +26,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "55ddac673ad8c171c701d6025f2cdba9c7935552e8cf46b1a49e02055497ffad",
+    "SKILL.md": "6ab41041ae09a756e649cf524bce7ada6f2d850a02135df2cf757d068d8dc1cd",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "checklists/Workflow验收检查清单.md": "968f040e11ab7e4a6c48d5ff6ca61f25225978d75db0637f0bc2d7ee8b6a2eb7",
     "checklists/业务界面验收检查清单.md": "fd23928a1894e27487a86ec599cce4e7c19921c35b0f0c6241af41b28c725042",
@@ -39,7 +39,7 @@
     "references/运行模型与渲染语义.md": "964b51d1e0e551235c5b6f4cf0a4bd71bb24864ba4b49189cf87144964926a39",
     "stages/S1-业务设计.md": "5fe498704dcb1312be5c2be1fa6398c42b907f5fe93df34af8874a3c07570a5e",
     "stages/S2-资产制作.md": "b45fda924adffeff89f9fd64230944c0e73272341cbd76e55f313dd791f6e63b",
-    "stages/S3-业务界面.md": "d32f052168c5f5791b355a801d7d59ba8781fdba3239ed50f68f1a53bead7eae",
+    "stages/S3-业务界面.md": "34723a23ce145d803be72325ab3a33983d814120150d7d0e7e721ba8081e5b9e",
     "stages/S4-验证与修正.md": "eeea533e15f4f68390b2f83d84b957d99ec9e6f16df45e41e9b411eff63dda3b",
     "stages/S5-发布与交付.md": "2c06db4785733bc49ffe95b9a14636f0345cd5e00c54225f63ed4c475803eddd",
     "stages/SD-诊断与维护.md": "87f61ed915632b3e8981a92f741edffc16479e20eff2191392c74ae43036d017",
