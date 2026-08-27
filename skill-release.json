@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260827-731b6e",
-  "package_version": "1.2.3",
+  "version": "v20260827-7e449b",
+  "package_version": "1.2.4",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-08-27T08:39:16Z",
-  "update_reason": "渲染内容必须进 output 业务字段（sdk.file 无文本读取口）三处判据；跨运行文件引用必须绝对路径（禁目录约定拼接）两处",
+  "released_at": "2026-08-27T09:04:16Z",
+  "update_reason": "交付文件分界细化：增量修订沿用旧产物须复制进本次产物目录，历史路径只留状态文件；嵌套文件字段照常逐个登记无需拍平",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -26,7 +26,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "13b4e2235ee8107c6276aa3983948a3185d66dc40c98f4428ae22b10e997bdc6",
+    "SKILL.md": "1351d18f4dcfb37ad50c32d9baff16ef12f846f70529e88460d613fc48c67160",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "checklists/Workflow验收检查清单.md": "6fc54304b3b07fd8c74ac34a5ac37f55b57bb47a7909f7e249bffd2ae18d61a5",
     "checklists/业务界面验收检查清单.md": "fd23928a1894e27487a86ec599cce4e7c19921c35b0f0c6241af41b28c725042",
@@ -38,7 +38,7 @@
     "references/表结构与累加机制.md": "305d99c9e80ab4fd608e62f5bdb78efd67821b95f994585706f529a1a7644471",
     "references/运行模型与渲染语义.md": "964b51d1e0e551235c5b6f4cf0a4bd71bb24864ba4b49189cf87144964926a39",
     "stages/S1-业务设计.md": "48522657f86cf62041fb96a30942e226bd444b8a9da86fefa0ef3123eab2145a",
-    "stages/S2-资产制作.md": "6ed54d2c6865fd4c7f975c31e2b641ecba8128d67d7b3329b5d344901871cac8",
+    "stages/S2-资产制作.md": "d0e77d9c6eca66618e47be725e2f812e8bd9321d750dbc19e9a9a133b35e5788",
     "stages/S3-业务界面.md": "534f8d66047b309c6a062f3610cf1da793a3516f040023f35a0443177a1ca307",
     "stages/S4-验证与修正.md": "eeea533e15f4f68390b2f83d84b957d99ec9e6f16df45e41e9b411eff63dda3b",
     "stages/S5-发布与交付.md": "2c06db4785733bc49ffe95b9a14636f0345cd5e00c54225f63ed4c475803eddd",
