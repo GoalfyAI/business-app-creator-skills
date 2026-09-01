@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260901-3bdff2",
-  "package_version": "1.5.0",
+  "version": "v20260901-195704",
+  "package_version": "1.5.1",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-01T09:12:18Z",
-  "update_reason": "业务系统制作整体移交 app_creator：S3 改为转介页，删除业务系统设计方法论与业务系统验收检查清单，渲染正本迁入运行模型与渲染语义，约束8改为分线声明，事件候选与公开语义改锚 app_creator 线",
+  "released_at": "2026-09-01T09:21:10Z",
+  "update_reason": "app_creator：两张表机制重写为自足正本并更名为《应用结构表与结果检查表》；四份前端设计 guidance 钉版离线副本（含支撑文件与 License）入库，前端设计工作流改为本地加载",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -24,7 +24,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "1da90a2bf5a18221cbd0c6e6bbc3fd444a27c2a987f5acf587c3ffe882dbef38",
+    "SKILL.md": "3c1fb3c369c3e21a64064aa8babc51fda0d22763c7ca597c6f0aa71e7792fd7a",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "checklists/Workflow验收检查清单.md": "394d30bf8555104a395fc9aa97d55df71feaeb1112a7c2a29be36f98dfa8c279",
     "checklists/场景包验收检查清单.md": "d23a7acea51958f8e2bea66396adedcff3c983f906dd934ca7fd88ea90af8c01",
