@@ -101,7 +101,8 @@ A4 预部署验收 → A5 发布交付        问题 → AD 诊断维护
 | 与 Max 的调用契约（§4.1 启动编排、§5 三次握手） | 《C组-业务界面Workflow消息与TPE接口交付契约》 |
 | 本地测试（mock 4.0 / dev-host / Playwright） | 脚手架 `docs/dev-host-testing.md` |
 | 消息展示 | 脚手架 `docs/message-guide.md` 与 `docs/message/` 字段字典 |
-| 设计方法论（调研、视觉方向、动效工艺、完成后优化） | `frontend-product-studio` 与 `impeccable`（同 marketplace 安装的独立 Skill） |
+| 设计与构建方法论（产品认知、视觉方向、组件选型、动效工艺） | [前端设计工作流](references/前端设计工作流.md)（本 Skill 内置正本） |
+| 完成后检查与优化（critique / audit / harden / polish） | `impeccable`（同 marketplace 安装的插件） |
 
 ## 8. 术语速查
 
