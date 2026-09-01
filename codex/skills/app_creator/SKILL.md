@@ -39,7 +39,11 @@ description: 当开发者需要为一个已上线的 GoalfyMax 场景包制作�
 ## 2. 核心约束（九条，全程有效）
 
 1. **先包后应用**——目标场景包必须已上线；其 `schema/forms`、`schema/orchestrations`、`output_schema`、业务事件契约全部**反读**取得，凭记忆或猜测写出的契约视为无效。
-2. **调用契约零改动**——应用与 Max 的交互只走脚手架 SDK 的既有通道：启动编排用流程 A（SDK 封装的 `chat.start + metadata.submit_data`，project_id 照传），运行中交互用流程 B 三次握手；正本是脚手架 `src/sdk/docs/business.md`。***不发明任何字段、不改任何语义、不绕开 SDK 手拼消息。***
+2. **调用契约零改动**——应用与 Max 只有两种交互，都走 SDK 既有通道（正本 `src/sdk/docs/business.md`，该文档里分别叫"流程 A""流程 B"）：
+   - **发起一次编排运行**：用户在应用里填好入口表单，SDK 把表单数据连同所选项目打包成 `chat.start + metadata.submit_data` 发给 Max，业务路线开始跑；
+   - **应答运行中表单**（即"三次握手"）：路线跑到需要用户补充或审阅时，服务端下发一张表单 → 应用渲染、用户填写后提交应答 → 服务端返回**业务确认**；提交的 Promise 到业务确认才 resolve，前两步都不算完成。
+
+   ***不发明任何字段、不改任何语义、不绕开 SDK 手拼消息。***
 3. **创建态 / 进行态分界**——应用是唯一的发起入口：新建 = 表单提交时创建项目再 `chat.start`；复用 = 项目下拉框由用户显式选中（选项只来自后端项目列表）；发起后跳转项目页。项目页只看进度和回复表单，**不发起新编排**。
 4. **数据面纪律**——应用数据集（`dataset_type='app'`，一用户一份 copy）≠ 业务档案：应用表存用户信息、业务历史、项目产出；业务档案读走既有链路、写仍唯投稿，两个世界不互穿。***应用代码禁 CREATE / ALTER TABLE***——加表改表回模板 schema（A2），不在应用里动。
 5. **后端边界**——专属后端是内网 Service，宿主是唯一入口：不含鉴权逻辑（直接信任宿主注入的身份头）、没有第三方密钥注入通道（需要密钥先与平台定，不假定运行时读得到）。响应一律 `{code, msg, data}` 信封、业务失败也 HTTP 200、自定义码 ≥1000。正本：`backend/README.md`。
@@ -98,7 +102,7 @@ A4 预部署验收 → A5 发布交付        问题 → AD 诊断维护
 | 前端 SDK（两层 API、保留件 `useProject/useProjectDraft/useInbox`、api 信封守卫） | 脚手架 `src/sdk/docs/`（README 起步） |
 | 前端硬约束与第一规则 | 脚手架根 `README.md`、`CLAUDE.md` |
 | 后端硬约束（信封、码段、桥层限制、数据源、身份上下文、目录） | 脚手架 `backend/README.md` |
-| 与 Max 的调用契约（流程 A 启动编排、流程 B 三次握手） | 脚手架 `src/sdk/docs/business.md`；页面协作细则 `docs/business-ui-guide.md` |
+| 与 Max 的调用契约（发起编排运行、应答运行中表单——文档里的"流程 A / 流程 B"） | 脚手架 `src/sdk/docs/business.md`；页面协作细则 `docs/business-ui-guide.md` |
 | 本地测试（mock 4.0 / dev-host / Playwright） | 脚手架 `docs/dev-host-testing.md` |
 | 消息展示 | 脚手架 `docs/message-guide.md` 与 `docs/message/` 字段字典 |
 | 设计与构建方法论（产品认知、视觉方向、组件选型、动效工艺） | [前端设计工作流](references/前端设计工作流.md)（编排层）+ `references/前端设计指南/`（四份官方 guidance 钉版离线副本） |

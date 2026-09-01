@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260901-43a899",
-  "package_version": "1.5.2",
+  "version": "v20260901-ac8d8b",
+  "package_version": "1.5.3",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-01T09:42:05Z",
-  "update_reason": "app_creator：与 Max 的调用契约正本从内部交接文档《C组契约》改锚脚手架 src/sdk/docs/business.md（流程A/流程B），全部 §4.1/§5 引用与线级术语换成 SDK 表面语义",
+  "released_at": "2026-09-01T09:49:42Z",
+  "update_reason": "app_creator：流程A/流程B 代号展开为业务白话（发起编排运行 / 应答运行中表单三次握手），代号只保留为 business.md 的检索索引",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -24,7 +24,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "4173f0afe25fb5fa32e0f51ece199642efb49825d7a7f064d2392f87320e344a",
+    "SKILL.md": "27bf270109b0dfe4393f9ce8f2c99664254f13384c5681e38d27236948a82852",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "checklists/Workflow验收检查清单.md": "394d30bf8555104a395fc9aa97d55df71feaeb1112a7c2a29be36f98dfa8c279",
     "checklists/场景包验收检查清单.md": "d23a7acea51958f8e2bea66396adedcff3c983f906dd934ca7fd88ea90af8c01",
