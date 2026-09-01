@@ -67,6 +67,10 @@ PLATFORM_LAYOUTS = {
     },
 }
 PLATFORM_NAMES = tuple(PLATFORM_LAYOUTS)
+# 附加 Skill：仓库根目录下自研的额外 Skill，随插件同步到 claude-code / codex 的 skills/ 下。
+# 不进 scene-creator 的发布清单与版本闸门，随插件版本自然更新。
+EXTRA_SKILL_SOURCES = {"app_creator": Path("app_creator")}
+EXTRA_SKILL_PLATFORMS = ("claude-code", "codex")
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 # 仓库里的安装物料始终是生产配置。开发者要连测试环境时，改本地已安装插件的
 # .mcp.json，不动仓库源文件——那会让发布校验和失配。
@@ -446,6 +450,49 @@ def sync_platform_skills(skill_root: Path) -> None:
             destination = target_root / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source, destination)
+    sync_extra_skills(skill_root)
+
+
+def _extra_skill_files(repository_root: Path, source: Path) -> dict[str, Path]:
+    root = repository_root / source
+    files = {}
+    for path in sorted(root.rglob("*.md")):
+        if any(part.startswith(".") for part in path.relative_to(root).parts):
+            continue
+        files[path.relative_to(root).as_posix()] = path
+    return files
+
+
+def sync_extra_skills(skill_root: Path) -> None:
+    repository_root = _repository_root(skill_root)
+    for name, source in EXTRA_SKILL_SOURCES.items():
+        if not (repository_root / source).is_dir():
+            # 附加 Skill 是可选资产：源目录不存在（如测试夹具）时跳过，不视为发布错误。
+            continue
+        for platform in EXTRA_SKILL_PLATFORMS:
+            target = repository_root / platform / "skills" / name
+            shutil.rmtree(target, ignore_errors=True)
+            for relative, src in _extra_skill_files(repository_root, source).items():
+                destination = target / relative
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src, destination)
+
+
+def check_extra_skills(skill_root: Path) -> None:
+    repository_root = _repository_root(skill_root)
+    for name, source in EXTRA_SKILL_SOURCES.items():
+        if not (repository_root / source).is_dir():
+            continue
+        expected = {
+            relative: _sha256(src)
+            for relative, src in _extra_skill_files(repository_root, source).items()
+        }
+        for platform in EXTRA_SKILL_PLATFORMS:
+            target = repository_root / platform / "skills" / name
+            for relative, digest in expected.items():
+                copy = target / relative
+                if not copy.is_file() or _sha256(copy) != digest:
+                    raise ReleaseError(f"{platform} 的附加 Skill 副本已过期：{name}/{relative}，请重新 release/sync")
 
 
 def check_platform_skills(skill_root: Path) -> None:
@@ -465,6 +512,7 @@ def check_platform_skills(skill_root: Path) -> None:
         if expected != actual:
             stale = sorted(name for name, digest in expected.items() if actual.get(name) != digest)
             raise ReleaseError(f"{platform} 的 Skill 副本已过期，请执行 release：{stale}")
+    check_extra_skills(skill_root)
 
 
 def build_platform_zips(skill_root: Path) -> list[Path]:
