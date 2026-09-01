@@ -73,7 +73,7 @@
 
 每次修复后**必须**重跑所有受影响的验证。Workflow 有变更就回到 `stages/S2-资产制作.md` 第 5 节重验该条；整包配置有变更就重新执行 `stages/S4-验证与修正.md`。
 
-修复以**新版本行**上线时，引用不会自动跟随。修订 Workflow 时优先在 `workflow_tpe_manage(update)` 传 `target_scene_package_draft_id`，让目标场景包草稿一步采用新版本（同步更换挂载引用并重写编排中全部 `workflow_ref`，旧场景包保持不变）；未走该通道时，重验前逐一检查引用旧版本行的地方（编排 `workflow_ref`、场景包挂载、工具集关联），显式切换到新版本行并反读确认——***不切换，修复永不生效，且无任何报错***。核对方法：`list_asset_versions` 看家族内 live 行，比对引用方指向的是不是修复后的那一行。
+修复以**新版本行**上线时，引用不会自动跟随。修订 Workflow 时 `workflow_tpe_manage(update)` 对 testing/offline 草稿会**自动采用**（未显式传 `target_scene_package_draft_id` 也生效；live 包不动，需显式 `attach`）；定稿上线后工具在 `output.mounted_by_stale` 里列出仍钉旧版的场景包并给出 attach 指引——**逐个处置该清单，或在工单记录明确不跟进的理由**。清单之外仍要检查的引用（工具集关联等），显式切换到新版本行并反读确认——***不切换，修复永不生效***。核对方法：`list_asset_versions` 看家族内 live 行，比对引用方指向的是不是修复后的那一行。
 
 **禁止**改完就宣称修复完成——没有重验就没有证据（约束 10）。
 

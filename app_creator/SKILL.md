@@ -12,7 +12,7 @@ description: 当开发者需要为一个已上线的 GoalfyMax 场景包制作�
 
 | | scene-creator | app_creator（本 Skill） |
 |---|---|---|
-| 产出 | 场景包 = 能力单元（编排 / Workflow / FastAgent / 事件与交付契约） | 业务系统 = 前后端部署物（界面前端 + 专属后端 + 模板 schema） |
+| 产出 | 场景包 = 能力单元（编排 / Workflow / FastAgent / 事件与交付契约） | 业务系统 = 前后端部署物（界面前端 + 专属后端 + 模板 schema），以独立资产 **business_ui** 为发布单位：自己的家族与版本，挂载恰好 1 个场景包 + 至多 1 个数据集模板 |
 | 一句话 | 能干什么活 | 用户在哪、怎么持续用这个活干生意 |
 
 **先包后应用**：本 Skill 只对**已上线**的场景包开工。目标包未上线时，先用 scene-creator 完成制作与上线。
@@ -67,8 +67,8 @@ description: 当开发者需要为一个已上线的 GoalfyMax 场景包制作�
 | A1 应用设计 | `stages/A1-应用设计.md` | 目标场景包已上线；有 `write` 工单 | 可执行 |
 | A2 数据面制作 | `stages/A2-数据面制作.md` | A1 数据设计已确认 | **骨架待成文**（MCP 模板 schema 工具开发中） |
 | A3 应用实现 | `stages/A3-应用实现.md` | A1 设计确认门通过；模板 schema 可用 | 可执行 |
-| A4 预部署与验收 | `stages/A4-预部署与验收.md` | A3 出口条件满足 | **骨架待成文**（预部署工具开发中） |
-| A5 发布与交付 | `stages/A5-发布与交付.md` | A4 验收通过 | **骨架待成文** |
+| A4 预部署与验收 | `stages/A4-预部署与验收.md` | A3 出口条件满足 | 可执行（`business_ui_manage` / `business_ui_bundle`） |
+| A5 发布与交付 | `stages/A5-发布与交付.md` | A4 验收通过 | 可执行 |
 | AD 诊断与维护 | `stages/AD-诊断与维护.md` | 有明确的目标应用或问题 | 骨架（随实战补报错对照） |
 
 ```text
@@ -81,7 +81,10 @@ A2 数据面制作 MCP 建模板 schema(逐列 COMMENT 声明) → PG 连接本�
   ▼
 A3 应用实现   后端(CRUD/统计/回流 API) + 前端(四类页面) → 本地测试(mock/dev-host/Playwright)
   ▼
-A4 预部署验收 → A5 发布交付        问题 → AD 诊断维护
+A4 预部署验收 business_ui 创建挂载 → 源码包上传 deploy 到 success → 真环境链路 + 清单闭合
+  ▼
+A5 发布交付   finalize 上线（三闸门码）→ resolve 反读 entry_url → 交付报告 → 结单
+                                                                问题 → AD 诊断维护
 ```
 
 ## 5. 应用结构表与结果检查表
@@ -113,7 +116,9 @@ A4 预部署验收 → A5 发布交付        问题 → AD 诊断维护
 | 术语 | 人话 |
 |---|---|
 | 业务系统 | 前端 + 后端 + 模板 schema 的一次性部署物，用户的 SaaS 工作台 |
+| business_ui | 业务系统的发布单位：独立资产（家族 + 版本），挂 1 个场景包 + ≤1 个数据集模板；create → 上传 deploy 源码包 → finalize 上线（A4/A5） |
 | 模板 schema | 应用数据表的模板；用户首次打开应用时 copy 出专属一份 |
+| dscli_business_dataset | 平台级 FastAgent：场景包 Workflow 在沙箱内读写业务系统数据集的运行期通道（A3 第 2 节三件事实） |
 | handle | 应用后端引用自己 schema 的句柄，`tableOf(handle, table)` 解析真名 |
 | 可编辑性声明 | PG 列注释里的 `[editable:user\|agent\|system]` 前缀，谁能写这列的唯一正本 |
 | 创建态 / 进行态 | 应用页 = 发起一切；项目页 = 只看进度和回表单 |

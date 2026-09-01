@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260901-ac8d8b",
-  "package_version": "1.5.3",
+  "version": "v20260901-4cb2a5",
+  "package_version": "1.6.0",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-01T09:49:42Z",
-  "update_reason": "app_creator：流程A/流程B 代号展开为业务白话（发起编排运行 / 应答运行中表单三次握手），代号只保留为 business.md 的检索索引",
+  "released_at": "2026-09-01T14:04:26Z",
+  "update_reason": "对齐新 MCP 工具面：app_creator A4/A5 按 business_ui_manage/business_ui_bundle 成文（发布单位、上线三闸门、resolve 反读、删除围栏）；A2 补已就位事实与一期红线；A3 补 dscli_business_dataset 运行期通道三事实；scene-creator 更新 get_asset 家族解析读侧口径与 workflow update 自动采用/mounted_by_stale 提示",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -24,13 +24,13 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "27bf270109b0dfe4393f9ce8f2c99664254f13384c5681e38d27236948a82852",
+    "SKILL.md": "137c3000242951e160774d896165577171626990596d1d28d200f2773eb535e4",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "checklists/Workflow验收检查清单.md": "394d30bf8555104a395fc9aa97d55df71feaeb1112a7c2a29be36f98dfa8c279",
     "checklists/场景包验收检查清单.md": "d23a7acea51958f8e2bea66396adedcff3c983f906dd934ca7fd88ea90af8c01",
     "checklists/方案挑战检查清单.md": "d212caf374fb55160b03b52acd7f3fda1ae57a6b4bee1f6c0f3980aa0173bb93",
     "references/依赖与MCP接入.md": "4886916beb004032e975776146733a476b5bca1f3c4f509717e3d9d3071ee318",
-    "references/场景包版本体系与发布逻辑.md": "8cab7d705face9ea0e379937bc7ed44938028b8a62102742e7cd2f65aa7d2dd7",
+    "references/场景包版本体系与发布逻辑.md": "84060462f287e1891cb107ddb811a99780684bdc37ac72593f98134fb2549a45",
     "references/表结构与累加机制.md": "305d99c9e80ab4fd608e62f5bdb78efd67821b95f994585706f529a1a7644471",
     "references/运行模型与渲染语义.md": "a9ceadbb5222a41007502ffa5e3fec3c8f7f3a006655ea0b592e85378817bbba",
     "stages/S1-业务设计.md": "b4a491dac2fe6caf169b5afb9577aef76311d072feba13569d2b76e959a8cc91",
@@ -38,7 +38,7 @@
     "stages/S3-业务系统.md": "da01f0a5ec43626b715b16f3383556c8174b455eac8ece369f7d72c552fded4b",
     "stages/S4-验证与修正.md": "e4ca3eff305cdf229b9329996ca2fbf578531df312a8e83563b55cce8b5cd7fe",
     "stages/S5-发布与交付.md": "2c06db4785733bc49ffe95b9a14636f0345cd5e00c54225f63ed4c475803eddd",
-    "stages/SD-诊断与维护.md": "e20992c060c4617189ad320096fc0276b3e8ce2627ae4cc5f1442157ea18646d",
+    "stages/SD-诊断与维护.md": "1be4aa3047b1d1167bf53631b39a50eae388de23166b35f20082fcf332a07e12",
     "stages/ST-能力试用.md": "26ae628a6dfeb3bb3982915063fa52d7e1bbe8407dc9a303930ca8b51019d45e"
   }
 }
