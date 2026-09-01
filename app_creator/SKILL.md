@@ -82,7 +82,7 @@ A4 预部署验收 → A5 发布交付        问题 → AD 诊断维护
 
 ## 5. 两张表
 
-机制自 scene-creator 平移，细则见 [两张表机制](references/两张表机制.md)：
+制作过程的质量记账（可挑战、可闭合、可继承的条目 + 指纹绑状态、只处理 pending），细则正本见 [两张表机制](references/两张表机制.md)：
 
 - **应用结构表**：按"每个页面 + 每个后端接口 + 每张模板表"分组，条目走 挑战 → `challenged=true` → 开发者确认；
 - **结果检查表**：正反例（A1 收集的典型用户操作正例 + 数据边界反例）+ 前端校验项（Playwright 门）+ 后端校验项（接口测试）；***闭合必须用预部署环境的真实数据，mock 不足以闭合***。
@@ -101,7 +101,7 @@ A4 预部署验收 → A5 发布交付        问题 → AD 诊断维护
 | 与 Max 的调用契约（§4.1 启动编排、§5 三次握手） | 《C组-业务界面Workflow消息与TPE接口交付契约》 |
 | 本地测试（mock 4.0 / dev-host / Playwright） | 脚手架 `docs/dev-host-testing.md` |
 | 消息展示 | 脚手架 `docs/message-guide.md` 与 `docs/message/` 字段字典 |
-| 设计与构建方法论（产品认知、视觉方向、组件选型、动效工艺） | [前端设计工作流](references/前端设计工作流.md)（本 Skill 内置正本） |
+| 设计与构建方法论（产品认知、视觉方向、组件选型、动效工艺） | [前端设计工作流](references/前端设计工作流.md)（编排层）+ `references/前端设计指南/`（四份官方 guidance 钉版离线副本） |
 | 完成后检查与优化（critique / audit / harden / polish） | `impeccable`（同 marketplace 安装的插件） |
 
 ## 8. 术语速查
