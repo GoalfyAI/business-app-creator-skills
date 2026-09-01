@@ -143,42 +143,38 @@ def test_workflow_guidance_separates_delivery_verification_from_business_accepta
     acceptance = (SKILL_ROOT / "checklists" / "场景包验收检查清单.md").read_text(
         encoding="utf-8"
     )
-    ui_contract = (
-        SKILL_ROOT / "references" / "业务系统设计方法论.md"
-    ).read_text(encoding="utf-8")
-
     assert "交付核验回答" in design
     assert "最终审阅回答" in design
     assert "质量检查 Workflow" in challenge
     assert "若声明了修订、重做或改路线" in acceptance
-    assert "待最终审阅" in ui_contract
     assert "场景包制作只声明对外稳定的资产契约" in design
     assert "属于平台实现细节" in design
     assert "没有把 Max Runtime 的 Agent 边界通知" in challenge
     assert "Runtime 直接执行所选" in design
     assert "只有已声明的 `agent_gate` 边界" in acceptance
-    assert "不得等待一条额外的 Agent 消息" in ui_contract
 
 
-def test_business_ui_guidance_requires_dynamic_playwright_gate():
-    """业务系统生成后必须跑页面专属用例，基础冒烟和静态检查不能代替。"""
+def test_business_system_is_referred_to_app_creator():
+    """业务系统制作已移交 app_creator：S3 只是转介页，包验收不检查系统。"""
     stage = (SKILL_ROOT / "stages" / "S3-业务系统.md").read_text(encoding="utf-8")
-    checklist = (SKILL_ROOT / "checklists" / "业务系统验收检查清单.md").read_text(
+    router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    acceptance = (SKILL_ROOT / "checklists" / "场景包验收检查清单.md").read_text(
         encoding="utf-8"
     )
-    correction = (SKILL_ROOT / "stages" / "S4-验证与修正.md").read_text(encoding="utf-8")
+    rendering = (
+        SKILL_ROOT / "references" / "运行模型与渲染语义.md"
+    ).read_text(encoding="utf-8")
 
-    for document in (stage, checklist):
-        assert "npm run test:e2e:external" in document
-        assert "基础冒烟通过" in document
-        assert "GOALFY_DEV_EXTERNAL_MOCK_URL" in document
-        assert "GOALFY_DEV_MOCK_BACKEND_DIR" in document
-        assert "data-goalfy-*" in document
-    assert "每个业务表单的每种实际调用模式" in stage
-    assert "可填顶层字符串字段" in stage
-    assert "保持 `pending`" in stage
-    assert "动态 Playwright 未通过" in checklist
-    assert "仅凭 mock 数据或契约静态比对**不足以**闭合" in correction
+    assert "已移交 app_creator" in stage
+    assert "先包后应用" in stage
+    assert "接缝物" in stage
+    assert not (SKILL_ROOT / "references" / "业务系统设计方法论.md").exists()
+    assert not (SKILL_ROOT / "checklists" / "业务系统验收检查清单.md").exists()
+    assert "业务系统分线" in router
+    assert "业务系统不属于本清单对象" in acceptance
+    # 搬家后的渲染正本：内容进业务字段的硬规则落在运行模型 reference
+    assert "要渲染的内容必须以业务字段出现在 `output` 中" in rendering
+    assert "读不到文件正文" in rendering
 
 
 def test_zip_packages_are_deterministic_and_utf8(tmp_path: Path):
