@@ -130,7 +130,7 @@ def test_workflow_guidance_routes_event_workflows_through_business_runtime():
         assert "单节点业务路线" in document
         assert "直接派发" in document
     assert "验证身份只用于本次 Bubble" in asset_stage
-    assert "不得让脚本、Agent、业务界面或 MCP 调用方伪造" in checklist
+    assert "不得让脚本、Agent、业务系统或 MCP 调用方伪造" in checklist
     assert "只由服务端在正式路线运行中持久化生成" in acceptance
 
 
@@ -144,7 +144,7 @@ def test_workflow_guidance_separates_delivery_verification_from_business_accepta
         encoding="utf-8"
     )
     ui_contract = (
-        SKILL_ROOT / "references" / "业务界面设计方法论.md"
+        SKILL_ROOT / "references" / "业务系统设计方法论.md"
     ).read_text(encoding="utf-8")
 
     assert "交付核验回答" in design
@@ -161,9 +161,9 @@ def test_workflow_guidance_separates_delivery_verification_from_business_accepta
 
 
 def test_business_ui_guidance_requires_dynamic_playwright_gate():
-    """业务界面生成后必须跑页面专属用例，基础冒烟和静态检查不能代替。"""
-    stage = (SKILL_ROOT / "stages" / "S3-业务界面.md").read_text(encoding="utf-8")
-    checklist = (SKILL_ROOT / "checklists" / "业务界面验收检查清单.md").read_text(
+    """业务系统生成后必须跑页面专属用例，基础冒烟和静态检查不能代替。"""
+    stage = (SKILL_ROOT / "stages" / "S3-业务系统.md").read_text(encoding="utf-8")
+    checklist = (SKILL_ROOT / "checklists" / "业务系统验收检查清单.md").read_text(
         encoding="utf-8"
     )
     correction = (SKILL_ROOT / "stages" / "S4-验证与修正.md").read_text(encoding="utf-8")

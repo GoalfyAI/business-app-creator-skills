@@ -86,7 +86,7 @@ REQUIRED_SKILL_KEYWORDS = {
     "场景包",
     "workflow",
     "business UI",
-    "业务界面",
+    "业务系统",
     "GoalfyMax",
     "MCP",
     "business archive",
