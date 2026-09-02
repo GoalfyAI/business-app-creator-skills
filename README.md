@@ -99,7 +99,7 @@ Agent 会创建只读工单，逐层检查提示词、工具契约、编排配�
 ## 这个仓库包含什么
 
 ```
-skill/          Skill 内容唯一源：SKILL.md、Agent 元数据、参考资料
+skills/         两个 Skill 的唯一源：scene-creator/（场景包制作）、app-creator/（业务应用制作）
 claude-code/    Claude Code 插件目录：安装文档 + Skill 副本
 codex/          Codex 插件目录：安装文档 + Skill 副本
 manus/          Manus 集成说明 + 可上传的 Skill 压缩包
@@ -108,7 +108,7 @@ docs/           各平台快速上手
 scripts/        构建与发布工具
 ```
 
-`skill/` 是 Skill 内容的唯一源，发布时复制到四个平台，各平台拿到的 Skill 逐字节相同；
+`skills/` 是 Skill 内容的唯一源，发布时复制到各平台，各平台拿到的 Skill 逐字节相同；
 平台安装文档在各自目录里手工维护。
 
 ## 更新

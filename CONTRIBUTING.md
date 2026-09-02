@@ -17,7 +17,7 @@
 
 | 目录 | 说明 |
 |---|---|
-| `skill/` | Skill 内容唯一源：`SKILL.md`、`agents/openai.yaml`、`references/` |
+| `skills/scene-creator/`、`skills/app-creator/` | 两个 Skill 的唯一源：各自 `SKILL.md`、`stages/`、`references/`、`checklists/`（scene-creator 另有 `agents/openai.yaml`） |
 | `scripts/` | 构建与发布工具 |
 | `tests/` | 测试 |
 | `claude-code/`、`codex/` | 插件安装文档手工维护；`skills/` 子目录由发布流程复制，**不要手工编辑** |
@@ -25,7 +25,7 @@
 | `.claude-plugin/`、`.agents/` | 插件市场清单，版本号由发布流程更新 |
 
 Skill 副本与压缩包由发布流程重建，手工改动会被覆盖并导致校验失败。要改 Skill 内容
-请改 `skill/` 下的唯一源，然后执行 `release` 重新生成。
+请改 `skills/` 下的唯一源，然后执行 `release` 重新生成。
 
 ## 提交代码
 

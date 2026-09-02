@@ -9,7 +9,7 @@ import tomllib
 import yaml
 
 ROOT = Path(__file__).parents[1]
-SKILL_ROOT = ROOT / "skill"
+SKILL_ROOT = ROOT / "skills" / "scene-creator"
 SCRIPT_PATH = ROOT / "scripts" / "build_platform_packages.py"
 PROD_SCRIPT_PATH = ROOT / "scripts" / "register-skill-release.py"
 
@@ -28,17 +28,17 @@ PLATFORM_FILES = ("README.md", "AGENTS.md", "UPDATE.md", ".mcp.json")
 
 def _copy_repo(tmp_path: Path) -> Path:
     """复制一份完整仓库结构，返回其中的 Skill 内容目录。"""
-    for name in ("skill", "claude-code", "codex", "manus", "generic", ".claude-plugin", ".agents"):
+    for name in ("skills", "claude-code", "codex", "manus", "generic", ".claude-plugin", ".agents"):
         shutil.copytree(ROOT / name, tmp_path / name)
     for name in ("skill-release.json", "pyproject.toml", "uv.lock", "README.md"):
         shutil.copy2(ROOT / name, tmp_path / name)
     (tmp_path / "scripts").mkdir(exist_ok=True)
     shutil.copy2(SCRIPT_PATH, tmp_path / "scripts" / SCRIPT_PATH.name)
-    return tmp_path / "skill"
+    return tmp_path / "skills" / "scene-creator"
 
 
 def _manifest(skill_root: Path = SKILL_ROOT) -> dict:
-    return json.loads((skill_root.parent / "skill-release.json").read_text(encoding="utf-8"))
+    return json.loads((skill_root.parents[1] / "skill-release.json").read_text(encoding="utf-8"))
 
 
 def _package_version(skill_root: Path = SKILL_ROOT) -> str:
@@ -159,7 +159,7 @@ def test_workflow_guidance_separates_delivery_verification_from_business_accepta
 
 
 def test_business_system_is_referred_to_app_creator():
-    """业务应用制作已移交 app_creator：S3 只是转介页，包验收不检查系统。"""
+    """业务应用制作已移交 app-creator：S3 只是转介页，包验收不检查系统。"""
     stage = (SKILL_ROOT / "stages" / "S3-业务应用.md").read_text(encoding="utf-8")
     router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
     acceptance = (SKILL_ROOT / "checklists" / "场景包验收检查清单.md").read_text(
@@ -169,7 +169,7 @@ def test_business_system_is_referred_to_app_creator():
         SKILL_ROOT / "references" / "平台对象与运行模型.md"
     ).read_text(encoding="utf-8")
 
-    assert "已移交 app_creator" in stage
+    assert "已移交 app-creator" in stage
     assert "先包后应用" in stage
     assert "接缝物" in stage
     assert not (SKILL_ROOT / "references" / "业务应用设计方法论.md").exists()

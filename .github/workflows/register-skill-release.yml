@@ -7,7 +7,7 @@ on:
     branches: [main]
     paths:
       - 'skill-release.json'
-      - 'skill/**'
+      - 'skills/**'
       # 平台安装文档也参与校验：check 会核对其中的必备事实与 MCP 配置
       - 'claude-code/**'
       - 'codex/**'
