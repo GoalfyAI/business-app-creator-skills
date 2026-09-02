@@ -47,8 +47,8 @@ description: 当开发者需要为一个已上线的 GoalfyMax 场景包制作�
 3. **创建态 / 进行态分界**——应用是唯一的发起入口：新建 = 表单提交时创建项目再 `chat.start`；复用 = 项目下拉框由用户显式选中（选项只来自后端项目列表）；发起后跳转项目页。项目页只看进度和回复表单，**不发起新编排**。
 4. **数据面纪律**——**业务应用数据集是两条线唯一的数据面概念**：开发期做一份业务应用数据集模板，用户首次打开应用时从模板 copy 出专属一份（一用户一份），存用户信息、业务历史、项目产出与流转数据，同时被应用后端直连和项目内 agent（经 `dscli_business_dataset`）访问。***应用代码禁 CREATE / ALTER TABLE***——加表改表回模板（A2），不在应用里动。
 5. **后端边界**——专属后端是内网 Service，宿主是唯一入口：不含鉴权逻辑（直接信任宿主注入的身份头）、没有第三方密钥注入通道（需要密钥先与平台定，不假定运行时读得到）。响应一律 `{code, msg, data}` 信封、业务失败也 HTTP 200、自定义码 ≥1000。正本：`backend/README.md`。
-6. **桥层限制**——`GET/DELETE` 不带 body、嵌套查询走 POST、请求整体 ≤256KiB、***写接口必须幂等***（写操作不自动重试但用户会手动重试）、文件走 `project.upload` 落 workspace 后只传路径字符串、单次查询在 `statement_timeout`（10s）内。
-7. **部署纪律**——先预部署验证再交付；发布版不能下线（普通版可以）；***schema 真名禁止硬编码***——一律 `tableOf(handle, table)` 按 manifest 解析（不同环境/版本 schema 名不同）。
+6. **桥层限制**——`GET/DELETE` 不带 body、嵌套查询走 POST、请求整体 ≤256KiB、响应体 ≤1MiB、上游超时 13s（`statement_timeout` 10s，只剩 3s 余量）、***写接口必须幂等***（键 `X-Goalfy-Business-Request-Id`）、文件走 `project.upload` 落 workspace 后只传路径字符串；连接经 dataset-proxy，禁 `BEGIN/COMMIT/ROLLBACK`、`SET ROLE`、`SET search_path`。
+7. **部署纪律**——先预部署验证再交付；发布版不能下线（普通版可以）；***schema 真名禁止硬编码***——引用表只有一种写法 `buiTable('表名')`（每个用户实例的 schema 都不同，写死了第二个用户就炸）；镜像必须用户无关。
 8. **设计纪律**——脚手架 demo 只用于理解协议与 SDK，禁复用其页面结构与视觉；竞品调研先问开发者有无参考；生产级原型经开发者确认后才正式编码；反同质化（与 demo 高度相似且说不出业务理由 = 设计未做）。
 9. **编辑与生产的共治纪律**——应用表是用户的业务资产。逐字段可编辑性声明的**唯一正本是 PG 列注释**：`COMMENT ON COLUMN ... IS '[editable:user|agent|system] 业务说明'`——它随模板 copy 天然携带、`describe` 天然可见、平台可读回展示。写权矩阵：`user`=用户可写、FA 与生产回流**不得覆盖**；`agent`=FA/生产可写；`system`=仅系统逻辑；***读不到声明的列一律按 user 处理（最保守：不写）***。所有写入带来源标记（`user_edited` / `generated`）；生产回流入库语义（直接入库 / 草稿待用户确认）由开发者在 A1 声明。
 
@@ -102,24 +102,28 @@ A5 发布交付   finalize 上线（三闸门码）→ resolve 反读 entry_url 
 
 | 内容 | 正本 |
 |---|---|
-| 前端 SDK（两层 API、保留件 `useProject/useProjectDraft/useInbox`、api 信封守卫） | 脚手架 `src/sdk/docs/`（README 起步） |
-| 前端硬约束与第一规则 | 脚手架根 `README.md`、`CLAUDE.md` |
-| 后端硬约束（信封、码段、桥层限制、数据源、身份上下文、目录） | 脚手架 `backend/README.md` |
-| 与 Max 的调用契约（发起编排运行、应答运行中表单——文档里的"流程 A / 流程 B"） | 脚手架 `src/sdk/docs/business.md`；页面协作细则 `docs/business-ui-guide.md` |
-| 本地测试（mock 4.0 / dev-host / Playwright） | 脚手架 `docs/dev-host-testing.md` |
-| 消息展示 | 脚手架 `docs/message-guide.md` 与 `docs/message/` 字段字典 |
-| 设计与构建方法论（产品认知、视觉方向、组件选型、动效工艺） | [前端设计工作流](references/前端设计工作流.md)（编排层）+ `references/前端设计指南/`（四份官方 guidance 钉版离线副本） |
+| 总纲：前后端怎么拼、运行链路、数据放哪、发布通道、联动清单 | 脚手架根 `README.md` |
+| 前端宪法：红线、第一规则、SDK 速览、完成定义与自测矩阵（唯一权威） | `frontend/README.md`、`frontend/CLAUDE.md` |
+| 页面开发约束：术语、三必备页面、可恢复状态、表单回显与文件纪律、交付审阅页、消息中心/项目列表 | `frontend/docs/business-ui-guide.md` |
+| 契约区协议 v4（多包、forms/orchestrations 文件格式、delivery 声明） | `frontend/schema/README.md` |
+| 前端 SDK（两层 API、项目句柄、upload/file/storage/business） | `frontend/src/sdk/docs/`（README 起步） |
+| 与 Max 的调用契约（发起编排运行、应答运行中表单——文档里的"流程 A / 流程 B"） | `frontend/src/sdk/docs/business.md` |
+| 后端契约（信封、码段、桥层限制、`buiTable`、dataset-proxy、身份上下文、打包） | `backend/README.md` |
+| 本地测试（Direct Mock / Dev Host Mock / Playwright） | `frontend/docs/dev-host-testing.md` |
+| 消息展示 | `frontend/docs/message-guide.md` 与 `frontend/docs/message/` 字段字典 |
+| 设计与构建方法论 | A1 §5.5（理解产品 → 定方向 → 交互 → 文档 → 原型）、A3 §4.5（构建 → 工艺 → 渲染修正）；官方 guidance 钉版副本在 `references/前端设计指南/` |
 
 ## 8. 术语速查
 
 | 术语 | 人话 |
 |---|---|
-| 业务应用 | 前端 + 后端 + 模板 schema 的一次性部署物，用户的 SaaS 工作台 |
+| 业务应用 | 前端 + 专属后端 + 每用户一份 schema，打进一个镜像一个 Pod；平台里的一级实体，一个实例管 N 个项目，用户的 SaaS 工作台 |
 | business_ui | 业务应用的发布单位：独立资产（家族 + 版本），挂 1 个场景包 + ≤1 个业务应用数据集模板；create → 上传 deploy 源码包 → finalize 上线（A4/A5） |
 | 业务应用数据集 | 应用的后端数据库：用户点开应用时从模板 copy 出的专属 PG schema，存用户记载、交互历史、交付与流转数据；应用后端直连 + 项目内 agent 经 ds-cli 访问同一份 |
 | 业务应用数据集模板 | 开发期定稿的表结构模板资产（含逐列声明与审计字段）；用户首次打开应用时从它 copy 出业务应用数据集 |
 | dscli_business_dataset | 平台级 FastAgent：场景包 Workflow 在沙箱内读写业务应用数据集的运行期通道（A3 第 2 节三件事实） |
-| handle | 应用后端引用自己 schema 的句柄，`tableOf(handle, table)` 解析真名 |
+| `buiTable('表名')` | 后端引用自己 schema 里表的唯一写法，从 `DATASETS_MANIFEST` 解析真名（`bui_{data_uid}`）；不写死 schema 名、不用 handle |
+| 三个必备页面 | 首页 / 项目列表页 / 消息中心——脚手架硬约束，只约束存在且可达，不约束形态 |
 | 可编辑性声明 | PG 列注释里的 `[editable:user\|agent\|system]` 前缀，谁能写这列的唯一正本 |
 | 创建态 / 进行态 | 应用页 = 发起一切；项目页 = 只看进度和回表单 |
 | 生产回流 / 编辑回流 | 场景包产出写库 / 用户手动改库——两条写入通道，共治规则见约束 9 |
