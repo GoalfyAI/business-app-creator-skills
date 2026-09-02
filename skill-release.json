@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260902-d983e1",
-  "package_version": "1.9.1",
+  "version": "v20260902-fb9a66",
+  "package_version": "1.9.2",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-02T03:58:21Z",
-  "update_reason": "S2-3.4 重写：业务应用数据集读写是 Workflow 输入来源的设计决策——逐字段决定入口表单 / 脚本调 dscli_business_dataset 读数据集 / 组合兜底（found=false 回退表单值），FA 调用显式写在脚本里并给出形状；预加载挂载降为依赖声明；S1 内部资产清单补输入字段来源与回退",
+  "released_at": "2026-09-02T03:59:45Z",
+  "update_reason": "S2-3.4 点明 dscli_business_dataset 在脚本里的用法与任何 FastAgent 相同（tool 显式调用 + 预加载声明），非挂上即生效的特殊机制",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -24,7 +24,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "1a49c75b820a8fa507de8a2ccac0e1b2d5030150bcf46ec1c53ad731a3b1d62e",
+    "SKILL.md": "f38879db52a9225e0c041309e8dd43e568a8512bfafde7b7212f6b6982a7437d",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "checklists/Workflow验收检查清单.md": "bd29d51e6ff87f79a6ae4cb31bdfae0cc262772b08890fb8d0fe34c2caf3b0fd",
     "checklists/场景包验收检查清单.md": "78e1250e19f186f74150af9a3d486763bf067e5e0063e3739511b3efbb437661",
@@ -34,7 +34,7 @@
     "references/平台对象与运行模型.md": "dd4d18a6dad3a95b591776806b8461cccfdefa7c2f353cf7864f4cb05d37a82f",
     "references/表结构与累加机制.md": "da2fb15ed3aee70d3f2c9255713da5335545255e03216cb151f6486b659df3be",
     "stages/S1-业务设计.md": "1e87b496f18f3a321b03ee08e109de33615640209c460f1798267a16fc28f9e7",
-    "stages/S2-资产制作.md": "f2ea49c0972b391f99875191faa2028ccd1534f5442e6ba3a8521e12d9798213",
+    "stages/S2-资产制作.md": "bd096d56c240666393319a3768312c8df73e5462605aab07d05f38e6152ac819",
     "stages/S3-业务应用.md": "5d5f0e2c5f9597ecaec4e66d1a5a93cad57b4e992309d9b3486111770c576e49",
     "stages/S4-验证与修正.md": "7c5da42b2f975dc90385dbf1ebb6ebc906a55db7f632fdfd5862792181002011",
     "stages/S5-发布与交付.md": "07fcf0a14f446e1b11974e4926e068e097ad28d6ba01f4fd817d8471192064ec",
