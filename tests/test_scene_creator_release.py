@@ -123,7 +123,7 @@ def test_workflow_guidance_routes_event_workflows_through_business_runtime():
     skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8") + (
         SKILL_ROOT / "references" / "平台对象与运行模型.md"
     ).read_text(encoding="utf-8")
-    asset_stage = (SKILL_ROOT / "stages" / "S2-资产设计与制作.md").read_text(encoding="utf-8")
+    asset_stage = (SKILL_ROOT / "stages" / "S3-资产制作.md").read_text(encoding="utf-8")
     checklist = (SKILL_ROOT / "checklists" / "Workflow验收检查清单.md").read_text(
         encoding="utf-8"
     )
@@ -160,8 +160,7 @@ def test_workflow_guidance_separates_delivery_verification_from_business_accepta
 
 
 def test_business_system_is_referred_to_app_creator():
-    """业务应用制作已移交 app-creator：S3 只是转介页，包验收不检查系统。"""
-    stage = (SKILL_ROOT / "stages" / "S3-业务应用.md").read_text(encoding="utf-8")
+    """业务应用制作已移交 app-creator：路由器约束 8 承载转介与接缝物；S3 是资产制作阶段。"""
     router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
     acceptance = (SKILL_ROOT / "checklists" / "场景包验收检查清单.md").read_text(
         encoding="utf-8"
@@ -170,9 +169,11 @@ def test_business_system_is_referred_to_app_creator():
         SKILL_ROOT / "references" / "平台对象与运行模型.md"
     ).read_text(encoding="utf-8")
 
-    assert "已移交 app-creator" in stage
-    assert "先包后应用" in stage
-    assert "接缝物" in stage
+    assert "app-creator" in router
+    assert "先包后应用" in router
+    assert "接缝物" in router
+    assert (SKILL_ROOT / "stages" / "S3-资产制作.md").is_file()
+    assert not (SKILL_ROOT / "stages" / "S3-业务应用.md").exists()
     assert not (SKILL_ROOT / "references" / "业务应用设计方法论.md").exists()
     assert not (SKILL_ROOT / "checklists" / "业务应用验收检查清单.md").exists()
     assert "业务应用分线" in router
@@ -180,7 +181,6 @@ def test_business_system_is_referred_to_app_creator():
     # 搬家后的渲染正本：内容进业务字段的硬规则落在运行模型 reference
     assert "要渲染的内容必须以业务字段出现在 `output` 中" in rendering
     assert "读不到文件正文" in rendering
-
 
 def test_zip_packages_are_deterministic_and_utf8(tmp_path: Path):
     """无插件管理器的平台靠 zip 分发：内容不变时字节必须一致，中文名不能乱码。"""

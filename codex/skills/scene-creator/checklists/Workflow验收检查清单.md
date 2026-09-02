@@ -20,7 +20,7 @@
 3. 证据不足时按需读取实际引用的 FastAgent、Tool Group 或工具 Schema，不凭名称猜参数。
 4. 检查 input/output Schema 均为根对象，脚本为 `async def run(input, ctx)`，最终直接返回匹配对象。
 5. 检查每个 `tool()` 的真实调用名、required 参数、类型、来源、最小 `_output` 和业务化 `_rationale`。“最小”仍**必须**覆盖代码实际读取的完整嵌套路径；读数组元素字段时核对 `items.type=object`、`items.properties` 和未做缺省处理的 `items.required`。
-6. 检查文件只来自 input 文件字段、`ctx.skill_dir` 或本轮过程/输出目录；正式文件位于 `ctx.output_dir` 并以 `workspace-file-path` 返回。工具或 FastAgent 真正生成并返回的文件可以继续传递；作为路线交付返回的文件，须已收进最终节点 `ctx.output_dir`（S2-11.3 交付链）。仅计划使用的目标路径或目录不能冒充已经存在的交付文件。
+6. 检查文件只来自 input 文件字段、`ctx.skill_dir` 或本轮过程/输出目录；正式文件位于 `ctx.output_dir` 并以 `workspace-file-path` 返回。工具或 FastAgent 真正生成并返回的文件可以继续传递；作为路线交付返回的文件，须已收进最终节点 `ctx.output_dir`（S3-4.3 交付链）。仅计划使用的目标路径或目录不能冒充已经存在的交付文件。
 7. 区分三种结束语义：成功产物必须真实存在且满足成功契约；技术失败必须让异常冒泡；合法无产物必须有明确业务状态并省略文件字段，成功分支仍条件化要求产物。
 8. 对照轨迹逐步核对 kind、状态、错误、输出形状、字段衔接和最终输出。
 
@@ -45,9 +45,9 @@ Preview 对事件生命周期采用保守的静态证明。用于满足生命周
 - 每个正常 `return` 分支，***必须***在结果真实成立后发布已声明的 `stage_result`；事件不能替代符合 `output_schema` 的最终返回对象。
 - 产生文件交付物时，脚本只写入 `ctx.output_dir` 并按 `output_schema` 返回路径——但**只在 `output_schema` 里声明并返回，不会被登记为 Artifact**：文件登记的输入是最终节点 `delivery.mapping` 的求值结果，文件路径字段**必须同时**出现在 `output_schema` 与 `delivery.mapping` 中。最终节点正常返回后，编排完成 Delivery mapping、文件登记与冻结（登记来源即 mapping 求值结果）；Runtime 随后逐份自动发布 `artifact_ready`，并发布 `delivery_ready`。脚本不得声明或发布这两个平台事件，非最终节点不得把中间结果冒充最终交付。
 - 脚本明确处理的业务失败终态，***必须***发布 `stage_failed`；未被安全解释的技术异常必须继续冒泡。
-- 密度事件（额外 `stage_started` / 中间 `stage_result` / `attention_required`）按 S2-12.4 的规则核对：未设计不单独判失败；已声明却在代表性路径未触达时列为盲区并说明消费方影响；出现 `stage_progress` 即不通过。
+- 密度事件（额外 `stage_started` / 中间 `stage_result` / `attention_required`）按 S3-5.4 的规则核对：未设计不单独判失败；已声明却在代表性路径未触达时列为盲区并说明消费方影响；出现 `stage_progress` 即不通过。
 
-同时核对：脚本只通过 `emit_business_event(event_type=..., event_key=..., payload=...)` 发布资产中已声明的脚本事件；`event_type` 与 `event_key` 都是稳定非空字符串字面量；Payload 是对象并满足对应根对象 Schema；事件契约包含版本、描述和 `additionalProperties:false` 的 Payload Schema，且 `required` 含对应事件类型的平台字段（见 S2-12.4）；载荷不含内部 ID、原始工具结果、提示词、脚本、敏感数据或内部错误；`attention_required` 不复制运行中表单。脚本若声明或调用 Runtime 自有的 `artifact_ready`/`delivery_ready`，或直接打印、发送普通消息、自造 `print_event`、调用未公开内部接口模拟业务事件，裁决为 `blocked`。Runtime 的 `delivery_ready` 仍不得代替最终审阅。
+同时核对：脚本只通过 `emit_business_event(event_type=..., event_key=..., payload=...)` 发布资产中已声明的脚本事件；`event_type` 与 `event_key` 都是稳定非空字符串字面量；Payload 是对象并满足对应根对象 Schema；事件契约包含版本、描述和 `additionalProperties:false` 的 Payload Schema，且 `required` 含对应事件类型的平台字段（见 S3-5.4）；载荷不含内部 ID、原始工具结果、提示词、脚本、敏感数据或内部错误；`attention_required` 不复制运行中表单。脚本若声明或调用 Runtime 自有的 `artifact_ready`/`delivery_ready`，或直接打印、发送普通消息、自造 `print_event`、调用未公开内部接口模拟业务事件，裁决为 `blocked`。Runtime 的 `delivery_ready` 仍不得代替最终审阅。
 
 ## 必查反模式
 
@@ -63,8 +63,8 @@ Preview 对事件生命周期采用保守的静态证明。用于满足生命周
 - 带业务事件的单 Workflow 在正式运行时直接派发，随后通过补写或猜测 Runtime ID 绕过持久化身份门。
 - 上游已判定的结论（如素材可用性）没有随数据一起传给**所有据此做决策的下游环节**——只传数据不传判断即数据流断链。检查方式：画一遍环节间数据流，逐个确认下游拿到的信息足够做它要做的决定。
 - 表示集合或可能为空的字段在 `_output` 中声明为 string：模型会用文字表达"没有"，***任何非空判断都会失效***。这类字段声明为 array，用长度判断有无。
-- 用目录约定拼接读取先前运行的产物（如 `{当前目录}/v{n}.json`）——运行产物目录逐次不同，跨运行引用必须传绝对 workspace 路径（见 S2-11.3）。
-- 被下游节点 `input_mapping` 引用、且在下游 `input_schema` 中 required 的字段，未在本节点**所有 `return` 分支**返回：`after_success` 派发不看业务成败，blocked 分支同样被取字段，缺失即路线中断（与 S2-14.1 的 schema 裁决同一原理）。
+- 用目录约定拼接读取先前运行的产物（如 `{当前目录}/v{n}.json`）——运行产物目录逐次不同，跨运行引用必须传绝对 workspace 路径（见 S3-4.3）。
+- 被下游节点 `input_mapping` 引用、且在下游 `input_schema` 中 required 的字段，未在本节点**所有 `return` 分支**返回：`after_success` 派发不看业务成败，blocked 分支同样被取字段，缺失即路线中断（与 S3-7.1 的 schema 裁决同一原理）。
 
 ## 输出
 
