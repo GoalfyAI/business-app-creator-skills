@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260902-4e4ad1",
-  "package_version": "1.17.4",
+  "version": "v20260902-796c2e",
+  "package_version": "1.18.0",
   "mcp_endpoint": "https://workflow-mcp.qa.goalfyai.cn/mcp",
-  "released_at": "2026-09-02T12:40:08Z",
-  "update_reason": "app-creator A5 新增下线（business_ui_manage offline：拆容器保留库与源码，发布版先取消发布），约束 7 同步；版本体系补对 live 行直接 update 的响应读法（metadata.draft_asset_id 为准）；S3 4.3 补单条冒泡独立沙箱与上游产物经 workspace_files 挂载；S4 补桩值路径分歧的处置（换对得上的输入重跑）",
+  "released_at": "2026-09-02T12:56:06Z",
+  "update_reason": "S4 第四层恢复表单直跑（submit_data）为主入口：只有经入口表单启动才走业务路线 Runtime，编排器（派发/映射/运行中表单/事件/Delivery/Review）在此真实验证；聊天入口 task 模式降为第二入口只核路由；补运行实例标识由服务端生成的规则、formdata_pointer 用法、编排器专项核对项；S1 真机验证行与 app-creator A4 分工同步",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -24,7 +24,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "6e1ec6f5dcd33f3cad43de1ecb8ba9a99b96c2c7e51e4321c17e2e68f5726d3f",
+    "SKILL.md": "3fdd57aa0de1b8d1300ac7b4364a1c9a414586b1bcf1eb39f8825973eca266be",
     "agents/openai.yaml": "861c83000e4c5738e28a73ea26f08dde7c26a982b04995a707b33af7d1fe3da7",
     "checklists/Workflow验收检查清单.md": "2b3d7c8ef9458240ef66b016b6bf5152730464327c07e69805448a11e8bb7637",
     "checklists/场景包验收检查清单.md": "78e1250e19f186f74150af9a3d486763bf067e5e0063e3739511b3efbb437661",
@@ -33,10 +33,10 @@
     "references/场景包版本体系与发布逻辑.md": "6e5ca4c3ecf4942d1d4fa6636ac38bb4a8be0afedb74b4c9be45c4b255e76262",
     "references/平台对象与运行模型.md": "1ff1d6f5beae776274090ea68c6605b80dd7ba27f3294dfb86d3db8b4be879df",
     "references/表结构与累加机制.md": "c13c0a8720f84fcccd6a3551ba250fd38682649fa96da068519e1ddbc06ad342",
-    "stages/S1-业务设计.md": "712569f5f4f9633a03342a70df3f839517a84b9b5665c7b7ae110d0d71d1b42f",
+    "stages/S1-业务设计.md": "c9cbfb570c00f43a0cef1aa29ac0f6d0a2f2637e77eca56b2d5d5a4e5714bf4d",
     "stages/S2-资产设计.md": "fca41477734efc82ef66edbe0f91b730cfb470b3d02b3eb9ee0acc8b80c7028a",
     "stages/S3-资产制作.md": "0b6234e3fe14f2e6c91e2002722bebb017aed6f809607eba35eb0fb451307f4a",
-    "stages/S4-验证与修正.md": "ee519798be44378e62f4146c1c9d45cc85c5010ff06f83d94c689c6cb08c02e2",
+    "stages/S4-验证与修正.md": "6f870db2bf405e73cabc29b0ddb1b90fb8b1879549a8f16caa59aa32c7cf3e1c",
     "stages/S5-发布与交付.md": "fed82b8a418413bc369f22051586069f86c7f074b6f69db045916de43b4e09e6",
     "stages/SD-诊断与维护.md": "a00b87502aeec333bb41e1b30fd25b02e8dd4221e10dca1cdbfd24418560150a",
     "stages/ST-能力试用.md": "d27d870c43a8a66a9c2df8fd2432c2ff086624464aae7b5750cf185278f95a8c"
