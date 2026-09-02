@@ -19,7 +19,7 @@
 2. 用 `get_asset(asset_type="tpe")` 读取当前脚本、input/output Schema、业务事件契约、preload Toolset 和 `io_table`。
 3. 证据不足时按需读取实际引用的 FastAgent、Tool Group 或工具 Schema，不凭名称猜参数。
 4. 检查 input/output Schema 均为根对象，脚本为 `async def run(input, ctx)`，最终直接返回匹配对象。
-5. 检查每个 `tool()` 的真实调用名、required 参数、类型、来源、最小 `_output` 和业务化 `_rationale`。“最小”仍**必须**覆盖代码实际读取的完整嵌套路径；读数组元素字段时核对 `items.type=object`、`items.properties` 和未做缺省处理的 `items.required`。
+5. 检查每个 `tool()` 的真实调用名（FastAgent 的调用名是返回值里的 `mr_name`，克隆后的副本调用名与源不同；禁止自行拼接 `PRIVATE_FASTAGENT_` 前缀或猜 ID）、required 参数、类型、来源、最小 `_output` 和业务化 `_rationale`。“最小”仍**必须**覆盖代码实际读取的完整嵌套路径；读数组元素字段时核对 `items.type=object`、`items.properties` 和未做缺省处理的 `items.required`。
 6. 检查文件只来自 input 文件字段、`ctx.skill_dir` 或本轮过程/输出目录；正式文件位于 `ctx.output_dir` 并以 `workspace-file-path` 返回。工具或 FastAgent 真正生成并返回的文件可以继续传递；作为路线交付返回的文件，须已收进最终节点 `ctx.output_dir`（S3-4.3 交付链）。仅计划使用的目标路径或目录不能冒充已经存在的交付文件。
 7. 区分三种结束语义：成功产物必须真实存在且满足成功契约；技术失败必须让异常冒泡；合法无产物必须有明确业务状态并省略文件字段，成功分支仍条件化要求产物。
 8. 对照轨迹逐步核对 kind、状态、错误、输出形状、字段衔接和最终输出。
