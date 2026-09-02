@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260902-14e3f7",
-  "package_version": "1.17.2",
+  "version": "v20260902-db4efd",
+  "package_version": "1.17.3",
   "mcp_endpoint": "https://workflow-mcp.qa.goalfyai.cn/mcp",
-  "released_at": "2026-09-02T12:32:35Z",
-  "update_reason": "克隆命名规则与 FastAgent 调用名 mr_name 成文：clone_asset 不传 name = 源名+_copy（再克隆递增 _copy(N)），传了用传的；mr_name = PRIVATE_FASTAGENT_<最终名>_<新 ID>，只能从返回值反读，克隆后脚本与预加载清单换用副本调用名",
+  "released_at": "2026-09-02T12:34:35Z",
+  "update_reason": "约束 11 克隆调用名表述改清晰：有规律但不可预测——名字部分看是否传 name（源名+_copy / 传的名），ID 后缀创建后才有；两个副本一个带 _copy 一个不带是两次调用传参不同，不是随机；结论只有反读",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -24,14 +24,14 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "ce1063ebe61530f9dc24a5528745b7f88bf46bf454027cc7ebf5a7f19697bc10",
+    "SKILL.md": "206bd3de3f93592b92eb617530ecc7e9f46eefa3428362bad62f934121373f81",
     "agents/openai.yaml": "861c83000e4c5738e28a73ea26f08dde7c26a982b04995a707b33af7d1fe3da7",
     "checklists/Workflow验收检查清单.md": "2b3d7c8ef9458240ef66b016b6bf5152730464327c07e69805448a11e8bb7637",
     "checklists/场景包验收检查清单.md": "78e1250e19f186f74150af9a3d486763bf067e5e0063e3739511b3efbb437661",
     "checklists/方案挑战检查清单.md": "2959bd8b3899b250a0c6830f41e40d9afe949ef17f5a0cd0b3d40abff181f50b",
     "references/依赖与MCP接入.md": "9b5930f0023ba7256ab9c6215d23cc92b00379677481e6e1e43c84b31496b753",
     "references/场景包版本体系与发布逻辑.md": "279b1e7e437fb30386ed86ab2addf5e3c79f623b2184427ba06ca61cba4f060d",
-    "references/平台对象与运行模型.md": "279b23dbd1c5b073cf178300fb18c5147c60bbb8fa0acc7cae236fa7a9e7eaba",
+    "references/平台对象与运行模型.md": "1ff1d6f5beae776274090ea68c6605b80dd7ba27f3294dfb86d3db8b4be879df",
     "references/表结构与累加机制.md": "c13c0a8720f84fcccd6a3551ba250fd38682649fa96da068519e1ddbc06ad342",
     "stages/S1-业务设计.md": "ce1d0e996b19089b865796c194803cec4ae65eda0d24d619d122293fced96ea0",
     "stages/S2-资产设计.md": "fca41477734efc82ef66edbe0f91b730cfb470b3d02b3eb9ee0acc8b80c7028a",
