@@ -162,7 +162,7 @@ def test_business_system_is_referred_to_app_creator():
         encoding="utf-8"
     )
     rendering = (
-        SKILL_ROOT / "references" / "运行模型与渲染语义.md"
+        SKILL_ROOT / "references" / "平台对象与运行模型.md"
     ).read_text(encoding="utf-8")
 
     assert "已移交 app_creator" in stage

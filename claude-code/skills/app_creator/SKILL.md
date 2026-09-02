@@ -65,8 +65,8 @@ description: 当开发者需要为一个已上线的 GoalfyMax 场景包制作�
 | 阶段 | 文件 | 进入前提 | 状态 |
 |---|---|---|---|
 | A1 应用设计 | `stages/A1-应用设计.md` | 目标场景包已上线；有 `write` 工单 | 可执行 |
-| A2 数据面制作 | `stages/A2-数据面制作.md` | A1 数据设计已确认 | **骨架待成文**（MCP 模板 schema 工具开发中） |
-| A3 应用实现 | `stages/A3-应用实现.md` | A1 设计确认门通过；模板 schema 可用 | 可执行 |
+| A2 数据面制作 | `stages/A2-数据面制作.md` | A1 数据设计已确认 | 可执行（`dataset_template_workspace`） |
+| A3 应用实现 | `stages/A3-应用实现.md` | A1 设计确认门通过；业务应用数据集模板已定稿（A2） | 可执行 |
 | A4 预部署与验收 | `stages/A4-预部署与验收.md` | A3 出口条件满足 | 可执行（`business_ui_manage` / `business_ui_bundle`） |
 | A5 发布与交付 | `stages/A5-发布与交付.md` | A4 验收通过 | 可执行 |
 | AD 诊断与维护 | `stages/AD-诊断与维护.md` | 有明确的目标应用或问题 | 骨架（随实战补报错对照） |
@@ -77,7 +77,7 @@ description: 当开发者需要为一个已上线的 GoalfyMax 场景包制作�
 A1 应用设计   契约基线 → 数据设计(表/字段/可编辑性/回流语义) → 四类页面设计
               → 产品设计文档 + 原型 → 开发者一次确认
   ▼
-A2 数据面制作 MCP 建模板 schema(逐列 COMMENT 声明) → PG 连接本地验证 → 样例与查询 → 定稿
+A2 数据面制作 工作集 open → create_table(逐列 [editable] COMMENT) → inspect 反读 → extract 固定版本 → 挂到 business_ui
   ▼
 A3 应用实现   后端(CRUD/统计/回流 API) + 前端(四类页面) → 本地测试(mock/dev-host/Playwright)
   ▼
