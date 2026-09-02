@@ -168,6 +168,7 @@
 | 版本闸门拒绝（提示需要先定稿或先建草稿，如 `PERSONAL_VERSION_FINALIZE_REQUIRED`） | 内容修改撞了上线版本 → 回 S1 第 6 节取得可编辑草稿；上线动作撞了未定稿草稿 → 走 S5 第 2 节定稿上线。**禁止**绕过闸门直接改写状态字段 |
 | `task_manager(insert)` 响应带 `format_warning`（“检查点建议一条路线一条”） | 记录已写入，但把多条路线的 `orchestration_id` 或 `run_id` 合在了一条里，或传成了数组；结单核对时会对不上。建议补成每条路线一条 `insert`，各带自己的 `run_id`（S4 2.4） |
 | `task_manager(complete)` 返回 `WORKFLOW_TASK_ROUTE_BUBBLE_EVIDENCE_REQUIRED` | 发布范围里有路线没有对得上的 Bubble 证据：没跑、跑失败、`run_id` 属于别的路线、或证据早于最后一次编排修改。按响应里的路线状态补跑或修同一资产后重跑（S5 第 3 节）；**禁止**删标签、改文字或另开工单绕过 |
+| `get_project_execution_logs(download)` 报“不是本项目本次可识别的产出文件” | 路径没出现在同一项目的 `outputs` 返回值里：先调 `outputs` 拿清单再下载；Workflow 节点产物在 `/workspace/task_agent/<taskpoint>/output/`，过程目录 `process/` 与受保护前缀（`.workflow_downloads/`、`input/` 等）不算产物。清单里确实没有交付文件时，看该节点是否把文件收进了 `ctx.output_dir` 并进了 `delivery.mapping`（S3 4.3 产出文件的交付链） |
 | 外部工具报参数格式错、路径不存在、文件读不到 | 先回该工具的实时契约看文件参数收什么（`file_to_url` 换出的 URL、`/workspace` 路径还是内容本体），再核对脚本里的准备步骤；多半是写脚本前没读契约、没取样（S3 2.2）。按契约改准备步骤，拿不准就取样一次，不要在脚本里加分支猜格式 |
 | `has_ui: true` 但 `entry_url` 为空字符串 | 界面地址未随派生继承：部署之后又发生了派生新草稿行的修改（如改编排），激活地址留在旧行。在当前草稿行重新部署界面（`scene_package_ui_bundle`，属存量附属界面维护，见本文 3.4），反读 `entry_url` 非空后再上线 |
 

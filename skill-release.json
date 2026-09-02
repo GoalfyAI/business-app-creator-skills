@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260902-1f0c27",
-  "package_version": "1.19.2",
+  "version": "v20260902-61b8d3",
+  "package_version": "1.19.3",
   "mcp_endpoint": "https://workflow-mcp.qa.goalfyai.cn/mcp",
-  "released_at": "2026-09-02T13:59:58Z",
-  "update_reason": "版本体系与 SD：workflow_tpe_manage(update) 自动采用场景包草稿时响应 message 以【自动采用】明说改了哪个草稿、编排引用是否重写，metadata.scene_adoption.auto 标注；看到就反读草稿、本地编排 JSON 视为过期；没有提示 = 没采用要自己 attach",
+  "released_at": "2026-09-02T14:07:14Z",
+  "update_reason": "S4 工具表与 SD 报错对照：get_project_execution_logs 的 outputs 覆盖 /workspace/output、Workflow 节点产物目录 /workspace/task_agent/<taskpoint>/output/ 与交付登记的 artifacts；download/bundle 路径必须取自 outputs；download 被拒时的排查路径",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -24,7 +24,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "4a80b4debd1ed01f87be820083c171c983c725755ce9efaf84660c0a504800f3",
+    "SKILL.md": "491a032945f3a1a6c4c2950d6cc0b2910e6e56869feec29f0a12719a48315628",
     "agents/openai.yaml": "861c83000e4c5738e28a73ea26f08dde7c26a982b04995a707b33af7d1fe3da7",
     "checklists/Workflow验收检查清单.md": "7f35892bfd0332b1f97a119c77304f087c1b61356643ac80dce2d9e473fa127b",
     "checklists/场景包验收检查清单.md": "78e1250e19f186f74150af9a3d486763bf067e5e0063e3739511b3efbb437661",
@@ -36,9 +36,9 @@
     "stages/S1-业务设计.md": "c9cbfb570c00f43a0cef1aa29ac0f6d0a2f2637e77eca56b2d5d5a4e5714bf4d",
     "stages/S2-资产设计.md": "3b11df06efcda044610264061c81505a824da158293f0810ef55409c7cc668c4",
     "stages/S3-资产制作.md": "4eb8d0d85261f3c7883faffcd0c3fe808f9f324ea14306f3afdf023e5b1aac0c",
-    "stages/S4-验证与修正.md": "e5683202b7a3b0b8cc13f75c2f514c2e1d04204d63c4aaa9b4b38b7e65974859",
+    "stages/S4-验证与修正.md": "9063553d67405c63b076f9c449b82fb8dc92bb66c158ce7d76c099df6265ad36",
     "stages/S5-发布与交付.md": "fed82b8a418413bc369f22051586069f86c7f074b6f69db045916de43b4e09e6",
-    "stages/SD-诊断与维护.md": "6d9ba2ffc7569b1ea7adb9af3ae32142fcb4e17a6e3268d2c107ebb22327a2d1",
+    "stages/SD-诊断与维护.md": "aafbc18cf8c9e262b2c9b95e958a6eb47ca49689cb3f709b7a0d3ec1b1448232",
     "stages/ST-能力试用.md": "d27d870c43a8a66a9c2df8fd2432c2ff086624464aae7b5750cf185278f95a8c"
   }
 }
