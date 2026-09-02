@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260902-4fc3bf",
-  "package_version": "1.17.0",
+  "version": "v20260902-98acd3",
+  "package_version": "1.17.1",
   "mcp_endpoint": "https://workflow-mcp.qa.goalfyai.cn/mcp",
-  "released_at": "2026-09-02T08:08:59Z",
-  "update_reason": "scene-creator 约束 8 不再强制分工单；app-creator A1 加项目模型（创建/复用）、功能选择菜单（含应用级文件库 sdk.file）、先向开发者要参考资料、交付《业务应用计划书》（截图展示 + 后端功能阐述）经确认才进 A2/A3；A4 新增预部署后上线前的自动化测试硬门（确认过的功能 / 编排运作 / 数据增删改查三类全绿），deploy 链路跟上 Hub 直起容器；A3 补应用级文件 SDK",
+  "released_at": "2026-09-02T08:16:48Z",
+  "update_reason": "A4 ③ 落库核对改为查开发者自己的库（工作集 connect 连接串 / 已 close 则经后端接口），去掉 dataset_read 读业务应用数据集的错误说法；S3 注明业务应用数据集模板挂 business_ui 不挂场景包",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -24,7 +24,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "6d43d8d1bfc071c3ee3b73ed312f2703fb9d9ccb73f4a7099c90c7313f265783",
+    "SKILL.md": "e5e000acb2afdbb5c1d7141024b40a97ae84df63b134b672316b022c6459b528",
     "agents/openai.yaml": "861c83000e4c5738e28a73ea26f08dde7c26a982b04995a707b33af7d1fe3da7",
     "checklists/Workflow验收检查清单.md": "d31ae05ac8cff5a68dc32f9c48bd657aefe1d9327a2cf9aa94239943cbcbaf5e",
     "checklists/场景包验收检查清单.md": "78e1250e19f186f74150af9a3d486763bf067e5e0063e3739511b3efbb437661",
@@ -35,7 +35,7 @@
     "references/表结构与累加机制.md": "c13c0a8720f84fcccd6a3551ba250fd38682649fa96da068519e1ddbc06ad342",
     "stages/S1-业务设计.md": "ce1d0e996b19089b865796c194803cec4ae65eda0d24d619d122293fced96ea0",
     "stages/S2-资产设计.md": "fca41477734efc82ef66edbe0f91b730cfb470b3d02b3eb9ee0acc8b80c7028a",
-    "stages/S3-资产制作.md": "84881a967f0946487874d18465eb0e265ea4c4f413e8c31ece1599c1ddef61f4",
+    "stages/S3-资产制作.md": "19f8d55b58f25dd0ad15d12f7113b5311986c6e21ebdd204c95c1bef7c1fcff2",
     "stages/S4-验证与修正.md": "6201d39f5086701e135450303501dd5f27fdb2e2f6598976e8347a2174ffe06c",
     "stages/S5-发布与交付.md": "fed82b8a418413bc369f22051586069f86c7f074b6f69db045916de43b4e09e6",
     "stages/SD-诊断与维护.md": "a00b87502aeec333bb41e1b30fd25b02e8dd4221e10dca1cdbfd24418560150a",

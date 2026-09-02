@@ -1,6 +1,6 @@
 [project]
 name = "scene-creator-skills"
-version = "1.17.0"
+version = "1.17.1"
 description = "GoalfyMax 场景包制作 Skill、Codex/Claude Code 插件模板与可复现发布工具"
 requires-python = ">=3.10"
 dependencies = [
