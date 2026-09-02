@@ -86,13 +86,9 @@ REQUIRED_SKILL_KEYWORDS = {
     "场景包",
     "workflow",
     "business UI",
-    "业务系统",
+    "业务应用",
     "GoalfyMax",
     "MCP",
-    "business archive",
-    "业务档案",
-    "personalized routes",
-    "个性化选路",
 }
 # 每次发布都要同步提升的插件 manifest：Claude 与 Codex 靠 plugin.json 的版本
 # 判断有无新版，漏掉任何一个都会让已安装用户收不到更新。

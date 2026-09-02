@@ -31,9 +31,9 @@
 - 两者都不含业务事件时，该 Workflow 可以按实时工具契约直接派发，本节其余事件覆盖项不适用。
 - 任一方出现业务事件时，另一方也必须形成一致的完整契约，并将该 Workflow 标记为“正式运行必须进入 Business Runtime”。单条 Workflow 也必须建立单节点业务路线，禁止直接派发。
 - Bubble 使用服务端分配的验证 Business/Runtime 身份；该身份不是正式业务身份，禁止复制、缓存或写入脚本。
-- 出现 `Workflow business event requires persisted Runtime identity` 时，正式运行优先检查是否误走直接派发；Bubble 则检查服务端是否分配验证身份。不得让脚本、Agent、业务系统或 MCP 调用方伪造 `business_id`、`orchestration_id` 或 `workflow_runtime_id`。
+- 出现 `Workflow business event requires persisted Runtime identity` 时，正式运行优先检查是否误走直接派发；Bubble 则检查服务端是否分配验证身份。不得让脚本、Agent、业务应用或 MCP 调用方伪造 `business_id`、`orchestration_id` 或 `workflow_runtime_id`。
 
-业务事件是面向 Business Runtime 和业务系统的公开事实，不是运行日志。对带事件 Workflow，按脚本全部可达终态分支逐项检查：
+业务事件是面向 Business Runtime 和业务应用的公开事实，不是运行日志。对带事件 Workflow，按脚本全部可达终态分支逐项检查：
 
 - Preview 已证明事件契约和原语调用要么同时为空，要么声明—调用一致且生命周期闭合；带事件时，开始事件位于首个业务动作前，每条可达 `return` 前存在结果或受控失败事件。
 - Bubble 的 `run_evidence.business_events` 已给出 `declared/emitted/missing_required/unreached_event_keys/order_valid/persistence_verified/passed`；只有数据库持久化成功的事件计入 `emitted`，实时推送不作为替代证据。
@@ -45,7 +45,7 @@ Preview 对事件生命周期采用保守的静态证明。用于满足生命周
 - 每个正常 `return` 分支，***必须***在结果真实成立后发布已声明的 `stage_result`；事件不能替代符合 `output_schema` 的最终返回对象。
 - 产生文件交付物时，脚本只写入 `ctx.output_dir` 并按 `output_schema` 返回路径——但**只在 `output_schema` 里声明并返回，不会被登记为 Artifact**：文件登记的输入是最终节点 `delivery.mapping` 的求值结果，文件路径字段**必须同时**出现在 `output_schema` 与 `delivery.mapping` 中。最终节点正常返回后，编排完成 Delivery mapping、文件登记与冻结（登记来源即 mapping 求值结果）；Runtime 随后逐份自动发布 `artifact_ready`，并发布 `delivery_ready`。脚本不得声明或发布这两个平台事件，非最终节点不得把中间结果冒充最终交付。
 - 脚本明确处理的业务失败终态，***必须***发布 `stage_failed`；未被安全解释的技术异常必须继续冒泡。
-- 细分阶段、中间结果和非表单提醒，***建议结合配套业务系统的消费需要考虑***是否分别使用额外 `stage_started`、`stage_result` 和 `attention_required`。未设计这些可选事件不单独判失败；已经声明却在代表性路径未触达时，必须列为盲区并说明消费方影响。`stage_progress` 不作为系统契约。
+- 细分阶段、中间结果和非表单提醒，***建议结合配套业务应用的消费需要考虑***是否分别使用额外 `stage_started`、`stage_result` 和 `attention_required`。未设计这些可选事件不单独判失败；已经声明却在代表性路径未触达时，必须列为盲区并说明消费方影响。`stage_progress` 不作为系统契约。
 
 同时核对：脚本只通过 `emit_business_event(event_type=..., event_key=..., payload=...)` 发布资产中已声明的脚本事件；`event_type` 与 `event_key` 都是稳定非空字符串字面量；Payload 是对象并满足对应根对象 Schema；事件契约包含版本、描述和 `additionalProperties:false` 的 Payload Schema，且 `required` 含对应事件类型的平台字段（见 S2-6.4）；载荷不含内部 ID、原始工具结果、提示词、脚本、敏感数据或内部错误；`attention_required` 不复制运行中表单。脚本若声明或调用 Runtime 自有的 `artifact_ready`/`delivery_ready`，或直接打印、发送普通消息、自造 `print_event`、调用未公开内部接口模拟业务事件，裁决为 `blocked`。Runtime 的 `delivery_ready` 仍不得代替最终审阅。
 
@@ -58,7 +58,7 @@ Preview 对事件生命周期采用保守的静态证明。用于满足生命周
 - 返回 URL、`/tmp`、固定共享路径或并不存在的文件作为正式产出。
 - 用 `""`、占位路径或虚构路径表示技术失败；或者只删除文件字段的 `required`，导致成功分支也可以无产物通过。
 - 已声明脚本业务事件，却只返回最终对象而没有脚本侧开始与结束事件；路线交付还需核对 Runtime 是否成功登记 Artifact、冻结 Delivery，并自动产生 `artifact_ready` 与 `delivery_ready`。核对以路线证据中的 `artifacts[].output_paths` 为准：其中的 mapping 表达式**必须**覆盖 `output_schema` 声明的全部文件路径字段，缺失即漏映射。
-- 在每个工具步骤后机械发送事件，或为业务系统声明、发送 `stage_progress`。
+- 在每个工具步骤后机械发送事件，或为业务应用声明、发送 `stage_progress`。
 - 用业务事件代替入口表单、运行中表单、Runtime 恢复或 Delivery Review。
 - 带业务事件的单 Workflow 在正式运行时直接派发，随后通过补写或猜测 Runtime ID 绕过持久化身份门。
 - 上游已判定的结论（如素材可用性）没有随数据一起传给**所有据此做决策的下游环节**——只传数据不传判断即数据流断链。检查方式：画一遍环节间数据流，逐个确认下游拿到的信息足够做它要做的决定。

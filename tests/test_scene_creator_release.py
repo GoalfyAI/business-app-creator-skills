@@ -130,7 +130,7 @@ def test_workflow_guidance_routes_event_workflows_through_business_runtime():
         assert "单节点业务路线" in document
         assert "直接派发" in document
     assert "验证身份只用于本次 Bubble" in asset_stage
-    assert "不得让脚本、Agent、业务系统或 MCP 调用方伪造" in checklist
+    assert "不得让脚本、Agent、业务应用或 MCP 调用方伪造" in checklist
     assert "只由服务端在正式路线运行中持久化生成" in acceptance
 
 
@@ -155,8 +155,8 @@ def test_workflow_guidance_separates_delivery_verification_from_business_accepta
 
 
 def test_business_system_is_referred_to_app_creator():
-    """业务系统制作已移交 app_creator：S3 只是转介页，包验收不检查系统。"""
-    stage = (SKILL_ROOT / "stages" / "S3-业务系统.md").read_text(encoding="utf-8")
+    """业务应用制作已移交 app_creator：S3 只是转介页，包验收不检查系统。"""
+    stage = (SKILL_ROOT / "stages" / "S3-业务应用.md").read_text(encoding="utf-8")
     router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
     acceptance = (SKILL_ROOT / "checklists" / "场景包验收检查清单.md").read_text(
         encoding="utf-8"
@@ -168,10 +168,10 @@ def test_business_system_is_referred_to_app_creator():
     assert "已移交 app_creator" in stage
     assert "先包后应用" in stage
     assert "接缝物" in stage
-    assert not (SKILL_ROOT / "references" / "业务系统设计方法论.md").exists()
-    assert not (SKILL_ROOT / "checklists" / "业务系统验收检查清单.md").exists()
-    assert "业务系统分线" in router
-    assert "业务系统不属于本清单对象" in acceptance
+    assert not (SKILL_ROOT / "references" / "业务应用设计方法论.md").exists()
+    assert not (SKILL_ROOT / "checklists" / "业务应用验收检查清单.md").exists()
+    assert "业务应用分线" in router
+    assert "业务应用不属于本清单对象" in acceptance
     # 搬家后的渲染正本：内容进业务字段的硬规则落在运行模型 reference
     assert "要渲染的内容必须以业务字段出现在 `output` 中" in rendering
     assert "读不到文件正文" in rendering
