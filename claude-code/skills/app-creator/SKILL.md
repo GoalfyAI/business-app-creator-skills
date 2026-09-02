@@ -15,7 +15,7 @@ description: 当开发者需要为一个已上线的 GoalfyMax 场景包制作�
 | 产出 | 场景包 = 能力单元（编排 / Workflow / FastAgent / 事件与交付契约） | 业务应用 = 前后端部署物（界面前端 + 专属后端 + 业务应用数据集模板），以独立资产 **business_ui** 为发布单位：自己的家族与版本，挂载恰好 1 个场景包 + 至多 1 个业务应用数据集模板 |
 | 一句话 | 能干什么活 | 用户在哪、怎么持续用这个活干生意 |
 
-**先包后应用**：本 Skill 只对**已上线**的场景包开工。目标包未上线时，先用 scene-creator 完成制作与上线。
+**先包后应用**：本 Skill 只对**已上线**的场景包开工。目标包未上线时，先用 scene-creator 完成制作与上线。工单不强制分开：接着场景包工单继续干、或另开一张工单，由开发者定（scene-creator 约束 8）。
 
 **SaaS 链路**（业务应用的完整闭环，一切设计围绕它）：
 
@@ -74,14 +74,17 @@ description: 当开发者需要为一个已上线的 GoalfyMax 场景包制作�
 ```text
 工单 Gate
   ▼
-A1 应用设计   契约基线 → 数据设计(表/字段/可编辑性/回流语义) → 四类页面设计
-              → 产品设计文档 + 原型 → 开发者一次确认
+A1 应用设计   向开发者要参考资料 → 契约基线 → 项目模型(创建/复用) → 功能选择菜单
+              → 数据设计(表/字段/可编辑性/回流语义) → 页面设计 + 原型
+              → 《业务应用计划书》(截图展示 + 后端功能阐述) → 开发者一次确认
   ▼
 A2 数据面制作 工作集 open → create_table(逐列 [editable] COMMENT) → inspect 反读 → extract 固定版本 → 挂到 business_ui
   ▼
 A3 应用实现   后端(CRUD/统计/回流 API) + 前端(四类页面) → 本地测试(mock/dev-host/Playwright)
   ▼
-A4 预部署验收 business_ui 创建挂载 → 源码包上传 deploy 到 success → 真环境链路 + 清单闭合
+A4 预部署验收 business_ui 创建挂载 → 源码包上传 deploy 到 success
+              → 自动化测试门(确认过的功能 / 编排运作 / 数据增删改查，三类全绿才往下)
+              → 真环境链路 + 清单闭合
   ▼
 A5 发布交付   finalize 上线（三闸门码）→ resolve 反读 entry_url → 交付报告 → 结单
                                                                 问题 → AD 诊断维护
@@ -92,11 +95,11 @@ A5 发布交付   finalize 上线（三闸门码）→ resolve 反读 entry_url 
 制作过程的质量记账（可挑战、可闭合、可继承的条目 + 指纹绑状态、只处理 pending），细则正本见 [应用结构表与结果检查表](references/应用结构表与结果检查表.md)：
 
 - **应用结构表**：按"每个页面 + 每个后端接口 + 每张模板表"分组，条目走 挑战 → `challenged=true` → 开发者确认；
-- **结果检查表**：正反例（A1 收集的典型用户操作正例 + 数据边界反例）+ 前端校验项（Playwright 门）+ 后端校验项（接口测试）；***闭合必须用预部署环境的真实数据，mock 不足以闭合***。
+- **结果检查表**：正反例（A1 收集的典型用户操作正例 + 数据边界反例）+ 前端校验项 + 后端校验项（两者由 A4 §4 自动化测试门的三类用例在预部署部署物上闭合）；***闭合必须用预部署环境的真实数据，mock 不足以闭合***。
 
 ## 6. 工单记账与续作
 
-用 `task_manager` 同款体系：`create` 开工单、`insert` 落检查点与应用结构表/结果检查表快照、`complete` 结单。写入前做失忆测试（只剩工单还能不能接着干）；**禁止**记录密钥、PG 连接串、临时地址。阶段出口条件满足后落 `stage_exit` checkpoint（出口条件逐项状态 + 证据指针）；续作时先找最新 `stage_exit` 定位流程位置，再拉两张表的快照定位内容进度。
+用 `task_manager` 同款体系：`create` 开工单、`insert` 落检查点与应用结构表/结果检查表快照、`complete` 结单。写入前做失忆测试（只剩工单还能不能接着干）；**禁止**记录密钥、PG 连接串、临时地址。阶段出口条件满足后落 `stage_exit` checkpoint（出口条件逐项状态 + 证据指针）；续作时先找最新 `stage_exit` 定位流程位置，再拉两张表的快照定位内容进度。两份固定 checkpoint：A1 确认版《业务应用计划书》落 `app_plan`（正文 + 截图目录指针），A4 自动化测试报告落 `autotest`（跑了几条 / 过了几条 / 覆盖的计划书条目 / 盲区）。
 
 ## 7. 正本地图（工程细则以这些为准，本 Skill 不复述）
 
@@ -106,18 +109,21 @@ A5 发布交付   finalize 上线（三闸门码）→ resolve 反读 entry_url 
 | 前端宪法：红线、第一规则、SDK 速览、完成定义与自测矩阵（唯一权威） | `frontend/README.md`、`frontend/CLAUDE.md` |
 | 页面开发约束：术语、三必备页面、可恢复状态、表单回显与文件纪律、交付审阅页、消息中心/项目列表 | `frontend/docs/business-ui-guide.md` |
 | 契约区协议 v4（多包、forms/orchestrations 文件格式、delivery 声明） | `frontend/schema/README.md` |
-| 前端 SDK（两层 API、项目句柄、upload/file/storage/business） | `frontend/src/sdk/docs/`（README 起步） |
+| 前端 SDK（两层 API、项目句柄、upload/file/storage/business；应用级文件 `sdk.file`） | `frontend/src/sdk/docs/`（README 起步；应用级文件在 `application-file.md`） |
 | 与 Max 的调用契约（发起编排运行、应答运行中表单——文档里的"流程 A / 流程 B"） | `frontend/src/sdk/docs/business.md` |
 | 后端契约（信封、码段、桥层限制、`buiTable`、dataset-proxy、身份上下文、打包） | `backend/README.md` |
 | 本地测试（Direct Mock / Dev Host Mock / Playwright） | `frontend/docs/dev-host-testing.md` |
 | 消息展示 | `frontend/docs/message-guide.md` 与 `frontend/docs/message/` 字段字典 |
-| 设计与构建方法论 | A1 §5.5（理解产品 → 定方向 → 交互 → 文档 → 原型）、A3 §4.5（构建 → 工艺 → 渲染修正）；官方 guidance 钉版副本在 `references/前端设计指南/` |
+| 设计与构建方法论 | A1 §5.5（理解产品 → 定方向 → 交互）、A1 §6（《业务应用计划书》：截图展示 + 后端功能阐述 + 一次确认）、A3 §4.5（构建 → 工艺 → 渲染修正）；官方 guidance 钉版副本在 `references/前端设计指南/` |
 
 ## 8. 术语速查
 
 | 术语 | 人话 |
 |---|---|
 | 业务应用 | 前端 + 专属后端 + 每用户一份 schema，打进一个镜像一个 Pod；平台里的一级实体，一个实例管 N 个项目，用户的 SaaS 工作台 |
+| 项目 | 业务应用之下的一层：用户的一次计划选择，一次编排运行及其表单、消息、文件、交付都装在项目里；由用户在应用里**创建**（表单提交时两段式建项目）或**复用**（下拉框选已有项目）；应用经 `sdk.projects` 拿到本实例名下全部项目（A1 §2.1） |
+| 《业务应用计划书》 | A1 的交付物：一份 MD，含功能清单、每页截图展示、后端功能阐述、自动化测试计划；开发者确认后才进 A2/A3，之后按它干、不再问（A1 §6） |
+| 应用级文件 / 项目文件 | `sdk.file`：不依赖项目、跨项目复用的持久文件（资料库）；`project.upload` + `project.file`：属于某个项目的文件。两者并存，表单值都只存 workspace 路径 |
 | business_ui | 业务应用的发布单位：独立资产（家族 + 版本），挂 1 个场景包 + ≤1 个业务应用数据集模板；create → 上传 deploy 源码包 → finalize 上线（A4/A5） |
 | 业务应用数据集 | 应用的后端数据库：用户点开应用时从模板 copy 出的专属 PG schema，存用户记载、交互历史、交付与流转数据；应用后端直连 + 项目内 agent 经 ds-cli 访问同一份 |
 | 业务应用数据集模板 | 开发期定稿的表结构模板资产（含逐列声明与审计字段）；用户首次打开应用时从它 copy 出业务应用数据集 |

@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260902-726b48",
-  "package_version": "1.16.0",
+  "version": "v20260902-4fc3bf",
+  "package_version": "1.17.0",
   "mcp_endpoint": "https://workflow-mcp.qa.goalfyai.cn/mcp",
-  "released_at": "2026-09-02T07:40:36Z",
-  "update_reason": "S4 重定位为场景包侧资产与编排真跑：不再模拟表单提交（挪到 app-creator A4，含 submit_data 直跑），真跑四步（run 建项目与幂等键 / file_to_url+workspace_files 绑定数据 / status-wait-history 与日志三类 detail-outputs 观察异常结果 / 对照结果检查表），新增 3.4 计划书漂移检查（画像/旅途/产出三对照、实现偏离回 S3 口径偏离回 S1）；结果检查表去掉前端校验项（归应用线）；S1 画像与路线补“先问开发者有没有可参考的资料与打法”",
+  "released_at": "2026-09-02T08:08:59Z",
+  "update_reason": "scene-creator 约束 8 不再强制分工单；app-creator A1 加项目模型（创建/复用）、功能选择菜单（含应用级文件库 sdk.file）、先向开发者要参考资料、交付《业务应用计划书》（截图展示 + 后端功能阐述）经确认才进 A2/A3；A4 新增预部署后上线前的自动化测试硬门（确认过的功能 / 编排运作 / 数据增删改查三类全绿），deploy 链路跟上 Hub 直起容器；A3 补应用级文件 SDK",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -24,7 +24,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "a8ae89be7eac9eaa4b33ea8d08bbf023c1aa8b69a2473b3e1288e05a217c3e0e",
+    "SKILL.md": "6d43d8d1bfc071c3ee3b73ed312f2703fb9d9ccb73f4a7099c90c7313f265783",
     "agents/openai.yaml": "861c83000e4c5738e28a73ea26f08dde7c26a982b04995a707b33af7d1fe3da7",
     "checklists/Workflow验收检查清单.md": "d31ae05ac8cff5a68dc32f9c48bd657aefe1d9327a2cf9aa94239943cbcbaf5e",
     "checklists/场景包验收检查清单.md": "78e1250e19f186f74150af9a3d486763bf067e5e0063e3739511b3efbb437661",
