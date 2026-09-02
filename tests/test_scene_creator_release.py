@@ -123,7 +123,7 @@ def test_workflow_guidance_routes_event_workflows_through_business_runtime():
     skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8") + (
         SKILL_ROOT / "references" / "平台对象与运行模型.md"
     ).read_text(encoding="utf-8")
-    asset_stage = (SKILL_ROOT / "stages" / "S2-资产制作.md").read_text(encoding="utf-8")
+    asset_stage = (SKILL_ROOT / "stages" / "S2-资产设计与制作.md").read_text(encoding="utf-8")
     checklist = (SKILL_ROOT / "checklists" / "Workflow验收检查清单.md").read_text(
         encoding="utf-8"
     )
