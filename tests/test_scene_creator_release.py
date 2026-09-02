@@ -103,7 +103,8 @@ def test_platform_skill_copies_match_the_single_source():
 
 
 def test_workflow_guidance_distinguishes_output_end_states():
-    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    # Workflow 三种结束语义的正本随 §7.3 下沉到 references/平台对象与运行模型.md（1.8.0）
+    skill = (SKILL_ROOT / "references" / "平台对象与运行模型.md").read_text(encoding="utf-8")
     checklist = (SKILL_ROOT / "checklists" / "Workflow验收检查清单.md").read_text(
         encoding="utf-8"
     )
@@ -117,7 +118,10 @@ def test_workflow_guidance_distinguishes_output_end_states():
 
 def test_workflow_guidance_routes_event_workflows_through_business_runtime():
     """业务事件必须触发正式业务路线；无事件单 Workflow 仍可直接派发。"""
-    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    # 路由器约束 5 讲"单节点业务路线"，执行形态正本（references）讲"直接派发"——合并断言
+    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8") + (
+        SKILL_ROOT / "references" / "平台对象与运行模型.md"
+    ).read_text(encoding="utf-8")
     asset_stage = (SKILL_ROOT / "stages" / "S2-资产制作.md").read_text(encoding="utf-8")
     checklist = (SKILL_ROOT / "checklists" / "Workflow验收检查清单.md").read_text(
         encoding="utf-8"
