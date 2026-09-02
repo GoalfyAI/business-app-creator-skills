@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260902-796c2e",
-  "package_version": "1.18.0",
+  "version": "v20260902-7e3c62",
+  "package_version": "1.18.1",
   "mcp_endpoint": "https://workflow-mcp.qa.goalfyai.cn/mcp",
-  "released_at": "2026-09-02T12:56:06Z",
-  "update_reason": "S4 第四层恢复表单直跑（submit_data）为主入口：只有经入口表单启动才走业务路线 Runtime，编排器（派发/映射/运行中表单/事件/Delivery/Review）在此真实验证；聊天入口 task 模式降为第二入口只核路由；补运行实例标识由服务端生成的规则、formdata_pointer 用法、编排器专项核对项；S1 真机验证行与 app-creator A4 分工同步",
+  "released_at": "2026-09-02T13:14:02Z",
+  "update_reason": "路线 Bubble 证据一条路线一条检查点：S4 2.4 明令禁止逗号合并多条路线标识（MCP 写入时即拒）；SD 报错对照补 insert 格式拒绝与 complete 的 ROUTE_BUBBLE_EVIDENCE_REQUIRED 两行",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -24,7 +24,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "3fdd57aa0de1b8d1300ac7b4364a1c9a414586b1bcf1eb39f8825973eca266be",
+    "SKILL.md": "b0d6f52178986c0f92877f3548d317be2e868b7d936caf4086d139e0db16b3e7",
     "agents/openai.yaml": "861c83000e4c5738e28a73ea26f08dde7c26a982b04995a707b33af7d1fe3da7",
     "checklists/Workflow验收检查清单.md": "2b3d7c8ef9458240ef66b016b6bf5152730464327c07e69805448a11e8bb7637",
     "checklists/场景包验收检查清单.md": "78e1250e19f186f74150af9a3d486763bf067e5e0063e3739511b3efbb437661",
@@ -36,9 +36,9 @@
     "stages/S1-业务设计.md": "c9cbfb570c00f43a0cef1aa29ac0f6d0a2f2637e77eca56b2d5d5a4e5714bf4d",
     "stages/S2-资产设计.md": "fca41477734efc82ef66edbe0f91b730cfb470b3d02b3eb9ee0acc8b80c7028a",
     "stages/S3-资产制作.md": "0b6234e3fe14f2e6c91e2002722bebb017aed6f809607eba35eb0fb451307f4a",
-    "stages/S4-验证与修正.md": "6f870db2bf405e73cabc29b0ddb1b90fb8b1879549a8f16caa59aa32c7cf3e1c",
+    "stages/S4-验证与修正.md": "4fe08bc4c0d8296627d6ef5eae7c19567d68133b994e72063f0a23cfd84cee6e",
     "stages/S5-发布与交付.md": "fed82b8a418413bc369f22051586069f86c7f074b6f69db045916de43b4e09e6",
-    "stages/SD-诊断与维护.md": "a00b87502aeec333bb41e1b30fd25b02e8dd4221e10dca1cdbfd24418560150a",
+    "stages/SD-诊断与维护.md": "407f5796e0154c392eaad57d2fd6179bae2ddc710bbd1bd0169f18217cac1041",
     "stages/ST-能力试用.md": "d27d870c43a8a66a9c2df8fd2432c2ff086624464aae7b5750cf185278f95a8c"
   }
 }
