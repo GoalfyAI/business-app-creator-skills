@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260902-ab931c",
-  "package_version": "1.10.0",
+  "version": "v20260902-23d4de",
+  "package_version": "1.10.1",
   "mcp_endpoint": "https://workflow-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-02T05:58:31Z",
-  "update_reason": "app-creator 增厚：A1 重写（业务应用是什么/给谁用/由什么组成、场景包接缝物→入口出口、数据四类归位、三必备页面+四类业务页与页数判据、看板选字段规则、可编辑性在页面上的体现、文件系统三类文件与 Excel 预览/可排序表单、前端设计工作流前半程内化）；A2 补逐列打标、dataset-proxy 连接纪律、破坏性变更迁移脚本与四个模板闸门码；A3 重写对齐当前脚手架（frontend/backend 双目录、buiTable、dataset-proxy 三禁、1MiB/13s、三必备页面、表单与文件纪律、自测矩阵、前端设计工作流后半程内化）；A4 pack.sh 原子打包；A5 补模板相关四闸门；正本地图与约束 6/7 对齐新路径与 API；删除独立 reference 前端设计工作流.md",
+  "released_at": "2026-09-02T06:00:08Z",
+  "update_reason": "补 1.10.0 漏发的 A1 重写与 A2 扩写（1.10.0 因发布链未在链接检查失败处中止，带着旧 A1 与一条断链发出）",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -24,7 +24,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "55572568fca1f1c84e8a0d5b588621d08a0801f461be20d11de973618774ff70",
+    "SKILL.md": "4445e952c6b985a02466064ec67d4d5c8357a0e4e78440e9f259b70e15f09c95",
     "agents/openai.yaml": "4f434402159dcfbba0ee1c4c401bc12de3e6e8a37919c0d0f125fa36ba113a07",
     "checklists/Workflow验收检查清单.md": "bd29d51e6ff87f79a6ae4cb31bdfae0cc262772b08890fb8d0fe34c2caf3b0fd",
     "checklists/场景包验收检查清单.md": "78e1250e19f186f74150af9a3d486763bf067e5e0063e3739511b3efbb437661",
