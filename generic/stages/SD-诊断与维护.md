@@ -166,8 +166,8 @@
 
 | `WORKFLOW_RUNTIME_IDENTITY_INCONSISTENT` | Runtime 身份三态中的"部分缺失"：三元身份既非齐全也非全缺，属于内部调用链错误，不是业务输入问题。核对调用入口是否完整传递了服务端生成的身份；**禁止**手工补齐或伪造缺失字段 |
 | 版本闸门拒绝（提示需要先定稿或先建草稿，如 `PERSONAL_VERSION_FINALIZE_REQUIRED`） | 内容修改撞了上线版本 → 回 S1 第 6 节取得可编辑草稿；上线动作撞了未定稿草稿 → 走 S5 第 2 节定稿上线。**禁止**绕过闸门直接改写状态字段 |
-| `task_manager(insert)` 报“orchestration_bubble_validated 检查点一条路线一条” | 把多条路线的 `orchestration_id` 或 `run_id` 用逗号、分号、空格合在了一条检查点里，或传成了数组。拆成每条路线一条 `insert`，各带自己的 `run_id`（S4 2.4）；`scene_package_id` 必须是单个正整数 |
+| `task_manager(insert)` 响应带 `format_warning`（“检查点建议一条路线一条”） | 记录已写入，但把多条路线的 `orchestration_id` 或 `run_id` 合在了一条里，或传成了数组；结单核对时会对不上。建议补成每条路线一条 `insert`，各带自己的 `run_id`（S4 2.4） |
 | `task_manager(complete)` 返回 `WORKFLOW_TASK_ROUTE_BUBBLE_EVIDENCE_REQUIRED` | 发布范围里有路线没有对得上的 Bubble 证据：没跑、跑失败、`run_id` 属于别的路线、或证据早于最后一次编排修改。按响应里的路线状态补跑或修同一资产后重跑（S5 第 3 节）；**禁止**删标签、改文字或另开工单绕过 |
-| 外部工具报参数格式错、路径不存在、文件读不到 | 先回该工具的实时契约看文件参数收什么（`file_to_url` 换出的 URL、`/workspace` 路径还是内容本体），再核对脚本里的准备步骤；多半是写脚本前没读契约、没取样（S3 2.2）。按契约改准备步骤并重新取样，不要在脚本里加分支猜格式 |
+| 外部工具报参数格式错、路径不存在、文件读不到 | 先回该工具的实时契约看文件参数收什么（`file_to_url` 换出的 URL、`/workspace` 路径还是内容本体），再核对脚本里的准备步骤；多半是写脚本前没读契约、没取样（S3 2.2）。按契约改准备步骤，拿不准就取样一次，不要在脚本里加分支猜格式 |
 | `has_ui: true` 但 `entry_url` 为空字符串 | 界面地址未随派生继承：部署之后又发生了派生新草稿行的修改（如改编排），激活地址留在旧行。在当前草稿行重新部署界面（`scene_package_ui_bundle`，属存量附属界面维护，见本文 3.4），反读 `entry_url` 非空后再上线 |
 

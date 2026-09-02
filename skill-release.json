@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260902-bbc2a7",
-  "package_version": "1.19.0",
+  "version": "v20260902-1d53a4",
+  "package_version": "1.19.1",
   "mcp_endpoint": "https://workflow-mcp.qa.goalfyai.cn/mcp",
-  "released_at": "2026-09-02T13:38:48Z",
-  "update_reason": "复用工具接入前置成硬门：写任何 tool() 之前逐工具读实时契约（文件参数收 URL 还是 workspace 路径、必填、值域、返回是否声明）并对安全只读工具真实取样一次，输入约定进执行结构表与制作书 ⑧-4；S3 4.3 第 2 步、S4 第二层证据、依赖 reference、Workflow 验收清单、SD 报错对照同步",
+  "released_at": "2026-09-02T13:53:30Z",
+  "update_reason": "两处硬门降为建议：S3 2.2 复用工具读契约与取样改为接入建议（拿不准的再取样，跳过不违规），4.3/⑧-4/S4 第二层/依赖 reference/验收清单/SD 同步；S4 2.4 路线 Bubble 检查点一条路线一条改为建议，工具改为 format_warning 提醒不再拒绝",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -24,21 +24,21 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "3e80efadc5482af9c8d88a034ab3a0d728f09f272b4e103cd300be132046a233",
+    "SKILL.md": "843e7c7e86799736a03a8275f07a0bb2c8b124fe84acf56bfb93899f04d7ed63",
     "agents/openai.yaml": "861c83000e4c5738e28a73ea26f08dde7c26a982b04995a707b33af7d1fe3da7",
-    "checklists/Workflow验收检查清单.md": "0c16993a59b09b0e296814d830ce0bf27eac892bc812748a7755cbec5da9eaf0",
+    "checklists/Workflow验收检查清单.md": "7f35892bfd0332b1f97a119c77304f087c1b61356643ac80dce2d9e473fa127b",
     "checklists/场景包验收检查清单.md": "78e1250e19f186f74150af9a3d486763bf067e5e0063e3739511b3efbb437661",
     "checklists/方案挑战检查清单.md": "2959bd8b3899b250a0c6830f41e40d9afe949ef17f5a0cd0b3d40abff181f50b",
-    "references/依赖与MCP接入.md": "6cf3196dc1da32073ce5b87cdedca00f95a798f9a54e0e5e1778a1c882f732da",
+    "references/依赖与MCP接入.md": "d69fff94d2e565016a0d8998453f046a3ab9e0254820afa69e51dec7d9040c51",
     "references/场景包版本体系与发布逻辑.md": "6e5ca4c3ecf4942d1d4fa6636ac38bb4a8be0afedb74b4c9be45c4b255e76262",
     "references/平台对象与运行模型.md": "1ff1d6f5beae776274090ea68c6605b80dd7ba27f3294dfb86d3db8b4be879df",
     "references/表结构与累加机制.md": "c13c0a8720f84fcccd6a3551ba250fd38682649fa96da068519e1ddbc06ad342",
     "stages/S1-业务设计.md": "c9cbfb570c00f43a0cef1aa29ac0f6d0a2f2637e77eca56b2d5d5a4e5714bf4d",
-    "stages/S2-资产设计.md": "22f69e5435bc3293ab77ecc87bd630b860334d9a619c337bcded018f01fd3de6",
-    "stages/S3-资产制作.md": "b4ff5b4d81fa631365e34a8687e3dc1ae6f03c20e816042787b07ece0d40eadd",
-    "stages/S4-验证与修正.md": "1fae8459e190cbb220a83168e16aaf01982ecf004880016f82cda8bfc7d68b7d",
+    "stages/S2-资产设计.md": "3b11df06efcda044610264061c81505a824da158293f0810ef55409c7cc668c4",
+    "stages/S3-资产制作.md": "4eb8d0d85261f3c7883faffcd0c3fe808f9f324ea14306f3afdf023e5b1aac0c",
+    "stages/S4-验证与修正.md": "e5683202b7a3b0b8cc13f75c2f514c2e1d04204d63c4aaa9b4b38b7e65974859",
     "stages/S5-发布与交付.md": "fed82b8a418413bc369f22051586069f86c7f074b6f69db045916de43b4e09e6",
-    "stages/SD-诊断与维护.md": "ccdfda46512cf11e38fe081d7feb1b5c4755ef5636e3c3c13a378b0c3fe90693",
+    "stages/SD-诊断与维护.md": "edc12ee5a57882f144bc9b4f0d7da79741c369a1f1b98287a305384530dadb8d",
     "stages/ST-能力试用.md": "d27d870c43a8a66a9c2df8fd2432c2ff086624464aae7b5750cf185278f95a8c"
   }
 }
