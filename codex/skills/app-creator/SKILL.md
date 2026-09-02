@@ -48,7 +48,7 @@ description: 当开发者需要为一个已上线的 GoalfyMax 场景包制作�
 4. **数据面纪律**——**业务应用数据集是两条线唯一的数据面概念**：开发期做一份业务应用数据集模板，用户首次打开应用时从模板 copy 出专属一份（一用户一份），存用户信息、业务历史、项目产出与流转数据，同时被应用后端直连和项目内 agent（经 `dscli_business_dataset`）访问。***应用代码禁 CREATE / ALTER TABLE***——加表改表回模板（A2），不在应用里动。
 5. **后端边界**——专属后端是内网 Service，宿主是唯一入口：不含鉴权逻辑（直接信任宿主注入的身份头）、没有第三方密钥注入通道（需要密钥先与平台定，不假定运行时读得到）。响应一律 `{code, msg, data}` 信封、业务失败也 HTTP 200、自定义码 ≥1000。正本：`backend/README.md`。
 6. **桥层限制**——`GET/DELETE` 不带 body、嵌套查询走 POST、请求整体 ≤256KiB、响应体 ≤1MiB、上游超时 13s（`statement_timeout` 10s，只剩 3s 余量）、***写接口必须幂等***（键 `X-Goalfy-Business-Request-Id`）、文件走 `project.upload` 落 workspace 后只传路径字符串；连接经 dataset-proxy，禁 `BEGIN/COMMIT/ROLLBACK`、`SET ROLE`、`SET search_path`。
-7. **部署纪律**——先预部署验证再交付；发布版不能下线（普通版可以）；***schema 真名禁止硬编码***——引用表只有一种写法 `buiTable('表名')`（每个用户实例的 schema 都不同，写死了第二个用户就炸）；镜像必须用户无关。
+7. **部署纪律**——先预部署验证再交付；下线走 `business_ui_manage(offline)`（拆容器、保留库与源码，可重新上线），已发布到目录的要先取消发布才能下线（A5 第 5 节）；删除才是不可逆的；***schema 真名禁止硬编码***——引用表只有一种写法 `buiTable('表名')`（每个用户实例的 schema 都不同，写死了第二个用户就炸）；镜像必须用户无关。
 8. **设计纪律**——脚手架 demo 只用于理解协议与 SDK，禁复用其页面结构与视觉；竞品调研先问开发者有无参考；生产级原型经开发者确认后才正式编码；反同质化（与 demo 高度相似且说不出业务理由 = 设计未做）。
 9. **编辑与生产的共治纪律**——应用表是用户的业务资产。逐字段可编辑性声明的**唯一正本是 PG 列注释**：`COMMENT ON COLUMN ... IS '[editable:user|agent|system] 业务说明'`——它随模板 copy 天然携带、`describe` 天然可见、平台可读回展示。写权矩阵：`user`=用户可写、FA 与生产回流**不得覆盖**；`agent`=FA/生产可写；`system`=仅系统逻辑；***读不到声明的列一律按 user 处理（最保守：不写）***。所有写入带来源标记（`user_edited` / `generated`）；生产回流入库语义（直接入库 / 草稿待用户确认）由开发者在 A1 声明。
 
@@ -68,7 +68,7 @@ description: 当开发者需要为一个已上线的 GoalfyMax 场景包制作�
 | A2 数据面制作 | `stages/A2-数据面制作.md` | A1 数据设计已确认 | 可执行（`dataset_template_workspace`） |
 | A3 应用实现 | `stages/A3-应用实现.md` | A1 设计确认门通过；业务应用数据集模板已定稿（A2） | 可执行 |
 | A4 预部署与验收 | `stages/A4-预部署与验收.md` | A3 出口条件满足 | 可执行（`business_ui_manage` / `business_ui_bundle`） |
-| A5 发布与交付 | `stages/A5-发布与交付.md` | A4 验收通过 | 可执行 |
+| A5 发布与交付（含修订 / 回滚 / 下线 / 删除） | `stages/A5-发布与交付.md` | A4 验收通过 | 可执行 |
 | AD 诊断与维护 | `stages/AD-诊断与维护.md` | 有明确的目标应用或问题 | 骨架（随实战补报错对照） |
 
 ```text
