@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260902-cc800d",
-  "package_version": "1.10.2",
+  "version": "v20260902-77882c",
+  "package_version": "1.11.0",
   "mcp_endpoint": "https://workflow-mcp.qa.goalfyai.cn/mcp",
-  "released_at": "2026-09-02T06:11:24Z",
-  "update_reason": "安装物料的 MCP 地址从生产切到 QA（https://workflow-mcp.qa.goalfyai.cn/mcp，生产 MCP 尚未部署）；API 密钥页与环境措辞同步指向 QA；构建常量与测试约定随之调整",
+  "released_at": "2026-09-02T06:18:23Z",
+  "update_reason": "FastAgent 粒度模型纠偏：FA = 带工具的完整执行单元，一个业务环节一个 FA，内部多轮工具调用是常态；拆分只看职责边界不看步骤；脚本 tool() 只做环节前后的确定性准备/汇合/收口；'看结果决定下一步'的检索读取试错属于 FA 内部。定义（reference 2.2 与运行模型图）、S1 选型判据与 6.4 数量纪律、方案挑战清单两条、表结构 FA 步骤语义、SD FA 层检查同步；max_turns 维持 50",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -24,21 +24,21 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "ced61a0445ee7d9bda12b8bf66e8535f3e6be4b250549ff3aa7e834bdfb48808",
+    "SKILL.md": "6504ab99dd2e42cd1cde88460916aa4085e24561bbba2fd9add886bcfd305b8f",
     "agents/openai.yaml": "861c83000e4c5738e28a73ea26f08dde7c26a982b04995a707b33af7d1fe3da7",
     "checklists/Workflow验收检查清单.md": "bd29d51e6ff87f79a6ae4cb31bdfae0cc262772b08890fb8d0fe34c2caf3b0fd",
     "checklists/场景包验收检查清单.md": "78e1250e19f186f74150af9a3d486763bf067e5e0063e3739511b3efbb437661",
-    "checklists/方案挑战检查清单.md": "7b290f86b19a5e81d9d605e4f246736b56c08d439f57850e2cd4d440fd65c482",
+    "checklists/方案挑战检查清单.md": "081645ddaeb0be166237fefd39389c7b97206867f61d348c4e44e358469ca554",
     "references/依赖与MCP接入.md": "4886916beb004032e975776146733a476b5bca1f3c4f509717e3d9d3071ee318",
     "references/场景包版本体系与发布逻辑.md": "84060462f287e1891cb107ddb811a99780684bdc37ac72593f98134fb2549a45",
-    "references/平台对象与运行模型.md": "dd4d18a6dad3a95b591776806b8461cccfdefa7c2f353cf7864f4cb05d37a82f",
-    "references/表结构与累加机制.md": "da2fb15ed3aee70d3f2c9255713da5335545255e03216cb151f6486b659df3be",
-    "stages/S1-业务设计.md": "1e87b496f18f3a321b03ee08e109de33615640209c460f1798267a16fc28f9e7",
+    "references/平台对象与运行模型.md": "47be682971a6a70897c044bddf1217a40f77ecfbfa41fb7421c04b8b891717c6",
+    "references/表结构与累加机制.md": "423dfbde55671996a3b5eb4fb14ecbcb9040fc6f74c43f56332878702e12bae7",
+    "stages/S1-业务设计.md": "46ebdbe452f3cb6d34e0c489f4e99d4f565d7d2a65ee5d561739ab077b9ee1db",
     "stages/S2-资产制作.md": "bd096d56c240666393319a3768312c8df73e5462605aab07d05f38e6152ac819",
     "stages/S3-业务应用.md": "5d5f0e2c5f9597ecaec4e66d1a5a93cad57b4e992309d9b3486111770c576e49",
     "stages/S4-验证与修正.md": "7c5da42b2f975dc90385dbf1ebb6ebc906a55db7f632fdfd5862792181002011",
     "stages/S5-发布与交付.md": "07fcf0a14f446e1b11974e4926e068e097ad28d6ba01f4fd817d8471192064ec",
-    "stages/SD-诊断与维护.md": "05a9bdb0728869cf90cbdc029f6fdea9053ee37e6ea7f105e6b178ff4cb7caf8",
+    "stages/SD-诊断与维护.md": "9b11fb8ec461bf214604b49bda181b79eb53426532e507db97113897dc600d77",
     "stages/ST-能力试用.md": "26ae628a6dfeb3bb3982915063fa52d7e1bbe8407dc9a303930ca8b51019d45e"
   }
 }
