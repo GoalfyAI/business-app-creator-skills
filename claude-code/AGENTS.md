@@ -66,7 +66,7 @@ claude plugin install scene-creator@scene-creator
 
 # 需要用户操作：提供 GoalfyMax 个人 API 密钥
 
-**1. 打开 https://goalfymax.goalfyai.cn/developer/api-keys ，点击「新建 API 密钥」并输入一个名称。**
+**1. 打开 https://goalfymax.qa.goalfyai.cn/developer/api-keys ，点击「新建 API 密钥」并输入一个名称。**
 
 **2. 完整密钥以 `sk_` 开头且只显示一次，创建后立即复制并粘贴到本对话中。**
 

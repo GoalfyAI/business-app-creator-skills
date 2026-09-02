@@ -4,7 +4,7 @@
 
 本插件同时安装经过审计的 `scene-creator` MCP 和同名 Skill，连接生产环境：
 
-`https://workflow-mcp.goalfyai.cn/mcp`
+`https://workflow-mcp.qa.goalfyai.cn/mcp`
 
 ## 能做什么
 
@@ -20,7 +20,7 @@
 - 一个 GoalfyMax 账号，且有权访问目标场景包
 - 一个 GoalfyMax 个人 API 密钥
 
-获取密钥：登录 GoalfyMax 线上环境，打开 [开发者工具 → API 密钥](https://goalfymax.goalfyai.cn/developer/api-keys)，
+获取密钥：登录 GoalfyMax QA 环境，打开 [开发者工具 → API 密钥](https://goalfymax.qa.goalfyai.cn/developer/api-keys)，
 选择 **新建 API 密钥** 并输入 1～100 个字符的名称。
 
 密钥以 `sk_` 开头，其完整内容就是 Bearer 凭证。**完整密钥只显示一次**，关闭弹窗前务必保存。

@@ -71,7 +71,7 @@ def test_all_first_party_package_versions_are_synchronized():
 
 
 def test_every_install_surface_ships_production_endpoint():
-    """仓库里的安装物料必须始终是生产配置，测试地址混进来会被这里拦住。"""
+    """仓库里的安装物料必须与 PROD_MCP_ENDPOINT 一致（当前约定为 QA），别的环境地址混进来会被这里拦住。"""
     surfaces = [
         *(ROOT / "claude-code").rglob("*"),
         *(ROOT / "codex").rglob("*"),
@@ -83,8 +83,9 @@ def test_every_install_surface_ships_production_endpoint():
         if path.is_file() and path.suffix in {".md", ".json", ".yaml"}
     )
     assert release_module.PROD_MCP_ENDPOINT in combined
-    assert "workflow-mcp.qa." not in combined
-    assert "GoalfyMax QA" not in combined
+    # 2026-09-02 起安装物料统一指向 QA（生产 MCP 尚未部署）；不得残留生产地址与生产密钥页
+    assert "https://workflow-mcp.goalfyai.cn/mcp" not in combined
+    assert "https://goalfymax.goalfyai.cn/developer/api-keys" not in combined
 
 
 def test_platform_skill_copies_match_the_single_source():

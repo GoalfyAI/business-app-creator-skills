@@ -10,7 +10,7 @@ Agent 可直接执行的安装流程见 [`claude-code/AGENTS.md`](../claude-code
 
 ## 第 1 步 — 获取 API 密钥
 
-登录 GoalfyMax 线上环境，进入 [开发者工具 → API 密钥](https://goalfymax.goalfyai.cn/developer/api-keys)。
+登录 GoalfyMax QA 环境，进入 [开发者工具 → API 密钥](https://goalfymax.qa.goalfyai.cn/developer/api-keys)。
 点击 **新建 API 密钥**，输入 1～100 个字符的名称。
 
 密钥以 `sk_` 开头，**完整内容只显示一次**，创建后立即保存。

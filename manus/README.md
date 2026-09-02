@@ -8,7 +8,7 @@ Manus 是云端 Agent，有两部分要分别配置：**工具（MCP）** 在插
 
 ## 第 1 步：获取 API 密钥
 
-登录 GoalfyMax 线上环境，进入 [开发者工具 → API 密钥](https://goalfymax.goalfyai.cn/developer/api-keys)创建
+登录 GoalfyMax QA 环境，进入 [开发者工具 → API 密钥](https://goalfymax.qa.goalfyai.cn/developer/api-keys)创建
 个人密钥。密钥以 `sk_` 开头，**完整内容只在创建时显示一次**，请妥善保存。
 
 ## 第 2 步：添加 MCP 连接器（工具）
@@ -24,7 +24,7 @@ Manus 是云端 Agent，有两部分要分别配置：**工具（MCP）** 在插
 {
   "mcpServers": {
     "scene-creator": {
-      "url": "https://workflow-mcp.goalfyai.cn/mcp",
+      "url": "https://workflow-mcp.qa.goalfyai.cn/mcp",
       "transport": "streamable_http",
       "headers": {
         "Authorization": "Bearer sk_YOUR_API_KEY_HERE"
@@ -44,7 +44,7 @@ Manus 是云端 Agent，有两部分要分别配置：**工具（MCP）** 在插
 | **Transport Type** | `HTTP`（保持默认） |
 | **Icon**（可选） | 留空，或粘贴 Logo 链接 |
 | **Notes**（可选） | 留空，或写用途说明 |
-| **Server URL** | `https://workflow-mcp.goalfyai.cn/mcp` |
+| **Server URL** | `https://workflow-mcp.qa.goalfyai.cn/mcp` |
 | **Custom Headers** | 点击 "+ Add custom header" 添加 1 条 |
 
 自定义请求头（鉴权，必填）：

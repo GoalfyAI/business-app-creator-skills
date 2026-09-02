@@ -72,9 +72,10 @@ PLATFORM_NAMES = tuple(PLATFORM_LAYOUTS)
 EXTRA_SKILL_SOURCES = {"app-creator": Path("skills/app-creator")}
 EXTRA_SKILL_PLATFORMS = ("claude-code", "codex")
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
-# 仓库里的安装物料始终是生产配置。开发者要连测试环境时，改本地已安装插件的
-# .mcp.json，不动仓库源文件——那会让发布校验和失配。
-PROD_MCP_ENDPOINT = "https://workflow-mcp.goalfyai.cn/mcp"
+# 仓库里的安装物料统一指向同一个 MCP 地址，由本常量唯一决定。
+# 2026-09-02 拍板：生产 MCP 尚未部署（404），安装物料先指向 QA；切回生产时改这一处 +
+# 文档里的 API 密钥页域名（goalfymax.qa.goalfyai.cn ↔ goalfymax.goalfyai.cn），再发版。
+PROD_MCP_ENDPOINT = "https://workflow-mcp.qa.goalfyai.cn/mcp"
 DATA_SKILL_VERSION_RE = re.compile(r"^v\d{8}-[0-9a-f]{6}$")
 LEGACY_SKILL_VERSION_RE = re.compile(r"^v\d+\.\d+\.\d+$")
 SKILL_VERSION_RE = re.compile(r"\[skill-version:(v(?:\d+\.\d+\.\d+|\d{8}-[0-9a-f]{6}))\]")
@@ -187,7 +188,7 @@ def _configured_mcp_endpoint(skill_root: Path) -> str:
         raise ReleaseError("agents/openai.yaml 必须声明唯一的 scene-creator MCP 依赖")
     endpoint = tools[0].get("url")
     if endpoint != PROD_MCP_ENDPOINT:
-        raise ReleaseError("agents/openai.yaml 必须使用生产 MCP 地址")
+        raise ReleaseError("agents/openai.yaml 必须使用仓库约定的 MCP 地址（PROD_MCP_ENDPOINT）")
     return endpoint
 
 
@@ -262,7 +263,7 @@ def validate_platform_install_files(skill_root: Path) -> None:
             mcp = json.loads(mcp_path.read_text(encoding="utf-8"))
             server = (mcp.get("mcpServers") or {}).get(SKILL_NAME) or {}
             if server.get("url") != PROD_MCP_ENDPOINT:
-                raise ReleaseError(f"{platform} MCP 必须使用生产地址")
+                raise ReleaseError(f"{platform} MCP 必须使用仓库约定的 MCP 地址（PROD_MCP_ENDPOINT）")
             serialized = json.dumps(server, ensure_ascii=False)
             if "SCENE_CREATOR_API_KEY" not in serialized:
                 raise ReleaseError(f"{platform} MCP 必须引用 API Key 环境变量")
