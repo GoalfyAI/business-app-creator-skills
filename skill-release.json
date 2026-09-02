@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260902-45e1a5",
-  "package_version": "1.14.1",
+  "version": "v20260902-21a114",
+  "package_version": "1.15.0",
   "mcp_endpoint": "https://workflow-mcp.qa.goalfyai.cn/mcp",
-  "released_at": "2026-09-02T07:18:28Z",
-  "update_reason": "修正 1.14.0 中 S3 资产制作的小节标题（被误加 S2 前缀 / 误减号）与一处 reference 章节引用；标题按所属大节重算",
+  "released_at": "2026-09-02T07:32:40Z",
+  "update_reason": "制作书 ⑧-6 补数据建模约定（实体/情境/历史事件三类表、归属与运转链、多商家变体落法，A1 对齐）；S3↔S4 改为反复回路：S3 出口收回到制作完成（Bubble 与语义验收归 S4），S4 明写失败回 S3 修同一份资产再重验；修正 11 处连锁映射错误的跨文件引用",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -24,7 +24,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "72a4ccfe147b9b7d2a3582e6b109b9fd555dd8f6171777fe26b0306bca241418",
+    "SKILL.md": "3b35b84d68ef0003a7ce8209d560571242c7d3c42e872a065ea5c53c170d11fa",
     "agents/openai.yaml": "861c83000e4c5738e28a73ea26f08dde7c26a982b04995a707b33af7d1fe3da7",
     "checklists/Workflow验收检查清单.md": "d31ae05ac8cff5a68dc32f9c48bd657aefe1d9327a2cf9aa94239943cbcbaf5e",
     "checklists/场景包验收检查清单.md": "78e1250e19f186f74150af9a3d486763bf067e5e0063e3739511b3efbb437661",
@@ -36,9 +36,9 @@
     "stages/S1-业务设计.md": "cad77fec56b69b396173d4d364250bf8a449d6b205dbeae7506ce3079c12533a",
     "stages/S2-资产设计.md": "616f1b157d9bd9c54a6a044faea37518a8cbb63279005af94685be7905af31bc",
     "stages/S3-资产制作.md": "307d06c11d4be9c15cc2313a3e7d394accdb1a8ed5370a0075a95fdd1377678b",
-    "stages/S4-验证与修正.md": "db5a8269c3a9fa7ee7bc7d60521d2a208caeff529e463fea5baab527f00fdd75",
+    "stages/S4-验证与修正.md": "e9ced9cf31b6aef063160457ac9e5e6d835f0772746855af8c2df57672c9b594",
     "stages/S5-发布与交付.md": "fed82b8a418413bc369f22051586069f86c7f074b6f69db045916de43b4e09e6",
-    "stages/SD-诊断与维护.md": "a22555cb1ac69e65a6eace60ce7695aae1a6e0a91d61cb1dc1ab185b67cd9a27",
-    "stages/ST-能力试用.md": "60999ac423a45c5a5ad79e9c8b63e3336a69464967d4bb4018e95a8a332b954e"
+    "stages/SD-诊断与维护.md": "a00b87502aeec333bb41e1b30fd25b02e8dd4221e10dca1cdbfd24418560150a",
+    "stages/ST-能力试用.md": "d27d870c43a8a66a9c2df8fd2432c2ff086624464aae7b5750cf185278f95a8c"
   }
 }
