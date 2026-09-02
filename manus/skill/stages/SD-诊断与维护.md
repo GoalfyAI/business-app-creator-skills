@@ -73,7 +73,7 @@
 
 每次修复后**必须**重跑所有受影响的验证。Workflow 有变更就回到 `stages/S3-资产制作.md` 第 4 节重验该条；整包配置有变更就重新执行 `stages/S4-验证与修正.md`。
 
-修复以**新版本行**上线时，引用不会自动跟随。修订 Workflow 时 `workflow_tpe_manage(update)` 对 testing/offline 草稿会**自动采用**（未显式传 `target_scene_package_draft_id` 也生效；live 包不动，需显式 `attach`）；定稿上线后工具在 `output.mounted_by_stale` 里列出仍钉旧版的场景包并给出 attach 指引——**逐个处置该清单，或在工单记录明确不跟进的理由**。清单之外仍要检查的引用（工具集关联等），显式切换到新版本行并反读确认——***不切换，修复永不生效***。核对方法：`list_asset_versions` 看家族内 live 行，比对引用方指向的是不是修复后的那一行。
+修复以**新版本行**上线时，引用不会自动跟随。修订 Workflow 时 `workflow_tpe_manage(update)` 对 testing/offline 草稿会**自动采用**（未显式传 `target_scene_package_draft_id` 也生效；live 包不动，需显式 `attach`），响应 `message` 开头以【自动采用】说明改了哪个草稿、编排引用是否重写——本地手里的编排 JSON 此时已过期，先反读再继续改；定稿上线后工具在 `output.mounted_by_stale` 里列出仍钉旧版的场景包并给出 attach 指引——**逐个处置该清单，或在工单记录明确不跟进的理由**。清单之外仍要检查的引用（工具集关联等），显式切换到新版本行并反读确认——***不切换，修复永不生效***。核对方法：`list_asset_versions` 看家族内 live 行，比对引用方指向的是不是修复后的那一行。
 
 **禁止**改完就宣称修复完成——没有重验就没有证据（约束 10）。
 
