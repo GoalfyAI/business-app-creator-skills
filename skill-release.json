@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260903-313e65",
-  "package_version": "1.19.8",
+  "version": "v20260903-4784a6",
+  "package_version": "1.19.9",
   "mcp_endpoint": "https://workflow-mcp.qa.goalfyai.cn/mcp",
-  "released_at": "2026-09-03T02:51:54Z",
-  "update_reason": "S2 5.1 点明 JSON 里的 orchestration 就是路线：workflow_orchestration 是整体编排（一包一份），orchestrations[] 每项是一条路线，orchestration_id 是路线标识",
+  "released_at": "2026-09-03T06:06:13Z",
+  "update_reason": "S3 4.3/7.1 交付文件隔离说清：交付守卫只认本节点产物目录，输入上传、上游产物、FA 会话文件不因来源可信而豁免；要交付先复制进 ctx.output_dir，只是输入或参考的不进交付文件字段；修法不是补 schema 声明",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -24,7 +24,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "b92b31a7dcceefba7370e254597108c0784bcce307770b5c2bab7e3624b486ef",
+    "SKILL.md": "45868a220f9887e5331cc76cfa098e56bd5d96cfdc2b523b589ecad383191c75",
     "agents/openai.yaml": "861c83000e4c5738e28a73ea26f08dde7c26a982b04995a707b33af7d1fe3da7",
     "checklists/Workflow验收检查清单.md": "7f35892bfd0332b1f97a119c77304f087c1b61356643ac80dce2d9e473fa127b",
     "checklists/场景包验收检查清单.md": "78e1250e19f186f74150af9a3d486763bf067e5e0063e3739511b3efbb437661",
@@ -35,7 +35,7 @@
     "references/表结构与累加机制.md": "c13c0a8720f84fcccd6a3551ba250fd38682649fa96da068519e1ddbc06ad342",
     "stages/S1-业务设计.md": "9c4c148813ba499f8f51c7a439abaab4c49e250e809234b0a8b2bffa2fc5cde8",
     "stages/S2-资产设计.md": "2d478e79549edd40291488ad7bca652a3e7bdab4e02134e28492b650be78a5a9",
-    "stages/S3-资产制作.md": "ca33718f2c0fcb4d53cee6399cb7ad83116a06cf3bc861d9415985946a7d6e41",
+    "stages/S3-资产制作.md": "444cbd38e06c86ff8367cf23dd624e561690e025cfa1625919fa728fa79d798b",
     "stages/S4-验证与修正.md": "d28a4eaee3245361980f5475561e94f805ad625010bd76788af33b7cd307dd92",
     "stages/S5-发布与交付.md": "fed82b8a418413bc369f22051586069f86c7f074b6f69db045916de43b4e09e6",
     "stages/SD-诊断与维护.md": "f2c11efa4f148bc6bd2c9d74f0cd87532a8a78ceb58878987aaea5dd048f077b",
