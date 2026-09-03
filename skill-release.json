@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260903-1a6b22",
-  "package_version": "1.19.12",
+  "version": "v20260903-85badd",
+  "package_version": "1.19.13",
   "mcp_endpoint": "https://workflow-mcp.qa.goalfyai.cn/mcp",
-  "released_at": "2026-09-03T08:25:22Z",
-  "update_reason": "业务应用数据集 FA 换代对齐 cn-qa：工具集 business_app_dataset + FA Business_app_fastagent（mr_name GOALFYAI_FASTAGENT_Business_app_fastagent），普通 FA 走 HTTP 工具、不进沙箱、不传 sandbox_id、tool() 必须写完整 mr_name；旧 dscli_business_dataset / Business UI Dataset / 沙箱自动继承表述全部退出；A3 §3 明写应用自己的前后端数据流通由后端直连 buiTable() 实现，FA 只服务项目内 agent",
+  "released_at": "2026-09-03T10:07:58Z",
+  "update_reason": "表单预填改为自家后端自开发：宿主侧离线预填已在 Max 取消，useFormPrefill 只回空补丁不再是预填来源；A3 §3 加表单预填接口一类（只读查本用户实体/情境表，字段对齐 business_forms），A3 §4.1/§4.3、A1 功能菜单/§5.1/§6.3 同步",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -24,7 +24,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "970ac04fbcdb72c3289a58ecf02309326715079906460278479e24fef3c5f3cd",
+    "SKILL.md": "4855aa4b8108302f186c2be350b7bc5436612aeb4449a1ae5a8d9e6b3bed9672",
     "agents/openai.yaml": "861c83000e4c5738e28a73ea26f08dde7c26a982b04995a707b33af7d1fe3da7",
     "checklists/Workflow验收检查清单.md": "7f35892bfd0332b1f97a119c77304f087c1b61356643ac80dce2d9e473fa127b",
     "checklists/场景包验收检查清单.md": "78e1250e19f186f74150af9a3d486763bf067e5e0063e3739511b3efbb437661",
