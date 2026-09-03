@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260903-59d24b",
-  "package_version": "1.19.10",
+  "version": "v20260903-0ff5b0",
+  "package_version": "1.19.11",
   "mcp_endpoint": "https://workflow-mcp.qa.goalfyai.cn/mcp",
-  "released_at": "2026-09-03T07:47:08Z",
-  "update_reason": "业务表单定义可反读：get_asset(scenario_package) 新增 business_forms（入口/中途表单字段清单，由映射与 Schema 推出）；S3 7.1 要求每个 form_id 落场景 Skill 文件 forms/<form_id>.json（标题/说明/控件/顺序）；制作书 ⑧-2 运行中交互按表单列字段；app-creator A1 §3 改从 business_forms + forms/ 读，不再逐映射反推",
+  "released_at": "2026-09-03T07:54:45Z",
+  "update_reason": "app-creator 文件上传分级成文：属于这一次生产的走项目级 project.upload，用户跨项目反复用的走应用级 sdk.file，某次运行补材料走 useRuntimeUserFiles；数据管理页禁用 project.upload（懒建临时项目）；应用级文件进本次生产只传 path 不重传；约束 6、A1 §4.3/§5.4、验收清单同步",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -24,7 +24,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "30e4bbc97de65d2f1c349c0eddaa2f3e27964aa3e88530fb21e920fa4d7d0782",
+    "SKILL.md": "3fd521cbfcde82be9428ceebf10310e9a927218fc2c2c27655a90851ba52798a",
     "agents/openai.yaml": "861c83000e4c5738e28a73ea26f08dde7c26a982b04995a707b33af7d1fe3da7",
     "checklists/Workflow验收检查清单.md": "7f35892bfd0332b1f97a119c77304f087c1b61356643ac80dce2d9e473fa127b",
     "checklists/场景包验收检查清单.md": "78e1250e19f186f74150af9a3d486763bf067e5e0063e3739511b3efbb437661",
