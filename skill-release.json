@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260903-2d66ea",
-  "package_version": "1.19.6",
+  "version": "v20260903-b34e30",
+  "package_version": "1.19.7",
   "mcp_endpoint": "https://workflow-mcp.qa.goalfyai.cn/mcp",
-  "released_at": "2026-09-03T02:29:59Z",
-  "update_reason": "S3 2.3 补'同名不同物'：制作期 External MCP file_to_url（prepare/complete → data.file_ref）与运行期沙箱 file_to_url（脚本里 tool()，入参 file_paths 列表，返回 results[].workspace_path/url）是两个工具；返回键是 workspace_path 不是 file_path，null url 逐项处理，URL 限时不落库；reference 2.1 默认能力表加文件换外链一行",
+  "released_at": "2026-09-03T02:37:04Z",
+  "update_reason": "路由器 8.3 标签说明补'一条路线一条检查点'：orchestration_id 是 orchestrations[] 里一项（一条业务路线）的标识，一条检查点只带一个 orchestration_id 与它自己的 run_id",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -24,7 +24,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "24fffce6fe3f5937200a24ecb2b10bfe94746af5249b0d060100396554504fd7",
+    "SKILL.md": "51293d690830a8b4d508e5d18b5f2a45c923adfa7823beb4021ad160c8eb06ec",
     "agents/openai.yaml": "861c83000e4c5738e28a73ea26f08dde7c26a982b04995a707b33af7d1fe3da7",
     "checklists/Workflow验收检查清单.md": "7f35892bfd0332b1f97a119c77304f087c1b61356643ac80dce2d9e473fa127b",
     "checklists/场景包验收检查清单.md": "78e1250e19f186f74150af9a3d486763bf067e5e0063e3739511b3efbb437661",
