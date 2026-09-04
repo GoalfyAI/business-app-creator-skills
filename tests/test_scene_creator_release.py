@@ -226,9 +226,9 @@ def test_install_docs_state_the_required_facts():
             mcp_text = (platform_root / mcp_name).read_text(encoding="utf-8")
             assert _manifest()["mcp_endpoint"] in mcp_text
             assert set(json.loads(mcp_text)["mcpServers"]) == {release_module.MCP_SERVER_NAME}
-            assert "SCENE_CREATOR_API_KEY" in mcp_text
+            assert "BUSINESS_APP_CREATOR_API_KEY" in mcp_text
             assert not re.search(r"Bearer\s+sk_[A-Za-z0-9]", mcp_text)
-            assert "SCENE_CREATOR_API_KEY" in docs, f"{platform} 未说明密钥环境变量"
+            assert "BUSINESS_APP_CREATOR_API_KEY" in docs, f"{platform} 未说明密钥环境变量"
         if layout["skill_subdir"].startswith("skills/"):
             assert "GoalfyAI/scene-creator-skills" in docs, f"{platform} 缺少公开市场来源"
 

@@ -31,7 +31,7 @@ claude plugin install business-app-creator@business-app-creator
 ```json
 {
   "env": {
-    "SCENE_CREATOR_API_KEY": "<你的个人 API 密钥>"
+    "BUSINESS_APP_CREATOR_API_KEY": "<你的个人 API 密钥>"
   }
 }
 ```

@@ -4,7 +4,7 @@
       "type": "streamable-http",
       "url": "https://workflow-mcp.qa.goalfyai.cn/mcp",
       "headers": {
-        "Authorization": "Bearer ${SCENE_CREATOR_API_KEY}"
+        "Authorization": "Bearer ${BUSINESS_APP_CREATOR_API_KEY}"
       }
     }
   }

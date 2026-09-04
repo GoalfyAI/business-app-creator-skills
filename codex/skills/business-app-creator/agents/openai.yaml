@@ -11,4 +11,4 @@ dependencies:
       value: business_app_creator
       transport: streamable_http
       url: https://workflow-mcp.qa.goalfyai.cn/mcp
-      bearer_token_env_var: SCENE_CREATOR_API_KEY
+      bearer_token_env_var: BUSINESS_APP_CREATOR_API_KEY

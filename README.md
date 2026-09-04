@@ -64,10 +64,10 @@ Manus 与其他客户端请看上表对应的指南。
 
 ```bash
 # Claude Code：~/.claude/settings.json 的 env
-"SCENE_CREATOR_API_KEY": "<你的密钥>"
+"BUSINESS_APP_CREATOR_API_KEY": "<你的密钥>"
 
 # Codex：~/.codex/.env
-SCENE_CREATOR_API_KEY=<你的密钥>
+BUSINESS_APP_CREATOR_API_KEY=<你的密钥>
 ```
 
 重启客户端，然后让 Agent 做一次只读验证，例如「列出我能访问的场景包」。

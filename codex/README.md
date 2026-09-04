@@ -49,19 +49,19 @@ codex plugin add business-app-creator@business-app-creator
 
 ## 配置密钥
 
-把完整密钥提供给当前 Agent，由它写入 `~/.codex/.env` 的 `SCENE_CREATOR_API_KEY`，
+把完整密钥提供给当前 Agent，由它写入 `~/.codex/.env` 的 `BUSINESS_APP_CREATOR_API_KEY`，
 保留其他环境变量，并把文件权限设为仅本人可读。你不需要自行编辑配置文件。
 
 ```bash
 # ~/.codex/.env
-SCENE_CREATOR_API_KEY=<你的个人 API 密钥>
+BUSINESS_APP_CREATOR_API_KEY=<你的个人 API 密钥>
 ```
 
 ```bash
 chmod 600 ~/.codex/.env
 ```
 
-`SCENE_CREATOR_API_KEY` 只是本地变量名，插件会将它的值作为
+`BUSINESS_APP_CREATOR_API_KEY` 只是本地变量名，插件会将它的值作为
 `Authorization: Bearer <密钥>` 发送。
 
 不要为鉴权配置 `user_id`、`X-User-ID` 或 `X-Project-ID`——MCP 会根据个人 API 密钥解析用户身份。

@@ -266,7 +266,7 @@ def validate_platform_install_files(skill_root: Path) -> None:
             if server.get("url") != PROD_MCP_ENDPOINT:
                 raise ReleaseError(f"{platform} MCP 必须使用仓库约定的 MCP 地址（PROD_MCP_ENDPOINT）")
             serialized = json.dumps(server, ensure_ascii=False)
-            if "SCENE_CREATOR_API_KEY" not in serialized:
+            if "BUSINESS_APP_CREATOR_API_KEY" not in serialized:
                 raise ReleaseError(f"{platform} MCP 必须引用 API Key 环境变量")
             if re.search(r"Bearer\s+sk_[A-Za-z0-9]", serialized):
                 raise ReleaseError(f"{platform} MCP 不得包含明文 API Key")
@@ -281,7 +281,7 @@ def validate_platform_install_files(skill_root: Path) -> None:
                 raise ReleaseError(f"{platform} 安装文档必须提到 {required_text!r}")
         # 有 .mcp.json 的平台靠环境变量注入密钥，文档必须写明变量名；
         # Manus 在网页里直接填明文密钥，没有环境变量可言。
-        if mcp_name and "SCENE_CREATOR_API_KEY" not in docs:
+        if mcp_name and "BUSINESS_APP_CREATOR_API_KEY" not in docs:
             raise ReleaseError(f"{platform} 安装文档必须说明 API Key 环境变量")
         # 走插件市场的平台必须给出公开来源；Manus 与通用集成是手工配置，不适用
         if (

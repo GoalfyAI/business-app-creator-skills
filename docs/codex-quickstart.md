@@ -29,7 +29,7 @@ codex plugin add business-app-creator@business-app-creator
 把完整密钥交给当前 Agent，让它写入 `~/.codex/.env`：
 
 ```bash
-SCENE_CREATOR_API_KEY=<你的个人 API 密钥>
+BUSINESS_APP_CREATOR_API_KEY=<你的个人 API 密钥>
 ```
 
 Agent 会保留其他环境变量，并把文件权限设为 `600`，你不需要自己编辑文件。

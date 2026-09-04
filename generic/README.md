@@ -24,15 +24,15 @@
       "type": "streamable-http",
       "url": "https://workflow-mcp.qa.goalfyai.cn/mcp",
       "headers": {
-        "Authorization": "Bearer ${SCENE_CREATOR_API_KEY}"
+        "Authorization": "Bearer ${BUSINESS_APP_CREATOR_API_KEY}"
       }
     }
   }
 }
 ```
 
-把密钥放进环境变量 `SCENE_CREATOR_API_KEY`。客户端不支持环境变量占位符时，直接把
-`${SCENE_CREATOR_API_KEY}` 替换为密钥本身，但**不要**把替换后的文件提交到任何仓库。
+把密钥放进环境变量 `BUSINESS_APP_CREATOR_API_KEY`。客户端不支持环境变量占位符时，直接把
+`${BUSINESS_APP_CREATOR_API_KEY}` 替换为密钥本身，但**不要**把替换后的文件提交到任何仓库。
 
 不要为鉴权配置 `user_id`、`X-User-ID` 或 `X-Project-ID`——MCP 会根据个人 API 密钥解析
 用户身份。

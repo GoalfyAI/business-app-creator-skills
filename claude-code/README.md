@@ -45,17 +45,17 @@ claude plugin install business-app-creator@business-app-creator
 在 GoalfyMax QA 环境的 [开发者工具 → API 密钥](https://goalfymax.qa.goalfyai.cn/developer/api-keys)创建个人密钥。
 
 把完整密钥提供给当前 Agent，由它合并写入 `~/.claude/settings.json` 的
-`env.SCENE_CREATOR_API_KEY`，保留其他全部配置。你不需要自行编辑配置文件。
+`env.BUSINESS_APP_CREATOR_API_KEY`，保留其他全部配置。你不需要自行编辑配置文件。
 
 ```json
 {
   "env": {
-    "SCENE_CREATOR_API_KEY": "<你的个人 API 密钥>"
+    "BUSINESS_APP_CREATOR_API_KEY": "<你的个人 API 密钥>"
   }
 }
 ```
 
-`SCENE_CREATOR_API_KEY` 只是本地变量名，插件会将它的值作为
+`BUSINESS_APP_CREATOR_API_KEY` 只是本地变量名，插件会将它的值作为
 `Authorization: Bearer <密钥>` 发送。
 
 不要为鉴权配置 `user_id`、`X-User-ID` 或 `X-Project-ID`——MCP 会根据个人 API 密钥解析用户身份。
