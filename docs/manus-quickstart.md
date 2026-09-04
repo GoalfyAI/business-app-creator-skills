@@ -9,7 +9,7 @@ Manus 是云端 Agent，配置分两部分：**MCP 连接器**（工具）和 **
 
 ## 第 1 步 — 获取 API 密钥
 
-登录 GoalfyMax，进入 [开发者工具 → API 密钥](https://goalfymax.qa.goalfyai.cn/developer/api-keys)创建
+登录 GoalfyMax，进入 [开发者工具 → API 密钥](https://goalfymax.goalfyai.cn/developer/api-keys)创建
 个人密钥。密钥以 `sk_` 开头，**完整内容只显示一次**。
 
 ## 第 2 步 — 添加 MCP 连接器
@@ -21,7 +21,7 @@ Manus 是云端 Agent，配置分两部分：**MCP 连接器**（工具）和 **
 {
   "mcpServers": {
     "business-app-creator": {
-      "url": "https://business-app-creator-mcp.qa.goalfyai.cn/mcp",
+      "url": "https://business-app-creator-mcp.goalfyai.cn/mcp",
       "transport": "streamable_http",
       "headers": {
         "Authorization": "Bearer sk_YOUR_API_KEY_HERE"

@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260904-329bc9",
-  "package_version": "1.21.8",
-  "mcp_endpoint": "https://business-app-creator-mcp.qa.goalfyai.cn/mcp",
-  "released_at": "2026-09-04T08:07:40Z",
-  "update_reason": "安装与升级文档去掉 QA 环境字样，按正式环境表述（地址暂仍为当前可用域名）",
+  "version": "v20260904-a54997",
+  "package_version": "1.21.9",
+  "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
+  "released_at": "2026-09-04T08:08:47Z",
+  "update_reason": "切生产：MCP 端点 https://business-app-creator-mcp.goalfyai.cn/mcp，密钥页 https://goalfymax.goalfyai.cn/developer/api-keys；全部安装物料与文档去 QA",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -25,8 +25,8 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "4a0405074a177666da6ccbfa2e57add5a98688c264243775878be79f295541fb",
-    "agents/openai.yaml": "3f9282364203b7532a64d7aae3b07dcc64885fda271242df69cdd37b3bd0f465",
+    "SKILL.md": "575e6de94cc4f3441cf278b7241111c73e451ac0bd18126b5e58535ac07725d1",
+    "agents/openai.yaml": "31b2f074c7812791457462767fd2c43f97c4560fe750cb3267decdda1d0516e6",
     "checklists/Workflow验收检查清单.md": "7f35892bfd0332b1f97a119c77304f087c1b61356643ac80dce2d9e473fa127b",
     "checklists/场景包验收检查清单.md": "78e1250e19f186f74150af9a3d486763bf067e5e0063e3739511b3efbb437661",
     "checklists/方案挑战检查清单.md": "e7a973bded38ebd2b70f04599f7753cf3c8d136ba527d2b3641e94356e63777d",

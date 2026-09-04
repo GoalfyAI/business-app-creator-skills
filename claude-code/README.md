@@ -4,7 +4,7 @@
 
 本插件同时安装经过审计的 `business-app-creator` MCP 和同名 Skill，连接生产环境：
 
-`https://business-app-creator-mcp.qa.goalfyai.cn/mcp`
+`https://business-app-creator-mcp.goalfyai.cn/mcp`
 
 ## 能做什么
 
@@ -43,7 +43,7 @@ claude plugin install business-app-creator@business-app-creator
 
 ## 配置密钥
 
-在 GoalfyMax 的 [开发者工具 → API 密钥](https://goalfymax.qa.goalfyai.cn/developer/api-keys)创建个人密钥。
+在 GoalfyMax 的 [开发者工具 → API 密钥](https://goalfymax.goalfyai.cn/developer/api-keys)创建个人密钥。
 
 把完整密钥提供给当前 Agent，由它合并写入 `~/.claude/settings.json` 的
 `env.BUSINESS_APP_CREATOR_API_KEY`，保留其他全部配置。你不需要自行编辑配置文件。

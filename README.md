@@ -20,7 +20,7 @@
 
 ## 支持的平台
 
-先在 [开发者工具 → API 密钥](https://goalfymax.qa.goalfyai.cn/developer/api-keys) 创建个人密钥，密钥以 `sk_` 开头且只显示一次。
+先在 [开发者工具 → API 密钥](https://goalfymax.goalfyai.cn/developer/api-keys) 创建个人密钥，密钥以 `sk_` 开头且只显示一次。
 然后按下表选择你的平台。
 
 | 平台 | 最快上手 | 详细指南 | 状态 |
@@ -57,7 +57,7 @@ Manus 与其他客户端请看上表对应的指南。
 
 ### 配置访问密钥
 
-在 GoalfyMax 的 [开发者工具 → API 密钥](https://goalfymax.qa.goalfyai.cn/developer/api-keys) 创建个人密钥，然后写进客户端配置：
+在 GoalfyMax 的 [开发者工具 → API 密钥](https://goalfymax.goalfyai.cn/developer/api-keys) 创建个人密钥，然后写进客户端配置：
 
 ```bash
 # Claude Code：~/.claude/settings.json 的 env

@@ -10,7 +10,7 @@
 
 ### 第 1 步：获取 API 密钥
 
-登录 GoalfyMax，进入 [开发者工具 → API 密钥](https://goalfymax.qa.goalfyai.cn/developer/api-keys)创建
+登录 GoalfyMax，进入 [开发者工具 → API 密钥](https://goalfymax.goalfyai.cn/developer/api-keys)创建
 个人密钥。密钥以 `sk_` 开头，**完整内容只在创建时显示一次**，请妥善保存。
 
 ### 第 2 步：配置 MCP
@@ -22,7 +22,7 @@
   "mcpServers": {
     "business-app-creator": {
       "type": "streamable-http",
-      "url": "https://business-app-creator-mcp.qa.goalfyai.cn/mcp",
+      "url": "https://business-app-creator-mcp.goalfyai.cn/mcp",
       "headers": {
         "Authorization": "Bearer ${BUSINESS_APP_CREATOR_API_KEY}"
       }

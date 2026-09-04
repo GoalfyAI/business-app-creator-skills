@@ -83,9 +83,10 @@ def test_every_install_surface_ships_production_endpoint():
         if path.is_file() and path.suffix in {".md", ".json", ".yaml"}
     )
     assert release_module.PROD_MCP_ENDPOINT in combined
-    # 2026-09-02 起安装物料统一指向 QA（生产 MCP 尚未部署）；不得残留生产地址与生产密钥页
-    assert "https://workflow-mcp.goalfyai.cn/mcp" not in combined
-    assert "https://goalfymax.goalfyai.cn/developer/api-keys" not in combined
+    # 2026-09-04 起安装物料统一指向生产；不得残留 QA 域名与旧端点
+    assert ".qa.goalfyai.cn" not in combined
+    assert "workflow-mcp." not in combined
+    assert "https://goalfymax.goalfyai.cn/developer/api-keys" in combined
 
 
 def test_platform_skill_copies_match_the_single_source():
