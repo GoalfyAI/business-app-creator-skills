@@ -77,7 +77,7 @@ ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 # 仓库里的安装物料统一指向同一个 MCP 地址，由本常量唯一决定。
 # 2026-09-02 拍板：生产 MCP 尚未部署（404），安装物料先指向 QA；切回生产时改这一处 +
 # 文档里的 API 密钥页域名（goalfymax.qa.goalfyai.cn ↔ goalfymax.goalfyai.cn），再发版。
-PROD_MCP_ENDPOINT = "https://workflow-mcp.qa.goalfyai.cn/mcp"
+PROD_MCP_ENDPOINT = "https://business-app-creator-mcp.qa.goalfyai.cn/mcp"
 DATA_SKILL_VERSION_RE = re.compile(r"^v\d{8}-[0-9a-f]{6}$")
 LEGACY_SKILL_VERSION_RE = re.compile(r"^v\d+\.\d+\.\d+$")
 SKILL_VERSION_RE = re.compile(r"\[skill-version:(v(?:\d+\.\d+\.\d+|\d{8}-[0-9a-f]{6}))\]")

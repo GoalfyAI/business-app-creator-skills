@@ -21,7 +21,7 @@ Manus 是云端 Agent，配置分两部分：**MCP 连接器**（工具）和 **
 {
   "mcpServers": {
     "business-app-creator": {
-      "url": "https://workflow-mcp.qa.goalfyai.cn/mcp",
+      "url": "https://business-app-creator-mcp.qa.goalfyai.cn/mcp",
       "transport": "streamable_http",
       "headers": {
         "Authorization": "Bearer sk_YOUR_API_KEY_HERE"

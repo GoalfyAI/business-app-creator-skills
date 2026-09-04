@@ -22,7 +22,7 @@
   "mcpServers": {
     "business-app-creator": {
       "type": "streamable-http",
-      "url": "https://workflow-mcp.qa.goalfyai.cn/mcp",
+      "url": "https://business-app-creator-mcp.qa.goalfyai.cn/mcp",
       "headers": {
         "Authorization": "Bearer ${BUSINESS_APP_CREATOR_API_KEY}"
       }

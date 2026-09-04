@@ -4,7 +4,7 @@
 
 本插件同时安装经过审计的 `business-app-creator` MCP 和同名 Skill，连接生产环境：
 
-`https://workflow-mcp.qa.goalfyai.cn/mcp`
+`https://business-app-creator-mcp.qa.goalfyai.cn/mcp`
 
 ## 能做什么
 

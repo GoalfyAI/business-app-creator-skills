@@ -10,5 +10,5 @@ dependencies:
     - type: mcp
       value: business-app-creator-mcp
       transport: streamable_http
-      url: https://workflow-mcp.qa.goalfyai.cn/mcp
+      url: https://business-app-creator-mcp.qa.goalfyai.cn/mcp
       bearer_token_env_var: BUSINESS_APP_CREATOR_API_KEY

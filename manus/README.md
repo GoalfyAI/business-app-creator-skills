@@ -24,7 +24,7 @@ Manus 是云端 Agent，有两部分要分别配置：**工具（MCP）** 在插
 {
   "mcpServers": {
     "business-app-creator": {
-      "url": "https://workflow-mcp.qa.goalfyai.cn/mcp",
+      "url": "https://business-app-creator-mcp.qa.goalfyai.cn/mcp",
       "transport": "streamable_http",
       "headers": {
         "Authorization": "Bearer sk_YOUR_API_KEY_HERE"
@@ -44,7 +44,7 @@ Manus 是云端 Agent，有两部分要分别配置：**工具（MCP）** 在插
 | **Transport Type** | `HTTP`（保持默认） |
 | **Icon**（可选） | 留空，或粘贴 Logo 链接 |
 | **Notes**（可选） | 留空，或写用途说明 |
-| **Server URL** | `https://workflow-mcp.qa.goalfyai.cn/mcp` |
+| **Server URL** | `https://business-app-creator-mcp.qa.goalfyai.cn/mcp` |
 | **Custom Headers** | 点击 "+ Add custom header" 添加 1 条 |
 
 自定义请求头（鉴权，必填）：
