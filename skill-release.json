@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260904-ab0f54",
-  "package_version": "1.20.1",
+  "version": "v20260904-5f5fe9",
+  "package_version": "1.20.2",
   "mcp_endpoint": "https://workflow-mcp.qa.goalfyai.cn/mcp",
-  "released_at": "2026-09-04T06:35:44Z",
-  "update_reason": "产品命名口径：对外统一叫业务应用助手（business_app），制作的是业务应用（编排形）= 挂载编排的场景包 + 可选配套应用；说产品用业务应用、说资产载体用场景包；关键词加 业务应用助手 / business_app / 业务应用（编排形）；开发者定义同步",
+  "released_at": "2026-09-04T06:42:47Z",
+  "update_reason": "英文标识定为 business_app_creator（与 skill 命名一致），关键词与前置口径同步",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -25,7 +25,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "4e96e4634c3bcde18c6258884426d0c8b7f340fe0a7e48dcba66ff25f247ac59",
+    "SKILL.md": "4bc70174c5837bdd42c2a81b23bb55aed4a2392fcfb7121d9856e441163b0cf7",
     "agents/openai.yaml": "861c83000e4c5738e28a73ea26f08dde7c26a982b04995a707b33af7d1fe3da7",
     "checklists/Workflow验收检查清单.md": "7f35892bfd0332b1f97a119c77304f087c1b61356643ac80dce2d9e473fa127b",
     "checklists/场景包验收检查清单.md": "78e1250e19f186f74150af9a3d486763bf067e5e0063e3739511b3efbb437661",
