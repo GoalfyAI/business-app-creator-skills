@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""校验并发布 business-app-creator Skill。
+"""校验并发布 business-app-creator 插件（含 scene-creator 与 app-creator 两个 Skill）。
 
-模型很简单：`skills/business-app-creator/` 是唯一源，发布时把它复制到各平台的 `skills/business-app-creator/`，
+模型很简单：`skills/scene-creator/` 是唯一源，发布时把它复制到各平台的 `skills/scene-creator/`，
 再给所有 SKILL.md 副本打上同一个版本标记。平台安装文档（README/AGENTS/UPDATE/.mcp.json）
 和插件 manifest 都是手工维护的最终文件，不做模板渲染。
 
@@ -25,22 +25,23 @@ from typing import Any
 
 import yaml
 
-SKILL_NAME = "business-app-creator"
-MCP_SERVER_NAME = "business_app_creator"  # 客户端 mcpServers 键 / 服务端 EXTERNAL_MCP_NAME，与 skill 名区分
-SKILL_CONTENT_DIR = "skills/business-app-creator"
+SKILL_NAME = "scene-creator"
+MCP_SERVER_NAME = "business-app-creator-mcp"  # 客户端 mcpServers 键 / 服务端 EXTERNAL_MCP_NAME
+PLUGIN_NAME = "business-app-creator"  # 插件 / 市场名（产品名），与 skill 名 scene-creator / app-creator 区分
+SKILL_CONTENT_DIR = "skills/scene-creator"
 MANIFEST_RELATIVE_PATH = Path("skill-release.json")
 OPENAI_METADATA_RELATIVE_PATH = Path("agents/openai.yaml")
 # 各平台的安装形态不同：插件市场平台把 Skill 放进 skills/ 子目录，
 # Manus 上传 skill 包，通用集成直接摊在目录根。Skill 内容本身四份完全一致。
 PLATFORM_LAYOUTS = {
     "claude-code": {
-        "skill_subdir": "skills/business-app-creator",
+        "skill_subdir": "skills/scene-creator",
         "with_openai_metadata": False,
         "mcp_config": ".mcp.json",
         "docs": ("README.md", "AGENTS.md", "UPDATE.md"),
     },
     "codex": {
-        "skill_subdir": "skills/business-app-creator",
+        "skill_subdir": "skills/scene-creator",
         # Codex 读 agents/openai.yaml 取展示名、默认提示词与 MCP 依赖声明
         "with_openai_metadata": True,
         "mcp_config": ".mcp.json",
@@ -286,7 +287,7 @@ def validate_platform_install_files(skill_root: Path) -> None:
         # 走插件市场的平台必须给出公开来源；Manus 与通用集成是手工配置，不适用
         if (
             layout["skill_subdir"].startswith("skills/")
-            and "GoalfyAI/scene-creator-skills" not in docs
+            and "GoalfyAI/business-app-creator-skills" not in docs
         ):
             raise ReleaseError(f"{platform} 安装文档必须给出公开插件市场来源")
 
@@ -397,7 +398,7 @@ def _bump_package_version(skill_root: Path, version: str) -> None:
     if lockfile.is_file():
         content = lockfile.read_text(encoding="utf-8")
         updated, count = re.subn(
-            r'(?ms)(name = "scene-creator-skills"\nversion = ")\d+\.\d+\.\d+(")',
+            r'(?ms)(name = "business-app-creator-skills"\nversion = ")\d+\.\d+\.\d+(")',
             lambda match, new=version: f"{match.group(1)}{new}{match.group(2)}",
             content,
             count=1,

@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "business_app_creator": {
+    "business-app-creator-mcp": {
       "type": "streamable-http",
       "url": "https://workflow-mcp.qa.goalfyai.cn/mcp",
       "headers": {

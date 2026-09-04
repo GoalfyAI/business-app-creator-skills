@@ -9,7 +9,7 @@ import tomllib
 import yaml
 
 ROOT = Path(__file__).parents[1]
-SKILL_ROOT = ROOT / "skills" / "business-app-creator"
+SKILL_ROOT = ROOT / "skills" / "scene-creator"
 SCRIPT_PATH = ROOT / "scripts" / "build_platform_packages.py"
 PROD_SCRIPT_PATH = ROOT / "scripts" / "register-skill-release.py"
 
@@ -34,7 +34,7 @@ def _copy_repo(tmp_path: Path) -> Path:
         shutil.copy2(ROOT / name, tmp_path / name)
     (tmp_path / "scripts").mkdir(exist_ok=True)
     shutil.copy2(SCRIPT_PATH, tmp_path / "scripts" / SCRIPT_PATH.name)
-    return tmp_path / "skills" / "business-app-creator"
+    return tmp_path / "skills" / "scene-creator"
 
 
 def _manifest(skill_root: Path = SKILL_ROOT) -> dict:
@@ -51,7 +51,7 @@ def _package_version(skill_root: Path = SKILL_ROOT) -> str:
 def test_checked_in_release_is_current():
     manifest = release_module.check_release(SKILL_ROOT)
 
-    assert manifest["skill_name"] == "business-app-creator"
+    assert manifest["skill_name"] == "scene-creator"
     assert release_module._validate_skill_version(manifest["version"]) == manifest["version"]
     assert release_module._validate_package_version(manifest["package_version"])
 
@@ -64,7 +64,7 @@ def test_all_first_party_package_versions_are_synchronized():
     pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     assert pyproject["project"]["version"] == expected
     lock_match = re.search(
-        r'name = "scene-creator-skills"\nversion = "([^"]+)"',
+        r'name = "business-app-creator-skills"\nversion = "([^"]+)"',
         (ROOT / "uv.lock").read_text(encoding="utf-8"),
     )
     assert lock_match and lock_match.group(1) == expected
@@ -97,7 +97,7 @@ def test_platform_skill_copies_match_the_single_source():
         copy = release_module._platform_skill_dir(SKILL_ROOT, platform) / "SKILL.md"
         assert copy.read_bytes() == canonical, platform
     # 只有 Codex 需要 openai.yaml
-    assert (ROOT / "codex/skills/business-app-creator/agents/openai.yaml").is_file()
+    assert (ROOT / "codex/skills/scene-creator/agents/openai.yaml").is_file()
     for platform in ("claude-code", "manus", "generic"):
         target = release_module._platform_skill_dir(SKILL_ROOT, platform) / "agents"
         assert not target.exists(), platform
@@ -230,7 +230,7 @@ def test_install_docs_state_the_required_facts():
             assert not re.search(r"Bearer\s+sk_[A-Za-z0-9]", mcp_text)
             assert "BUSINESS_APP_CREATOR_API_KEY" in docs, f"{platform} 未说明密钥环境变量"
         if layout["skill_subdir"].startswith("skills/"):
-            assert "GoalfyAI/scene-creator-skills" in docs, f"{platform} 缺少公开市场来源"
+            assert "GoalfyAI/business-app-creator-skills" in docs, f"{platform} 缺少公开市场来源"
 
 
 def test_docs_do_not_pin_a_stale_package_version():
@@ -263,8 +263,8 @@ def test_new_reference_requires_a_new_release(tmp_path: Path):
 @pytest.mark.parametrize(
     "relative",
     [
-        "claude-code/skills/business-app-creator/SKILL.md",
-        "codex/skills/business-app-creator/SKILL.md",
+        "claude-code/skills/scene-creator/SKILL.md",
+        "codex/skills/scene-creator/SKILL.md",
         "manus/skill/SKILL.md",
         "generic/SKILL.md",
     ],
@@ -437,7 +437,7 @@ def test_prod_release_rolls_back_marker_on_failure(tmp_path: Path):
 
 def test_sync_restores_platform_copies(tmp_path: Path):
     copied = _copy_repo(tmp_path)
-    target = tmp_path / "codex/skills/business-app-creator/SKILL.md"
+    target = tmp_path / "codex/skills/scene-creator/SKILL.md"
     target.unlink()
 
     release_module.sync_platform_skills(copied)

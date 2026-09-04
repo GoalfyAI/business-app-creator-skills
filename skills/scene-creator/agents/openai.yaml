@@ -2,13 +2,13 @@ interface:
   display_name: "场景包制作"
   brand_color: "#6366F1"
   short_description: "把业务流程沉淀为 GoalfyMax 场景包，诊断、优化并验证已有场景包"
-  default_prompt: "使用 $business-app-creator 帮我把一套业务流程沉淀成可在 GoalfyMax 直接使用的场景包，或排查我已有的场景包为什么效果不好；先理解我的业务和目标，给我方案，我确认后再动手。"
+  default_prompt: "使用 $scene-creator 帮我把一套业务流程沉淀成可在 GoalfyMax 直接使用的场景包，或排查我已有的场景包为什么效果不好；先理解我的业务和目标，给我方案，我确认后再动手。"
 policy:
   allow_implicit_invocation: true
 dependencies:
   tools:
     - type: mcp
-      value: business_app_creator
+      value: business-app-creator-mcp
       transport: streamable_http
       url: https://workflow-mcp.qa.goalfyai.cn/mcp
       bearer_token_env_var: BUSINESS_APP_CREATOR_API_KEY

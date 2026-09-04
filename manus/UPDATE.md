@@ -13,7 +13,7 @@ Skill 文件在这里读不到），唯一路径是带着新 Skill 开一个新�
 
 # 需要操作：更新场景包制作 Skill
 
-**1. 下载最新的 Skill 包：https://github.com/GoalfyAI/scene-creator-skills/raw/main/manus/business-app-creator-skill.zip**
+**1. 下载最新的 Skill 包：https://github.com/GoalfyAI/business-app-creator-skills/raw/main/manus/business-app-creator-skill.zip**
 
 **2. 在 Manus 的 Skills 管理页删除旧的 `business-app-creator` Skill，然后上传新的 zip。**
 

@@ -26,15 +26,15 @@
 ### 方式一：从公开插件市场（推荐）
 
 ```bash
-claude plugin marketplace add GoalfyAI/scene-creator-skills
+claude plugin marketplace add GoalfyAI/business-app-creator-skills
 claude plugin install business-app-creator@business-app-creator
 ```
 
 ### 方式二：从本地仓库（开发与验证用）
 
 ```bash
-git clone https://github.com/GoalfyAI/scene-creator-skills.git
-cd scene-creator-skills
+git clone https://github.com/GoalfyAI/business-app-creator-skills.git
+cd business-app-creator-skills
 claude plugin marketplace add "$PWD"
 claude plugin install business-app-creator@business-app-creator
 ```

@@ -50,7 +50,7 @@ test -f "$HOME/.codex/.env" && grep '^BUSINESS_APP_CREATOR_API_KEY=' "$HOME/.cod
 检查：`codex plugin list | grep business-app-creator` —— 有输出就跳到第 2 步。
 
 ```bash
-codex plugin marketplace add GoalfyAI/scene-creator-skills
+codex plugin marketplace add GoalfyAI/business-app-creator-skills
 codex plugin add business-app-creator@business-app-creator
 ```
 
@@ -164,12 +164,12 @@ codex plugin add business-app-creator@business-app-creator
 重新绑定后再执行上面的 remove/add：
 
 ```bash
-codex plugin marketplace add GoalfyAI/scene-creator-skills
+codex plugin marketplace add GoalfyAI/business-app-creator-skills
 ```
 
 ### 第 2 步：确认新版本已生效
 
-搜索已安装的 `skills/business-app-creator/SKILL.md`，从 description 读出 `[skill-version:...]`。
+搜索已安装的 `skills/scene-creator/SKILL.md`，从 description 读出 `[skill-version:...]`。
 **不要凭记忆拼装安装路径**——路径里有连续同名层级和中间版本目录。命中多份时取版本目录
 最高或最近修改的那份。
 

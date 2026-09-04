@@ -19,12 +19,12 @@ claude plugin update business-app-creator@business-app-creator
 当初是从本地目录添加的，一直在复用陈旧缓存。重新绑回内网仓库后再执行上面的升级：
 
 ```bash
-claude plugin marketplace add git@codeup.aliyun.com:goalfyai/goalfyagent/scene-creator-skills.git
+claude plugin marketplace add git@codeup.aliyun.com:goalfyai/goalfyagent/business-app-creator-skills.git
 ```
 
 ### 第 2 步：读取新版本标记并重试（在本次会话内完成，先不要让用户重启）
 
-版本闸门只校验版本串，所以本次会话内即可解除阻塞。搜索已安装的 `skills/business-app-creator/SKILL.md`，
+版本闸门只校验版本串，所以本次会话内即可解除阻塞。搜索已安装的 `skills/scene-creator/SKILL.md`，
 不要凭记忆拼装安装路径——路径里有连续同名层级和中间版本目录。搜索命中多份时（旧版本目录、
 市场副本），取版本目录最高或最近修改的那份。从它的 description 读出 `[skill-version:...]`，
 原样填入 `skill_version` 重试刚才失败的 `task_manager` create。
@@ -34,7 +34,7 @@ claude plugin marketplace add git@codeup.aliyun.com:goalfyai/goalfyagent/scene-c
 
 ```bash
 claude plugin uninstall business-app-creator@business-app-creator
-claude plugin marketplace add git@codeup.aliyun.com:goalfyai/goalfyagent/scene-creator-skills.git
+claude plugin marketplace add git@codeup.aliyun.com:goalfyai/goalfyagent/business-app-creator-skills.git
 claude plugin install business-app-creator@business-app-creator
 ```
 

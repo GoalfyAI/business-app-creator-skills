@@ -5,7 +5,7 @@
 平台专属的完整说明见 [`codex/README.md`](../codex/README.md)，
 Agent 可直接执行的安装流程见 [`codex/AGENTS.md`](../codex/AGENTS.md)。
 
-> **想省事的话**：把 [codex/AGENTS.md](https://raw.githubusercontent.com/GoalfyAI/scene-creator-skills/main/codex/AGENTS.md) 直接发给你的 Agent，
+> **想省事的话**：把 [codex/AGENTS.md](https://raw.githubusercontent.com/GoalfyAI/business-app-creator-skills/main/codex/AGENTS.md) 直接发给你的 Agent，
 > 它会自己完成下面全部步骤并验证结果，你只需要在它要密钥时提供一次。
 
 ## 第 1 步 — 获取 API 密钥
@@ -20,7 +20,7 @@ Agent 可直接执行的安装流程见 [`codex/AGENTS.md`](../codex/AGENTS.md)�
 ## 第 2 步 — 安装插件
 
 ```bash
-codex plugin marketplace add GoalfyAI/scene-creator-skills
+codex plugin marketplace add GoalfyAI/business-app-creator-skills
 codex plugin add business-app-creator@business-app-creator
 ```
 

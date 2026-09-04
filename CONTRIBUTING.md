@@ -17,7 +17,7 @@
 
 | 目录 | 说明 |
 |---|---|
-| `skills/business-app-creator/`、`skills/app-creator/` | 两个 Skill 的唯一源：各自 `SKILL.md`、`stages/`、`references/`、`checklists/`（business-app-creator 另有 `agents/openai.yaml`） |
+| `skills/scene-creator/`、`skills/app-creator/` | 两个 Skill 的唯一源：各自 `SKILL.md`、`stages/`、`references/`、`checklists/`（business-app-creator 另有 `agents/openai.yaml`） |
 | `scripts/` | 构建与发布工具 |
 | `tests/` | 测试 |
 | `claude-code/`、`codex/` | 插件安装文档手工维护；`skills/` 子目录由发布流程复制，**不要手工编辑** |
