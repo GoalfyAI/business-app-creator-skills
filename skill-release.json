@@ -1,10 +1,10 @@
 {
   "skill_name": "business-app-creator",
-  "version": "v20260904-981bef",
-  "package_version": "1.21.3",
+  "version": "v20260904-62e5b3",
+  "package_version": "1.21.4",
   "mcp_endpoint": "https://workflow-mcp.qa.goalfyai.cn/mcp",
-  "released_at": "2026-09-04T07:33:37Z",
-  "update_reason": "API 密钥环境变量改名 SCENE_CREATOR_API_KEY → BUSINESS_APP_CREATOR_API_KEY（.mcp.json / openai.yaml / 安装与升级文档 / 构建校验），三份 UPDATE.md 加迁移提示",
+  "released_at": "2026-09-04T07:52:09Z",
+  "update_reason": "README 定位重写：业务应用是主要产物，场景包是它下面的能力资产；根 README 加业务应用三组成表与三个概念；四个平台 README 标题与能做什么同步",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -25,7 +25,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "3314a8e30203818954973b8c8ade27ec8885b0e4779df8e8e1da7176a6865c18",
+    "SKILL.md": "6fd5b6cbd760c18f447e324eb35519503dcb3d22377fabb9e133682f6459eddc",
     "agents/openai.yaml": "fe420b321ada941e620629bbfd0274fa682d8bd0db9fd5b885682b320ff22319",
     "checklists/Workflow验收检查清单.md": "7f35892bfd0332b1f97a119c77304f087c1b61356643ac80dce2d9e473fa127b",
     "checklists/场景包验收检查清单.md": "78e1250e19f186f74150af9a3d486763bf067e5e0063e3739511b3efbb437661",
