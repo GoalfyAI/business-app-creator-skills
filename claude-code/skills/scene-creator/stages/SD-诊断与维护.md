@@ -172,3 +172,28 @@
 | 外部工具报参数格式错、路径不存在、文件读不到 | 先回该工具的实时契约看文件参数收什么（`file_to_url` 换出的 URL、`/workspace` 路径还是内容本体），再核对脚本里的准备步骤；多半是写脚本前没读契约、没取样（S3 2.2）。按契约改准备步骤，拿不准就取样一次，不要在脚本里加分支猜格式 |
 | `has_ui: true` 但 `entry_url` 为空字符串 | 界面地址未随派生继承：部署之后又发生了派生新草稿行的修改（如改编排），激活地址留在旧行。在当前草稿行重新部署界面（`scene_package_ui_bundle`，属存量附属界面维护，见本文 3.4），反读 `entry_url` 非空后再上线 |
 
+### 4.7 工单 Gate 的三种结构化错误
+
+（自路由器 6.3 搬入；路由器只留一句判别。）
+
+工单 Gate 失败时按 `reason` 判别，三种处理方式互不相同。**禁止**新建平行工单或改名重试来绕过。
+
+**`SCENE_SKILL_UPGRADE_REQUIRED`** — Skill 版本过期，工单**未创建**。立即停止所有写操作，
+在**本次会话内**完成升级：先判断所在平台，从 `metadata.update.update_guides` 取该平台的
+升级文档链接，拉取后逐步照做；再搜索已安装的 SKILL.md，从 description 读出
+`[skill-version:...]` 标记，原样填入 `skill_version` 重试（Claude Code 平台可直接
+`grep -r "skill-version" ~/.claude/plugins/cache` 定位；其他平台按各自安装目录搜索）。
+
+合法版本串**只能**来自升级后已安装的 SKILL.md。拒单响应里不含可用于重试的版本串，
+**禁止**从响应、changelog 或记忆里取值重试。搜不到已安装的 SKILL.md、或文件里没有
+`[skill-version:...]` 标记，说明未安装或安装已损坏，改取 `metadata.update.install_guides`
+里该平台的安装文档重新安装后再读标记，**禁止**因为读不到就编造一个版本串。升级成功并重试
+通过之后，才提示开发者重启客户端让新 Skill 内容生效——重试只解除闸门，你上下文里的 Skill
+内容仍是旧版。
+
+**`SCENE_SKILL_UPGRADE_RECOMMENDED`** — 有新版本但**不阻断**，工单已正常创建，`task_id` 可直接使用。
+继续当前任务，交付时顺带提示开发者升级即可。
+
+**`WORKFLOW_TASK_MODE_MISMATCH`** — 工单模式与动作不匹配。按 `metadata` 里的 `actual_mode` 和
+`required_mode` 纠正：只读工单要执行写操作时，按「前置条件 / 工单 Gate」的对照表新建
+`mode="write"` 工单并传 `continued_from_task_id`。**禁止**误判为工单不存在或属于他人。
