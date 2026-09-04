@@ -29,7 +29,7 @@ Skill 文件在这里读不到），唯一路径是带着新 Skill 开一个新�
 
 ## 轮换个人 API 密钥
 
-1. 在 GoalfyMax QA 环境创建替换密钥。
+1. 在 GoalfyMax 创建替换密钥。
 2. 在 Manus 的 Plugins 页编辑 `business-app-creator` 连接器，把 `Authorization` 头改成
    `Bearer sk_新密钥`。
 3. 保存并确认新密钥可用后，在 GoalfyMax 撤销旧密钥。

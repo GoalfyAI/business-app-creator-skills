@@ -39,7 +39,7 @@ description 里读出 `[skill-version:...]`（你知道它落在哪，不需要�
 
 ## 轮换个人 API 密钥
 
-1. 在 GoalfyMax QA 环境创建替换密钥。
+1. 在 GoalfyMax 创建替换密钥。
 2. 更新环境变量 `BUSINESS_APP_CREATOR_API_KEY`，保留其他配置。
 3. 新密钥生效后，撤销旧密钥。
 4. 重启客户端，再次执行只读验证。
