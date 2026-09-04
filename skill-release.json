@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260903-85badd",
-  "package_version": "1.19.13",
+  "version": "v20260904-2bad01",
+  "package_version": "1.19.14",
   "mcp_endpoint": "https://workflow-mcp.qa.goalfyai.cn/mcp",
-  "released_at": "2026-09-03T10:07:58Z",
-  "update_reason": "表单预填改为自家后端自开发：宿主侧离线预填已在 Max 取消，useFormPrefill 只回空补丁不再是预填来源；A3 §3 加表单预填接口一类（只读查本用户实体/情境表，字段对齐 business_forms），A3 §4.1/§4.3、A1 功能菜单/§5.1/§6.3 同步",
+  "released_at": "2026-09-04T03:34:30Z",
+  "update_reason": "P0 配套：A2 工作集 close 挪到 A5 结单前（A3 本地开发与 A4 deploy 都用它）；A4 写动作回草稿编号、get 带提示不必翻版本列表；S3 4.1 契约读取路由加 counter_examples 反例集",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -24,7 +24,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "4855aa4b8108302f186c2be350b7bc5436612aeb4449a1ae5a8d9e6b3bed9672",
+    "SKILL.md": "64214e6477975312599513aee218859047223fcd2723bbca596be651eeccbdd5",
     "agents/openai.yaml": "861c83000e4c5738e28a73ea26f08dde7c26a982b04995a707b33af7d1fe3da7",
     "checklists/Workflow验收检查清单.md": "7f35892bfd0332b1f97a119c77304f087c1b61356643ac80dce2d9e473fa127b",
     "checklists/场景包验收检查清单.md": "78e1250e19f186f74150af9a3d486763bf067e5e0063e3739511b3efbb437661",
@@ -35,7 +35,7 @@
     "references/表结构与累加机制.md": "c13c0a8720f84fcccd6a3551ba250fd38682649fa96da068519e1ddbc06ad342",
     "stages/S1-业务设计.md": "73d29aed59e9bb9ce4fa9af254c1e432ce830bc1d2e65d76af79be3d73312853",
     "stages/S2-资产设计.md": "63d1c6d37cbac72a6f88cc3a75e809300368a0b32f088a483ccc40b7e088a439",
-    "stages/S3-资产制作.md": "7ca524b4bef9faec580f87064273ea1ec4fe88fd65d23fe7295d88993c8a9271",
+    "stages/S3-资产制作.md": "9e973ca42db934f80507e7d534c45e970c71963da5d46db3dd81b60e434b82db",
     "stages/S4-验证与修正.md": "d28a4eaee3245361980f5475561e94f805ad625010bd76788af33b7cd307dd92",
     "stages/S5-发布与交付.md": "fed82b8a418413bc369f22051586069f86c7f074b6f69db045916de43b4e09e6",
     "stages/SD-诊断与维护.md": "f2c11efa4f148bc6bd2c9d74f0cd87532a8a78ceb58878987aaea5dd048f077b",
