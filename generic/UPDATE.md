@@ -10,7 +10,7 @@ API 密钥，不要向用户索取。
 
 按当初的获取方式重新拉一份：
 
-- **下载的 zip**：重新下载 `scene-creator-generic.zip` 并解压
+- **下载的 zip**：重新下载 `business-app-creator-generic.zip` 并解压
 - **克隆的仓库**：`cd scene-creator-skills && git pull`
 
 ## 第 2 步：读取新版本标记并重试（在本次会话内完成，先不要让用户重启）

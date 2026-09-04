@@ -13,9 +13,9 @@ Skill 文件在这里读不到），唯一路径是带着新 Skill 开一个新�
 
 # 需要操作：更新场景包制作 Skill
 
-**1. 下载最新的 Skill 包：https://github.com/GoalfyAI/scene-creator-skills/raw/main/manus/scene-creator-skill.zip**
+**1. 下载最新的 Skill 包：https://github.com/GoalfyAI/scene-creator-skills/raw/main/manus/business-app-creator-skill.zip**
 
-**2. 在 Manus 的 Skills 管理页删除旧的 `scene-creator` Skill，然后上传新的 zip。**
+**2. 在 Manus 的 Skills 管理页删除旧的 `business-app-creator` Skill，然后上传新的 zip。**
 
 **3. 关闭当前对话并开一个新对话——Skill 只在会话开始时加载。**
 
@@ -30,7 +30,7 @@ Skill 文件在这里读不到），唯一路径是带着新 Skill 开一个新�
 ## 轮换个人 API 密钥
 
 1. 在 GoalfyMax QA 环境创建替换密钥。
-2. 在 Manus 的 Plugins 页编辑 `scene-creator` 连接器，把 `Authorization` 头改成
+2. 在 Manus 的 Plugins 页编辑 `business-app-creator` 连接器，把 `Authorization` 头改成
    `Bearer sk_新密钥`。
 3. 保存并确认新密钥可用后，在 GoalfyMax 撤销旧密钥。
 4. 开新对话，再次执行只读验证。

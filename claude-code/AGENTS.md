@@ -35,7 +35,7 @@
 以下都是检查命令，不需要用户参与。按结果分流：
 
 ```bash
-claude plugin list | grep scene-creator                      # 插件装了吗？
+claude plugin list | grep business-app-creator                      # 插件装了吗？
 grep SCENE_CREATOR_API_KEY "$HOME/.claude/settings.json"     # 密钥配了吗？
 ```
 
@@ -45,11 +45,11 @@ grep SCENE_CREATOR_API_KEY "$HOME/.claude/settings.json"     # 密钥配了吗�
 
 ## 第 1 步：安装插件
 
-检查：`claude plugin list | grep scene-creator` —— 有输出就跳到第 2 步。
+检查：`claude plugin list | grep business-app-creator` —— 有输出就跳到第 2 步。
 
 ```bash
 claude plugin marketplace add GoalfyAI/scene-creator-skills
-claude plugin install scene-creator@scene-creator
+claude plugin install business-app-creator@business-app-creator
 ```
 
 失败处理：
@@ -103,8 +103,8 @@ MCP 连接只有重启后才生效，重启前无法验证。**逐字输出**下
 
 用户确认重启后，**由你自己验证**，不要让用户去检查任何东西：
 
-1. 确认 `scene-creator` 插件与 Skill 已加载
-2. 确认你的工具列表里有 `scene-creator` 的 MCP 工具（如 `task_manager`、`list_assets`）
+1. 确认 `business-app-creator` 插件与 Skill 已加载
+2. 确认你的工具列表里有 `business-app-creator` 的 MCP 工具（如 `task_manager`、`list_assets`）
 3. 用 `list_assets` 做一次只读请求作为自检——**禁止**为了测试连通性去创建、修改或删除任何资产
 
 自检失败时按下表处理：
@@ -125,10 +125,10 @@ MCP 连接只有重启后才生效，重启前无法验证。**逐字输出**下
 场景包制作 Skill 安装结果：
 
 [已完成]
-- 插件 scene-creator 已安装（版本 = plugin list 的实际输出）
+- 插件 business-app-creator 已安装（版本 = plugin list 的实际输出）
 - Skill 版本 = SKILL.md description 里 [skill-version:...] 的实际值
 - API 密钥已写入 ~/.claude/settings.json
-- scene-creator MCP 工具已加载，只读请求成功
+- business-app-creator MCP 工具已加载，只读请求成功
 
 [需要你操作]
 -（无 / 重启 Claude Code 后告诉我，我来验证连接）
@@ -148,7 +148,7 @@ MCP 连接只有重启后才生效，重启前无法验证。**逐字输出**下
 ### 第 1 步：升级插件
 
 ```bash
-claude plugin update scene-creator@scene-creator
+claude plugin update business-app-creator@business-app-creator
 ```
 
 失败处理：提示市场不是 Git 市场，或升级后 `[skill-version:...]` 标记仍是旧值，说明市场
@@ -160,7 +160,7 @@ claude plugin marketplace add GoalfyAI/scene-creator-skills
 
 ### 第 2 步：确认新版本已生效
 
-搜索已安装的 `skills/scene-creator/SKILL.md`，从 description 读出 `[skill-version:...]`。
+搜索已安装的 `skills/business-app-creator/SKILL.md`，从 description 读出 `[skill-version:...]`。
 **不要凭记忆拼装安装路径**——路径里有连续同名层级和中间版本目录。命中多份时取版本目录
 最高或最近修改的那份。
 

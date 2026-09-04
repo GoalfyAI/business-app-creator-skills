@@ -2,7 +2,7 @@
 
 把业务流程沉淀为 GoalfyMax 场景包，诊断、优化并验证已有场景包。
 
-本插件同时安装经过审计的 `scene-creator` MCP 和同名 Skill，连接生产环境：
+本插件同时安装经过审计的 `business-app-creator` MCP 和同名 Skill，连接生产环境：
 
 `https://workflow-mcp.qa.goalfyai.cn/mcp`
 
@@ -26,7 +26,7 @@
 
 ```bash
 claude plugin marketplace add GoalfyAI/scene-creator-skills
-claude plugin install scene-creator@scene-creator
+claude plugin install business-app-creator@business-app-creator
 ```
 
 ### 方式二：从本地仓库（开发与验证用）
@@ -35,7 +35,7 @@ claude plugin install scene-creator@scene-creator
 git clone https://github.com/GoalfyAI/scene-creator-skills.git
 cd scene-creator-skills
 claude plugin marketplace add "$PWD"
-claude plugin install scene-creator@scene-creator
+claude plugin install business-app-creator@business-app-creator
 ```
 
 本地目录添加的市场会一直复用该目录的内容，不会自动获取新版本。验证完请改回方式一。
@@ -66,14 +66,14 @@ claude plugin install scene-creator@scene-creator
 
 在新会话中确认：
 
-1. `scene-creator` 插件与 Skill 已加载
-2. `scene-creator` MCP 工具已就绪（如 `task_manager`、`list_assets`）
+1. `business-app-creator` 插件与 Skill 已加载
+2. `business-app-creator` MCP 工具已就绪（如 `task_manager`、`list_assets`）
 3. 执行一次只读请求，例如「列出我能访问的场景包」，能正常返回
 
 ## 更新
 
 ```bash
-claude plugin update scene-creator@scene-creator
+claude plugin update business-app-creator@business-app-creator
 ```
 
 被服务端提示 Skill 版本过期时，按 [UPDATE.md](UPDATE.md) 执行。

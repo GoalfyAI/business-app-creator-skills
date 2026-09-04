@@ -17,7 +17,7 @@
 
 | 目录 | 说明 |
 |---|---|
-| `skills/scene-creator/`、`skills/app-creator/` | 两个 Skill 的唯一源：各自 `SKILL.md`、`stages/`、`references/`、`checklists/`（scene-creator 另有 `agents/openai.yaml`） |
+| `skills/business-app-creator/`、`skills/app-creator/` | 两个 Skill 的唯一源：各自 `SKILL.md`、`stages/`、`references/`、`checklists/`（business-app-creator 另有 `agents/openai.yaml`） |
 | `scripts/` | 构建与发布工具 |
 | `tests/` | 测试 |
 | `claude-code/`、`codex/` | 插件安装文档手工维护；`skills/` 子目录由发布流程复制，**不要手工编辑** |
@@ -69,7 +69,7 @@ uv run python scripts/build_platform_packages.py check
 需要连测试环境时，改**本地已安装插件**的配置，不要动仓库源文件：
 
 ```
-~/.claude/plugins/marketplaces/scene-creator/claude-code/.mcp.json
+~/.claude/plugins/marketplaces/business-app-creator/claude-code/.mcp.json
 ```
 
 改仓库源文件会让 `check` 因校验和不匹配而失败，也有把测试地址发进正式包的风险。

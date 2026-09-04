@@ -9,7 +9,7 @@ import tomllib
 import yaml
 
 ROOT = Path(__file__).parents[1]
-SKILL_ROOT = ROOT / "skills" / "scene-creator"
+SKILL_ROOT = ROOT / "skills" / "business-app-creator"
 SCRIPT_PATH = ROOT / "scripts" / "build_platform_packages.py"
 PROD_SCRIPT_PATH = ROOT / "scripts" / "register-skill-release.py"
 
@@ -34,7 +34,7 @@ def _copy_repo(tmp_path: Path) -> Path:
         shutil.copy2(ROOT / name, tmp_path / name)
     (tmp_path / "scripts").mkdir(exist_ok=True)
     shutil.copy2(SCRIPT_PATH, tmp_path / "scripts" / SCRIPT_PATH.name)
-    return tmp_path / "skills" / "scene-creator"
+    return tmp_path / "skills" / "business-app-creator"
 
 
 def _manifest(skill_root: Path = SKILL_ROOT) -> dict:
@@ -51,7 +51,7 @@ def _package_version(skill_root: Path = SKILL_ROOT) -> str:
 def test_checked_in_release_is_current():
     manifest = release_module.check_release(SKILL_ROOT)
 
-    assert manifest["skill_name"] == "scene-creator"
+    assert manifest["skill_name"] == "business-app-creator"
     assert release_module._validate_skill_version(manifest["version"]) == manifest["version"]
     assert release_module._validate_package_version(manifest["package_version"])
 
@@ -97,7 +97,7 @@ def test_platform_skill_copies_match_the_single_source():
         copy = release_module._platform_skill_dir(SKILL_ROOT, platform) / "SKILL.md"
         assert copy.read_bytes() == canonical, platform
     # 只有 Codex 需要 openai.yaml
-    assert (ROOT / "codex/skills/scene-creator/agents/openai.yaml").is_file()
+    assert (ROOT / "codex/skills/business-app-creator/agents/openai.yaml").is_file()
     for platform in ("claude-code", "manus", "generic"):
         target = release_module._platform_skill_dir(SKILL_ROOT, platform) / "agents"
         assert not target.exists(), platform
@@ -191,7 +191,7 @@ def test_zip_packages_are_deterministic_and_utf8(tmp_path: Path):
     second = {path: path.read_bytes() for path in release_module.build_platform_zips(copied)}
     assert first == second, "重复打包应产生完全相同的字节"
 
-    manus_zip = tmp_path / "manus" / "scene-creator-skill.zip"
+    manus_zip = tmp_path / "manus" / "business-app-creator-skill.zip"
     with zipfile.ZipFile(manus_zip) as archive:
         names = archive.namelist()
         # Manus 要求 SKILL.md 位于压缩包根目录
@@ -225,7 +225,7 @@ def test_install_docs_state_the_required_facts():
         if mcp_name:
             mcp_text = (platform_root / mcp_name).read_text(encoding="utf-8")
             assert _manifest()["mcp_endpoint"] in mcp_text
-            assert set(json.loads(mcp_text)["mcpServers"]) == {"scene-creator"}
+            assert set(json.loads(mcp_text)["mcpServers"]) == {release_module.MCP_SERVER_NAME}
             assert "SCENE_CREATOR_API_KEY" in mcp_text
             assert not re.search(r"Bearer\s+sk_[A-Za-z0-9]", mcp_text)
             assert "SCENE_CREATOR_API_KEY" in docs, f"{platform} 未说明密钥环境变量"
@@ -263,8 +263,8 @@ def test_new_reference_requires_a_new_release(tmp_path: Path):
 @pytest.mark.parametrize(
     "relative",
     [
-        "claude-code/skills/scene-creator/SKILL.md",
-        "codex/skills/scene-creator/SKILL.md",
+        "claude-code/skills/business-app-creator/SKILL.md",
+        "codex/skills/business-app-creator/SKILL.md",
         "manus/skill/SKILL.md",
         "generic/SKILL.md",
     ],
@@ -362,7 +362,7 @@ def test_release_rejects_missing_openai_mcp_dependency(tmp_path: Path):
     metadata["dependencies"]["tools"] = []
     metadata_path.write_text(yaml.safe_dump(metadata, allow_unicode=True), encoding="utf-8")
 
-    with pytest.raises(release_module.ReleaseError, match="唯一的 scene-creator MCP 依赖"):
+    with pytest.raises(release_module.ReleaseError, match="唯一的 business-app-creator MCP 依赖"):
         release_module.release(copied, _package_version(copied), "missing dependency")
 
 
@@ -437,7 +437,7 @@ def test_prod_release_rolls_back_marker_on_failure(tmp_path: Path):
 
 def test_sync_restores_platform_copies(tmp_path: Path):
     copied = _copy_repo(tmp_path)
-    target = tmp_path / "codex/skills/scene-creator/SKILL.md"
+    target = tmp_path / "codex/skills/business-app-creator/SKILL.md"
     target.unlink()
 
     release_module.sync_platform_skills(copied)

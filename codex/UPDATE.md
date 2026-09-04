@@ -7,14 +7,14 @@
 ### 第 1 步：升级插件
 
 ```bash
-codex plugin marketplace upgrade scene-creator
-codex plugin remove scene-creator@scene-creator
-codex plugin add scene-creator@scene-creator
+codex plugin marketplace upgrade business-app-creator
+codex plugin remove business-app-creator@business-app-creator
+codex plugin add business-app-creator@business-app-creator
 ```
 
 先升级市场再重装插件，Codex 由此拉到内网仓库的新版本。
 
-**兜底**：如果提示 `marketplace 'scene-creator' is not configured as a Git marketplace`，或重装后
+**兜底**：如果提示 `marketplace 'business-app-creator' is not configured as a Git marketplace`，或重装后
 `[skill-version:...]` 标记仍是旧值，说明市场当初是从本地目录添加的，一直在复用陈旧缓存。
 重新绑回内网仓库后再执行上面的 remove/add：
 
@@ -24,7 +24,7 @@ codex plugin marketplace add git@codeup.aliyun.com:goalfyai/goalfyagent/scene-cr
 
 ### 第 2 步：读取新版本标记并重试（在本次会话内完成，先不要让用户重启）
 
-版本闸门只校验版本串，所以本次会话内即可解除阻塞。搜索已安装的 `skills/scene-creator/SKILL.md`，
+版本闸门只校验版本串，所以本次会话内即可解除阻塞。搜索已安装的 `skills/business-app-creator/SKILL.md`，
 不要凭记忆拼装安装路径——路径里有连续同名层级和中间版本目录。搜索命中多份时（旧版本目录、
 市场副本），取版本目录最高或最近修改的那份。从它的 description 读出 `[skill-version:...]`，
 原样填入 `skill_version` 重试刚才失败的 `task_manager` create。
@@ -33,9 +33,9 @@ codex plugin marketplace add git@codeup.aliyun.com:goalfyai/goalfyagent/scene-cr
 再回到本步，**不要**因为读不到就编造一个版本串：
 
 ```bash
-codex plugin remove scene-creator@scene-creator
+codex plugin remove business-app-creator@business-app-creator
 codex plugin marketplace add git@codeup.aliyun.com:goalfyai/goalfyagent/scene-creator-skills.git
-codex plugin add scene-creator@scene-creator
+codex plugin add business-app-creator@business-app-creator
 ```
 
 拒单响应和 changelog 里都不含可用于重试的版本串，唯一合法来源是上面读到的已安装 SKILL.md 标记。

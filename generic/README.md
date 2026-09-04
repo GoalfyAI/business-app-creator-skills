@@ -20,7 +20,7 @@
 ```json
 {
   "mcpServers": {
-    "scene-creator": {
+    "business-app-creator": {
       "type": "streamable-http",
       "url": "https://workflow-mcp.qa.goalfyai.cn/mcp",
       "headers": {
@@ -51,7 +51,7 @@
 
 重启客户端后确认：
 
-1. `scene-creator` 的 MCP 工具已加载（如 `task_manager`、`list_assets`）
+1. `business-app-creator` 的 MCP 工具已加载（如 `task_manager`、`list_assets`）
 2. 执行一次只读请求，例如「列出我能访问的场景包」，能正常返回
 
 ## 更新

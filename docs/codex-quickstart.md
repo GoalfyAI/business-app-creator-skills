@@ -21,7 +21,7 @@ Agent 可直接执行的安装流程见 [`codex/AGENTS.md`](../codex/AGENTS.md)�
 
 ```bash
 codex plugin marketplace add GoalfyAI/scene-creator-skills
-codex plugin add scene-creator@scene-creator
+codex plugin add business-app-creator@business-app-creator
 ```
 
 ## 第 3 步 — 配置密钥
@@ -69,9 +69,9 @@ Agent 会建一个只读工单，逐层检查提示词、工具契约、编排�
 ## 更新
 
 ```bash
-codex plugin marketplace upgrade scene-creator
-codex plugin remove scene-creator@scene-creator
-codex plugin add scene-creator@scene-creator
+codex plugin marketplace upgrade business-app-creator
+codex plugin remove business-app-creator@business-app-creator
+codex plugin add business-app-creator@business-app-creator
 ```
 
 被提示 Skill 版本过期时，按 [`codex/UPDATE.md`](../codex/UPDATE.md) 执行。

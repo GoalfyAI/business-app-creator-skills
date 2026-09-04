@@ -45,14 +45,14 @@
 
 ```bash
 claude plugin marketplace add GoalfyAI/scene-creator-skills
-claude plugin install scene-creator@scene-creator
+claude plugin install business-app-creator@business-app-creator
 ```
 
 ### Codex
 
 ```bash
 codex plugin marketplace add GoalfyAI/scene-creator-skills
-codex plugin add scene-creator@scene-creator
+codex plugin add business-app-creator@business-app-creator
 ```
 
 不想自己敲命令的话，把对应平台的安装指南链接发给 Agent 即可（见上表）。
@@ -99,7 +99,7 @@ Agent 会创建只读工单，逐层检查提示词、工具契约、编排配�
 ## 这个仓库包含什么
 
 ```
-skills/         两个 Skill 的唯一源：scene-creator/（场景包制作）、app-creator/（业务应用制作）
+skills/         两个 Skill 的唯一源：business-app-creator/（场景包制作）、app-creator/（业务应用制作）
 claude-code/    Claude Code 插件目录：安装文档 + Skill 副本
 codex/          Codex 插件目录：安装文档 + Skill 副本
 manus/          Manus 集成说明 + 可上传的 Skill 压缩包
@@ -118,8 +118,8 @@ Skill 是否需要升级；版本过期时写操作会被拒绝。插件版本�
 
 | 平台 | 更新方式 | 详细步骤 |
 |---|---|---|
-| **Claude Code** | `claude plugin update scene-creator@scene-creator` | [claude-code/UPDATE.md](claude-code/UPDATE.md) |
-| **Codex** | `codex plugin marketplace upgrade scene-creator` 后 remove + add | [codex/UPDATE.md](codex/UPDATE.md) |
+| **Claude Code** | `claude plugin update business-app-creator@business-app-creator` | [claude-code/UPDATE.md](claude-code/UPDATE.md) |
+| **Codex** | `codex plugin marketplace upgrade business-app-creator` 后 remove + add | [codex/UPDATE.md](codex/UPDATE.md) |
 | **Manus** | 重新下载 zip，在 Skills 页删旧传新，然后开新对话 | [manus/UPDATE.md](manus/UPDATE.md) |
 | **其他 MCP 客户端** | 重新获取 `SKILL.md` 与 `references/` 并重新载入 | [generic/UPDATE.md](generic/UPDATE.md) |
 

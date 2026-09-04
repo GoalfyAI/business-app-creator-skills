@@ -20,7 +20,7 @@ Manus 是云端 Agent，配置分两部分：**MCP 连接器**（工具）和 **
 ```json
 {
   "mcpServers": {
-    "scene-creator": {
+    "business-app-creator": {
       "url": "https://workflow-mcp.qa.goalfyai.cn/mcp",
       "transport": "streamable_http",
       "headers": {
@@ -38,7 +38,7 @@ Manus 是云端 Agent，配置分两部分：**MCP 连接器**（工具）和 **
 
 左侧栏 **Plugins** → 右上角 **Create** → Skill 区域 → **Upload Skill**。
 
-下载 [`manus/scene-creator-skill.zip`](../manus/scene-creator-skill.zip) 直接上传。
+下载 [`manus/business-app-creator-skill.zip`](../manus/business-app-creator-skill.zip) 直接上传。
 Manus 要求 `SKILL.md` 位于压缩包根目录，这个包已经符合要求。
 
 ## 第 4 步 — 验证

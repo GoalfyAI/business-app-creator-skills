@@ -23,7 +23,7 @@ Manus 是云端 Agent，有两部分要分别配置：**工具（MCP）** 在插
 ```json
 {
   "mcpServers": {
-    "scene-creator": {
+    "business-app-creator": {
       "url": "https://workflow-mcp.qa.goalfyai.cn/mcp",
       "transport": "streamable_http",
       "headers": {
@@ -63,13 +63,13 @@ Manus 是云端 Agent，有两部分要分别配置：**工具（MCP）** 在插
 
 Manus 要求上传 `.zip` 或 `.skill` 文件，且 `SKILL.md` 必须在压缩包根目录。
 
-**下载预打包 ZIP**：直接下载本目录的 [`scene-creator-skill.zip`](scene-creator-skill.zip)
+**下载预打包 ZIP**：直接下载本目录的 [`business-app-creator-skill.zip`](business-app-creator-skill.zip)
 并上传。
 
 **或手工打包**：
 
 ```bash
-cd manus/skill && zip -r ../scene-creator-skill.zip SKILL.md references/
+cd manus/skill && zip -r ../business-app-creator-skill.zip SKILL.md references/
 ```
 
 ## 第 4 步：验证
@@ -77,7 +77,7 @@ cd manus/skill && zip -r ../scene-creator-skill.zip SKILL.md references/
 开一个新会话，确认：
 
 1. Skill 已加载，Agent 能说明自己会制作场景包
-2. `scene-creator` 的 MCP 工具已就绪（如 `task_manager`、`list_assets`）
+2. `business-app-creator` 的 MCP 工具已就绪（如 `task_manager`、`list_assets`）
 3. 执行一次只读请求，例如「列出我能访问的场景包」，能正常返回
 
 ## 更新

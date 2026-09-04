@@ -21,7 +21,7 @@ Agent 可直接执行的安装流程见 [`claude-code/AGENTS.md`](../claude-code
 
 ```bash
 claude plugin marketplace add GoalfyAI/scene-creator-skills
-claude plugin install scene-creator@scene-creator
+claude plugin install business-app-creator@business-app-creator
 ```
 
 ## 第 3 步 — 配置密钥
@@ -73,7 +73,7 @@ Agent 会建一个只读工单，逐层检查提示词、工具契约、编排�
 ## 更新
 
 ```bash
-claude plugin update scene-creator@scene-creator
+claude plugin update business-app-creator@business-app-creator
 ```
 
 被提示 Skill 版本过期时，按 [`claude-code/UPDATE.md`](../claude-code/UPDATE.md) 执行。
