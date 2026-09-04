@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260904-9aca4d",
-  "package_version": "1.21.5",
+  "version": "v20260904-43735f",
+  "package_version": "1.21.6",
   "mcp_endpoint": "https://workflow-mcp.qa.goalfyai.cn/mcp",
-  "released_at": "2026-09-04T08:02:13Z",
-  "update_reason": "三层命名拆开：插件/市场/仓 = business-app-creator(-skills)，MCP = business-app-creator-mcp，两个 skill 仍叫 scene-creator / app-creator；仓已改名，安装链接与远端同步；插件展示名改业务应用制作",
+  "released_at": "2026-09-04T08:02:51Z",
+  "update_reason": "产品命名口径段按三层名字写实：插件 business-app-creator、MCP business-app-creator-mcp、Skill 仍为 scene-creator / app-creator",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -25,7 +25,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "377ef944583952515064d03d2365c601d5ff268fde77dd5b35b61547e31e0d06",
+    "SKILL.md": "617363569fd75a30880d69fb768300be674e9e807c471df389e6f21a4ea3f597",
     "agents/openai.yaml": "c9520e6b360838d6720bbc462a6f171bf92f255a334e4af3b097d502b60c3e9f",
     "checklists/Workflow验收检查清单.md": "7f35892bfd0332b1f97a119c77304f087c1b61356643ac80dce2d9e473fa127b",
     "checklists/场景包验收检查清单.md": "78e1250e19f186f74150af9a3d486763bf067e5e0063e3739511b3efbb437661",
