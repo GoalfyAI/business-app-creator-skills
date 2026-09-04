@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260904-e78e23",
-  "package_version": "1.20.0",
+  "version": "v20260904-ab0f54",
+  "package_version": "1.20.1",
   "mcp_endpoint": "https://workflow-mcp.qa.goalfyai.cn/mcp",
-  "released_at": "2026-09-04T03:40:43Z",
-  "update_reason": "Skill 瘦身第一刀（只搬不删）：路由器 544→约 470 行——6.3 工单 Gate 三种错误的处置搬到 SD 4.7；7.1 最小场景包/组合派生/TPE 两型搬到 reference 平台对象 第五章（路由器留资产树）；8.1 标识表与 8.2 版本术语搬到新 reference《工具标识与版本术语速查》；8.3 记账标签留在路由器；交叉引用同步",
+  "released_at": "2026-09-04T06:35:44Z",
+  "update_reason": "产品命名口径：对外统一叫业务应用助手（business_app），制作的是业务应用（编排形）= 挂载编排的场景包 + 可选配套应用；说产品用业务应用、说资产载体用场景包；关键词加 业务应用助手 / business_app / 业务应用（编排形）；开发者定义同步",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -25,7 +25,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "9fea21db363d40cf38394e0ef3cdfed4957d8902169cd1e0711a82ca180ef357",
+    "SKILL.md": "4e96e4634c3bcde18c6258884426d0c8b7f340fe0a7e48dcba66ff25f247ac59",
     "agents/openai.yaml": "861c83000e4c5738e28a73ea26f08dde7c26a982b04995a707b33af7d1fe3da7",
     "checklists/Workflow验收检查清单.md": "7f35892bfd0332b1f97a119c77304f087c1b61356643ac80dce2d9e473fa127b",
     "checklists/场景包验收检查清单.md": "78e1250e19f186f74150af9a3d486763bf067e5e0063e3739511b3efbb437661",
@@ -35,7 +35,7 @@
     "references/工具标识与版本术语速查.md": "72a68a95e178ce98a6943a68e055979ab63a174c1f5c1c36c27393ab9359dba3",
     "references/平台对象与运行模型.md": "a09e7aa735b73ad9bb0521702be11ab00bc7a0b6ca8039cdc8ce8ff7b92e339d",
     "references/表结构与累加机制.md": "c13c0a8720f84fcccd6a3551ba250fd38682649fa96da068519e1ddbc06ad342",
-    "stages/S1-业务设计.md": "73d29aed59e9bb9ce4fa9af254c1e432ce830bc1d2e65d76af79be3d73312853",
+    "stages/S1-业务设计.md": "bca028e8953985ed4f93582d1bf5840e5e39ee2cfef3bfa0ffd693d8881840fc",
     "stages/S2-资产设计.md": "7aa433ecfc7ac39f2f67c09b420cc1784c60f8fd0c81f82bc1c85e58f6ca5384",
     "stages/S3-资产制作.md": "9e973ca42db934f80507e7d534c45e970c71963da5d46db3dd81b60e434b82db",
     "stages/S4-验证与修正.md": "d28a4eaee3245361980f5475561e94f805ad625010bd76788af33b7cd307dd92",
