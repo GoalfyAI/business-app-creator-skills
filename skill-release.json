@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260905-c47d3f",
-  "package_version": "1.22.0",
+  "version": "v20260905-2e30a9",
+  "package_version": "1.23.0",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-05T03:50:55Z",
-  "update_reason": "术语大改：Workflow 一律改称编排型 TPE（O-TPE），路线层改称业务路线；平台标识符（tpe_type=workflow、workflow_* 工具与接口）不变；验收清单改名为 编排型TPE验收检查清单",
+  "released_at": "2026-09-05T05:55:49Z",
+  "update_reason": "MCP 工具改名同步：workflow_tpe_manage→otpe_manage、workflow_tool_test→otpe_tool_test、参数 orchestration_url、get_diagnosis_doc 的 otpe_* topic；平台契约字段不变",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -25,22 +25,22 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "0a95950078e05ff779078683f2095b10323e6cb8e4d37305d8d1e3569848deec",
+    "SKILL.md": "867438446a77cf1f5b48f5f5f3ae4d36ffa0138e95e8aff282c4b92762f2aac5",
     "agents/openai.yaml": "31b2f074c7812791457462767fd2c43f97c4560fe750cb3267decdda1d0516e6",
     "checklists/场景包验收检查清单.md": "0820aa4b850cd52ea29ec29ed70ae8ebfaf1a12ad9a99900e8e1a13d548d9e39",
     "checklists/方案挑战检查清单.md": "4cf75427bb11529480a0f82b6148f783d6d65f94b8dfac54927849e7f6bf8e22",
     "checklists/编排型TPE验收检查清单.md": "d5f3d80d652d73dbd064ea3dec105106e799c248dca765b3031ad1ab7bd53b6f",
-    "references/依赖与MCP接入.md": "53b6536a89454ba4491384526093ae2447e06688e922a6d9fa7a0dc55d93db60",
-    "references/场景包版本体系与发布逻辑.md": "9f0fc202325f41d795c020cc999a4154bed969cc6a1cf4263b96302750bb4619",
-    "references/工具标识与版本术语速查.md": "38ac2b6c98c748b6dae442c0a407bdcd8ba13553155684db7f85237172315180",
-    "references/平台对象与运行模型.md": "dc246f3ab890c18478b2d2471f8b0aa01e3797b3fd7966b4120033a023836313",
+    "references/依赖与MCP接入.md": "d4bba126f1ef68ae285b01d9bc6f44dc9f4f1d000818cec3c0791ebdeef9b996",
+    "references/场景包版本体系与发布逻辑.md": "e24d661c5538613ea0aa05f054ab0181ced03b62161a0b2a30a0d9a9851783b3",
+    "references/工具标识与版本术语速查.md": "1da245ba6a1a268e06b48a065751a221fdfc7f7d5c7a45710371157818554b9f",
+    "references/平台对象与运行模型.md": "b102f2064b13411c6cd3f9011c35a72548a3b9986fac8a492bcddf5860e31aa4",
     "references/表结构与累加机制.md": "35e11e229e1f927fbdb840b449d7bbd31731280390380cae457485abbc32b28f",
     "stages/S1-业务设计.md": "ba855ada9938b7fd2692ea2d8601c131871e33fd3ec1d0522139a1031eb5d1a8",
-    "stages/S2-资产设计.md": "ccaf279bb650b980d7f7e2f62b32b1a60619f17ca8ae68ca6eec28c9edd5e26f",
-    "stages/S3-资产制作.md": "68b7a36c1fc453ed3ff7fb36fd08736476262bbd3e2edd3df5043a7383259bfd",
+    "stages/S2-资产设计.md": "95c973f4c61ac21062d93f6fa7b7204351305d8238981a88e25060f09b3587ac",
+    "stages/S3-资产制作.md": "7671f586fba528c9fd6924e909f8dfb7572b88eea3c64f157e8619ba1b45990c",
     "stages/S4-验证与修正.md": "73dc2f59edd8a33a7d0b79098312356b0f3525fdccd039fa8db7cf7534c91025",
     "stages/S5-发布与交付.md": "fed82b8a418413bc369f22051586069f86c7f074b6f69db045916de43b4e09e6",
-    "stages/SD-诊断与维护.md": "dd5c260ec066410dd42e03c3483fcba74b1f70aca3bb5a38dbd4f57068334366",
+    "stages/SD-诊断与维护.md": "c512032ff7561efb41a0435ef2fde5ba51972ad5c746bf14f9eeed8982ee01bf",
     "stages/ST-能力试用.md": "d27d870c43a8a66a9c2df8fd2432c2ff086624464aae7b5750cf185278f95a8c"
   }
 }

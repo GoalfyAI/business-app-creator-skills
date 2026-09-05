@@ -1,6 +1,6 @@
 ---
 name: scene-creator
-description: 当用户需要把业务流程、SOP、实操经验或已执行项目沉淀为可复用的 GoalfyMax 场景包，或需要排查一个已有场景包为什么效果差、绕弯多、执行失败时使用——典型场景包括：从零创建场景包、基于参考项目的执行日志复盘并优化、逐层诊断配置问题、修复后回归验证、上线发布、续作此前未完成的制作工单。覆盖业务访谈、里程碑与候选路线提炼、能力摸底、资产制作（普通任务点 / 工具集 / FastAgent /编排型 TPE / 业务路线）、分层验收到交付的完整制作链路。仅执行一次性业务任务、仅咨询平台概念、或开发与场景包无关的应用时不要使用；制作业务应用（前后端应用）请使用 app-creator Skill。[skill-version:v20260905-c47d3f]
+description: 当用户需要把业务流程、SOP、实操经验或已执行项目沉淀为可复用的 GoalfyMax 场景包，或需要排查一个已有场景包为什么效果差、绕弯多、执行失败时使用——典型场景包括：从零创建场景包、基于参考项目的执行日志复盘并优化、逐层诊断配置问题、修复后回归验证、上线发布、续作此前未完成的制作工单。覆盖业务访谈、里程碑与候选路线提炼、能力摸底、资产制作（普通任务点 / 工具集 / FastAgent /编排型 TPE / 业务路线）、分层验收到交付的完整制作链路。仅执行一次性业务任务、仅咨询平台概念、或开发与场景包无关的应用时不要使用；制作业务应用（前后端应用）请使用 app-creator Skill。[skill-version:v20260905-2e30a9]
 keywords:
   - 场景包
   - 业务应用助手
@@ -54,7 +54,7 @@ keywords:
 
 **产品命名口径**：对外统一叫**业务应用助手**，"场景包助手"是旧称。三层名字各管各的：插件 / 市场 / 仓叫 `business-app-creator`（产品名），MCP 叫 `business-app-creator-mcp`，两个 Skill 仍叫 `scene-creator`（本 Skill，做业务应用的能力资产）与 `app-creator`（做数据面与前后端应用）。它制作的东西是**业务应用（编排形）**：一个挂着工具集、任务点与业务路线的**场景包**，加可选的配套前后端应用（app-creator 线）。两个词的分工：说产品、说交付给用户的东西，用"业务应用"；说资产载体、说 Hub 里那个挂载容器，用"场景包"。
 
-**TPE 两型的命名口径**（2026-09-05 起）：任务点（TPE，Task-Point-Event）分两型——**普通 TPE**（派给 TaskAgent 临场执行，仍叫"任务点"或"TPE"）与**编排型 TPE**（英文缩写 **O-TPE**，Orchestrated TPE：确定性脚本，用 `tool()` / `parallel()` / `pipeline()` 把工具与 FastAgent 编排起来，不调大模型）。"Workflow"是编排型 TPE 的旧称，文档、工单、交付报告一律改说编排型 TPE；**平台标识符不改**——`tpe_type=workflow`、`workflow_tpe_manage`、`workflow_orchestration`、`/api/internal/workflow/*`、`WORKFLOW_*` 事件与错误码、`schema/orchestrations/` 这些在工具调用里照旧使用，看到它们就是在指编排型 TPE 及其业务路线。编排型 TPE 之上把多条 TPE 串成客户能发起的一件事的那一层叫**业务路线**（旧称"业务路线编排"），不再用"编排"二字指路线层，避免与编排型 TPE 混淆。
+**TPE 两型的命名口径**（2026-09-05 起）：任务点（TPE，Task-Point-Event）分两型——**普通 TPE**（派给 TaskAgent 临场执行，仍叫"任务点"或"TPE"）与**编排型 TPE**（英文缩写 **O-TPE**，Orchestrated TPE：确定性脚本，用 `tool()` / `parallel()` / `pipeline()` 把工具与 FastAgent 编排起来，不调大模型）。"Workflow"是编排型 TPE 的旧称，文档、工单、交付报告一律改说编排型 TPE；MCP 自己的工具名与参数已随之改名：`otpe_manage`（原 workflow_tpe_manage）、`otpe_tool_test`（原 workflow_tool_test）、参数 `orchestration_url`、`get_diagnosis_doc` 的 `otpe_*` topic；**平台侧契约字段不改**——`tpe_type=workflow`、`workflow_orchestration`、`workflow_ref`、`workflow_runtime_id`、`/api/internal/workflow/*`、`WORKFLOW_*` 事件与错误码、`schema/orchestrations/` 照旧使用，看到它们就是在指编排型 TPE 及其业务路线。编排型 TPE 之上把多条 TPE 串成客户能发起的一件事的那一层叫**业务路线**（旧称"业务路线编排"），不再用"编排"二字指路线层，避免与编排型 TPE 混淆。
 
 **三个不能混的概念**（贯穿全部阶段）：
 
