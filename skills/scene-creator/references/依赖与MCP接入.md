@@ -99,16 +99,16 @@
 
 这两道检查**都不能跳**。
 
-### 第一道：Workflow 依赖检查
+### 第一道：编排型 TPE 依赖检查
 
-**任何 Workflow 创建前必做**：
+**任何编排型 TPE 创建前必做**：
 
 ```text
 1. 根据脚本确定完整的预加载工具集清单
 2. 对其中本轮新建或导入的工具集做安全的运行时测试
 3. 全部无失败后 → online_toolsets（只传本轮新建的标识）
 4. get_asset 反读，确认清单里每一个都已上线
-5. 通过后才能创建 Workflow
+5. 通过后才能创建编排型 TPE
 ```
 
 在此之前可以做预览，但**禁止**直接创建。
@@ -148,14 +148,14 @@
 
 只依赖已有业务项目上下文的工具还要传项目标识——服务端会把它和可信身份一起作为运行请求头传给目标 MCP，不会因此启动新项目。
 
-目标工具需要读取 `/workspace` 测试文件时，不要借用最终用户项目。先对 Agent 本地文件调用 `file_to_url(purpose="tool_test_fixture")`，完成 `prepare → 客户端 PUT → complete`，取得 `data.file_ref`。再给 `workflow_tool_test` 提供两组相互独立的信息：`workspace_files` 只接收这些文件引用；`workspace_bindings` 负责把某个文件的真实路径或父目录注入目标工具顶层参数。服务端会复用 Workflow 冒泡使用的隐藏验证项目，从临时 HTTPS URL 下载文件、写入真实工作区、完成一次 `tools/call`，随后无论成功或失败都释放隐藏项目。这种模式下不要再传 `project_id`。
+目标工具需要读取 `/workspace` 测试文件时，不要借用最终用户项目。先对 Agent 本地文件调用 `file_to_url(purpose="tool_test_fixture")`，完成 `prepare → 客户端 PUT → complete`，取得 `data.file_ref`。再给 `workflow_tool_test` 提供两组相互独立的信息：`workspace_files` 只接收这些文件引用；`workspace_bindings` 负责把某个文件的真实路径或父目录注入目标工具顶层参数。服务端会复用编排型 TPE 冒泡使用的隐藏验证项目，从临时 HTTPS URL 下载文件、写入真实工作区、完成一次 `tools/call`，随后无论成功或失败都释放隐藏项目。这种模式下不要再传 `project_id`。
 
-示例用途：测试目录扫描工具时，分别上传 `docs/a.md` 与 `docs/b.md`，在 `workspace_files` 中提供两个文件引用，只需在 `workspace_bindings` 中把其中一个文件的 `parent_dir` 绑定到 `path`，并在普通 `input` 中保留 `pattern: "*.md"`；测试单文件读取工具时，把对应文件的 `file_path` 绑定到文件参数。文件准备数量与参数绑定数量彼此独立，不要为了第二个文件虚构 `path2` 或 `urls`。该样本只能证明这一次真实调用和返回结构，不能代替整条 Workflow 冒泡验证。
+示例用途：测试目录扫描工具时，分别上传 `docs/a.md` 与 `docs/b.md`，在 `workspace_files` 中提供两个文件引用，只需在 `workspace_bindings` 中把其中一个文件的 `parent_dir` 绑定到 `path`，并在普通 `input` 中保留 `pattern: "*.md"`；测试单文件读取工具时，把对应文件的 `file_path` 绑定到文件参数。文件准备数量与参数绑定数量彼此独立，不要为了第二个文件虚构 `path2` 或 `urls`。该样本只能证明这一次真实调用和返回结构，不能代替整条编排型 TPE 冒泡验证。
 
 ## 依赖变更后的连带处理
 
 工具组刷新、工具删除或参数变化后的完整处理见 `stages/SD-诊断与维护.md` 第 3 节。这里只强调一条：
 
-**参数变化和工具删除都要回头核对所有引用它的地方**——工具集使用指南、FastAgent 提示词、Workflow 脚本、`apc_skill`、场景 Skill 文件。留着失效知识会让运行时 Agent 反复尝试不存在的能力，而且这类问题在静态检查里看不出来。
+**参数变化和工具删除都要回头核对所有引用它的地方**——工具集使用指南、FastAgent 提示词、编排型 TPE 脚本、`apc_skill`、场景 Skill 文件。留着失效知识会让运行时 Agent 反复尝试不存在的能力，而且这类问题在静态检查里看不出来。
 
 变更完成后**必须**重跑所有受影响的预览、运行验证和整包验收。

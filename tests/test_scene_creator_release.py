@@ -107,7 +107,7 @@ def test_platform_skill_copies_match_the_single_source():
 def test_workflow_guidance_distinguishes_output_end_states():
     # Workflow 三种结束语义的正本随 §7.3 下沉到 references/平台对象与运行模型.md（1.8.0）
     skill = (SKILL_ROOT / "references" / "平台对象与运行模型.md").read_text(encoding="utf-8")
-    checklist = (SKILL_ROOT / "checklists" / "Workflow验收检查清单.md").read_text(
+    checklist = (SKILL_ROOT / "checklists" / "编排型TPE验收检查清单.md").read_text(
         encoding="utf-8"
     )
 
@@ -125,7 +125,7 @@ def test_workflow_guidance_routes_event_workflows_through_business_runtime():
         SKILL_ROOT / "references" / "平台对象与运行模型.md"
     ).read_text(encoding="utf-8")
     asset_stage = (SKILL_ROOT / "stages" / "S3-资产制作.md").read_text(encoding="utf-8")
-    checklist = (SKILL_ROOT / "checklists" / "Workflow验收检查清单.md").read_text(
+    checklist = (SKILL_ROOT / "checklists" / "编排型TPE验收检查清单.md").read_text(
         encoding="utf-8"
     )
     acceptance = (SKILL_ROOT / "checklists" / "场景包验收检查清单.md").read_text(
@@ -151,7 +151,7 @@ def test_workflow_guidance_separates_delivery_verification_from_business_accepta
     )
     assert "交付核验回答" in design
     assert "最终审阅回答" in design
-    assert "质量检查 Workflow" in challenge
+    assert "质量检查编排型 TPE" in challenge
     assert "若声明了修订、重做或改路线" in acceptance
     assert "场景包制作只声明对外稳定的资产契约" in design
     assert "属于平台实现细节" in design
