@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260905-438414",
-  "package_version": "1.23.1",
+  "version": "v20260905-84ea9c",
+  "package_version": "1.23.2",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-05T08:02:05Z",
-  "update_reason": "三个身份拆开写清生成方：orchestration_id 取场景包已定义路线 id，business_id 由调用方生成且同一业务实例内不变，只有 workflow_runtime_id 由 Max Backend 生成；S4 真跑主入口补 submit_data 填法",
+  "released_at": "2026-09-05T09:37:53Z",
+  "update_reason": "S4 应答动作口径修正：最终交付审阅（delivery.review）也是业务表单，用 reply 应答并沿用同一 business_id / workflow_runtime_id；confirm 只用于普通聊天确认，不能用于任何业务表单；工具表逐动作注明用途",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -25,7 +25,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "5f7b9aa50d83d3b7b53b6897d51af9115b017a4541578805e8d1e7888173206e",
+    "SKILL.md": "ce58fd7dfb84241395acd2f7a4ede3e58691f419f6e7cb78ea173ed311e33efc",
     "agents/openai.yaml": "31b2f074c7812791457462767fd2c43f97c4560fe750cb3267decdda1d0516e6",
     "checklists/场景包验收检查清单.md": "3cb35e9735efb4dcac77339a907c06b60f8a818b673bd19732dfc84f78901ff8",
     "checklists/方案挑战检查清单.md": "4cf75427bb11529480a0f82b6148f783d6d65f94b8dfac54927849e7f6bf8e22",
@@ -38,7 +38,7 @@
     "stages/S1-业务设计.md": "ba855ada9938b7fd2692ea2d8601c131871e33fd3ec1d0522139a1031eb5d1a8",
     "stages/S2-资产设计.md": "95c973f4c61ac21062d93f6fa7b7204351305d8238981a88e25060f09b3587ac",
     "stages/S3-资产制作.md": "b5e0a9d43ca28e68e16aab5a896d29b4a74523442190677227f25256f9d12209",
-    "stages/S4-验证与修正.md": "4857ea37a85f2e02569c2b56f205490ba37341bac41b8acc37e4f1bac9dfff4d",
+    "stages/S4-验证与修正.md": "491ed10d7db1533f8e334abcc63fbd257c151f4ca2984e673f3ab6eb4a946e11",
     "stages/S5-发布与交付.md": "fed82b8a418413bc369f22051586069f86c7f074b6f69db045916de43b4e09e6",
     "stages/SD-诊断与维护.md": "c512032ff7561efb41a0435ef2fde5ba51972ad5c746bf14f9eeed8982ee01bf",
     "stages/ST-能力试用.md": "d27d870c43a8a66a9c2df8fd2432c2ff086624464aae7b5750cf185278f95a8c"
