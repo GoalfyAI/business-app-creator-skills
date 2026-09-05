@@ -31,7 +31,7 @@
 - 两者都不含业务事件时，该编排型 TPE 可以按实时工具契约直接派发，本节其余事件覆盖项不适用。
 - 任一方出现业务事件时，另一方也必须形成一致的完整契约，并将该编排型 TPE 标记为“正式运行必须进入 Business Runtime”。单条编排型 TPE 也必须建立单节点业务路线，禁止直接派发。
 - Bubble 使用服务端分配的验证 Business/Runtime 身份；该身份不是正式业务身份，禁止复制、缓存或写入脚本。
-- 出现 `Workflow business event requires persisted Runtime identity` 时，正式运行优先检查是否误走直接派发；Bubble 则检查服务端是否分配验证身份。不得让脚本、Agent、业务应用或 MCP 调用方伪造 `business_id`、`orchestration_id` 或 `workflow_runtime_id`。
+- 出现 `Workflow business event requires persisted Runtime identity` 时，正式运行优先检查是否误走直接派发；Bubble 则检查服务端是否分配验证身份。不得让脚本、Agent、业务应用或 MCP 调用方伪造 `workflow_runtime_id`（只由服务端生成）；`business_id` 本来就由调用方在发起时给出、同一业务实例内不变，`orchestration_id` 取自场景包已定义的路线 id，两者不是伪造，缺了才是错。
 
 业务事件是面向 Business Runtime 和业务应用的公开事实，不是运行日志。对带事件编排型 TPE，按脚本全部可达终态分支逐项检查：
 
