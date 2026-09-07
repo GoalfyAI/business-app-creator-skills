@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260905-84ea9c",
-  "package_version": "1.23.2",
+  "version": "v20260907-ad96c4",
+  "package_version": "1.23.3",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-05T09:37:53Z",
-  "update_reason": "S4 应答动作口径修正：最终交付审阅（delivery.review）也是业务表单，用 reply 应答并沿用同一 business_id / workflow_runtime_id；confirm 只用于普通聊天确认，不能用于任何业务表单；工具表逐动作注明用途",
+  "released_at": "2026-09-07T08:50:38Z",
+  "update_reason": "app-creator 后端边界口径更正：专属后端在 p2s 公网域名上、经 Max 后端服务端转发，X-Goalfy-Context 未签名、写权限须后端自判、生产态不开 CORS；Direct Mock 不打本地后端不算联调证据；A4 与验收清单加真联调与授权边界取证",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -25,7 +25,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "ce58fd7dfb84241395acd2f7a4ede3e58691f419f6e7cb78ea173ed311e33efc",
+    "SKILL.md": "edf95976b9683889ee0b9bfd7806f58512ccf5b6c540b97b5f177669561aee2d",
     "agents/openai.yaml": "31b2f074c7812791457462767fd2c43f97c4560fe750cb3267decdda1d0516e6",
     "checklists/场景包验收检查清单.md": "3cb35e9735efb4dcac77339a907c06b60f8a818b673bd19732dfc84f78901ff8",
     "checklists/方案挑战检查清单.md": "4cf75427bb11529480a0f82b6148f783d6d65f94b8dfac54927849e7f6bf8e22",
