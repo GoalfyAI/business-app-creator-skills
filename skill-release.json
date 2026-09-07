@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260907-ad96c4",
-  "package_version": "1.23.3",
+  "version": "v20260907-57d6b3",
+  "package_version": "1.23.4",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-07T08:50:38Z",
-  "update_reason": "app-creator 后端边界口径更正：专属后端在 p2s 公网域名上、经 Max 后端服务端转发，X-Goalfy-Context 未签名、写权限须后端自判、生产态不开 CORS；Direct Mock 不打本地后端不算联调证据；A4 与验收清单加真联调与授权边界取证",
+  "released_at": "2026-09-07T08:53:54Z",
+  "update_reason": "app-creator 约束 5 收口：宿主之外的请求头与 cookie 属平台内部、应用不得依赖；X-Goalfy-Context 是否签名以 backend/README 为准，未签名期间高风险动作不得只凭 claims 放行",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -25,7 +25,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "edf95976b9683889ee0b9bfd7806f58512ccf5b6c540b97b5f177669561aee2d",
+    "SKILL.md": "08cc71b722eaa6efce58e9d70979d4510f960bcbd2c40edc94532d2aa1b9af7a",
     "agents/openai.yaml": "31b2f074c7812791457462767fd2c43f97c4560fe750cb3267decdda1d0516e6",
     "checklists/场景包验收检查清单.md": "3cb35e9735efb4dcac77339a907c06b60f8a818b673bd19732dfc84f78901ff8",
     "checklists/方案挑战检查清单.md": "4cf75427bb11529480a0f82b6148f783d6d65f94b8dfac54927849e7f6bf8e22",
