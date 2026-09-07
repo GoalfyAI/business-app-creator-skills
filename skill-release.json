@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260907-824274",
-  "package_version": "1.23.5",
+  "version": "v20260907-5be50c",
+  "package_version": "1.23.6",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-07T09:08:45Z",
-  "update_reason": "app-creator 对齐脚手架现状：表单预填改为经保留件 useFormPrefill 取自家后端预填接口（schema/api/getFormPrefill.yaml 形状、三种 mode、加载态）；接口先有 OpenAPI 契约，gen-types 禁用于公开接口；mock 旗标更新（attention/frames-off，去掉 prefill）；码段补 1000~1099 脚手架保留、业务自定义 1100 起；A5 补 TEMPLATE_REQUIRED / NOT_RELEASED 两个闸门码",
+  "released_at": "2026-09-07T09:20:27Z",
+  "update_reason": "表单预填（useFormPrefill / getFormPrefill）已下线：app-creator 删除预填功能、预填接口、预填链路与 mock 说明；发起时的稳定信息由后端拼进 submit_data；scene-creator 相关措辞改为「发起时带入」",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -25,7 +25,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "22f99c75a972f25e8150728cfb0ebdd9b7eebb7264653ca7d8000ee033a36926",
+    "SKILL.md": "aa4e752f3f49605138bc78191457d0aed1d707cc1f53bbacd82f85bebce500f0",
     "agents/openai.yaml": "31b2f074c7812791457462767fd2c43f97c4560fe750cb3267decdda1d0516e6",
     "checklists/场景包验收检查清单.md": "3cb35e9735efb4dcac77339a907c06b60f8a818b673bd19732dfc84f78901ff8",
     "checklists/方案挑战检查清单.md": "4cf75427bb11529480a0f82b6148f783d6d65f94b8dfac54927849e7f6bf8e22",
@@ -36,8 +36,8 @@
     "references/平台对象与运行模型.md": "b102f2064b13411c6cd3f9011c35a72548a3b9986fac8a492bcddf5860e31aa4",
     "references/表结构与累加机制.md": "35e11e229e1f927fbdb840b449d7bbd31731280390380cae457485abbc32b28f",
     "stages/S1-业务设计.md": "ba855ada9938b7fd2692ea2d8601c131871e33fd3ec1d0522139a1031eb5d1a8",
-    "stages/S2-资产设计.md": "95c973f4c61ac21062d93f6fa7b7204351305d8238981a88e25060f09b3587ac",
-    "stages/S3-资产制作.md": "b5e0a9d43ca28e68e16aab5a896d29b4a74523442190677227f25256f9d12209",
+    "stages/S2-资产设计.md": "d8f1683aaf03ecfcf7912a4ff3218e9ebcd84241aad1b34d63ac0d3c0f327df8",
+    "stages/S3-资产制作.md": "8986a6205757406297e390d1e5ac06dc6a74af7f715c95c2fa009b90925a5cb8",
     "stages/S4-验证与修正.md": "491ed10d7db1533f8e334abcc63fbd257c151f4ca2984e673f3ab6eb4a946e11",
     "stages/S5-发布与交付.md": "fed82b8a418413bc369f22051586069f86c7f074b6f69db045916de43b4e09e6",
     "stages/SD-诊断与维护.md": "c512032ff7561efb41a0435ef2fde5ba51972ad5c746bf14f9eeed8982ee01bf",

@@ -113,7 +113,7 @@ A5 发布交付   finalize 上线（三闸门码）→ resolve 反读 entry_url 
 | 前端宪法：红线、第一规则、SDK 速览、完成定义与自测矩阵（唯一权威） | `frontend/README.md`、`frontend/CLAUDE.md` |
 | 页面开发约束：术语、三必备页面、可恢复状态、表单回显与文件纪律、交付审阅页、消息中心/项目列表 | `frontend/docs/business-ui-guide.md` |
 | 契约区协议 v4（多包 `schema/packs/<pack_id>/{forms,orchestrations}/`、delivery 声明） | `frontend/schema/README.md` |
-| 开发者后端公开接口契约（一个接口一个 OpenAPI 3.1 YAML；后端按它实现、前端与 mock 按它调用；无契约不开发） | `frontend/schema/api/`（形状参考 `getFormPrefill.yaml`） |
+| 开发者后端公开接口契约（一个接口一个 OpenAPI 3.1 YAML；后端按它实现、前端与 mock 按它调用；无契约不开发） | `frontend/schema/api/` |
 | 前端 SDK（两层 API、项目句柄、upload/file/storage/business；应用级文件 `sdk.file`） | `frontend/src/sdk/docs/`（README 起步；应用级文件在 `application-file.md`） |
 | 与 Max 的调用契约（发起业务路线运行、应答运行中表单——文档里的"流程 A / 流程 B"） | `frontend/src/sdk/docs/business.md` |
 | 后端契约（信封、码段、桥层限制、`buiTable`、dataset-proxy、身份上下文、打包） | `backend/README.md` |
