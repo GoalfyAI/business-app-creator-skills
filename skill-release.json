@@ -3,7 +3,7 @@
   "version": "v20260908-033950",
   "package_version": "2.0.0",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-08T08:30:01Z",
+  "released_at": "2026-09-08T08:49:19Z",
   "update_reason": "v3 重构：scene-creator 与 app-creator 并入单一 Skill business-app-creator——总入口 + 七阶段 G1–G7 + 八个专业模块 P1–P8 + 四份共享协议 + 两层 Checklist（G 门禁 / U 业务行为）；场景包降为业务应用的能力容器",
   "source_files": [
     "SKILL.md",
@@ -59,7 +59,7 @@
     "stages/G7-预发布与交付.md"
   ],
   "checksums": {
-    "SKILL.md": "31831032a736676d063240fb9b9b527aba3e0c98b2655218f1d18c9cf1f71681",
+    "SKILL.md": "50df8b1ea11214d15ac42b934b6aa986b720e710caedc1e55e6ec0bb40911956",
     "agents/openai.yaml": "f4a8c0b9b315ac9187e2eb006eefc676229bd31300763659fc692b6eb405c743",
     "checklists/G门禁检查清单.md": "b4bc18369bd47e5070693dd286fcafd68e0c489b8fcd58a57a8fecb2e3fbd180",
     "checklists/U业务行为验收明细.md": "987eb3bc16df63becdf24a7e3990723a58d7884096daf324d52052dcf34d509e",
