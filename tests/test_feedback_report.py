@@ -77,6 +77,22 @@ class FeedbackReportTests(unittest.TestCase):
         )
         self.assertEqual(m.validate(report, self.raw, self.issues)["accepted"], [])
 
+    def test_reader_report_keeps_evidence_without_internal_context(self):
+        self.raw["items"][0].update(
+            created_at="2026-09-08T06:19:26Z",
+            context={"app_version": "26.9.2", "version_verification": "validated_reference",
+                     "version_verification_reason": "runtime_version_not_observed"},
+        )
+        report = m.render(self.raw, [])
+        self.assertIn("26.9.2", report)
+        self.assertIn("2026-09-08T06:19:26Z", report)
+        self.assertIn("价格不对", report)
+        self.assertIn("未取全", report)
+        for internal in ("validated_reference", "runtime_version_not_observed",
+                         "## 创建者决定", "## 问题分析", "尚未实施"):
+            self.assertNotIn(internal, report)
+        self.assertEqual(m.validate(report, self.raw, [])["accepted"], [])
+
     def test_rejected_requires_reason(self):
         report = m.render(self.raw, self.issues).replace(
             'decision: "pending"', 'decision: "rejected"', 1
