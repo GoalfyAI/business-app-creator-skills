@@ -54,7 +54,7 @@ PLATFORM_LAYOUTS = {
         "mcp_config": None,
         "docs": ("README.md", "UPDATE.md"),
         # Manus 要求 SKILL.md 位于压缩包根目录
-        "zip": ("business-app-creator-skill.zip", "skill", ("SKILL.md", "references", "stages", "modules", "protocols", "checklists", "scripts")),
+        "zip": ("business-app-creator-skill.zip", "skill", ("SKILL.md", "references", "stages", "protocols", "checklists", "scripts")),
     },
     "generic": {
         "skill_subdir": ".",
@@ -64,7 +64,7 @@ PLATFORM_LAYOUTS = {
         "zip": (
             "business-app-creator-generic.zip",
             ".",
-            (".mcp.json", "SKILL.md", "references", "stages", "modules", "protocols", "checklists", "scripts", "README.md"),
+            (".mcp.json", "SKILL.md", "references", "stages", "protocols", "checklists", "scripts", "README.md"),
         ),
     },
 }
@@ -145,7 +145,7 @@ def discover_source_files(skill_root: Path) -> list[Path]:
     if not openai_metadata.is_file():
         raise ReleaseError(f"缺少 Codex 元数据：{openai_metadata}")
 
-    for required_dir in ("references", "stages", "modules", "protocols", "checklists"):
+    for required_dir in ("references", "stages", "protocols", "checklists"):
         if not (skill_root / required_dir).is_dir():
             raise ReleaseError(f"缺少 Skill 目录：{skill_root / required_dir}")
 
@@ -163,7 +163,7 @@ def discover_source_files(skill_root: Path) -> list[Path]:
         if relative_path == Path("SKILL.md") or relative_path == OPENAI_METADATA_RELATIVE_PATH:
             files.append(path)
             continue
-        if relative_path.parts[0] in ("references", "stages", "modules", "protocols", "checklists") and path.suffix.lower() == ".md":
+        if relative_path.parts[0] in ("references", "stages", "protocols", "checklists") and path.suffix.lower() == ".md":
             files.append(path)
             continue
         if relative_path.parts[0] == "scripts" and path.suffix.lower() == ".py":
@@ -451,7 +451,7 @@ def sync_platform_skills(skill_root: Path) -> None:
     for platform in PLATFORM_NAMES:
         target_root = _platform_skill_dir(skill_root, platform)
         (target_root / "SKILL.md").unlink(missing_ok=True)
-        for stale in ("references", "stages", "modules", "protocols", "checklists", "scripts", "agents"):
+        for stale in ("references", "stages", "protocols", "checklists", "scripts", "agents"):
             shutil.rmtree(target_root / stale, ignore_errors=True)
         for relative, source in _platform_skill_files(skill_root, platform).items():
             destination = target_root / relative
