@@ -126,7 +126,7 @@ def test_workflow_guidance_routes_event_workflows_through_business_runtime():
     ).read_text(encoding="utf-8") + (
         SKILL_ROOT / "references" / "平台对象与运行模型.md"
     ).read_text(encoding="utf-8")
-    asset_stage = (SKILL_ROOT / "stages" / "G4-核心执行单元验证.md").read_text(encoding="utf-8")
+    asset_stage = (SKILL_ROOT / "modules" / "P3-执行形态与路线制作.md").read_text(encoding="utf-8")
     checklist = (SKILL_ROOT / "checklists" / "编排型TPE验收检查清单.md").read_text(
         encoding="utf-8"
     )
@@ -144,7 +144,7 @@ def test_workflow_guidance_routes_event_workflows_through_business_runtime():
 
 def test_workflow_guidance_separates_delivery_verification_from_business_acceptance():
     """最终交付必须先核验真实结果，再由明确责任方完成业务审阅。"""
-    design = (SKILL_ROOT / "stages" / "G1-业务目标与范围.md").read_text(encoding="utf-8")
+    design = (SKILL_ROOT / "modules" / "P1-业务访谈与价值判断.md").read_text(encoding="utf-8")
     challenge = (SKILL_ROOT / "checklists" / "方案挑战检查清单.md").read_text(
         encoding="utf-8"
     )
@@ -163,14 +163,14 @@ def test_workflow_guidance_separates_delivery_verification_from_business_accepta
 
 
 def test_single_skill_seven_stage_layout():
-    """v3：scene-creator 与 app-creator 已并入 business-app-creator——阶段层 G1–G7 自包含（第 8 节细则）、协议层四份、两层 Checklist。"""
+    """v3：scene-creator 与 app-creator 已并入 business-app-creator——阶段层 G1–G7、模块层 P1–P8、协议层四份、两层 Checklist。"""
     router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
     protocol = (SKILL_ROOT / "protocols" / "事实决定授权与变更.md").read_text(encoding="utf-8")
 
     for stage in ("G1-业务目标与范围", "G2-关键能力可行性", "G3-运行设计与验收基线", "G4-核心执行单元验证",
                   "G5-后端业务闭环验证", "G6-用户操作闭环验证", "G7-预发布与交付"):
         assert (SKILL_ROOT / "stages" / f"{stage}.md").is_file(), stage
-    assert not (SKILL_ROOT / "modules").exists()
+    assert len(list((SKILL_ROOT / "modules").glob("P*.md"))) == 8
     assert len(list((SKILL_ROOT / "protocols").glob("*.md"))) == 4
     assert (SKILL_ROOT / "checklists" / "G门禁检查清单.md").is_file()
     assert (SKILL_ROOT / "checklists" / "U业务行为验收明细.md").is_file()
