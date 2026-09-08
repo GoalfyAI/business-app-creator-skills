@@ -1,4 +1,4 @@
-# 场景包制作 — Manus 集成
+# 业务应用制作 — Manus 集成
 
 > **注意：Manus 不支持把本文档丢给 Agent 自动安装。添加连接器和上传 Skill 必须由你在
 > Manus 网页界面手工完成，请按下面的步骤逐步操作。**
@@ -8,7 +8,7 @@ Manus 是云端 Agent，有两部分要分别配置：**工具（MCP）** 在插
 
 ## 第 1 步：获取 API 密钥
 
-登录 GoalfyMax QA 环境，进入 [开发者工具 → API 密钥](https://goalfymax.qa.goalfyai.cn/developer/api-keys)创建
+登录 GoalfyMax，进入 [开发者工具 → API 密钥](https://goalfymax.goalfyai.cn/developer/api-keys)创建
 个人密钥。密钥以 `sk_` 开头，**完整内容只在创建时显示一次**，请妥善保存。
 
 ## 第 2 步：添加 MCP 连接器（工具）
@@ -23,8 +23,8 @@ Manus 是云端 Agent，有两部分要分别配置：**工具（MCP）** 在插
 ```json
 {
   "mcpServers": {
-    "scene-creator": {
-      "url": "https://workflow-mcp.qa.goalfyai.cn/mcp",
+    "business-app-creator": {
+      "url": "https://business-app-creator-mcp.goalfyai.cn/mcp",
       "transport": "streamable_http",
       "headers": {
         "Authorization": "Bearer sk_YOUR_API_KEY_HERE"
@@ -44,7 +44,7 @@ Manus 是云端 Agent，有两部分要分别配置：**工具（MCP）** 在插
 | **Transport Type** | `HTTP`（保持默认） |
 | **Icon**（可选） | 留空，或粘贴 Logo 链接 |
 | **Notes**（可选） | 留空，或写用途说明 |
-| **Server URL** | `https://workflow-mcp.qa.goalfyai.cn/mcp` |
+| **Server URL** | `https://business-app-creator-mcp.goalfyai.cn/mcp` |
 | **Custom Headers** | 点击 "+ Add custom header" 添加 1 条 |
 
 自定义请求头（鉴权，必填）：
@@ -63,13 +63,13 @@ Manus 是云端 Agent，有两部分要分别配置：**工具（MCP）** 在插
 
 Manus 要求上传 `.zip` 或 `.skill` 文件，且 `SKILL.md` 必须在压缩包根目录。
 
-**下载预打包 ZIP**：直接下载本目录的 [`scene-creator-skill.zip`](scene-creator-skill.zip)
+**下载预打包 ZIP**：直接下载本目录的 [`business-app-creator-skill.zip`](business-app-creator-skill.zip)
 并上传。
 
 **或手工打包**：
 
 ```bash
-cd manus/skill && zip -r ../scene-creator-skill.zip SKILL.md references/
+cd manus/skill && zip -r ../business-app-creator-skill.zip SKILL.md references/
 ```
 
 ## 第 4 步：验证
@@ -77,7 +77,7 @@ cd manus/skill && zip -r ../scene-creator-skill.zip SKILL.md references/
 开一个新会话，确认：
 
 1. Skill 已加载，Agent 能说明自己会制作场景包
-2. `scene-creator` 的 MCP 工具已就绪（如 `task_manager`、`list_assets`）
+2. `business-app-creator` 的 MCP 工具已就绪（如 `task_manager`、`list_assets`）
 3. 执行一次只读请求，例如「列出我能访问的场景包」，能正常返回
 
 ## 更新

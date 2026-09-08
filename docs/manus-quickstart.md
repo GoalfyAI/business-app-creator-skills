@@ -9,7 +9,7 @@ Manus 是云端 Agent，配置分两部分：**MCP 连接器**（工具）和 **
 
 ## 第 1 步 — 获取 API 密钥
 
-登录 GoalfyMax QA 环境，进入 [开发者工具 → API 密钥](https://goalfymax.qa.goalfyai.cn/developer/api-keys)创建
+登录 GoalfyMax，进入 [开发者工具 → API 密钥](https://goalfymax.goalfyai.cn/developer/api-keys)创建
 个人密钥。密钥以 `sk_` 开头，**完整内容只显示一次**。
 
 ## 第 2 步 — 添加 MCP 连接器
@@ -20,8 +20,8 @@ Manus 是云端 Agent，配置分两部分：**MCP 连接器**（工具）和 **
 ```json
 {
   "mcpServers": {
-    "scene-creator": {
-      "url": "https://workflow-mcp.qa.goalfyai.cn/mcp",
+    "business-app-creator": {
+      "url": "https://business-app-creator-mcp.goalfyai.cn/mcp",
       "transport": "streamable_http",
       "headers": {
         "Authorization": "Bearer sk_YOUR_API_KEY_HERE"
@@ -38,7 +38,7 @@ Manus 是云端 Agent，配置分两部分：**MCP 连接器**（工具）和 **
 
 左侧栏 **Plugins** → 右上角 **Create** → Skill 区域 → **Upload Skill**。
 
-下载 [`manus/scene-creator-skill.zip`](../manus/scene-creator-skill.zip) 直接上传。
+下载 [`manus/business-app-creator-skill.zip`](../manus/business-app-creator-skill.zip) 直接上传。
 Manus 要求 `SKILL.md` 位于压缩包根目录，这个包已经符合要求。
 
 ## 第 4 步 — 验证

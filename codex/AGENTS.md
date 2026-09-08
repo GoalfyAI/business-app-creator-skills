@@ -35,8 +35,8 @@
 以下都是检查命令，不需要用户参与。按结果分流：
 
 ```bash
-codex plugin list | grep scene-creator                                    # 插件装了吗？
-test -f "$HOME/.codex/.env" && grep '^SCENE_CREATOR_API_KEY=' "$HOME/.codex/.env"   # 密钥配了吗？
+codex plugin list | grep business-app-creator                                    # 插件装了吗？
+test -f "$HOME/.codex/.env" && grep '^BUSINESS_APP_CREATOR_API_KEY=' "$HOME/.codex/.env"   # 密钥配了吗？
 ```
 
 不要输出匹配到的环境变量行。
@@ -47,11 +47,11 @@ test -f "$HOME/.codex/.env" && grep '^SCENE_CREATOR_API_KEY=' "$HOME/.codex/.env
 
 ## 第 1 步：安装插件
 
-检查：`codex plugin list | grep scene-creator` —— 有输出就跳到第 2 步。
+检查：`codex plugin list | grep business-app-creator` —— 有输出就跳到第 2 步。
 
 ```bash
-codex plugin marketplace add GoalfyAI/scene-creator-skills
-codex plugin add scene-creator@scene-creator
+codex plugin marketplace add GoalfyAI/business-app-creator-skills
+codex plugin add business-app-creator@business-app-creator
 ```
 
 失败处理：
@@ -62,13 +62,13 @@ codex plugin add scene-creator@scene-creator
 
 ## 第 2 步：取得并配置 API 密钥
 
-检查：`test -f "$HOME/.codex/.env" && grep '^SCENE_CREATOR_API_KEY=' "$HOME/.codex/.env"` —— 已存在则跳到第 3 步。
+检查：`test -f "$HOME/.codex/.env" && grep '^BUSINESS_APP_CREATOR_API_KEY=' "$HOME/.codex/.env"` —— 已存在则跳到第 3 步。
 
 否则**逐字输出**下面的模板：
 
 # 需要用户操作：提供 GoalfyMax 个人 API 密钥
 
-**1. 打开 https://goalfymax.qa.goalfyai.cn/developer/api-keys ，点击「新建 API 密钥」并输入一个名称。**
+**1. 打开 https://goalfymax.goalfyai.cn/developer/api-keys ，点击「新建 API 密钥」并输入一个名称。**
 
 **2. 完整密钥以 `sk_` 开头且只显示一次，创建后立即复制并粘贴到本对话中。**
 
@@ -76,10 +76,10 @@ codex plugin add scene-creator@scene-creator
 
 菜单里没有该入口，说明账号尚未获得开发者权限，请用户联系管理员开通——不要借用他人密钥。
 
-拿到密钥后写入 `~/.codex/.env` 的 `SCENE_CREATOR_API_KEY` 行：
+拿到密钥后写入 `~/.codex/.env` 的 `BUSINESS_APP_CREATOR_API_KEY` 行：
 
 ```bash
-SCENE_CREATOR_API_KEY=<用户提供的密钥>
+BUSINESS_APP_CREATOR_API_KEY=<用户提供的密钥>
 ```
 
 然后收紧文件权限：
@@ -92,7 +92,7 @@ chmod 600 "$HOME/.codex/.env"
 
 - **保留文件里其他所有环境变量**，只增改这一行，不得整体覆盖
 - 文件不存在时创建它
-- 写入后重跑一次检查，确认找到 `SCENE_CREATOR_API_KEY` 再继续
+- 写入后重跑一次检查，确认找到 `BUSINESS_APP_CREATOR_API_KEY` 再继续
 - 全程不回显密钥内容
 
 ## 第 3 步：重启并验证
@@ -107,15 +107,15 @@ MCP 连接只有重启后才生效，重启前无法验证。**逐字输出**下
 
 用户确认重启后，**由你自己验证**，不要让用户去检查任何东西：
 
-1. 确认 `scene-creator` 插件与 Skill 已加载
-2. 确认你的工具列表里有 `scene-creator` 的 MCP 工具（如 `task_manager`、`list_assets`）
+1. 确认 `business-app-creator` 插件与 Skill 已加载
+2. 确认你的工具列表里有 `business-app-creator` 的 MCP 工具（如 `task_manager`、`list_assets`）
 3. 用 `list_assets` 做一次只读请求作为自检——**禁止**为了测试连通性去创建、修改或删除任何资产
 
 自检失败时按下表处理：
 
 | 现象 | 处理 |
 |---|---|
-| `401 Unauthorized` | 确认 `~/.codex/.env` 里有 `SCENE_CREATOR_API_KEY`，且该密钥在 GoalfyMax 未被撤销，然后请用户再彻底重启一次。只检查变量是否存在，不要输出其值 |
+| `401 Unauthorized` | 确认 `~/.codex/.env` 里有 `BUSINESS_APP_CREATOR_API_KEY`，且该密钥在 GoalfyMax 未被撤销，然后请用户再彻底重启一次。只检查变量是否存在，不要输出其值 |
 | `403 Forbidden` | 该账号没有目标场景包的访问权限，告知用户在 GoalfyMax 侧确认授权 |
 | `503` | 依赖暂时不可用，等待恢复后重试，**不要**更换密钥 |
 | 缺少 `task_manager` 等核心工具 | 部署未提供预期的外部契约。记录线上工具 Schema 并停止，**不要**用静态工具数量代替实时清单 |
@@ -129,10 +129,10 @@ MCP 连接只有重启后才生效，重启前无法验证。**逐字输出**下
 场景包制作 Skill 安装结果：
 
 [已完成]
-- 插件 scene-creator 已安装（版本 = plugin list 的实际输出）
+- 插件 business-app-creator 已安装（版本 = plugin list 的实际输出）
 - Skill 版本 = SKILL.md description 里 [skill-version:...] 的实际值
 - API 密钥已写入 ~/.codex/.env（权限 600）
-- scene-creator MCP 工具已加载，只读请求成功
+- business-app-creator MCP 工具已加载，只读请求成功
 
 [需要你操作]
 -（无 / 重启 Codex 后告诉我，我来验证连接）
@@ -152,19 +152,19 @@ MCP 连接只有重启后才生效，重启前无法验证。**逐字输出**下
 ### 第 1 步：升级插件
 
 ```bash
-codex plugin marketplace upgrade scene-creator
-codex plugin remove scene-creator@scene-creator
-codex plugin add scene-creator@scene-creator
+codex plugin marketplace upgrade business-app-creator
+codex plugin remove business-app-creator@business-app-creator
+codex plugin add business-app-creator@business-app-creator
 ```
 
 先升级市场再重装，Codex 由此拉到新版本。
 
-失败处理：提示 `marketplace 'scene-creator' is not configured as a Git marketplace`，
+失败处理：提示 `marketplace 'business-app-creator' is not configured as a Git marketplace`，
 或重装后 `[skill-version:...]` 标记仍是旧值，说明市场当初是从本地目录添加的。
 重新绑定后再执行上面的 remove/add：
 
 ```bash
-codex plugin marketplace add GoalfyAI/scene-creator-skills
+codex plugin marketplace add GoalfyAI/business-app-creator-skills
 ```
 
 ### 第 2 步：确认新版本已生效
@@ -194,7 +194,7 @@ codex plugin marketplace add GoalfyAI/scene-creator-skills
 用户要更换密钥、或旧密钥已被撤销时走这里。
 
 1. 引导用户获取新密钥：执行上面「第 2 步：取得并配置 API 密钥」的模板
-2. 更新 `~/.codex/.env` 的 `SCENE_CREATOR_API_KEY` 行，保留其他环境变量，
+2. 更新 `~/.codex/.env` 的 `BUSINESS_APP_CREATOR_API_KEY` 行，保留其他环境变量，
    然后 `chmod 600 "$HOME/.codex/.env"`
 3. **逐字输出**重启模板——环境变量只在新会话生效，不重启的话 MCP 仍用旧密钥
 4. 重启后由你自己跑一次 `list_assets` 只读自检，确认新密钥可用

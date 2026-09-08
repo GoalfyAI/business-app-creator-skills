@@ -64,7 +64,7 @@ def test_all_first_party_package_versions_are_synchronized():
     pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     assert pyproject["project"]["version"] == expected
     lock_match = re.search(
-        r'name = "scene-creator-skills"\nversion = "([^"]+)"',
+        r'name = "business-app-creator-skills"\nversion = "([^"]+)"',
         (ROOT / "uv.lock").read_text(encoding="utf-8"),
     )
     assert lock_match and lock_match.group(1) == expected
@@ -83,9 +83,10 @@ def test_every_install_surface_ships_production_endpoint():
         if path.is_file() and path.suffix in {".md", ".json", ".yaml"}
     )
     assert release_module.PROD_MCP_ENDPOINT in combined
-    # 2026-09-02 起安装物料统一指向 QA（生产 MCP 尚未部署）；不得残留生产地址与生产密钥页
-    assert "https://workflow-mcp.goalfyai.cn/mcp" not in combined
-    assert "https://goalfymax.goalfyai.cn/developer/api-keys" not in combined
+    # 2026-09-04 起安装物料统一指向生产；不得残留 QA 域名与旧端点
+    assert ".qa.goalfyai.cn" not in combined
+    assert "workflow-mcp." not in combined
+    assert "https://goalfymax.goalfyai.cn/developer/api-keys" in combined
 
 
 def test_platform_skill_copies_match_the_single_source():
@@ -106,7 +107,7 @@ def test_platform_skill_copies_match_the_single_source():
 def test_workflow_guidance_distinguishes_output_end_states():
     # Workflow 三种结束语义的正本随 §7.3 下沉到 references/平台对象与运行模型.md（1.8.0）
     skill = (SKILL_ROOT / "references" / "平台对象与运行模型.md").read_text(encoding="utf-8")
-    checklist = (SKILL_ROOT / "checklists" / "Workflow验收检查清单.md").read_text(
+    checklist = (SKILL_ROOT / "checklists" / "编排型TPE验收检查清单.md").read_text(
         encoding="utf-8"
     )
 
@@ -124,7 +125,7 @@ def test_workflow_guidance_routes_event_workflows_through_business_runtime():
         SKILL_ROOT / "references" / "平台对象与运行模型.md"
     ).read_text(encoding="utf-8")
     asset_stage = (SKILL_ROOT / "stages" / "S3-资产制作.md").read_text(encoding="utf-8")
-    checklist = (SKILL_ROOT / "checklists" / "Workflow验收检查清单.md").read_text(
+    checklist = (SKILL_ROOT / "checklists" / "编排型TPE验收检查清单.md").read_text(
         encoding="utf-8"
     )
     acceptance = (SKILL_ROOT / "checklists" / "场景包验收检查清单.md").read_text(
@@ -150,7 +151,7 @@ def test_workflow_guidance_separates_delivery_verification_from_business_accepta
     )
     assert "交付核验回答" in design
     assert "最终审阅回答" in design
-    assert "质量检查 Workflow" in challenge
+    assert "质量检查编排型 TPE" in challenge
     assert "若声明了修订、重做或改路线" in acceptance
     assert "场景包制作只声明对外稳定的资产契约" in design
     assert "属于平台实现细节" in design
@@ -191,7 +192,7 @@ def test_zip_packages_are_deterministic_and_utf8(tmp_path: Path):
     second = {path: path.read_bytes() for path in release_module.build_platform_zips(copied)}
     assert first == second, "重复打包应产生完全相同的字节"
 
-    manus_zip = tmp_path / "manus" / "scene-creator-skill.zip"
+    manus_zip = tmp_path / "manus" / "business-app-creator-skill.zip"
     with zipfile.ZipFile(manus_zip) as archive:
         names = archive.namelist()
         # Manus 要求 SKILL.md 位于压缩包根目录
@@ -225,12 +226,12 @@ def test_install_docs_state_the_required_facts():
         if mcp_name:
             mcp_text = (platform_root / mcp_name).read_text(encoding="utf-8")
             assert _manifest()["mcp_endpoint"] in mcp_text
-            assert set(json.loads(mcp_text)["mcpServers"]) == {"scene-creator"}
-            assert "SCENE_CREATOR_API_KEY" in mcp_text
+            assert set(json.loads(mcp_text)["mcpServers"]) == {release_module.MCP_SERVER_NAME}
+            assert "BUSINESS_APP_CREATOR_API_KEY" in mcp_text
             assert not re.search(r"Bearer\s+sk_[A-Za-z0-9]", mcp_text)
-            assert "SCENE_CREATOR_API_KEY" in docs, f"{platform} 未说明密钥环境变量"
+            assert "BUSINESS_APP_CREATOR_API_KEY" in docs, f"{platform} 未说明密钥环境变量"
         if layout["skill_subdir"].startswith("skills/"):
-            assert "GoalfyAI/scene-creator-skills" in docs, f"{platform} 缺少公开市场来源"
+            assert "GoalfyAI/business-app-creator-skills" in docs, f"{platform} 缺少公开市场来源"
 
 
 def test_docs_do_not_pin_a_stale_package_version():
@@ -362,7 +363,7 @@ def test_release_rejects_missing_openai_mcp_dependency(tmp_path: Path):
     metadata["dependencies"]["tools"] = []
     metadata_path.write_text(yaml.safe_dump(metadata, allow_unicode=True), encoding="utf-8")
 
-    with pytest.raises(release_module.ReleaseError, match="唯一的 scene-creator MCP 依赖"):
+    with pytest.raises(release_module.ReleaseError, match="唯一的 business-app-creator MCP 依赖"):
         release_module.release(copied, _package_version(copied), "missing dependency")
 
 

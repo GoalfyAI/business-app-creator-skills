@@ -20,7 +20,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # 以 scene-creator-bot 身份提交，自动化产物不归属任何个人账号。
+      # 以 business-app-creator-bot 身份提交，自动化产物不归属任何个人账号。
       - uses: actions/create-github-app-token@v2
         id: app-token
         with:
@@ -53,7 +53,7 @@ jobs:
         run: |
           git config user.name "${{ steps.app-token.outputs.app-slug }}[bot]"
           git config user.email "${{ steps.bot-user.outputs.id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com"
-          git add manus/scene-creator-skill.zip generic/scene-creator-generic.zip
+          git add manus/business-app-creator-skill.zip generic/business-app-creator-generic.zip
           if git diff --cached --quiet; then
             echo "ZIP 无变化，跳过提交。"
           else

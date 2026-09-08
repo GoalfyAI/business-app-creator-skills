@@ -1,5 +1,8 @@
 # 更新与密钥轮换 — Claude Code
 
+
+> **1.21.3 起密钥变量改名**：`SCENE_CREATOR_API_KEY` → `BUSINESS_APP_CREATOR_API_KEY`。已装用户升级后要在 `~/.claude/settings.json` 的 `env` 里把键名改成新名（值不变），否则 MCP 401。
+
 ## 升级 Skill
 
 被 `SCENE_SKILL_UPGRADE_REQUIRED` 拒单，或需要把 Skill 升到最新版时按本文执行。每一步都可重复执行。
@@ -7,7 +10,7 @@
 ### 第 1 步：升级插件
 
 ```bash
-claude plugin update scene-creator@scene-creator
+claude plugin update business-app-creator@business-app-creator
 ```
 
 插件市场会拉取内网仓库、比较 `plugin.json` 版本并完成更新。
@@ -16,7 +19,7 @@ claude plugin update scene-creator@scene-creator
 当初是从本地目录添加的，一直在复用陈旧缓存。重新绑回内网仓库后再执行上面的升级：
 
 ```bash
-claude plugin marketplace add git@codeup.aliyun.com:goalfyai/goalfyagent/scene-creator-skills.git
+claude plugin marketplace add git@codeup.aliyun.com:goalfyai/goalfyagent/business-app-creator-skills.git
 ```
 
 ### 第 2 步：读取新版本标记并重试（在本次会话内完成，先不要让用户重启）
@@ -30,9 +33,9 @@ claude plugin marketplace add git@codeup.aliyun.com:goalfyai/goalfyagent/scene-c
 再回到本步，**不要**因为读不到就编造一个版本串：
 
 ```bash
-claude plugin uninstall scene-creator@scene-creator
-claude plugin marketplace add git@codeup.aliyun.com:goalfyai/goalfyagent/scene-creator-skills.git
-claude plugin install scene-creator@scene-creator
+claude plugin uninstall business-app-creator@business-app-creator
+claude plugin marketplace add git@codeup.aliyun.com:goalfyai/goalfyagent/business-app-creator-skills.git
+claude plugin install business-app-creator@business-app-creator
 ```
 
 拒单响应和 changelog 里都不含可用于重试的版本串，唯一合法来源是上面读到的已安装 SKILL.md 标记。
@@ -53,7 +56,7 @@ claude plugin install scene-creator@scene-creator
 ## 轮换个人 API 密钥
 
 1. 用户在 GoalfyMax 中创建替换密钥，并把完整新密钥提供给 Agent。
-2. Agent 只替换 `~/.claude/settings.json` 中的 `env.SCENE_CREATOR_API_KEY`，保留其他所有配置；
+2. Agent 只替换 `~/.claude/settings.json` 中的 `env.BUSINESS_APP_CREATOR_API_KEY`，保留其他所有配置；
    不得要求用户自行编辑配置文件，也不得在命令回显、差异、日志或回复中展示密钥。
 3. 新密钥保存成功后，撤销旧密钥。
 4. 彻底重启 Claude Code，再次执行只读验证。

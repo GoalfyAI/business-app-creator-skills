@@ -5,12 +5,12 @@
 平台专属的完整说明见 [`claude-code/README.md`](../claude-code/README.md)，
 Agent 可直接执行的安装流程见 [`claude-code/AGENTS.md`](../claude-code/AGENTS.md)。
 
-> **想省事的话**：把 [claude-code/AGENTS.md](https://raw.githubusercontent.com/GoalfyAI/scene-creator-skills/main/claude-code/AGENTS.md) 直接发给你的 Agent，
+> **想省事的话**：把 [claude-code/AGENTS.md](https://raw.githubusercontent.com/GoalfyAI/business-app-creator-skills/main/claude-code/AGENTS.md) 直接发给你的 Agent，
 > 它会自己完成下面全部步骤并验证结果，你只需要在它要密钥时提供一次。
 
 ## 第 1 步 — 获取 API 密钥
 
-登录 GoalfyMax QA 环境，进入 [开发者工具 → API 密钥](https://goalfymax.qa.goalfyai.cn/developer/api-keys)。
+登录 GoalfyMax，进入 [开发者工具 → API 密钥](https://goalfymax.goalfyai.cn/developer/api-keys)。
 点击 **新建 API 密钥**，输入 1～100 个字符的名称。
 
 密钥以 `sk_` 开头，**完整内容只显示一次**，创建后立即保存。
@@ -20,8 +20,8 @@ Agent 可直接执行的安装流程见 [`claude-code/AGENTS.md`](../claude-code
 ## 第 2 步 — 安装插件
 
 ```bash
-claude plugin marketplace add GoalfyAI/scene-creator-skills
-claude plugin install scene-creator@scene-creator
+claude plugin marketplace add GoalfyAI/business-app-creator-skills
+claude plugin install business-app-creator@business-app-creator
 ```
 
 ## 第 3 步 — 配置密钥
@@ -31,7 +31,7 @@ claude plugin install scene-creator@scene-creator
 ```json
 {
   "env": {
-    "SCENE_CREATOR_API_KEY": "<你的个人 API 密钥>"
+    "BUSINESS_APP_CREATOR_API_KEY": "<你的个人 API 密钥>"
   }
 }
 ```
@@ -73,7 +73,7 @@ Agent 会建一个只读工单，逐层检查提示词、工具契约、编排�
 ## 更新
 
 ```bash
-claude plugin update scene-creator@scene-creator
+claude plugin update business-app-creator@business-app-creator
 ```
 
 被提示 Skill 版本过期时，按 [`claude-code/UPDATE.md`](../claude-code/UPDATE.md) 执行。

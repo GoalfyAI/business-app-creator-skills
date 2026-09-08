@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""校验并发布 scene-creator Skill。
+"""校验并发布 business-app-creator 插件（含 scene-creator 与 app-creator 两个 Skill）。
 
 模型很简单：`skills/scene-creator/` 是唯一源，发布时把它复制到各平台的 `skills/scene-creator/`，
 再给所有 SKILL.md 副本打上同一个版本标记。平台安装文档（README/AGENTS/UPDATE/.mcp.json）
@@ -26,6 +26,8 @@ from typing import Any
 import yaml
 
 SKILL_NAME = "scene-creator"
+MCP_SERVER_NAME = "business-app-creator-mcp"  # 客户端 mcpServers 键 / 服务端 EXTERNAL_MCP_NAME
+PLUGIN_NAME = "business-app-creator"  # 插件 / 市场名（产品名），与 skill 名 scene-creator / app-creator 区分
 SKILL_CONTENT_DIR = "skills/scene-creator"
 MANIFEST_RELATIVE_PATH = Path("skill-release.json")
 OPENAI_METADATA_RELATIVE_PATH = Path("agents/openai.yaml")
@@ -52,7 +54,7 @@ PLATFORM_LAYOUTS = {
         "mcp_config": None,
         "docs": ("README.md", "UPDATE.md"),
         # Manus 要求 SKILL.md 位于压缩包根目录
-        "zip": ("scene-creator-skill.zip", "skill", ("SKILL.md", "references", "stages", "checklists")),
+        "zip": ("business-app-creator-skill.zip", "skill", ("SKILL.md", "references", "stages", "checklists")),
     },
     "generic": {
         "skill_subdir": ".",
@@ -60,7 +62,7 @@ PLATFORM_LAYOUTS = {
         "mcp_config": ".mcp.json",
         "docs": ("README.md", "UPDATE.md"),
         "zip": (
-            "scene-creator-generic.zip",
+            "business-app-creator-generic.zip",
             ".",
             (".mcp.json", "SKILL.md", "references", "stages", "checklists", "README.md"),
         ),
@@ -68,14 +70,14 @@ PLATFORM_LAYOUTS = {
 }
 PLATFORM_NAMES = tuple(PLATFORM_LAYOUTS)
 # 附加 Skill：仓库根目录下自研的额外 Skill，随插件同步到 claude-code / codex 的 skills/ 下。
-# 不进 scene-creator 的发布清单与版本闸门，随插件版本自然更新。
+# 不进 business-app-creator 的发布清单与版本闸门，随插件版本自然更新。
 EXTRA_SKILL_SOURCES = {"app-creator": Path("skills/app-creator")}
 EXTRA_SKILL_PLATFORMS = ("claude-code", "codex")
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 # 仓库里的安装物料统一指向同一个 MCP 地址，由本常量唯一决定。
 # 2026-09-02 拍板：生产 MCP 尚未部署（404），安装物料先指向 QA；切回生产时改这一处 +
-# 文档里的 API 密钥页域名（goalfymax.qa.goalfyai.cn ↔ goalfymax.goalfyai.cn），再发版。
-PROD_MCP_ENDPOINT = "https://workflow-mcp.qa.goalfyai.cn/mcp"
+# 文档里的 API 密钥页域名（goalfymax.goalfyai.cn ↔ goalfymax.goalfyai.cn），再发版。
+PROD_MCP_ENDPOINT = "https://business-app-creator-mcp.goalfyai.cn/mcp"
 DATA_SKILL_VERSION_RE = re.compile(r"^v\d{8}-[0-9a-f]{6}$")
 LEGACY_SKILL_VERSION_RE = re.compile(r"^v\d+\.\d+\.\d+$")
 SKILL_VERSION_RE = re.compile(r"\[skill-version:(v(?:\d+\.\d+\.\d+|\d{8}-[0-9a-f]{6}))\]")
@@ -185,7 +187,7 @@ def _configured_mcp_endpoint(skill_root: Path) -> str:
     dependencies = metadata.get("dependencies")
     tools = dependencies.get("tools") if isinstance(dependencies, dict) else None
     if not isinstance(tools, list) or len(tools) != 1 or not isinstance(tools[0], dict):
-        raise ReleaseError("agents/openai.yaml 必须声明唯一的 scene-creator MCP 依赖")
+        raise ReleaseError("agents/openai.yaml 必须声明唯一的 business-app-creator MCP 依赖")
     endpoint = tools[0].get("url")
     if endpoint != PROD_MCP_ENDPOINT:
         raise ReleaseError("agents/openai.yaml 必须使用仓库约定的 MCP 地址（PROD_MCP_ENDPOINT）")
@@ -261,11 +263,11 @@ def validate_platform_install_files(skill_root: Path) -> None:
             if not mcp_path.is_file():
                 raise ReleaseError(f"缺少 {platform} 的 MCP 配置：{mcp_path}")
             mcp = json.loads(mcp_path.read_text(encoding="utf-8"))
-            server = (mcp.get("mcpServers") or {}).get(SKILL_NAME) or {}
+            server = (mcp.get("mcpServers") or {}).get(MCP_SERVER_NAME) or {}
             if server.get("url") != PROD_MCP_ENDPOINT:
                 raise ReleaseError(f"{platform} MCP 必须使用仓库约定的 MCP 地址（PROD_MCP_ENDPOINT）")
             serialized = json.dumps(server, ensure_ascii=False)
-            if "SCENE_CREATOR_API_KEY" not in serialized:
+            if "BUSINESS_APP_CREATOR_API_KEY" not in serialized:
                 raise ReleaseError(f"{platform} MCP 必须引用 API Key 环境变量")
             if re.search(r"Bearer\s+sk_[A-Za-z0-9]", serialized):
                 raise ReleaseError(f"{platform} MCP 不得包含明文 API Key")
@@ -280,12 +282,12 @@ def validate_platform_install_files(skill_root: Path) -> None:
                 raise ReleaseError(f"{platform} 安装文档必须提到 {required_text!r}")
         # 有 .mcp.json 的平台靠环境变量注入密钥，文档必须写明变量名；
         # Manus 在网页里直接填明文密钥，没有环境变量可言。
-        if mcp_name and "SCENE_CREATOR_API_KEY" not in docs:
+        if mcp_name and "BUSINESS_APP_CREATOR_API_KEY" not in docs:
             raise ReleaseError(f"{platform} 安装文档必须说明 API Key 环境变量")
         # 走插件市场的平台必须给出公开来源；Manus 与通用集成是手工配置，不适用
         if (
             layout["skill_subdir"].startswith("skills/")
-            and "GoalfyAI/scene-creator-skills" not in docs
+            and "GoalfyAI/business-app-creator-skills" not in docs
         ):
             raise ReleaseError(f"{platform} 安装文档必须给出公开插件市场来源")
 
@@ -396,7 +398,7 @@ def _bump_package_version(skill_root: Path, version: str) -> None:
     if lockfile.is_file():
         content = lockfile.read_text(encoding="utf-8")
         updated, count = re.subn(
-            r'(?ms)(name = "scene-creator-skills"\nversion = ")\d+\.\d+\.\d+(")',
+            r'(?ms)(name = "business-app-creator-skills"\nversion = ")\d+\.\d+\.\d+(")',
             lambda match, new=version: f"{match.group(1)}{new}{match.group(2)}",
             content,
             count=1,

@@ -12,10 +12,12 @@ description: 当开发者需要为一个已上线的 GoalfyMax 场景包制作�
 
 | | scene-creator | app-creator（本 Skill） |
 |---|---|---|
-| 产出 | 场景包 = 能力单元（编排 / Workflow / FastAgent / 事件与交付契约） | 业务应用 = 前后端部署物（界面前端 + 专属后端 + 业务应用数据集模板），以独立资产 **business_ui** 为发布单位：自己的家族与版本，挂载恰好 1 个场景包 + 至多 1 个业务应用数据集模板 |
+| 产出 | 场景包 = 能力单元（业务路线 /编排型 TPE / FastAgent / 事件与交付契约） | 业务应用 = 前后端部署物（界面前端 + 专属后端 + 业务应用数据集模板），以独立资产 **business_ui** 为发布单位：自己的家族与版本，挂载恰好 1 个场景包 + 至多 1 个业务应用数据集模板 |
 | 一句话 | 能干什么活 | 用户在哪、怎么持续用这个活干生意 |
 
 **先包后应用**：本 Skill 只对**已上线**的场景包开工。目标包未上线时，先用 scene-creator 完成制作与上线。工单不强制分开：接着场景包工单继续干、或另开一张工单，由开发者定（scene-creator 约束 8）。
+
+**三个不能混的概念**（与 scene-creator 前置条件同一口径）：① 有业务路线的场景包才能有业务应用——应用的每个入口都是一条路线；② 业务应用与场景包强绑定——一个 `business_ui` 恰好挂一个包，入口表单 / 中途表单 / 交付字段 / 事件全部来自它的契约，包换契约应用就要重新部署；③ 业务应用（编排形）是交付给用户的产品，场景包是资产载体，对开发者说前者、对工具说后者。
 
 **SaaS 链路**（业务应用的完整闭环，一切设计围绕它）：
 
@@ -40,14 +42,16 @@ description: 当开发者需要为一个已上线的 GoalfyMax 场景包制作�
 
 1. **先包后应用**——目标场景包必须已上线；其 `schema/forms`、`schema/orchestrations`、`output_schema`、业务事件契约全部**反读**取得，凭记忆或猜测写出的契约视为无效。
 2. **调用契约零改动**——应用与 Max 只有两种交互，都走 SDK 既有通道（正本 `src/sdk/docs/business.md`，该文档里分别叫"流程 A""流程 B"）：
-   - **发起一次编排运行**：用户在应用里填好入口表单，SDK 把表单数据连同所选项目打包成 `chat.start + metadata.submit_data` 发给 Max，业务路线开始跑；
+   - **发起一次业务路线运行**：用户在应用里填好入口表单，SDK 把表单数据连同所选项目打包成 `chat.start + metadata.submit_data` 发给 Max，业务路线开始跑；
    - **应答运行中表单**（即"三次握手"）：路线跑到需要用户补充或审阅时，服务端下发一张表单 → 应用渲染、用户填写后提交应答 → 服务端返回**业务确认**；提交的 Promise 到业务确认才 resolve，前两步都不算完成。
 
+   **提交确认与启动过渡分别管理**：点击后立即反馈，`accepted` 只表示受理；当前项目的 `running` 推送到达后立即展示执行中，不等业务事件或 Runtime 明细刷新，也不提前解除尚未完成的提交锁。项目详情与列表都要消费项目状态；项目层共用句柄与过渡态，具体接入与验收见 [A3 §4.3.1](stages/A3-应用实现.md#431-应答提交到运行的页面过渡) 与 [A4 §4.3](stages/A4-预部署与验收.md#43-应答提交到运行的时序验收)。
+
    ***不发明任何字段、不改任何语义、不绕开 SDK 手拼消息。***
-3. **创建态 / 进行态分界**——应用是唯一的发起入口：新建 = 表单提交时创建项目再 `chat.start`；复用 = 项目下拉框由用户显式选中（选项只来自后端项目列表）；发起后跳转项目页。项目页只看进度和回复表单，**不发起新编排**。
-4. **数据面纪律**——**业务应用数据集是两条线唯一的数据面概念**：开发期做一份业务应用数据集模板，用户首次打开应用时从模板 copy 出专属一份（一用户一份），存用户信息、业务历史、项目产出与流转数据，同时被应用后端直连和项目内 agent（经 `dscli_business_dataset`）访问。***应用代码禁 CREATE / ALTER TABLE***——加表改表回模板（A2），不在应用里动。
-5. **后端边界**——专属后端是内网 Service，宿主是唯一入口：不含鉴权逻辑（直接信任宿主注入的身份头）、没有第三方密钥注入通道（需要密钥先与平台定，不假定运行时读得到）。响应一律 `{code, msg, data}` 信封、业务失败也 HTTP 200、自定义码 ≥1000。正本：`backend/README.md`。
-6. **桥层限制**——`GET/DELETE` 不带 body、嵌套查询走 POST、请求整体 ≤256KiB、响应体 ≤1MiB、上游超时 13s（`statement_timeout` 10s，只剩 3s 余量）、***写接口必须幂等***（键 `X-Goalfy-Business-Request-Id`）、文件走 `project.upload` 落 workspace 后只传路径字符串；连接经 dataset-proxy，禁 `BEGIN/COMMIT/ROLLBACK`、`SET ROLE`、`SET search_path`。
+3. **创建态 / 进行态分界**——应用是唯一的发起入口：新建 = 表单提交时创建项目再 `chat.start`；复用 = 项目下拉框由用户显式选中（选项只来自后端项目列表）；发起后跳转项目页。项目页只看进度和回复表单，**不发起新的业务路线运行**。
+4. **数据面纪律**——**业务应用数据集是两条线唯一的数据面概念**：开发期做一份业务应用数据集模板，用户首次打开应用时从模板 copy 出专属一份（一用户一份），存用户信息、业务历史、项目产出与流转数据，同时被应用后端直连和项目内 agent（经业务应用数据集 FA）访问。***应用代码禁 CREATE / ALTER TABLE***——加表改表回模板（A2），不在应用里动。
+5. **后端边界**——专属后端由 p2s 部署在**公网域名**上（`https://app-<id>-<name>.<env>.goalfymax.cn`），**不是内网 Service**；"内网 Service、宿主唯一入口、后端无需鉴权"是旧口径，已作废。现行链路：`App(iframe) → sdk.api.request → 宿主 → Max 后端 POST /api/business-uis/:id/api-proxy（服务器到服务器）→ 本后端`，Max 后端只发三个头（`Content-Type` / `X-Goalfy-Business-Request-Id` / `X-Goalfy-Context`），其余请求头与 cookie 属平台内部，应用**不得读取或依赖**；`X-Goalfy-Context` 是 base64 claims（`app_id` / `app_version` / `instance_owner_id` / `permission` / `preview` / `user_id`），是否签名以 `backend/README.md` §身份上下文为准（截至 2026-09-07 **未签名**）——未签名期间基于 claims 的判权只拦误操作、不是安全边界，资金、批量删除、对外发布类动作不得只凭 claims 放行。由此三条纪律：①**写权限必须后端自己判**（`canWrite`，宿主不区分读写、不兜底；`instance_owner_id` 与 `user_id` 协作场景下不同）；②**生产态不开 CORS**，不假设"只有宿主能打到我"；③没有第三方密钥注入通道（需要密钥先与平台定，不假定运行时读得到）。响应一律 `{code, msg, data}` 信封、业务失败也 HTTP 200、自定义码 ≥1000（1000~1099 脚手架保留，业务自定义从 1100 起）。**核对实际请求路径与授权边界，不得沿用"后端无需鉴权"一句话。**正本：`backend/README.md`（§身份上下文、§未签名说明）。
+6. **桥层限制**——`GET/DELETE` 不带 body、嵌套查询走 POST、请求整体 ≤256KiB、响应体 ≤1MiB、上游超时 13s（`statement_timeout` 10s，只剩 3s 余量）、***写接口必须幂等***（键 `X-Goalfy-Business-Request-Id`）、文件先分级——属于这一次生产的走项目句柄 `project.upload`，用户跨项目反复用的走应用级 `sdk.file`（数据管理页只能用后者，前者会懒建临时项目）——落 workspace 后都只传路径字符串（A1 §5.4）；连接经 dataset-proxy，禁 `BEGIN/COMMIT/ROLLBACK`、`SET ROLE`、`SET search_path`。
 7. **部署纪律**——先预部署验证再交付；下线走 `business_ui_manage(offline)`（拆容器、保留库与源码，可重新上线），已发布到目录的要先取消发布才能下线（A5 第 5 节）；删除才是不可逆的；***schema 真名禁止硬编码***——引用表只有一种写法 `buiTable('表名')`（每个用户实例的 schema 都不同，写死了第二个用户就炸）；镜像必须用户无关。
 8. **设计纪律**——脚手架 demo 只用于理解协议与 SDK，禁复用其页面结构与视觉；竞品调研先问开发者有无参考；生产级原型经开发者确认后才正式编码；反同质化（与 demo 高度相似且说不出业务理由 = 设计未做）。
 9. **编辑与生产的共治纪律**——应用表是用户的业务资产。逐字段可编辑性声明的**唯一正本是 PG 列注释**：`COMMENT ON COLUMN ... IS '[editable:user|agent|system] 业务说明'`——它随模板 copy 天然携带、`describe` 天然可见、平台可读回展示。写权矩阵：`user`=用户可写、FA 与生产回流**不得覆盖**；`agent`=FA/生产可写；`system`=仅系统逻辑；***读不到声明的列一律按 user 处理（最保守：不写）***。所有写入带来源标记（`user_edited` / `generated`）；生产回流入库语义（直接入库 / 草稿待用户确认）由开发者在 A1 声明。
@@ -83,7 +87,7 @@ A2 数据面制作 工作集 open → create_table(逐列 [editable] COMMENT) �
 A3 应用实现   后端(CRUD/统计/回流 API) + 前端(四类页面) → 本地测试(mock/dev-host/Playwright)
   ▼
 A4 预部署验收 business_ui 创建挂载 → 源码包上传 deploy 到 success
-              → 自动化测试门(确认过的功能 / 编排运作 / 数据增删改查，三类全绿才往下)
+              → 自动化测试门(确认过的功能 / 业务路线运作 / 数据增删改查，三类全绿才往下)
               → 真环境链路 + 清单闭合
   ▼
 A5 发布交付   finalize 上线（三闸门码）→ resolve 反读 entry_url → 交付报告 → 结单
@@ -108,9 +112,10 @@ A5 发布交付   finalize 上线（三闸门码）→ resolve 反读 entry_url 
 | 总纲：前后端怎么拼、运行链路、数据放哪、发布通道、联动清单 | 脚手架根 `README.md` |
 | 前端宪法：红线、第一规则、SDK 速览、完成定义与自测矩阵（唯一权威） | `frontend/README.md`、`frontend/CLAUDE.md` |
 | 页面开发约束：术语、三必备页面、可恢复状态、表单回显与文件纪律、交付审阅页、消息中心/项目列表 | `frontend/docs/business-ui-guide.md` |
-| 契约区协议 v4（多包、forms/orchestrations 文件格式、delivery 声明） | `frontend/schema/README.md` |
+| 契约区协议 v4（多包 `schema/packs/<pack_id>/{forms,orchestrations}/`、delivery 声明） | `frontend/schema/README.md` |
+| 开发者后端公开接口契约（一个接口一个 OpenAPI 3.1 YAML；后端按它实现、前端与 mock 按它调用；无契约不开发） | `frontend/schema/api/` |
 | 前端 SDK（两层 API、项目句柄、upload/file/storage/business；应用级文件 `sdk.file`） | `frontend/src/sdk/docs/`（README 起步；应用级文件在 `application-file.md`） |
-| 与 Max 的调用契约（发起编排运行、应答运行中表单——文档里的"流程 A / 流程 B"） | `frontend/src/sdk/docs/business.md` |
+| 与 Max 的调用契约（发起业务路线运行、应答运行中表单——文档里的"流程 A / 流程 B"） | `frontend/src/sdk/docs/business.md` |
 | 后端契约（信封、码段、桥层限制、`buiTable`、dataset-proxy、身份上下文、打包） | `backend/README.md` |
 | 本地测试（Direct Mock / Dev Host Mock / Playwright） | `frontend/docs/dev-host-testing.md` |
 | 消息展示 | `frontend/docs/message-guide.md` 与 `frontend/docs/message/` 字段字典 |
@@ -121,13 +126,13 @@ A5 发布交付   finalize 上线（三闸门码）→ resolve 反读 entry_url 
 | 术语 | 人话 |
 |---|---|
 | 业务应用 | 前端 + 专属后端 + 每用户一份 schema，打进一个镜像一个 Pod；平台里的一级实体，一个实例管 N 个项目，用户的 SaaS 工作台 |
-| 项目 | 业务应用之下的一层：用户的一次计划选择，一次编排运行及其表单、消息、文件、交付都装在项目里；由用户在应用里**创建**（表单提交时两段式建项目）或**复用**（下拉框选已有项目）；应用经 `sdk.projects` 拿到本实例名下全部项目（A1 §2.1） |
+| 项目 | 业务应用之下的一层：用户的一次计划选择，一次业务路线运行及其表单、消息、文件、交付都装在项目里；由用户在应用里**创建**（表单提交时两段式建项目）或**复用**（下拉框选已有项目）；应用经 `sdk.projects` 拿到本实例名下全部项目（A1 §2.1） |
 | 《业务应用计划书》 | A1 的交付物：一份 MD，含功能清单、每页截图展示、后端功能阐述、自动化测试计划；开发者确认后才进 A2/A3，之后按它干、不再问（A1 §6） |
 | 应用级文件 / 项目文件 | `sdk.file`：不依赖项目、跨项目复用的持久文件（资料库）；`project.upload` + `project.file`：属于某个项目的文件。两者并存，表单值都只存 workspace 路径 |
 | business_ui | 业务应用的发布单位：独立资产（家族 + 版本），挂 1 个场景包 + ≤1 个业务应用数据集模板；create → 上传 deploy 源码包 → finalize 上线（A4/A5） |
-| 业务应用数据集 | 应用的后端数据库：用户点开应用时从模板 copy 出的专属 PG schema，存用户记载、交互历史、交付与流转数据；应用后端直连 + 项目内 agent 经 ds-cli 访问同一份 |
+| 业务应用数据集 | 应用的后端数据库：用户点开应用时从模板 copy 出的专属 PG schema，存用户记载、交互历史、交付与流转数据；应用后端直连 + 项目内 agent 经业务应用数据集 FA 访问同一份 |
 | 业务应用数据集模板 | 开发期定稿的表结构模板资产（含逐列声明与审计字段）；用户首次打开应用时从它 copy 出业务应用数据集 |
-| dscli_business_dataset | 平台级 FastAgent：场景包 Workflow 在沙箱内读写业务应用数据集的运行期通道（A3 第 2 节三件事实） |
+| 业务应用数据集 FA | 平台级 FastAgent（cn-qa 现名 `Business_app_fastagent`，随 `business_app_dataset` 工具集上线）：场景包编排型 TPE 经它的 HTTP 工具读写业务应用数据集，不进沙箱（A3 第 3 节三件事实）。**这是给项目内 agent 用的通道**；应用自己的前后端读写走后端直连 `buiTable()`（A3 第 3 节） |
 | `buiTable('表名')` | 后端引用自己 schema 里表的唯一写法，从 `DATASETS_MANIFEST` 解析真名（`bui_{data_uid}`）；不写死 schema 名、不用 handle |
 | 三个必备页面 | 首页 / 项目列表页 / 消息中心——脚手架硬约束，只约束存在且可达，不约束形态 |
 | 可编辑性声明 | PG 列注释里的 `[editable:user\|agent\|system]` 前缀，谁能写这列的唯一正本 |

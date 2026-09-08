@@ -1,35 +1,32 @@
-# Scene Creator Skills
+# Business App Creator Skills
 
-把业务流程沉淀为 GoalfyMax 场景包，诊断、优化并验证已有场景包。
+把一段业务流程做成 GoalfyMax 上可以直接交给用户用的**业务应用**，并诊断、优化、迭代已有的业务应用。
 
-这个仓库提供一个 Skill 和一套外部 MCP 工具，让 Claude Code、Codex 这类编码 Agent 直接为你
-制作场景包——从业务访谈、能力摸底、资产制作，到分层验收和上线发布。
+这个仓库提供两个 Skill 和一套外部 MCP 工具（`business-app-creator-mcp`），让 Claude Code、Codex 这类编码 Agent 直接为你制作业务应用——从业务访谈、界面与数据设计、资产制作，到分层验收、上线发布和配套前后端应用的部署。
 
-## 场景包是什么
+**业务应用是这套工具的主要产物，场景包只是业务应用下面的一个资产。**
 
-场景包是 GoalfyMax 上一套可复用的执行能力：把一段原本靠人重复执行的业务流程，连同它需要的
-工具、提示词、编排和验收标准打包起来，之后同类任务交给 Agent 就能跑。
+## 业务应用是什么
 
-一个场景包通常包含这些资产：
+业务应用是 GoalfyMax 上交付给最终用户的一个完整产品：用户在里面发起一次生产、跟进进度、审阅交付、记载和查看自己的业务数据。它由三部分组成：
 
-| 资产 | 作用 |
-|---|---|
-| 普通任务点 | 一个可执行的业务动作 |
-| 工具集 | 完成动作所需的一组工具 |
-| FastAgent | 处理确定性子任务的轻量智能体 |
-| Workflow | 把多个步骤编排成固定路径 |
-| 业务界面 | 面向业务用户的操作入口 |
-| 长期数据集 | 跨任务沉淀的业务数据 |
+| 组成 | 是什么 | 由哪个 Skill 制作 |
+|---|---|---|
+| **场景包（编排形）** | 业务应用的能力资产：业务路线编排 + Workflow + FastAgent + 工具集 + 任务点，定义了每个入口背后怎么跑 | `business-app-creator` |
+| **业务应用数据集模板** | 每个用户各得一份的业务数据库结构（实体 / 情境 / 历史事件三类表） | `app-creator`（A2） |
+| **前后端应用** | 用户看到的页面与专属后端：看板、数据管理、业务发起、项目页；预填、回流、编辑都在这里 | `app-creator`（A1–A5） |
+
+三个概念不要混：**有业务路线编排的场景包才能有业务应用**；一个业务应用恰好挂载一个场景包，入口表单、中途表单、交付字段、事件全部来自这个包的契约；对用户说"业务应用"，对工具和资产关系说"场景包"。没有配套前后端应用的场景包也能在聊天里被调用，那是文件交付型，不是本仓库的主线。
 
 ## 支持的平台
 
-先在 [开发者工具 → API 密钥](https://goalfymax.qa.goalfyai.cn/developer/api-keys) 创建个人密钥，密钥以 `sk_` 开头且只显示一次。
+先在 [开发者工具 → API 密钥](https://goalfymax.goalfyai.cn/developer/api-keys) 创建个人密钥，密钥以 `sk_` 开头且只显示一次。
 然后按下表选择你的平台。
 
 | 平台 | 最快上手 | 详细指南 | 状态 |
 |---|---|---|---|
-| **Claude Code** | 把 [安装指南](https://raw.githubusercontent.com/GoalfyAI/scene-creator-skills/main/claude-code/AGENTS.md) 发给 Agent，它会自己装完并验证 | [Claude Code 快速上手](docs/claude-code-quickstart.md) | 可用 |
-| **Codex** | 把 [安装指南](https://raw.githubusercontent.com/GoalfyAI/scene-creator-skills/main/codex/AGENTS.md) 发给 Agent，它会自己装完并验证 | [Codex 快速上手](docs/codex-quickstart.md) | 可用 |
+| **Claude Code** | 把 [安装指南](https://raw.githubusercontent.com/GoalfyAI/business-app-creator-skills/main/claude-code/AGENTS.md) 发给 Agent，它会自己装完并验证 | [Claude Code 快速上手](docs/claude-code-quickstart.md) | 可用 |
+| **Codex** | 把 [安装指南](https://raw.githubusercontent.com/GoalfyAI/business-app-creator-skills/main/codex/AGENTS.md) 发给 Agent，它会自己装完并验证 | [Codex 快速上手](docs/codex-quickstart.md) | 可用 |
 | **Manus** | 在网页添加 MCP 连接器，上传 Skill 压缩包 | [Manus 快速上手](docs/manus-quickstart.md) | 可用，需手工操作 |
 | **其他 MCP 客户端** | 手工配置远端 MCP，加载通用 Skill | [通用集成指南](generic/README.md) | 可用，步骤因客户端而异 |
 
@@ -44,15 +41,15 @@
 ### Claude Code
 
 ```bash
-claude plugin marketplace add GoalfyAI/scene-creator-skills
-claude plugin install scene-creator@scene-creator
+claude plugin marketplace add GoalfyAI/business-app-creator-skills
+claude plugin install business-app-creator@business-app-creator
 ```
 
 ### Codex
 
 ```bash
-codex plugin marketplace add GoalfyAI/scene-creator-skills
-codex plugin add scene-creator@scene-creator
+codex plugin marketplace add GoalfyAI/business-app-creator-skills
+codex plugin add business-app-creator@business-app-creator
 ```
 
 不想自己敲命令的话，把对应平台的安装指南链接发给 Agent 即可（见上表）。
@@ -60,14 +57,14 @@ Manus 与其他客户端请看上表对应的指南。
 
 ### 配置访问密钥
 
-在 GoalfyMax 的 [开发者工具 → API 密钥](https://goalfymax.qa.goalfyai.cn/developer/api-keys) 创建个人密钥，然后写进客户端配置：
+在 GoalfyMax 的 [开发者工具 → API 密钥](https://goalfymax.goalfyai.cn/developer/api-keys) 创建个人密钥，然后写进客户端配置：
 
 ```bash
 # Claude Code：~/.claude/settings.json 的 env
-"SCENE_CREATOR_API_KEY": "<你的密钥>"
+"BUSINESS_APP_CREATOR_API_KEY": "<你的密钥>"
 
 # Codex：~/.codex/.env
-SCENE_CREATOR_API_KEY=<你的密钥>
+BUSINESS_APP_CREATOR_API_KEY=<你的密钥>
 ```
 
 重启客户端，然后让 Agent 做一次只读验证，例如「列出我能访问的场景包」。
@@ -99,7 +96,7 @@ Agent 会创建只读工单，逐层检查提示词、工具契约、编排配�
 ## 这个仓库包含什么
 
 ```
-skills/         两个 Skill 的唯一源：scene-creator/（场景包制作）、app-creator/（业务应用制作）
+skills/         两个 Skill 的唯一源：business-app-creator/（业务应用的能力资产：场景包与编排）、app-creator/（业务应用的数据面与前后端应用）
 claude-code/    Claude Code 插件目录：安装文档 + Skill 副本
 codex/          Codex 插件目录：安装文档 + Skill 副本
 manus/          Manus 集成说明 + 可上传的 Skill 压缩包
@@ -118,8 +115,8 @@ Skill 是否需要升级；版本过期时写操作会被拒绝。插件版本�
 
 | 平台 | 更新方式 | 详细步骤 |
 |---|---|---|
-| **Claude Code** | `claude plugin update scene-creator@scene-creator` | [claude-code/UPDATE.md](claude-code/UPDATE.md) |
-| **Codex** | `codex plugin marketplace upgrade scene-creator` 后 remove + add | [codex/UPDATE.md](codex/UPDATE.md) |
+| **Claude Code** | `claude plugin update business-app-creator@business-app-creator` | [claude-code/UPDATE.md](claude-code/UPDATE.md) |
+| **Codex** | `codex plugin marketplace upgrade business-app-creator` 后 remove + add | [codex/UPDATE.md](codex/UPDATE.md) |
 | **Manus** | 重新下载 zip，在 Skills 页删旧传新，然后开新对话 | [manus/UPDATE.md](manus/UPDATE.md) |
 | **其他 MCP 客户端** | 重新获取 `SKILL.md` 与 `references/` 并重新载入 | [generic/UPDATE.md](generic/UPDATE.md) |
 
@@ -137,7 +134,7 @@ Skill 是否需要升级；版本过期时写操作会被拒绝。插件版本�
 | [Codex 快速上手](docs/codex-quickstart.md) | 同上 |
 | [Manus 快速上手](docs/manus-quickstart.md) | 连接器与 Skill 上传 |
 | [通用集成指南](generic/README.md) | 其他 MCP 客户端 |
-| 各平台 AGENTS.md | 交给 Agent 直接执行的安装流程：[Claude Code](https://raw.githubusercontent.com/GoalfyAI/scene-creator-skills/main/claude-code/AGENTS.md) · [Codex](https://raw.githubusercontent.com/GoalfyAI/scene-creator-skills/main/codex/AGENTS.md) |
+| 各平台 AGENTS.md | 交给 Agent 直接执行的安装流程：[Claude Code](https://raw.githubusercontent.com/GoalfyAI/business-app-creator-skills/main/claude-code/AGENTS.md) · [Codex](https://raw.githubusercontent.com/GoalfyAI/business-app-creator-skills/main/codex/AGENTS.md) |
 | 各平台 UPDATE.md | 升级步骤，写给 Agent 直接执行：[Claude Code](claude-code/UPDATE.md) · [Codex](codex/UPDATE.md) · [Manus](manus/UPDATE.md) · [通用](generic/UPDATE.md) |
 | [常见问题](FAQ.md) | 产品与使用问题 |
 | [参与贡献](CONTRIBUTING.md) | 目录职责、本地验证、版本机制 |

@@ -1,15 +1,16 @@
-# 场景包制作 — Claude Code 插件
+# 业务应用制作 — Claude Code 插件
 
-把业务流程沉淀为 GoalfyMax 场景包，诊断、优化并验证已有场景包。
+把一段业务流程做成 GoalfyMax 上可以直接交给用户用的业务应用，并诊断、优化、迭代已有的业务应用。业务应用是主要产物，场景包是它下面的能力资产。
 
-本插件同时安装经过审计的 `scene-creator` MCP 和同名 Skill，连接生产环境：
+本插件同时安装经过审计的 `business-app-creator` MCP 和同名 Skill，连接生产环境：
 
-`https://workflow-mcp.qa.goalfyai.cn/mcp`
+`https://business-app-creator-mcp.goalfyai.cn/mcp`
 
 ## 能做什么
 
-- 从业务访谈出发，把一段流程沉淀成可复用的场景包
-- 制作任务点、工具集、FastAgent、Workflow、多 Workflow 编排和业务界面
+- 从业务访谈出发，设计业务应用：用户画像、旅途、页面、表单、数据面
+- 制作业务应用下的能力资产：业务路线编排、Workflow、FastAgent、工具集、任务点（场景包）
+- 制作业务应用数据集模板与配套前后端应用，预部署、自动化测试、上线
 - 诊断已有场景包为什么效果差、绕弯多、执行失败
 - 基于参考项目的执行日志复盘并优化
 - 分层验收、真机验证与上线发布
@@ -25,37 +26,37 @@
 ### 方式一：从公开插件市场（推荐）
 
 ```bash
-claude plugin marketplace add GoalfyAI/scene-creator-skills
-claude plugin install scene-creator@scene-creator
+claude plugin marketplace add GoalfyAI/business-app-creator-skills
+claude plugin install business-app-creator@business-app-creator
 ```
 
 ### 方式二：从本地仓库（开发与验证用）
 
 ```bash
-git clone https://github.com/GoalfyAI/scene-creator-skills.git
-cd scene-creator-skills
+git clone https://github.com/GoalfyAI/business-app-creator-skills.git
+cd business-app-creator-skills
 claude plugin marketplace add "$PWD"
-claude plugin install scene-creator@scene-creator
+claude plugin install business-app-creator@business-app-creator
 ```
 
 本地目录添加的市场会一直复用该目录的内容，不会自动获取新版本。验证完请改回方式一。
 
 ## 配置密钥
 
-在 GoalfyMax QA 环境的 [开发者工具 → API 密钥](https://goalfymax.qa.goalfyai.cn/developer/api-keys)创建个人密钥。
+在 GoalfyMax 的 [开发者工具 → API 密钥](https://goalfymax.goalfyai.cn/developer/api-keys)创建个人密钥。
 
 把完整密钥提供给当前 Agent，由它合并写入 `~/.claude/settings.json` 的
-`env.SCENE_CREATOR_API_KEY`，保留其他全部配置。你不需要自行编辑配置文件。
+`env.BUSINESS_APP_CREATOR_API_KEY`，保留其他全部配置。你不需要自行编辑配置文件。
 
 ```json
 {
   "env": {
-    "SCENE_CREATOR_API_KEY": "<你的个人 API 密钥>"
+    "BUSINESS_APP_CREATOR_API_KEY": "<你的个人 API 密钥>"
   }
 }
 ```
 
-`SCENE_CREATOR_API_KEY` 只是本地变量名，插件会将它的值作为
+`BUSINESS_APP_CREATOR_API_KEY` 只是本地变量名，插件会将它的值作为
 `Authorization: Bearer <密钥>` 发送。
 
 不要为鉴权配置 `user_id`、`X-User-ID` 或 `X-Project-ID`——MCP 会根据个人 API 密钥解析用户身份。
@@ -66,14 +67,14 @@ claude plugin install scene-creator@scene-creator
 
 在新会话中确认：
 
-1. `scene-creator` 插件与 Skill 已加载
-2. `scene-creator` MCP 工具已就绪（如 `task_manager`、`list_assets`）
+1. `business-app-creator` 插件与 Skill 已加载
+2. `business-app-creator` MCP 工具已就绪（如 `task_manager`、`list_assets`）
 3. 执行一次只读请求，例如「列出我能访问的场景包」，能正常返回
 
 ## 更新
 
 ```bash
-claude plugin update scene-creator@scene-creator
+claude plugin update business-app-creator@business-app-creator
 ```
 
 被服务端提示 Skill 版本过期时，按 [UPDATE.md](UPDATE.md) 执行。

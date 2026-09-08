@@ -1,4 +1,4 @@
-# 场景包制作 — 通用集成指南
+# 业务应用制作 — 通用集成指南
 
 适用于 Claude Code、Codex、Manus 之外的 AI 编码工具，或需要手工集成的场景。
 
@@ -10,7 +10,7 @@
 
 ### 第 1 步：获取 API 密钥
 
-登录 GoalfyMax QA 环境，进入 [开发者工具 → API 密钥](https://goalfymax.qa.goalfyai.cn/developer/api-keys)创建
+登录 GoalfyMax，进入 [开发者工具 → API 密钥](https://goalfymax.goalfyai.cn/developer/api-keys)创建
 个人密钥。密钥以 `sk_` 开头，**完整内容只在创建时显示一次**，请妥善保存。
 
 ### 第 2 步：配置 MCP
@@ -20,19 +20,19 @@
 ```json
 {
   "mcpServers": {
-    "scene-creator": {
+    "business-app-creator": {
       "type": "streamable-http",
-      "url": "https://workflow-mcp.qa.goalfyai.cn/mcp",
+      "url": "https://business-app-creator-mcp.goalfyai.cn/mcp",
       "headers": {
-        "Authorization": "Bearer ${SCENE_CREATOR_API_KEY}"
+        "Authorization": "Bearer ${BUSINESS_APP_CREATOR_API_KEY}"
       }
     }
   }
 }
 ```
 
-把密钥放进环境变量 `SCENE_CREATOR_API_KEY`。客户端不支持环境变量占位符时，直接把
-`${SCENE_CREATOR_API_KEY}` 替换为密钥本身，但**不要**把替换后的文件提交到任何仓库。
+把密钥放进环境变量 `BUSINESS_APP_CREATOR_API_KEY`。客户端不支持环境变量占位符时，直接把
+`${BUSINESS_APP_CREATOR_API_KEY}` 替换为密钥本身，但**不要**把替换后的文件提交到任何仓库。
 
 不要为鉴权配置 `user_id`、`X-User-ID` 或 `X-Project-ID`——MCP 会根据个人 API 密钥解析
 用户身份。
@@ -51,7 +51,7 @@
 
 重启客户端后确认：
 
-1. `scene-creator` 的 MCP 工具已加载（如 `task_manager`、`list_assets`）
+1. `business-app-creator` 的 MCP 工具已加载（如 `task_manager`、`list_assets`）
 2. 执行一次只读请求，例如「列出我能访问的场景包」，能正常返回
 
 ## 更新

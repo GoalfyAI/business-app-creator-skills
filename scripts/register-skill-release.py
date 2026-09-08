@@ -131,14 +131,14 @@ def verify_prod_runtime(root: Path) -> None:
         status = exc.code
         runtime = exc.headers.get("X-Scene-Skill-Runtime", "")
     except urllib.error.URLError as exc:
-        raise RuntimeError("CN PROD scene-creator MCP route is unreachable") from exc
+        raise RuntimeError("CN PROD business-app-creator MCP route is unreachable") from exc
     if status not in (401, 403):
         raise RuntimeError(
-            f"CN PROD scene-creator MCP route is not ready: expected auth rejection, got HTTP {status}"
+            f"CN PROD business-app-creator MCP route is not ready: expected auth rejection, got HTTP {status}"
         )
     if runtime != "cn-prod":
         raise RuntimeError(
-            "CN PROD scene-creator MCP is not connected to the CN PROD Max Hub"
+            "CN PROD business-app-creator MCP is not connected to the CN PROD Max Hub"
         )
 
 
@@ -147,7 +147,7 @@ def main() -> int:
     root = Path(__file__).resolve().parents[1]
     if args.verify_runtime_only:
         verify_prod_runtime(root)
-        print("CN PROD scene-creator MCP route is ready")
+        print("CN PROD business-app-creator MCP route is ready")
     else:
         version = required_env("SCENE_SKILL_VERSION")
         register_release(version)

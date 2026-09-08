@@ -14,7 +14,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      # 以 scene-creator-bot 身份创建 Release，不归属到任何个人账号。
+      # 以 business-app-creator-bot 身份创建 Release，不归属到任何个人账号。
       - uses: actions/create-github-app-token@v2
         id: app-token
         with:
