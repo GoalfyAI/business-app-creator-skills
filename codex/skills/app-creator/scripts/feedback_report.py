@@ -187,42 +187,28 @@ def render(raw, issues, previous=None, image_dir=None):
             raw, ensure_ascii=False, sort_keys=True, separators=(",", ":")
         ).encode()
     )
+    scope = raw.get("scope", {})
     lines = [
         "# 业务应用用户反馈报告",
         "<!-- feedback-source-sha256:" + source_hash + " -->",
         "",
-        "原始反馈是用户陈述，分类与建议是 Agent 分析；未复现不能认定根因。",
+        literal("business_ui_id：" + ", ".join(map(str, scope.get("business_ui_ids", [])))),
         "",
-        "## 查询范围",
-        literal(json.dumps(raw.get("scope", {}), ensure_ascii=False)),
+        literal("使用范围：" + {"formal": "正式使用", "preview": "预览"}.get(
+            scope.get("usage_mode", "formal"), "未提供"
+        )),
         "",
-        "分页："
-        + (
-            "已取全"
-            if raw.get("complete") is True and raw.get("has_more") is False
-            else "未取全"
-        ),
-        "截止：" + str(raw.get("snapshot_at", "未知")),
+        literal("截至：" + str(raw.get("snapshot_at", "未提供"))),
         "",
-        "## 问题分析",
+        "反馈数量：" + str(len(source)),
     ]
-    versions = {}
-    for row in source.values():
-        context = row.get("context", {})
-        label = (
-            str(row["business_ui_id"])
-            + " / "
-            + str(context.get("app_version", "unknown"))
-            + " / "
-            + str(context.get("version_verification", "unknown"))
-        )
-        versions[label] = versions.get(label, 0) + 1
-    lines += [
-        literal(
-            "已读取样本的版本声明与核验状态："
-            + json.dumps(versions, ensure_ascii=False)
-        )
-    ]
+    for field, label in (("from", "开始时间"), ("to", "结束时间（不含）")):
+        if scope.get(field):
+            lines += ["", literal(label + "：" + str(scope[field]))]
+    if raw.get("complete") is not True or raw.get("has_more") is not False:
+        lines += ["", "反馈未取全，以下仅为已读取的内容。"]
+    if not source:
+        lines += ["", "本次查询未读取到反馈。"]
     group = None
     for issue in sorted(
         issues,
@@ -277,32 +263,46 @@ def render(raw, issues, previous=None, image_dir=None):
                 )
             ),
             literal("来源：" + ", ".join(issue["feedback_ids"])),
-            literal(issue.get("analysis", "未验证")),
-            literal(issue.get("suggestion", "待核验")),
-            literal(issue.get("implementation_result", "尚未实施")),
         ]
+        for field, label in (("analysis", "分析"), ("suggestion", "建议"),
+                             ("implementation_result", "处理结果")):
+            if issue.get(field):
+                lines += ["", literal(label + "：" + issue[field])]
     if set(old) - seen:
         raise ValueError("refresh cannot discard existing decisions")
-    lines += [
-        "",
-        "## 创建者决定",
-        "只编辑下方决定块；备注用 JSON 双引号字符串（换行写 \\n）。",
-        BEGIN,
-    ]
+    if decisions:
+        lines += ["", "## 创建者决定", "", "只编辑下方决定块；备注用 JSON 双引号字符串。"]
+    lines += ["", BEGIN]
     for d in decisions:
         lines += (
             ["```yaml feedback-decision"]
             + [k + ": " + json.dumps(v, ensure_ascii=False) for k, v in d.items()]
             + ["```"]
         )
-    lines += [END, "", "## 原始反馈附录"]
+    lines += [END, "", "## 反馈原文"]
     for key, row in source.items():
         lines += [
             "",
-            "### FB-" + key,
+            "### 反馈 " + key,
+            "",
+            literal("business_ui_id：" + str(row["business_ui_id"])),
+            "",
+            literal("提交时间：" + str(row.get("created_at", "未提供"))),
+            "",
+            literal("上报版本：" + str(row.get("context", {}).get("app_version", "未提供"))),
+            "",
             literal(row["content"]),
-            literal(json.dumps(row.get("context", {}), ensure_ascii=False)),
+            "",
         ]
+        if "status" in row:
+            status = row["status"]
+            label = {"pending": "待处理", "completed": "已完成", "rejected": "不予处理"}.get(status, "未知状态")
+            lines += [literal("处理状态：" + label), ""]
+            if status == "rejected":
+                lines += [literal("原因：" + str(row.get("rejection_reason", "未提供"))), ""]
+            elif status == "completed":
+                lines += [literal("完成版本：" + str(row.get("completed_version", "未提供"))), "",
+                          literal("处理说明：" + str(row.get("resolution_note", "未提供"))), ""]
         for im in row["images"]:
             ext = {"image/png": "png", "image/jpeg": "jpg", "image/webp": "webp"}.get(
                 im.get("content_type")

@@ -13,4 +13,4 @@
 
 ## 用户反馈
 
-创建者查询使用者反馈、生成带图 Markdown 或按已采纳问题修改时，执行[用户反馈报告流程](../references/用户反馈报告.md)。调用 business_ui_feedback 只读工具；本地脚本校验决定后，才在当前授权内改对应应用并交付 review。
+创建者查询使用者反馈、生成带图 Markdown 或按已采纳问题修改时，执行[用户反馈报告流程](../references/用户反馈报告.md)。调用 business_ui_feedback 查询反馈，处理结果通过 update_status 同步；本地脚本校验决定后，才在当前授权内改对应应用并交付 review。

@@ -550,3 +550,13 @@ def test_registry_targets_parsing():
     os.environ["SCENE_SKILL_RELEASE_REGISTER_URL"] = "https://only/reg"
     os.environ["SCENE_SKILL_RELEASE_S2S_SECRET"] = "s0"
     assert prod_release_module._registry_targets() == [("https://only/reg", "s0")]
+
+
+def test_extra_skill_report_script_is_shipped(tmp_path):
+    skill_root = _copy_repo(tmp_path)
+    release_module.sync_extra_skills(skill_root)
+    source = tmp_path / 'skills/app-creator/scripts/feedback_report.py'
+    for platform in ('codex', 'claude-code'):
+        target = tmp_path / platform / 'skills/app-creator/scripts/feedback_report.py'
+        assert target.read_bytes() == source.read_bytes()
+    release_module.check_extra_skills(skill_root)

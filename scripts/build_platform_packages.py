@@ -455,8 +455,14 @@ def sync_platform_skills(skill_root: Path) -> None:
 def _extra_skill_files(repository_root: Path, source: Path) -> dict[str, Path]:
     root = repository_root / source
     files = {}
-    for path in sorted(root.rglob("*.md")):
-        if any(part.startswith(".") for part in path.relative_to(root).parts):
+    for path in sorted(root.rglob("*")):
+        relative = path.relative_to(root)
+        if not path.is_file() or not (
+            path.suffix == ".md"
+            or (relative.parts[0] == "scripts" and path.suffix == ".py")
+        ):
+            continue
+        if any(part.startswith(".") for part in relative.parts):
             continue
         files[path.relative_to(root).as_posix()] = path
     return files
