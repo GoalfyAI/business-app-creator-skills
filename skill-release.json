@@ -3,8 +3,8 @@
   "version": "v20260908-033950",
   "package_version": "2.0.0",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-08T12:50:28Z",
-  "update_reason": "v3 重构：scene-creator 与 app-creator 并入单一 Skill business-app-creator——总入口 + 七阶段 G1–G7 + 八个专业模块 P1–P8 + 四份共享协议 + 两层 Checklist（G 门禁 / U 业务行为）；场景包降为业务应用的能力容器",
+  "released_at": "2026-09-08T13:13:17Z",
+  "update_reason": "v3 重构：scene-creator 与 app-creator 并入单一 Skill business-app-creator——总入口 + 七阶段 G1–G7（自包含主线）+ 八份细则正本 P1–P8 + 四份共享协议 + 两层 Checklist（G 门禁 / U 业务行为）；场景包降为业务应用的能力容器",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -60,7 +60,7 @@
     "stages/G7-预发布与交付.md"
   ],
   "checksums": {
-    "SKILL.md": "94e2e210fbd6b27a4902dbe0d414e08a201a8d2333d82042c64e14cedd1e23b2",
+    "SKILL.md": "56d354648c8849ea67e86a4f2514b01c0b6177f8c0904f6e4c350e2c20638bb0",
     "agents/openai.yaml": "f4a8c0b9b315ac9187e2eb006eefc676229bd31300763659fc692b6eb405c743",
     "checklists/G门禁检查清单.md": "0ab2b2c67fc5d12217c11eb4139544119813952dc0419ab62460f56f7e11a91e",
     "checklists/U业务行为验收明细.md": "714467daaeab171758007b069dc6703e4e68e88325737a25c2caa86eb98f35f8",
@@ -79,7 +79,7 @@
     "protocols/事实决定授权与变更.md": "06198c32031123d9c0d80c70a838742f0d070bf5bbb3c8398b188bfe21cfb463",
     "protocols/承诺实现验收追踪.md": "75050aa0f4d4805b45d3aff93006fd545a91ee4564647bce13081ba52b6cf3a4",
     "protocols/状态恢复知识归属与平台适配.md": "e38e0c88ed8ba07fede325b68a7a002b7b4abd99c84fcb0f576c2fbcb3e75bb3",
-    "protocols/阶段展示与证据等级.md": "fb6723b60b6bed276181d2bc5af805220e99ba1c00db2dfcf380403179dffa01",
+    "protocols/阶段展示与证据等级.md": "8696dd50692b0928da21530c91a21af2a27af96abca70e65e0e550afc6761520",
     "references/依赖与MCP接入.md": "b6eed4e29f52cbbc84a2068a0bb8cdf4570b67e608d540bb66fd458258c71890",
     "references/前端设计指南/README.md": "ac4463b790f27f6804340fff32fe54f95db0ac7f74ed0ef087eb262f6348f46c",
     "references/前端设计指南/codex-ui-ux/SKILL.md": "fc7911710d9b692b1655edf2499344c6001cfba03c5147a5e7daf1ddd8005e27",
