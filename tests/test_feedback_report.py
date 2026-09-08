@@ -59,6 +59,16 @@ class FeedbackReportTests(unittest.TestCase):
             ),
         ]
 
+    def test_server_status_is_readable_and_refresh_preserves_decisions(self):
+        report = m.render(self.raw, self.issues)
+        report = report.replace('decision: "pending"', 'decision: "accepted"', 1)
+        self.raw["items"][0].update(status="rejected", status_version=1, rejection_reason="超出范围")
+        refreshed = m.render(self.raw, self.issues, report)
+        self.assertIn("处理状态：不予处理", refreshed)
+        self.assertIn("超出范围", refreshed)
+        self.assertNotIn("status_version", refreshed)
+        self.assertEqual(m.validate(refreshed, self.raw, self.issues)["decisions"][0]["decision"], "accepted")
+
     def test_one_feedback_separate_decisions_and_refresh(self):
         report = m.render(self.raw, self.issues)
         self.assertIn("未取全", report)
