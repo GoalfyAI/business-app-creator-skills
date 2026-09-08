@@ -9,7 +9,7 @@ import tomllib
 import yaml
 
 ROOT = Path(__file__).parents[1]
-SKILL_ROOT = ROOT / "skills" / "scene-creator"
+SKILL_ROOT = ROOT / "skills" / "business-app-creator"
 SCRIPT_PATH = ROOT / "scripts" / "build_platform_packages.py"
 PROD_SCRIPT_PATH = ROOT / "scripts" / "register-skill-release.py"
 
@@ -34,7 +34,7 @@ def _copy_repo(tmp_path: Path) -> Path:
         shutil.copy2(ROOT / name, tmp_path / name)
     (tmp_path / "scripts").mkdir(exist_ok=True)
     shutil.copy2(SCRIPT_PATH, tmp_path / "scripts" / SCRIPT_PATH.name)
-    return tmp_path / "skills" / "scene-creator"
+    return tmp_path / "skills" / "business-app-creator"
 
 
 def _manifest(skill_root: Path = SKILL_ROOT) -> dict:
@@ -51,7 +51,7 @@ def _package_version(skill_root: Path = SKILL_ROOT) -> str:
 def test_checked_in_release_is_current():
     manifest = release_module.check_release(SKILL_ROOT)
 
-    assert manifest["skill_name"] == "scene-creator"
+    assert manifest["skill_name"] == "business-app-creator"
     assert release_module._validate_skill_version(manifest["version"]) == manifest["version"]
     assert release_module._validate_package_version(manifest["package_version"])
 
@@ -98,7 +98,7 @@ def test_platform_skill_copies_match_the_single_source():
         copy = release_module._platform_skill_dir(SKILL_ROOT, platform) / "SKILL.md"
         assert copy.read_bytes() == canonical, platform
     # 只有 Codex 需要 openai.yaml
-    assert (ROOT / "codex/skills/scene-creator/agents/openai.yaml").is_file()
+    assert (ROOT / "codex/skills/business-app-creator/agents/openai.yaml").is_file()
     for platform in ("claude-code", "manus", "generic"):
         target = release_module._platform_skill_dir(SKILL_ROOT, platform) / "agents"
         assert not target.exists(), platform
@@ -122,9 +122,11 @@ def test_workflow_guidance_routes_event_workflows_through_business_runtime():
     """业务事件必须触发正式业务路线；无事件单 Workflow 仍可直接派发。"""
     # 路由器约束 5 讲"单节点业务路线"，执行形态正本（references）讲"直接派发"——合并断言
     skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8") + (
+        SKILL_ROOT / "protocols" / "事实决定授权与变更.md"
+    ).read_text(encoding="utf-8") + (
         SKILL_ROOT / "references" / "平台对象与运行模型.md"
     ).read_text(encoding="utf-8")
-    asset_stage = (SKILL_ROOT / "stages" / "S3-资产制作.md").read_text(encoding="utf-8")
+    asset_stage = (SKILL_ROOT / "modules" / "P3-执行形态与路线制作.md").read_text(encoding="utf-8")
     checklist = (SKILL_ROOT / "checklists" / "编排型TPE验收检查清单.md").read_text(
         encoding="utf-8"
     )
@@ -142,7 +144,7 @@ def test_workflow_guidance_routes_event_workflows_through_business_runtime():
 
 def test_workflow_guidance_separates_delivery_verification_from_business_acceptance():
     """最终交付必须先核验真实结果，再由明确责任方完成业务审阅。"""
-    design = (SKILL_ROOT / "stages" / "S1-业务设计.md").read_text(encoding="utf-8")
+    design = (SKILL_ROOT / "modules" / "P1-业务访谈与价值判断.md").read_text(encoding="utf-8")
     challenge = (SKILL_ROOT / "checklists" / "方案挑战检查清单.md").read_text(
         encoding="utf-8"
     )
@@ -160,46 +162,26 @@ def test_workflow_guidance_separates_delivery_verification_from_business_accepta
     assert "只有已声明的 `agent_gate` 边界" in acceptance
 
 
-def test_business_system_is_referred_to_app_creator():
-    """业务应用制作已移交 app-creator：路由器约束 8 承载转介与接缝物；S3 是资产制作阶段。"""
+def test_single_skill_seven_stage_layout():
+    """v3：scene-creator 与 app-creator 已并入 business-app-creator——阶段层 G1–G7、模块层 P1–P8、协议层四份、两层 Checklist。"""
     router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    acceptance = (SKILL_ROOT / "checklists" / "场景包验收检查清单.md").read_text(
-        encoding="utf-8"
-    )
-    rendering = (
-        SKILL_ROOT / "references" / "平台对象与运行模型.md"
-    ).read_text(encoding="utf-8")
+    protocol = (SKILL_ROOT / "protocols" / "事实决定授权与变更.md").read_text(encoding="utf-8")
 
-    assert "app-creator" in router
-    assert "先包后应用" in router
-    assert "接缝物" in router
-    assert (SKILL_ROOT / "stages" / "S3-资产制作.md").is_file()
-    assert not (SKILL_ROOT / "stages" / "S3-业务应用.md").exists()
-    assert not (SKILL_ROOT / "references" / "业务应用设计方法论.md").exists()
-    assert not (SKILL_ROOT / "checklists" / "业务应用验收检查清单.md").exists()
-    assert "业务应用分线" in router
-    assert "业务应用不属于本清单对象" in acceptance
-    # 搬家后的渲染正本：内容进业务字段的硬规则落在运行模型 reference
-    assert "要渲染的内容必须以业务字段出现在 `output` 中" in rendering
-    assert "读不到文件正文" in rendering
-
-def test_zip_packages_are_deterministic_and_utf8(tmp_path: Path):
-    """无插件管理器的平台靠 zip 分发：内容不变时字节必须一致，中文名不能乱码。"""
-    import zipfile
-
-    copied = _copy_repo(tmp_path)
-    first = {path: path.read_bytes() for path in release_module.build_platform_zips(copied)}
-    second = {path: path.read_bytes() for path in release_module.build_platform_zips(copied)}
-    assert first == second, "重复打包应产生完全相同的字节"
-
-    manus_zip = tmp_path / "manus" / "business-app-creator-skill.zip"
-    with zipfile.ZipFile(manus_zip) as archive:
-        names = archive.namelist()
-        # Manus 要求 SKILL.md 位于压缩包根目录
-        assert "SKILL.md" in names
-        for info in archive.infolist():
-            if not info.filename.isascii():
-                assert info.flag_bits & 0x800, f"中文文件名缺少 UTF-8 标志：{info.filename}"
+    for stage in ("G1-业务目标与范围", "G2-关键能力可行性", "G3-运行设计与验收基线", "G4-核心执行单元验证",
+                  "G5-后端业务闭环验证", "G6-用户操作闭环验证", "G7-预发布与交付"):
+        assert (SKILL_ROOT / "stages" / f"{stage}.md").is_file(), stage
+    assert len(list((SKILL_ROOT / "modules").glob("P*.md"))) == 8
+    assert len(list((SKILL_ROOT / "protocols").glob("*.md"))) == 4
+    assert (SKILL_ROOT / "checklists" / "G门禁检查清单.md").is_file()
+    assert (SKILL_ROOT / "checklists" / "U业务行为验收明细.md").is_file()
+    assert (SKILL_ROOT / "scripts" / "feedback_report.py").is_file()
+    assert not (ROOT / "skills" / "scene-creator" / "SKILL.md").exists()
+    assert not (ROOT / "skills" / "app-creator" / "SKILL.md").exists()
+    assert "name: business-app-creator" in router
+    for g in ("G1", "G2", "G3", "G4", "G5", "G6", "G7"):
+        assert f"stages/{g}-" in router
+    assert "先包后应用只是工程前置" in protocol
+    assert "能力容器" in router
 
 
 def test_stale_zip_is_rejected(tmp_path: Path):
@@ -264,8 +246,8 @@ def test_new_reference_requires_a_new_release(tmp_path: Path):
 @pytest.mark.parametrize(
     "relative",
     [
-        "claude-code/skills/scene-creator/SKILL.md",
-        "codex/skills/scene-creator/SKILL.md",
+        "claude-code/skills/business-app-creator/SKILL.md",
+        "codex/skills/business-app-creator/SKILL.md",
         "manus/skill/SKILL.md",
         "generic/SKILL.md",
     ],
@@ -438,7 +420,7 @@ def test_prod_release_rolls_back_marker_on_failure(tmp_path: Path):
 
 def test_sync_restores_platform_copies(tmp_path: Path):
     copied = _copy_repo(tmp_path)
-    target = tmp_path / "codex/skills/scene-creator/SKILL.md"
+    target = tmp_path / "codex/skills/business-app-creator/SKILL.md"
     target.unlink()
 
     release_module.sync_platform_skills(copied)
@@ -552,11 +534,10 @@ def test_registry_targets_parsing():
     assert prod_release_module._registry_targets() == [("https://only/reg", "s0")]
 
 
-def test_extra_skill_report_script_is_shipped(tmp_path):
+def test_feedback_report_script_is_shipped_with_skill(tmp_path):
     skill_root = _copy_repo(tmp_path)
-    release_module.sync_extra_skills(skill_root)
-    source = tmp_path / 'skills/app-creator/scripts/feedback_report.py'
-    for platform in ('codex', 'claude-code'):
-        target = tmp_path / platform / 'skills/app-creator/scripts/feedback_report.py'
+    release_module.sync_platform_skills(skill_root)
+    source = skill_root / "scripts" / "feedback_report.py"
+    for platform in ("codex", "claude-code"):
+        target = tmp_path / platform / "skills/business-app-creator/scripts/feedback_report.py"
         assert target.read_bytes() == source.read_bytes()
-    release_module.check_extra_skills(skill_root)

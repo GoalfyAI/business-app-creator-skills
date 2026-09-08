@@ -1,0 +1,14 @@
+interface:
+  display_name: "业务应用开发"
+  brand_color: "#6366F1"
+  short_description: "把业务目的做成最终用户能持续使用的 GoalfyMax 业务应用，七阶段推进并验证上线"
+  default_prompt: "使用 $business-app-creator 帮我把这项业务做成一个可持续使用的业务应用；先理清业务目标和范围，验证关键能力，给我看设计和证据，我确认后再动手。"
+policy:
+  allow_implicit_invocation: true
+dependencies:
+  tools:
+    - type: mcp
+      value: business-app-creator-mcp
+      transport: streamable_http
+      url: https://business-app-creator-mcp.goalfyai.cn/mcp
+      bearer_token_env_var: BUSINESS_APP_CREATOR_API_KEY

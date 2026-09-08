@@ -8,7 +8,7 @@ import io
 
 spec = importlib.util.spec_from_file_location(
     "feedback_report",
-    Path(__file__).parents[1] / "skills/app-creator/scripts/feedback_report.py",
+    Path(__file__).parents[1] / "skills/business-app-creator/scripts/feedback_report.py",
 )
 m = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(m)

@@ -169,7 +169,7 @@ codex plugin marketplace add GoalfyAI/business-app-creator-skills
 
 ### 第 2 步：确认新版本已生效
 
-搜索已安装的 `skills/scene-creator/SKILL.md`，从 description 读出 `[skill-version:...]`。
+搜索已安装的 `skills/business-app-creator/SKILL.md`，从 description 读出 `[skill-version:...]`。
 **不要凭记忆拼装安装路径**——路径里有连续同名层级和中间版本目录。命中多份时取版本目录
 最高或最近修改的那份。
 
