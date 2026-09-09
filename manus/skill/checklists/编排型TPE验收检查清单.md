@@ -15,7 +15,7 @@
 
 ## 检查步骤
 
-1. 读取 bubble 的 `steps`、`run_trace`、`coverage`、`unreached_tools`、`run_evidence.business_events`、`final_output` 和 `error`；无业务事件契约且脚本未调用 `emit_business_event` 时，把事件检查记为“不适用”，不得虚构空事件证据。
+1. 读取 bubble 的 `steps`、`coverage`、`unreached_tools`、`fa_stubbed`、`run_evidence.business_events`、`final_output` 和 `error`；`steps[]` 每步带 `step_key`、`kind`、`status`、`tokens`、`elapsed_ms`、`error`、`repeated_error_count`、`arguments`，取证以它为准，`run_trace` 只是文字摘要不作判据；无业务事件契约且脚本未调用 `emit_business_event` 时，把事件检查记为“不适用”，不得虚构空事件证据。
 2. 用 `get_asset(asset_type="tpe")` 读取当前脚本、input/output Schema、业务事件契约、preload Toolset 和 `io_table`。
 3. 证据不足时按需读取实际引用的 FastAgent、Tool Group 或工具 Schema，不凭名称猜参数。
 4. 检查 input/output Schema 均为根对象，脚本为 `async def run(input, ctx)`，最终直接返回匹配对象。
