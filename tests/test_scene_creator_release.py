@@ -144,7 +144,7 @@ def test_workflow_guidance_routes_event_workflows_through_business_runtime():
 
 def test_workflow_guidance_separates_delivery_verification_from_business_acceptance():
     """最终交付必须先核验真实结果，再由明确责任方完成业务审阅。"""
-    design = (SKILL_ROOT / "modules" / "P1-业务访谈与价值判断.md").read_text(encoding="utf-8")
+    design = (SKILL_ROOT / "modules" / "P1-业务基线细则.md").read_text(encoding="utf-8")
     challenge = (SKILL_ROOT / "checklists" / "方案挑战检查清单.md").read_text(
         encoding="utf-8"
     )
@@ -155,7 +155,7 @@ def test_workflow_guidance_separates_delivery_verification_from_business_accepta
     assert "最终审阅回答" in design
     assert "质量检查编排型 TPE" in challenge
     assert "若声明了修订、重做或改路线" in acceptance
-    assert "场景包制作只声明对外稳定的资产契约" in design
+    assert "能力容器只声明对外稳定的资产契约" in design
     assert "属于平台实现细节" in design
     assert "没有把 Max Runtime 的 Agent 边界通知" in challenge
     assert "Runtime 直接执行所选" in design
