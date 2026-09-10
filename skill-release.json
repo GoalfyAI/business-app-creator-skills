@@ -3,7 +3,7 @@
   "version": "v20260908-033950",
   "package_version": "2.0.0",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-10T09:04:48Z",
+  "released_at": "2026-09-10T09:07:49Z",
   "update_reason": "v3 重构：scene-creator 与 app-creator 并入单一 Skill business-app-creator——总入口 + 七阶段 G1–G7（自包含主线）+ 八份细则正本 P1–P8 + 四份共享协议 + 两层 Checklist（G 门禁 / U 业务行为）；场景包降为业务应用的能力容器",
   "source_files": [
     "SKILL.md",
@@ -62,7 +62,7 @@
   "checksums": {
     "SKILL.md": "71a0b5543246cdf675d70dd1d0aabc3adb680a3324d127896412232a306a444a",
     "agents/openai.yaml": "f4a8c0b9b315ac9187e2eb006eefc676229bd31300763659fc692b6eb405c743",
-    "checklists/G门禁检查清单.md": "dee74ba44689c66ee14f4d769bf9450122c491f43ec633ba109f9c1e3fae36e4",
+    "checklists/G门禁检查清单.md": "9960daea8e6af8c13c9a7e22f3181ec0345aebb08c3c16a8c57e4a962a05c235",
     "checklists/U业务行为验收明细.md": "714467daaeab171758007b069dc6703e4e68e88325737a25c2caa86eb98f35f8",
     "checklists/场景包验收检查清单.md": "3cb35e9735efb4dcac77339a907c06b60f8a818b673bd19732dfc84f78901ff8",
     "checklists/应用验收检查清单.md": "2a8a954ea7ee39c37699dfe30bab169fe1626e481b69df0056aa0eede79aa2f2",
