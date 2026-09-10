@@ -112,9 +112,16 @@ keywords:
 
 任何制作任务的第一个动作，在建工单之后、进入 G1 之前：
 
-1. **拿到 goalfy-app-workbench 目录。** 新建：用业务应用脚手架生成应用工程，仓根有 `app.json`、`WORKSPACE.md`、`docs/history/`、`run-dev.sh`。**脚手架自带的是一份示例应用，不是空模板**：`app.json`、`WORKSPACE.md`、`docs/stages/` 七份 md、`docs/proposal/index.html` 里装的都是别人的业务，**必须**整份换成本应用的内容，**禁止**留着示例的应用名、编号、阶段、版本或正文往下做。工作区根建 `workspace.json` 作为阶段状态正本，七项 G1 到 G7 全部 `not_started`；七份阶段文档按协议四第 6 节的头重写，front matter 的 `status` 与 `workspace.json` 保持一致；`docs/proposal/index.html` 由你从零写，规则见协议三第 7 节。接续：先调 `workspace_remote_status(workspaceId)` 看云端有没有保存，有就 `workspace_pull` 拉回，按协议四第 6 节恢复；没有就定位本地已有仓。G1 收敛四结论是"直接用能力容器"时 goalfy-app-workbench 目录 照样存在，代码目录空着。
+1. **拿到 goalfy-app-workbench 目录。** 工作区文件由脚手架的命令生成，**不要**手写：
+
+   - **新建**：`npm run scaffold:init -- --environment <环境> --app-name "<业务应用名称>"`，已经有业务界面草稿时再加 `--business-ui-id <真实 ID>`。它一次生成 `app.json`、`WORKSPACE.md`、`docs/proposal/index.html`、七份阶段文档、`docs/proposal/screens/` 与 `docs/history/`，`workspace_id` 自动生成并落盘，G1 置 `in_progress`、其余 `not_started`。示例应用在 `examples/` 里，不会混进新应用。
+   - **旧应用缺工作台资产**：`npm run scaffold:repair -- --app-name "<业务应用名称>"`，只补缺失的文件，**不覆盖**已有事实。
+   - **接续**：先 `workspace_remote_status(workspaceId)` 看云端有没有保存，有就 `workspace_pull` 拉回，按协议四第 6 节恢复；没有就定位本地已有仓。**禁止**对已有工作区重跑 `scaffold:init`，脚本本身也会拒绝覆盖现有阶段事实。
+   - **装依赖并自检**：`npm run setup`，然后 `npm run doctor`。doctor 报的第一条 `FAIL` 先修再往下走，`WARN` 会说明当前阶段要不要处理。
+
+   `workspace.json` 是阶段状态正本，脚手架**不**生成，由你按协议四第 6 节在工作区根建起来，七项 G1 到 G7，G1 `in_progress`、其余 `not_started`，与七份阶段文档 front matter 的 `status` 保持一致。`docs/proposal/index.html` 由 `scaffold:init` 生成一份带模板标记的骨架，G1 结束前**必须**按本应用重写并删掉标记，规则与机器校验项见协议三第 7 节。G1 收敛四结论是"直接用能力容器"时 goalfy-app-workbench 目录 照样存在，代码目录空着。
 2. **起两套服务。** 在应用工程根执行 `./run-dev.sh start`：后端 8000、前端 5175、Dev Host 预览壳 5176。在开发者中心仓执行 `./run-dev.sh start`：服务 5179、页面 5180。把 `http://127.0.0.1:5180/` 给开发者。中栏 G4 到 G7 的预览地址**不用手配**：Dev Host 启动时会往应用目录的 `.workbench/dev-host.json` 写调试地址声明，退出自动删，工作台按进程号加探活双重校验自动侦测；只有 QA 远端联调才用环境变量 `GOALFY_WORKBENCH_APP_URL` 显式覆盖。看不到预览就先确认应用工程那边的服务起没起，**不要**去手改那个文件。改了启动相关配置用 `restart`，其余时候**不重启**。
-3. **登记身份，两处同改。** `app.json` 写 `schema_version: goalfy.app/v1` 与本应用的 `id`、`name`、`version`；`WORKSPACE.md` 的 `workspace_id` 用一个换电脑也不变的稳定标识，它同时是云端保存的 `workspaceId`，`environment`、`business_ui_id` 填对。**`app.json` 的 `id` 与 `WORKSPACE.md` 的 `business_ui_id` 是同一个应用身份，必须同改**，不一致时工作台的应用列表会报警示。没有 `business_ui` 时两处都留空，G5 建草稿后一起回填。`app.json` 是开发期身份，交付清单 `goalfy-app.json` 是另一回事，**不要**混。
+3. **身份两处同改，用命令改。** `app.json` 的 `id` 与 `WORKSPACE.md` 的 `business_ui_id` 是同一个应用身份，不一致时工作台的应用列表会报警示。G1 到 G4 还没有业务界面草稿，两处写真实的 `null`，doctor 会报 `WORKSPACE_BUSINESS_UI_PENDING`，那是正常态，**禁止**编一个假 ID 绕过。G5 建出草稿后跑 `npm run scaffold:bind -- --business-ui-id <真实 ID>` 原子回填两处，它不动阶段正文与方案页，**不要**手改。`app.json` 是开发期身份，交付清单 `goalfy-app.json` 是另一回事，**不要**混。
 4. **工作目录不动。** 会话的工作目录只能是应用工程根，Skill 执行中**禁止**切到别处。
 
 之后每个阶段按协议三第 7 节填页面、按协议四第 6 节写 md 与改状态，页面自动刷新；每个阶段出口按协议四第 6 节把整个 goalfy-app-workbench 目录 保存到云端。`.workbench/` 是工作台和 Dev Host 自己管的运行时目录，看到里面的文件出现又消失是正常的，**禁止**手改、提交，也**禁止**依赖它存在。
