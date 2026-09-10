@@ -94,7 +94,7 @@ keywords:
 | 开发者要做什么 | 任务类型 | 工单 | 从哪进 |
 |---|---|---|---|
 | 把业务目的、SOP、经验、参考项目做成业务应用 | 新建 | `write` | G1 |
-| 继续此前未完成的制作 | 接续 | `get` 原工单 | 先 `workspace_remote_status`、`workspace_pull` 恢复 Workspace，再进 `WORKSPACE.md` 的 `current_stage` |
+| 继续此前未完成的制作 | 接续 | `get` 原工单 | 先 `workspace_remote_status`、`workspace_pull` 恢复 goalfy-app-workbench 目录，再进 `WORKSPACE.md` 的 `current_stage` |
 | 改已上线应用的页面、接口、表、路线、能力 | 修订 | `write`，先取可编辑草稿 | 受影响的最早阶段，规则见协议一约束 24 |
 | 效果差、报错、数据不对、页面异常 | 诊断 | `read`；转修复时新建 `write` | P8 定位后路由到所属阶段 |
 | 验证一个外部能力值不值得做进来 | 能力试用 | `write` | G2，流程见 P2 能力试用一节 |
@@ -104,18 +104,18 @@ keywords:
 
 ### 1.3 开发者中心：第一步永远是拉脚手架、起服务
 
-**开发者中心是什么。** 一个跑在开发者本机的三栏网页，仓库 `goalfy-app-workbench`，地址 `http://127.0.0.1:5180/`。左栏是 G1 到 G7 的开发流程与状态；中栏是当前阶段的产物，G1 与 G3 渲染阶段文档的 Markdown，G2 把文档里的 Mermaid 渲染成流程图，G4 到 G7 嵌入本地跑着的业务应用；右栏是开发协作区，你和开发者的对话交互在这里展示，当前版本正在接入。它只读本地文件：你写 Workspace 里的 Markdown，页面经 SSE 实时渲染，不需要开发者刷新。
+**开发者中心是什么。** 一个跑在开发者本机的三栏网页，仓库 `goalfy-app-workbench`，地址 `http://127.0.0.1:5180/`。左栏是 G1 到 G7 的开发流程与状态；中栏是当前阶段的产物，G1 与 G3 渲染阶段文档的 Markdown，G2 把文档里的 Mermaid 渲染成流程图，G4 到 G7 嵌入本地跑着的业务应用；右栏是开发协作区，你和开发者的对话交互在这里展示，当前版本正在接入。它只读本地文件：你写 goalfy-app-workbench 目录 里的 Markdown，页面经 SSE 实时渲染，不需要开发者刷新。
 
-**两个仓、两套服务。** 业务应用脚手架 `goalfy-app-scaffold` 生成应用工程，仓根就是 Workspace；开发者中心 `goalfy-app-workbench` 是独立仓，默认读兄弟目录 `../goalfy-app-scaffold` 作为 Workspace，可用环境变量 `GOALFY_WORKBENCH_WORKSPACE` 指到别处。
+**两个仓、两套服务。** 业务应用脚手架 `goalfy-app-scaffold` 生成应用工程，仓根就是 goalfy-app-workbench 目录；开发者中心 `goalfy-app-workbench` 是独立仓，默认读兄弟目录 `../goalfy-app-scaffold` 作为 goalfy-app-workbench 目录，可用环境变量 `GOALFY_WORKBENCH_WORKSPACE` 指到别处。
 
 任何制作任务的第一个动作，在建工单之后、进入 G1 之前：
 
-1. **拿到 Workspace。** 新建：用业务应用脚手架生成应用工程，仓根有 `WORKSPACE.md`、`docs/history/`、`run-dev.sh`；`docs/stages/` 下七份阶段文档由你按协议三第 7 节的头创建，未开始的阶段 `status` 写 `not_started`。接续：先调 `workspace_remote_status(workspaceId)` 看云端有没有保存，有就 `workspace_pull` 拉回，按协议四第 6 节恢复；没有就定位本地已有仓。G1 收敛四结论是"直接用能力容器"时 Workspace 照样存在，代码目录空着。
+1. **拿到 goalfy-app-workbench 目录。** 新建：用业务应用脚手架生成应用工程，仓根有 `WORKSPACE.md`、`docs/history/`、`run-dev.sh`；`docs/stages/` 下七份阶段文档由你按协议三第 7 节的头创建，未开始的阶段 `status` 写 `not_started`。接续：先调 `workspace_remote_status(workspaceId)` 看云端有没有保存，有就 `workspace_pull` 拉回，按协议四第 6 节恢复；没有就定位本地已有仓。G1 收敛四结论是"直接用能力容器"时 goalfy-app-workbench 目录 照样存在，代码目录空着。
 2. **起两套服务。** 在应用工程根执行 `./run-dev.sh start`：后端 8000、前端 5175、Dev Host 预览壳 5176。在开发者中心仓执行 `./run-dev.sh start`：服务 5179、页面 5180。把 `http://127.0.0.1:5180/` 给开发者。中栏 G4 到 G7 的 iframe 默认指向 5176，改地址用环境变量 `GOALFY_WORKBENCH_APP_URL`。改了启动相关配置用 `restart`，其余时候**不重启**。
 3. **登记身份。** `WORKSPACE.md` 的 `workspace_id` 用一个换电脑也不变的稳定标识，它同时是云端保存的 `workspaceId`；`environment`、`business_ui_id` 填对，没有 `business_ui` 时留空，G5 建草稿后回填。
 4. **工作目录不动。** 会话的工作目录只能是应用工程根，Skill 执行中**禁止**切到别处。
 
-之后每个阶段按协议三第 7 节写文档、改状态，页面自动切换与刷新；每个阶段出口按协议四第 6 节把整个 Workspace 保存到云端。**禁止**在 `.workbench/` 里写任何东西。
+之后每个阶段按协议三第 7 节写文档、改状态，页面自动切换与刷新；每个阶段出口按协议四第 6 节把整个 goalfy-app-workbench 目录 保存到云端。**禁止**在 `.workbench/` 里写任何东西。
 
 ### 1.4 前置：工具可用性
 
@@ -147,7 +147,7 @@ G7 预发布与交付          最终部署物完整验收、版本核对、授�
 | G6 | `stages/G6-用户操作闭环验证.md` | 后端闭环成立，页面设计与真实契约一致 | P5、P6 |
 | G7 | `stages/G7-预发布与交付.md` | 使用闭环通过，发布范围与版本关系确定 | P6、P7、P8 |
 
-**阶段文件读取纪律。** 进入任何阶段的第一个动作是完整读取该阶段文件；一次只读一份；出口条件满足后落 `stage_exit` 再进下一阶段；修正环内的回跳沿用原记录。每个阶段固定七项：进入依据、本阶段建设、给开发者看什么、要确认哪些边界、门禁 Checklist、证据与结论、失败回退。每个阶段给开发者看的展示物都是 Workspace `docs/stages/` 下该阶段的那一份 md，图用 Mermaid 写在文件里，开发者工作台经 SSE 实时渲染，工单标签存同一份全文，规范见协议三第 7 节。
+**阶段文件读取纪律。** 进入任何阶段的第一个动作是完整读取该阶段文件；一次只读一份；出口条件满足后落 `stage_exit` 再进下一阶段；修正环内的回跳沿用原记录。每个阶段固定七项：进入依据、本阶段建设、给开发者看什么、要确认哪些边界、门禁 Checklist、证据与结论、失败回退。每个阶段给开发者看的展示物都是 goalfy-app-workbench 目录 `docs/stages/` 下该阶段的那一份 md，图用 Mermaid 写在文件里，开发者工作台经 SSE 实时渲染，工单标签存同一份全文，规范见协议三第 7 节。
 
 **平台对象什么时候创建。** **禁止**提前建空容器；**禁止**用页面替代单元证据。
 
