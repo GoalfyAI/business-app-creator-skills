@@ -166,6 +166,10 @@ def discover_source_files(skill_root: Path) -> list[Path]:
         if relative_path.parts[0] in ("references", "stages", "modules", "protocols", "checklists") and path.suffix.lower() == ".md":
             files.append(path)
             continue
+        if relative_path.parts[0] == "references" and path.suffix.lower() == ".html":
+            # 开发者中心页面结构体模板：Agent 原样复制到应用工程的 docs/workbench.html
+            files.append(path)
+            continue
         if relative_path.parts[0] == "scripts" and path.suffix.lower() == ".py":
             files.append(path)
             continue
@@ -467,6 +471,7 @@ def _extra_skill_files(repository_root: Path, source: Path) -> dict[str, Path]:
         relative = path.relative_to(root)
         if not path.is_file() or not (
             path.suffix == ".md"
+            or (relative.parts[0] == "references" and path.suffix == ".html")
             or (relative.parts[0] == "scripts" and path.suffix == ".py")
         ):
             continue
