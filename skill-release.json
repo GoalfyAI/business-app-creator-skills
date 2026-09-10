@@ -3,7 +3,7 @@
   "version": "v20260908-033950",
   "package_version": "2.0.0",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-10T06:34:10Z",
+  "released_at": "2026-09-10T06:35:55Z",
   "update_reason": "v3 重构：scene-creator 与 app-creator 并入单一 Skill business-app-creator——总入口 + 七阶段 G1–G7（自包含主线）+ 八份细则正本 P1–P8 + 四份共享协议 + 两层 Checklist（G 门禁 / U 业务行为）；场景包降为业务应用的能力容器",
   "source_files": [
     "SKILL.md",
@@ -69,7 +69,7 @@
     "checklists/方案挑战检查清单.md": "2297e5de2b5830a8596e303d46a57da5c616c16d20dd9cf602fb22cdd9d18dd6",
     "checklists/编排型TPE验收检查清单.md": "395a88942b792dc951694929f46543114c703abefcb6a38416b0288f27a97bf8",
     "modules/P1-业务基线细则.md": "75585a9c71a47cf5ddc0c8910a88c3df0f3c08bc2e3e479232c0167b38d35f7c",
-    "modules/P2-能力发现与模型试验.md": "091bccba546452ec5897f0b0612625e9eb9dd1fd7fba011e565bf57f7339a318",
+    "modules/P2-能力发现与模型试验.md": "dee678fcf817a7ad861328f2b29eeffcba53cec8d46f1c1da999e2dc2c89f9bf",
     "modules/P3-执行形态与路线制作.md": "6d88ce53c2b8ddbacf339672a37c37890784fb44aa75d8a212374ea9b4a25a13",
     "modules/P4-数据建模与回流.md": "b0dd3a85e70543ae633b8d6e32fa1da570a2a7f860d4422dd34d8189a8d791a9",
     "modules/P5-应用脚手架与页面实现.md": "16fe26dfca0e967329695d40416899546594a4ace3c6376328b726470086c769",
