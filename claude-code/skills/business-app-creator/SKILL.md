@@ -94,7 +94,7 @@ keywords:
 | 开发者要做什么 | 任务类型 | 工单 | 从哪进 |
 |---|---|---|---|
 | 把业务目的、SOP、经验、参考项目做成业务应用 | 新建 | `write` | G1 |
-| 继续此前未完成的制作 | 接续 | `get` 原工单 | 最新 `stage_exit` 所在阶段 |
+| 继续此前未完成的制作 | 接续 | `get` 原工单 | 先 `workspace_remote_status`、`workspace_pull` 恢复 Workspace，再进 `WORKSPACE.md` 的 `current_stage` |
 | 改已上线应用的页面、接口、表、路线、能力 | 修订 | `write`，先取可编辑草稿 | 受影响的最早阶段，规则见协议一约束 24 |
 | 效果差、报错、数据不对、页面异常 | 诊断 | `read`；转修复时新建 `write` | P8 定位后路由到所属阶段 |
 | 验证一个外部能力值不值得做进来 | 能力试用 | `write` | G2，流程见 P2 能力试用一节 |
@@ -102,16 +102,20 @@ keywords:
 
 先过工单 Gate，规则见协议四第 1 节；再按 1.3 拉脚手架、起服务。意图或关键参数缺失时先问。缺口分六类：意图、关键参数、知识、工程偏好、产品决策、授权，判定方法见 P1 第 2 节。
 
-### 1.3 工作区与工作台：第一步永远是拉脚手架、起服务
+### 1.3 开发者中心：第一步永远是拉脚手架、起服务
+
+**开发者中心是什么。** 一个跑在开发者本机的三栏网页，仓库 `goalfy-app-workbench`，地址 `http://127.0.0.1:5180/`。左栏是 G1 到 G7 的开发流程与状态；中栏是当前阶段的产物，G1 与 G3 渲染阶段文档的 Markdown，G2 把文档里的 Mermaid 渲染成流程图，G4 到 G7 嵌入本地跑着的业务应用；右栏是开发协作区，你和开发者的对话交互在这里展示，当前版本正在接入。它只读本地文件：你写 Workspace 里的 Markdown，页面经 SSE 实时渲染，不需要开发者刷新。
+
+**两个仓、两套服务。** 业务应用脚手架 `goalfy-app-scaffold` 生成应用工程，仓根就是 Workspace；开发者中心 `goalfy-app-workbench` 是独立仓，默认读兄弟目录 `../goalfy-app-scaffold` 作为 Workspace，可用环境变量 `GOALFY_WORKBENCH_WORKSPACE` 指到别处。
 
 任何制作任务的第一个动作，在建工单之后、进入 G1 之前：
 
-1. **拿到 Workspace。** 新建：用业务应用脚手架生成代码仓，仓根就是 Workspace，里面已有 `WORKSPACE.md`、`docs/stages/G1` 到 `G7` 七份模板文档、`run-dev.sh`。接续或修订：定位已有仓，读 `WORKSPACE.md` 的 `current_stage`、`current_revision`、`business_ui_id`。G1 收敛四结论是"直接用能力容器"时 Workspace 照样存在，它是文档与工作台的载体，代码目录空着。
-2. **起服务。** 在仓根执行 `./run-dev.sh start`：后端 8000、前端 5175、开发者工作台 5176。把 `http://127.0.0.1:5176/` 给开发者，他在浏览器里看左栏七阶段、中间区当前阶段的文档或应用、右栏绑定的会话。改了 `run-dev.sh` 相关配置用 `./run-dev.sh restart`，其余时候**不重启**。
-3. **登记身份。** `WORKSPACE.md` 的 `workspace_id`、`environment`、`business_ui_id` 填对；没有 `business_ui` 时留空，G5 建草稿后回填。
-4. **工作目录不动。** 会话的工作目录只能是仓根，Skill 执行中**禁止**切到别处，否则工作台的会话绑定失效。
+1. **拿到 Workspace。** 新建：用业务应用脚手架生成应用工程，仓根有 `WORKSPACE.md`、`docs/history/`、`run-dev.sh`；`docs/stages/` 下七份阶段文档由你按协议三第 7 节的头创建，未开始的阶段 `status` 写 `not_started`。接续：先调 `workspace_remote_status(workspaceId)` 看云端有没有保存，有就 `workspace_pull` 拉回，按协议四第 6 节恢复；没有就定位本地已有仓。G1 收敛四结论是"直接用能力容器"时 Workspace 照样存在，代码目录空着。
+2. **起两套服务。** 在应用工程根执行 `./run-dev.sh start`：后端 8000、前端 5175、Dev Host 预览壳 5176。在开发者中心仓执行 `./run-dev.sh start`：服务 5179、页面 5180。把 `http://127.0.0.1:5180/` 给开发者。中栏 G4 到 G7 的 iframe 默认指向 5176，改地址用环境变量 `GOALFY_WORKBENCH_APP_URL`。改了启动相关配置用 `restart`，其余时候**不重启**。
+3. **登记身份。** `WORKSPACE.md` 的 `workspace_id` 用一个换电脑也不变的稳定标识，它同时是云端保存的 `workspaceId`；`environment`、`business_ui_id` 填对，没有 `business_ui` 时留空，G5 建草稿后回填。
+4. **工作目录不动。** 会话的工作目录只能是应用工程根，Skill 执行中**禁止**切到别处。
 
-之后每个阶段都按协议三第 7 节写文档、改状态，页面经 SSE 自动切换与刷新。**禁止**在 `.workbench/` 里写任何东西。
+之后每个阶段按协议三第 7 节写文档、改状态，页面自动切换与刷新；每个阶段出口按协议四第 6 节把整个 Workspace 保存到云端。**禁止**在 `.workbench/` 里写任何东西。
 
 ### 1.4 前置：工具可用性
 
