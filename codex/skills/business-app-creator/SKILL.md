@@ -104,7 +104,7 @@ keywords:
 
 ### 1.3 开发者中心：第一步永远是拉脚手架、起服务
 
-**开发者中心是什么。** 一个跑在开发者本机的三栏网页，仓库 `goalfy-app-workbench`，地址 `http://127.0.0.1:5180/`。左栏是 G1 到 G7 的开发流程与状态；中栏渲染你维护的一份 HTML，`docs/workbench.html`，业务设计、关键判断、能力地图与分工泳道图、业务数据表、验收与交付都在这一页上；右栏是开发协作区，你和开发者的对话交互在这里展示，当前版本正在接入。它只读本地文件：你改 `docs/workbench.html`，页面实时更新，不需要开发者刷新。`docs/stages/` 下的七份 md 是给你和后续 Agent 用的工作记录，不展示。
+**开发者中心是什么。** 一个跑在开发者本机的三栏网页，仓库 `goalfy-app-workbench`，地址 `http://127.0.0.1:5180/`。左栏是 G1 到 G7 的开发流程与状态；中栏渲染你维护的一份 HTML，`docs/workbench.html`，只讲两件事：业务过程，替谁、按什么过程把事做成；开发内容，正在把它做成什么，含分工泳道图、运行路线、业务数据表、页面；右栏是开发协作区，你和开发者的对话交互在这里展示，当前版本正在接入。它只读本地文件：你改 `docs/workbench.html`，页面实时更新，不需要开发者刷新。`docs/stages/` 下的七份 md 是给你和后续 Agent 用的工作记录，不展示。
 
 **两个仓、两套服务。** 业务应用脚手架 `goalfy-app-scaffold` 生成应用工程，仓根就是 goalfy-app-workbench 目录；开发者中心 `goalfy-app-workbench` 是独立仓，默认读兄弟目录 `../goalfy-app-scaffold` 作为 goalfy-app-workbench 目录，可用环境变量 `GOALFY_WORKBENCH_WORKSPACE` 指到别处。
 

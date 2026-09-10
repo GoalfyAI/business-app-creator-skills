@@ -1,11 +1,12 @@
 <!--
   开发者中心页面结构体（模板）。正本路径：goalfy-app-workbench 目录下 docs/workbench.html，一个应用一份。
+  页面只回答两件事：业务过程——这个应用替谁、按什么过程把事做成；开发内容——我们正在把它做成什么。
   规则：
-  1. 骨架不可改：<header>、<nav>、七个 <section id="gN"> 与其中带 data-block 的块，id 与顺序固定，只填内容，不加不删不改名。
-  2. 每个块的 data-updated-stage / data-updated-at 记录最近一次由哪个阶段、什么时间更新；块内容为空时保留 <p class="empty">尚未产出</p>。
-  3. 只写业务语言：禁止资产数字 ID、节点标识、工具名、字段名、代码。技术信息留在 md 里给 Agent。
-  4. 图用内联 SVG，不依赖外部脚本；Mermaid 源码可作为注释保留在 SVG 后面。
-  5. 不引用外部样式和脚本；样式写在 <style> 里；图片用 docs/screens/ 下的相对路径。
+  1. 骨架不可改：<header>、两个 <section> 与其中带 data-block 的块，id 与顺序固定，只填内容，不加不删不改名。
+  2. 每个块的 data-updated-stage / data-updated-at 记录最近一次由哪个阶段、什么时间更新；没内容时保留 <p class="empty">尚未产出</p>。
+  3. 只写业务语言：禁止资产数字 ID、节点标识、工具名、字段名、代码。技术信息、验证证据、工单记录都留在 md 里给 Agent。
+  4. 待开发者拍板的事项写在对应块里，用 <span class="tag yellow">待定</span> 标出；决定后改成结论。
+  5. 图用内联 SVG，不依赖外部脚本；Mermaid 源码可作注释附在 SVG 后。不引外部样式与脚本；图片用 docs/screens/ 相对路径。
   6. 每次只改受影响的块，整份文件原子写入；工作台监听文件自动刷新。
 -->
 <!doctype html>
@@ -21,25 +22,18 @@
   header { padding:20px 28px; border-bottom:1px solid var(--line); background:var(--card); display:flex; flex-wrap:wrap; gap:16px 32px; align-items:baseline; }
   header h1 { font-size:20px; margin:0; }
   header .meta { color:var(--muted); font-size:13px; }
-  nav { position:sticky; top:0; background:var(--card); border-bottom:1px solid var(--line); padding:8px 28px; display:flex; gap:8px; flex-wrap:wrap; z-index:1; }
-  nav a { text-decoration:none; color:var(--ink); padding:4px 10px; border:1px solid var(--line); border-radius:999px; font-size:13px; }
-  nav a[data-status="passed"] { border-color:var(--ok); color:var(--ok); }
-  nav a[data-status="in_progress"] { border-color:var(--accent); color:var(--accent); font-weight:600; }
-  nav a[data-status="failed"] { border-color:var(--bad); color:var(--bad); }
   main { max-width:1080px; margin:0 auto; padding:16px 28px 64px; }
-  section.stage { margin:28px 0; }
-  section.stage > h2 { font-size:17px; margin:0 0 12px; display:flex; gap:10px; align-items:baseline; }
-  section.stage > h2 .status { font-size:12px; color:var(--muted); font-weight:400; }
+  section.part { margin:28px 0; }
+  section.part > h2 { font-size:18px; margin:0 0 4px; }
+  section.part > p.lead { color:var(--muted); margin:0 0 12px; }
   .block { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px 18px; margin:12px 0; }
   .block > h3 { font-size:15px; margin:0 0 8px; }
-  .block .stamp { float:right; color:var(--muted); font-size:12px; }
   .block p.empty { color:var(--muted); margin:0; }
   table { border-collapse:collapse; width:100%; font-size:14px; margin:8px 0; }
   th, td { border:1px solid var(--line); padding:6px 9px; text-align:left; vertical-align:top; }
   th { background:#f3f6f9; font-weight:600; }
   .tag { display:inline-block; padding:1px 8px; border-radius:999px; font-size:12px; }
   .tag.green { background:#e3f4ea; color:var(--ok); } .tag.yellow { background:#fff3dc; color:var(--warn); } .tag.red { background:#fbe6e4; color:var(--bad); }
-  .decide { border-left:4px solid var(--warn); }
   figure { margin:8px 0; overflow-x:auto; } figure svg { max-width:100%; height:auto; }
   .src { color:var(--muted); font-size:12px; }
   @media (prefers-color-scheme: dark) { :root { --ink:#e8edf2; --muted:#9aa8b6; --line:#2b3642; --bg:#0f1519; --card:#161d24; } th { background:#1c2630; } .tag.green{background:#12352a} .tag.yellow{background:#3a2c0f} .tag.red{background:#3b1a17} }
@@ -50,61 +44,26 @@
   <h1>{{应用名}}</h1>
   <span class="meta">当前阶段 {{G?}} · 版本 {{revision}} · 更新于 {{时间}}</span>
 </header>
-<nav>
-  <a href="#g1" data-status="not_started">G1 业务目标与范围</a>
-  <a href="#g2" data-status="not_started">G2 关键能力可行性</a>
-  <a href="#g3" data-status="not_started">G3 运行设计与验收基线</a>
-  <a href="#g4" data-status="not_started">G4 核心执行单元验证</a>
-  <a href="#g5" data-status="not_started">G5 后端业务闭环验证</a>
-  <a href="#g6" data-status="not_started">G6 用户操作闭环验证</a>
-  <a href="#g7" data-status="not_started">G7 预发布与交付</a>
-</nav>
 <main>
 
-<section class="block decide" id="decide" data-block="decide" data-updated-stage="" data-updated-at="">
-  <h3>现在需要你决定的事 <span class="stamp"></span></h3>
-  <p class="empty">尚未产出</p>
-  <!-- 每条：问题、推荐、替代、选择后改变什么、验收怎么看；只列关键分歧，决定后从这里移除 -->
+<section class="part" id="business">
+  <h2>业务过程</h2>
+  <p class="lead">这个应用替谁、按什么过程把事做成。</p>
+  <div class="block" data-block="biz-who" data-updated-stage="" data-updated-at=""><h3>给谁做、为什么值得做</h3><p class="empty">尚未产出</p></div>
+  <div class="block" data-block="biz-promise" data-updated-stage="" data-updated-at=""><h3>承诺到哪里、什么算合格</h3><p class="empty">尚未产出</p></div>
+  <div class="block" data-block="biz-journey" data-updated-stage="" data-updated-at=""><h3>用户怎么走完这件事</h3><p class="empty">尚未产出</p></div>
+  <div class="block" data-block="biz-decisions" data-updated-stage="" data-updated-at=""><h3>过程里的关键判断，谁来定</h3><p class="empty">尚未产出</p></div>
+  <div class="block" data-block="biz-redline" data-updated-stage="" data-updated-at=""><h3>什么绝对不做</h3><p class="empty">尚未产出</p></div>
 </section>
 
-<section class="stage" id="g1"><h2>G1 业务目标与范围 <span class="status"></span></h2>
-  <div class="block" data-block="g1-customer" data-updated-stage="" data-updated-at=""><h3>给谁做、为什么值得做</h3><p class="empty">尚未产出</p></div>
-  <div class="block" data-block="g1-promise" data-updated-stage="" data-updated-at=""><h3>价值假设与什么算合格</h3><p class="empty">尚未产出</p></div>
-  <div class="block" data-block="g1-decisions" data-updated-stage="" data-updated-at=""><h3>业务里的关键判断</h3><p class="empty">尚未产出</p></div>
-  <div class="block" data-block="g1-route" data-updated-stage="" data-updated-at=""><h3>用户怎么走完这件事</h3><p class="empty">尚未产出</p></div>
-  <div class="block" data-block="g1-form" data-updated-stage="" data-updated-at=""><h3>要不要做成应用、留什么数据</h3><p class="empty">尚未产出</p></div>
-  <div class="block" data-block="g1-redline" data-updated-stage="" data-updated-at=""><h3>交给谁、谁说算数、什么绝对不做</h3><p class="empty">尚未产出</p></div>
-</section>
-
-<section class="stage" id="g2"><h2>G2 关键能力可行性 <span class="status"></span></h2>
-  <div class="block" data-block="g2-capability" data-updated-stage="" data-updated-at=""><h3>每一步能做到什么程度</h3><p class="empty">尚未产出</p></div>
-  <div class="block" data-block="g2-lanes" data-updated-stage="" data-updated-at=""><h3>谁来做：规则、模型、确认、人</h3><p class="empty">尚未产出</p></div>
-  <div class="block" data-block="g2-samples" data-updated-stage="" data-updated-at=""><h3>真实产物对比</h3><p class="empty">尚未产出</p></div>
-</section>
-
-<section class="stage" id="g3"><h2>G3 运行设计与验收基线 <span class="status"></span></h2>
-  <div class="block" data-block="g3-route" data-updated-stage="" data-updated-at=""><h3>它会怎样运行</h3><p class="empty">尚未产出</p></div>
-  <div class="block" data-block="g3-data" data-updated-stage="" data-updated-at=""><h3>业务数据表</h3><p class="empty">尚未产出</p></div>
-  <div class="block" data-block="g3-pages" data-updated-stage="" data-updated-at=""><h3>页面与原型</h3><p class="empty">尚未产出</p></div>
-  <div class="block" data-block="g3-acceptance" data-updated-stage="" data-updated-at=""><h3>验收怎么看</h3><p class="empty">尚未产出</p></div>
-</section>
-
-<section class="stage" id="g4"><h2>G4 核心执行单元验证 <span class="status"></span></h2>
-  <div class="block" data-block="g4-units" data-updated-stage="" data-updated-at=""><h3>每个部件单独能用吗</h3><p class="empty">尚未产出</p></div>
-</section>
-
-<section class="stage" id="g5"><h2>G5 后端业务闭环验证 <span class="status"></span></h2>
-  <div class="block" data-block="g5-run" data-updated-stage="" data-updated-at=""><h3>真跑了一遍，发生了什么</h3><p class="empty">尚未产出</p></div>
-  <div class="block" data-block="g5-data" data-updated-stage="" data-updated-at=""><h3>数据进去了吗、回来了吗</h3><p class="empty">尚未产出</p></div>
-</section>
-
-<section class="stage" id="g6"><h2>G6 用户操作闭环验证 <span class="status"></span></h2>
-  <div class="block" data-block="g6-journey" data-updated-stage="" data-updated-at=""><h3>用户能不能走完</h3><p class="empty">尚未产出</p></div>
-</section>
-
-<section class="stage" id="g7"><h2>G7 预发布与交付 <span class="status"></span></h2>
-  <div class="block" data-block="g7-checklist" data-updated-stage="" data-updated-at=""><h3>交付核对单</h3><p class="empty">尚未产出</p></div>
-  <div class="block" data-block="g7-release" data-updated-stage="" data-updated-at=""><h3>版本、入口与后续</h3><p class="empty">尚未产出</p></div>
+<section class="part" id="build">
+  <h2>开发内容</h2>
+  <p class="lead">我们正在把它做成什么。</p>
+  <div class="block" data-block="build-shape" data-updated-stage="" data-updated-at=""><h3>做成什么、由什么组成</h3><p class="empty">尚未产出</p></div>
+  <div class="block" data-block="build-lanes" data-updated-stage="" data-updated-at=""><h3>每一步由谁执行：规则、模型、确认、人</h3><p class="empty">尚未产出</p></div>
+  <div class="block" data-block="build-route" data-updated-stage="" data-updated-at=""><h3>运行路线与每个节点</h3><p class="empty">尚未产出</p></div>
+  <div class="block" data-block="build-data" data-updated-stage="" data-updated-at=""><h3>业务数据表</h3><p class="empty">尚未产出</p></div>
+  <div class="block" data-block="build-pages" data-updated-stage="" data-updated-at=""><h3>页面与原型</h3><p class="empty">尚未产出</p></div>
 </section>
 
 </main>
