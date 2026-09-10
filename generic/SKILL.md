@@ -104,13 +104,13 @@ keywords:
 
 ### 1.3 开发者中心：第一步永远是拉脚手架、起服务
 
-**开发者中心是什么。** 一个跑在开发者本机的三栏网页，仓库 `goalfy-app-workbench`，地址 `http://127.0.0.1:5180/`。左栏是 G1 到 G7 的开发流程与状态；中栏渲染你维护的一份 HTML，`docs/workbench.html`，只讲两件事：业务过程，替谁、按什么过程把事做成；开发内容，正在把它做成什么，含分工泳道图、运行路线、业务数据表、页面；右栏是开发协作区，你和开发者的对话交互在这里展示，当前版本正在接入。它只读本地文件：你改 `docs/workbench.html`，页面实时更新，不需要开发者刷新。`docs/stages/` 下的七份 md 是给你和后续 Agent 用的工作记录，不展示。
+**开发者中心是什么。** 一个跑在开发者本机的三栏网页，仓库 `goalfy-app-workbench`，地址 `http://127.0.0.1:5180/`。左栏是 G1 到 G7 的开发流程与状态；中栏渲染你维护的一份方案页，固定路径 `docs/proposal/index.html`，脚手架按这个地址渲染，只讲两件事：业务过程，替谁、按什么过程把事做成；开发内容，正在把它做成什么，含分工泳道图、运行路线、业务数据表、页面；右栏是开发协作区，你和开发者的对话交互在这里展示，当前版本正在接入。它只读本地文件：你改 `docs/proposal/index.html`，页面实时更新，不需要开发者刷新。`docs/stages/` 下的七份 md 是给你和后续 Agent 用的工作记录，不展示。
 
 **两个仓、两套服务。** 业务应用脚手架 `goalfy-app-scaffold` 生成应用工程，仓根就是 goalfy-app-workbench 目录；开发者中心 `goalfy-app-workbench` 是独立仓，默认读兄弟目录 `../goalfy-app-scaffold` 作为 goalfy-app-workbench 目录，可用环境变量 `GOALFY_WORKBENCH_WORKSPACE` 指到别处。
 
 任何制作任务的第一个动作，在建工单之后、进入 G1 之前：
 
-1. **拿到 goalfy-app-workbench 目录。** 新建：用业务应用脚手架生成应用工程，仓根有 `WORKSPACE.md`、`docs/history/`、`run-dev.sh`；`docs/stages/` 下七份阶段文档由你按协议四第 6 节的头创建，未开始的阶段 `status` 写 `not_started`；`docs/workbench.html` 由你从零写，规则见协议三第 7 节。接续：先调 `workspace_remote_status(workspaceId)` 看云端有没有保存，有就 `workspace_pull` 拉回，按协议四第 6 节恢复；没有就定位本地已有仓。G1 收敛四结论是"直接用能力容器"时 goalfy-app-workbench 目录 照样存在，代码目录空着。
+1. **拿到 goalfy-app-workbench 目录。** 新建：用业务应用脚手架生成应用工程，仓根有 `WORKSPACE.md`、`docs/history/`、`run-dev.sh`；`docs/stages/` 下七份阶段文档由你按协议四第 6 节的头创建，未开始的阶段 `status` 写 `not_started`；`docs/proposal/index.html` 由你从零写，规则见协议三第 7 节。接续：先调 `workspace_remote_status(workspaceId)` 看云端有没有保存，有就 `workspace_pull` 拉回，按协议四第 6 节恢复；没有就定位本地已有仓。G1 收敛四结论是"直接用能力容器"时 goalfy-app-workbench 目录 照样存在，代码目录空着。
 2. **起两套服务。** 在应用工程根执行 `./run-dev.sh start`：后端 8000、前端 5175、Dev Host 预览壳 5176。在开发者中心仓执行 `./run-dev.sh start`：服务 5179、页面 5180。把 `http://127.0.0.1:5180/` 给开发者。中栏 G4 到 G7 的 iframe 默认指向 5176，改地址用环境变量 `GOALFY_WORKBENCH_APP_URL`。改了启动相关配置用 `restart`，其余时候**不重启**。
 3. **登记身份。** `WORKSPACE.md` 的 `workspace_id` 用一个换电脑也不变的稳定标识，它同时是云端保存的 `workspaceId`；`environment`、`business_ui_id` 填对，没有 `business_ui` 时留空，G5 建草稿后回填。
 4. **工作目录不动。** 会话的工作目录只能是应用工程根，Skill 执行中**禁止**切到别处。
