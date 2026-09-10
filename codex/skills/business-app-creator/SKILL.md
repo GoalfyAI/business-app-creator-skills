@@ -106,16 +106,18 @@ keywords:
 
 **开发者中心是什么。** 一个跑在开发者本机的三栏网页，仓库 `goalfy-app-workbench`，地址 `http://127.0.0.1:5180/`。左栏是 G1 到 G7 的开发流程与状态；中栏渲染你维护的一份方案页，固定路径 `docs/proposal/index.html`，脚手架按这个地址渲染，只讲两件事：业务过程，替谁、按什么过程把事做成；开发内容，正在把它做成什么，含分工泳道图、运行路线、业务数据表、页面；右栏是开发协作区，你和开发者的对话交互在这里展示，当前版本正在接入。它只读本地文件：你改 `docs/proposal/index.html`，页面实时更新，不需要开发者刷新。`docs/stages/` 下的七份 md 是给你和后续 Agent 用的工作记录，不展示。
 
-**两个仓、两套服务。** 业务应用脚手架 `goalfy-app-scaffold` 生成应用工程，仓根就是 goalfy-app-workbench 目录；开发者中心 `goalfy-app-workbench` 是独立仓，默认读兄弟目录 `../goalfy-app-scaffold` 作为 goalfy-app-workbench 目录，可用环境变量 `GOALFY_WORKBENCH_WORKSPACE` 指到别处。
+**两个仓、两套服务。** 业务应用脚手架 `goalfy-app-scaffold` 生成应用工程，仓根就是 goalfy-app-workbench 目录；开发者中心 `goalfy-app-workbench` 是独立仓。工作台一次可以管多个应用：它按配置链找应用目录，优先级是命令行、环境变量、`workbench.config.local.json`、`workbench.config.json`、内置默认；`appsDir` 把一个目录下的每个一级子目录当成一个应用，`apps` 是显式清单，两者取并集。单应用调试用环境变量 `GOALFY_WORKBENCH_WORKSPACE` 直接指到应用目录。
+
+**你的目录能不能被工作台看见，取决于两个文件。** 仓根必须有 `app.json` 且 `schema_version` 形如 `goalfy.app/vN`，否则这个目录**整体被忽略**，压根不进应用列表；有了 `app.json` 但 `WORKSPACE.md` 还没就绪，列表里显示"初始化中"且选不中。所以顺序固定：先 `app.json`，再 `WORKSPACE.md`，再七份阶段文档。
 
 任何制作任务的第一个动作，在建工单之后、进入 G1 之前：
 
-1. **拿到 goalfy-app-workbench 目录。** 新建：用业务应用脚手架生成应用工程，仓根有 `WORKSPACE.md`、`docs/history/`、`run-dev.sh`；`docs/stages/` 下七份阶段文档由你按协议四第 6 节的头创建，未开始的阶段 `status` 写 `not_started`；`docs/proposal/index.html` 由你从零写，规则见协议三第 7 节。接续：先调 `workspace_remote_status(workspaceId)` 看云端有没有保存，有就 `workspace_pull` 拉回，按协议四第 6 节恢复；没有就定位本地已有仓。G1 收敛四结论是"直接用能力容器"时 goalfy-app-workbench 目录 照样存在，代码目录空着。
-2. **起两套服务。** 在应用工程根执行 `./run-dev.sh start`：后端 8000、前端 5175、Dev Host 预览壳 5176。在开发者中心仓执行 `./run-dev.sh start`：服务 5179、页面 5180。把 `http://127.0.0.1:5180/` 给开发者。中栏 G4 到 G7 的 iframe 默认指向 5176，改地址用环境变量 `GOALFY_WORKBENCH_APP_URL`。改了启动相关配置用 `restart`，其余时候**不重启**。
-3. **登记身份。** `WORKSPACE.md` 的 `workspace_id` 用一个换电脑也不变的稳定标识，它同时是云端保存的 `workspaceId`；`environment`、`business_ui_id` 填对，没有 `business_ui` 时留空，G5 建草稿后回填。
+1. **拿到 goalfy-app-workbench 目录。** 新建：用业务应用脚手架生成应用工程，仓根有 `app.json`、`WORKSPACE.md`、`docs/history/`、`run-dev.sh`。**脚手架自带的是一份示例应用，不是空模板**：`app.json`、`WORKSPACE.md`、`docs/stages/` 七份 md、`docs/proposal/index.html` 里装的都是别人的业务，**必须**整份换成本应用的内容，**禁止**留着示例的应用名、编号、阶段、版本或正文往下做。七份阶段文档按协议四第 6 节的头重写，未开始的阶段 `status` 写 `not_started`；`docs/proposal/index.html` 由你从零写，规则见协议三第 7 节。接续：先调 `workspace_remote_status(workspaceId)` 看云端有没有保存，有就 `workspace_pull` 拉回，按协议四第 6 节恢复；没有就定位本地已有仓。G1 收敛四结论是"直接用能力容器"时 goalfy-app-workbench 目录 照样存在，代码目录空着。
+2. **起两套服务。** 在应用工程根执行 `./run-dev.sh start`：后端 8000、前端 5175、Dev Host 预览壳 5176。在开发者中心仓执行 `./run-dev.sh start`：服务 5179、页面 5180。把 `http://127.0.0.1:5180/` 给开发者。中栏 G4 到 G7 的预览地址**不用手配**：Dev Host 启动时会往应用目录的 `.workbench/dev-host.json` 写调试地址声明，退出自动删，工作台按进程号加探活双重校验自动侦测；只有 QA 远端联调才用环境变量 `GOALFY_WORKBENCH_APP_URL` 显式覆盖。看不到预览就先确认应用工程那边的服务起没起，**不要**去手改那个文件。改了启动相关配置用 `restart`，其余时候**不重启**。
+3. **登记身份，两处同改。** `app.json` 写 `schema_version: goalfy.app/v1` 与本应用的 `id`、`name`、`version`；`WORKSPACE.md` 的 `workspace_id` 用一个换电脑也不变的稳定标识，它同时是云端保存的 `workspaceId`，`environment`、`business_ui_id` 填对。**`app.json` 的 `id` 与 `WORKSPACE.md` 的 `business_ui_id` 是同一个应用身份，必须同改**，不一致时工作台的应用列表会报警示。没有 `business_ui` 时两处都留空，G5 建草稿后一起回填。`app.json` 是开发期身份，交付清单 `goalfy-app.json` 是另一回事，**不要**混。
 4. **工作目录不动。** 会话的工作目录只能是应用工程根，Skill 执行中**禁止**切到别处。
 
-之后每个阶段按协议三第 7 节填页面、按协议四第 6 节写 md 与改状态，页面自动刷新；每个阶段出口按协议四第 6 节把整个 goalfy-app-workbench 目录 保存到云端。**禁止**在 `.workbench/` 里写任何东西。
+之后每个阶段按协议三第 7 节填页面、按协议四第 6 节写 md 与改状态，页面自动刷新；每个阶段出口按协议四第 6 节把整个 goalfy-app-workbench 目录 保存到云端。`.workbench/` 是工作台和 Dev Host 自己管的运行时目录，看到里面的文件出现又消失是正常的，**禁止**手改、提交，也**禁止**依赖它存在。
 
 ### 1.4 前置：工具可用性
 
