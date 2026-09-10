@@ -110,7 +110,7 @@ keywords:
 
 任何制作任务的第一个动作，在建工单之后、进入 G1 之前：
 
-1. **拿到 goalfy-app-workbench 目录。** 新建：用业务应用脚手架生成应用工程，仓根有 `WORKSPACE.md`、`docs/history/`、`run-dev.sh`；`docs/stages/` 下七份阶段文档由你按协议四第 6 节的头创建，未开始的阶段 `status` 写 `not_started`；`docs/workbench.html` 从 `references/开发者中心页面结构.html` 原样复制，之后只填块不改骨架。接续：先调 `workspace_remote_status(workspaceId)` 看云端有没有保存，有就 `workspace_pull` 拉回，按协议四第 6 节恢复；没有就定位本地已有仓。G1 收敛四结论是"直接用能力容器"时 goalfy-app-workbench 目录 照样存在，代码目录空着。
+1. **拿到 goalfy-app-workbench 目录。** 新建：用业务应用脚手架生成应用工程，仓根有 `WORKSPACE.md`、`docs/history/`、`run-dev.sh`；`docs/stages/` 下七份阶段文档由你按协议四第 6 节的头创建，未开始的阶段 `status` 写 `not_started`；`docs/workbench.html` 由你从零写，规则见协议三第 7 节。接续：先调 `workspace_remote_status(workspaceId)` 看云端有没有保存，有就 `workspace_pull` 拉回，按协议四第 6 节恢复；没有就定位本地已有仓。G1 收敛四结论是"直接用能力容器"时 goalfy-app-workbench 目录 照样存在，代码目录空着。
 2. **起两套服务。** 在应用工程根执行 `./run-dev.sh start`：后端 8000、前端 5175、Dev Host 预览壳 5176。在开发者中心仓执行 `./run-dev.sh start`：服务 5179、页面 5180。把 `http://127.0.0.1:5180/` 给开发者。中栏 G4 到 G7 的 iframe 默认指向 5176，改地址用环境变量 `GOALFY_WORKBENCH_APP_URL`。改了启动相关配置用 `restart`，其余时候**不重启**。
 3. **登记身份。** `WORKSPACE.md` 的 `workspace_id` 用一个换电脑也不变的稳定标识，它同时是云端保存的 `workspaceId`；`environment`、`business_ui_id` 填对，没有 `business_ui` 时留空，G5 建草稿后回填。
 4. **工作目录不动。** 会话的工作目录只能是应用工程根，Skill 执行中**禁止**切到别处。
@@ -203,7 +203,6 @@ G7 预发布与交付          最终部署物完整验收、版本核对、授�
 
 | 文件 | 什么时候读 |
 |---|---|
-| `references/开发者中心页面结构.html` | 新建应用时复制为 `docs/workbench.html` 的固定结构体；块与阶段的对应见协议三第 7 节 |
 | `references/能力容器组成与执行形态速查.md` | 需要看能力容器由什么组成、四种执行形态怎么分、工具调用里各类标识指什么 |
 | `references/平台对象与运行模型.md` | 需要理解一次运行的角色关系与时序，或判断什么值得投影给最终用户 |
 | `references/依赖与MCP接入.md` | 注册 MCP、上传私有包、导入 Skill 包、配置授权卡、工具集上线 |
