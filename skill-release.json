@@ -3,7 +3,7 @@
   "version": "v20260911-2e3b1c",
   "package_version": "2.0.1",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-11T03:48:01Z",
+  "released_at": "2026-09-11T14:55:35Z",
   "update_reason": "v3 正式发布：单一 Skill business-app-creator（总入口 + 七阶段 G1–G7 自包含主线 + 八份细则 P1–P8 + 四份协议 + 两层 Checklist）；承诺清单贯穿七阶段；G1 样品先于问卷与关键能力试探；开发者中心方案页 docs/proposal/index.html；阶段状态以 workspace.json 为准；补回删除三态与用户反馈可见状态",
   "source_files": [
     "SKILL.md",
@@ -60,7 +60,7 @@
     "stages/G7-预发布与交付.md"
   ],
   "checksums": {
-    "SKILL.md": "f8451b6503760ff5b42794f1500d77de5aa368baff6b8ac2bb9e6d2f15bea901",
+    "SKILL.md": "2392997840048d2aa157aea41a7d43190341f5b2826ef2f9fd4e928fca581f7c",
     "agents/openai.yaml": "f4a8c0b9b315ac9187e2eb006eefc676229bd31300763659fc692b6eb405c743",
     "checklists/G门禁检查清单.md": "9960daea8e6af8c13c9a7e22f3181ec0345aebb08c3c16a8c57e4a962a05c235",
     "checklists/U业务行为验收明细.md": "714467daaeab171758007b069dc6703e4e68e88325737a25c2caa86eb98f35f8",
