@@ -294,6 +294,15 @@ def render(raw, issues, previous=None, image_dir=None):
             literal(row["content"]),
             "",
         ]
+        if "status" in row:
+            status = row["status"]
+            label = {"pending": "待处理", "completed": "已完成", "rejected": "不予处理"}.get(status, "未知状态")
+            lines += [literal("处理状态：" + label), ""]
+            if status == "rejected":
+                lines += [literal("原因：" + str(row.get("rejection_reason", "未提供"))), ""]
+            elif status == "completed":
+                lines += [literal("完成版本：" + str(row.get("completed_version", "未提供"))), "",
+                          literal("处理说明：" + str(row.get("resolution_note", "未提供"))), ""]
         for im in row["images"]:
             ext = {"image/png": "png", "image/jpeg": "jpg", "image/webp": "webp"}.get(
                 im.get("content_type")
