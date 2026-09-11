@@ -3,7 +3,7 @@
   "version": "v20260908-033950",
   "package_version": "2.0.0",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-10T13:06:02Z",
+  "released_at": "2026-09-11T03:34:51Z",
   "update_reason": "v3 重构：scene-creator 与 app-creator 并入单一 Skill business-app-creator——总入口 + 七阶段 G1–G7（自包含主线）+ 八份细则正本 P1–P8 + 四份共享协议 + 两层 Checklist（G 门禁 / U 业务行为）；场景包降为业务应用的能力容器",
   "source_files": [
     "SKILL.md",
@@ -60,7 +60,7 @@
     "stages/G7-预发布与交付.md"
   ],
   "checksums": {
-    "SKILL.md": "686dce54193cbec74ea10f366de217a5ead1cd25029616eb8c840495decb4393",
+    "SKILL.md": "b24b4fd219dafb82182f5d0e1528feb179779561f84deab3b0f88fb19f842174",
     "agents/openai.yaml": "f4a8c0b9b315ac9187e2eb006eefc676229bd31300763659fc692b6eb405c743",
     "checklists/G门禁检查清单.md": "9960daea8e6af8c13c9a7e22f3181ec0345aebb08c3c16a8c57e4a962a05c235",
     "checklists/U业务行为验收明细.md": "714467daaeab171758007b069dc6703e4e68e88325737a25c2caa86eb98f35f8",
@@ -78,7 +78,7 @@
     "modules/P8-诊断归因与改进验证.md": "bcbee912229b62a0529826bc111265e64e9e33d67be7c4e795318a5d90dd917f",
     "protocols/事实决定授权与变更.md": "2cd441a89a140ae15babcda717816300d77dc0d8a0b1c2c1a86ba1ec8f47294e",
     "protocols/承诺实现验收追踪.md": "8d5abbe1f902b57619c945f060eadb5f858dd055d9e8e27c6824b1a316148374",
-    "protocols/状态恢复知识归属与平台适配.md": "bc618803e99a62a860012bbf9e1849c8340ca46b2d4eb42a2b81e6f2eec87167",
+    "protocols/状态恢复知识归属与平台适配.md": "bcad331196712d321b9d21bffc63c760ba378e438930b45ea867d7317127380d",
     "protocols/阶段展示与证据等级.md": "23e59fac32bbb83e766ea42e42839c2873a9bd6c05754444ef53765bbddb282c",
     "references/依赖与MCP接入.md": "106ab1fb754d064c85679ec37fa7fb656946a81ce83c8a4c0545011a162fb263",
     "references/前端设计指南/README.md": "ac4463b790f27f6804340fff32fe54f95db0ac7f74ed0ef087eb262f6348f46c",
