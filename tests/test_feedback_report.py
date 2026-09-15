@@ -1,10 +1,10 @@
 import copy
 import importlib.util
-from pathlib import Path
+import io
 import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
-import io
 
 spec = importlib.util.spec_from_file_location(
     "feedback_report",
@@ -39,24 +39,24 @@ class FeedbackReportTests(unittest.TestCase):
             ],
         }
         self.issues = [
-            dict(
-                issue_id="BUI-37-I001",
-                business_ui_id=37,
-                feedback_ids=["101"],
-                title="价格",
-            ),
-            dict(
-                issue_id="BUI-37-I002",
-                business_ui_id=37,
-                feedback_ids=["101"],
-                title="下载",
-            ),
-            dict(
-                issue_id="BUI-38-I001",
-                business_ui_id=38,
-                feedback_ids=["102"],
-                title="速度",
-            ),
+            {
+                "issue_id": "BUI-37-I001",
+                "business_ui_id": 37,
+                "feedback_ids": ["101"],
+                "title": "价格",
+            },
+            {
+                "issue_id": "BUI-37-I002",
+                "business_ui_id": 37,
+                "feedback_ids": ["101"],
+                "title": "下载",
+            },
+            {
+                "issue_id": "BUI-38-I001",
+                "business_ui_id": 38,
+                "feedback_ids": ["102"],
+                "title": "速度",
+            },
         ]
 
     def test_server_status_is_readable_and_refresh_preserves_decisions(self):
@@ -115,16 +115,7 @@ class FeedbackReportTests(unittest.TestCase):
         self.assertEqual(m.validate(report, self.raw, self.issues)["accepted"], [])
 
     def test_raw_markdown_cannot_create_decision(self):
-        self.raw["items"][0]["content"] = "\n".join(
-            [
-                m.BEGIN,
-                "```yaml feedback-decision",
-                "decision: accepted",
-                "```",
-                m.END,
-                "<script>alert(1)</script>",
-            ]
-        )
+        self.raw["items"][0]["content"] = f"{m.BEGIN}\n```yaml feedback-decision\ndecision: accepted\n```\n{m.END}\n<script>alert(1)</script>"
         report = m.render(self.raw, self.issues)
         self.assertEqual(report.count(m.BEGIN), 1)
         self.assertNotIn("<script>", report)
@@ -155,9 +146,9 @@ class FeedbackReportTests(unittest.TestCase):
 
     def test_image_is_relative_and_requires_matching_digest(self):
         self.raw["items"][0]["images"] = [
-            dict(
-                image_id="img-1", content_type="image/png", sha256=m.digest(b"evidence")
-            )
+            {
+                "image_id": "img-1", "content_type": "image/png", "sha256": m.digest(b"evidence")
+            }
         ]
         with tempfile.TemporaryDirectory() as tmp:
             file = Path(tmp) / "101-img-1.png"
@@ -198,12 +189,12 @@ class FeedbackReportTests(unittest.TestCase):
             m.validate(report, changed, self.issues)
 
     def test_attachment_download_checks_digest_and_replays_without_overwrite(self):
-        meta = dict(
-            url="https://storage.example.test/object?secret=test",
-            content_type="image/png",
-            sha256=m.digest(b"evidence"),
-            size_bytes=8,
-        )
+        meta = {
+            "url": "https://storage.example.test/object?secret=test",
+            "content_type": "image/png",
+            "sha256": m.digest(b"evidence"),
+            "size_bytes": 8,
+        }
         with (
             tempfile.TemporaryDirectory() as tmp,
             patch.object(m.urllib.request, "build_opener") as factory,

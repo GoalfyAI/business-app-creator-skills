@@ -114,7 +114,7 @@ keywords:
 
 方案页只讲两件事：业务过程，替谁、按什么过程把事做成；开发内容，正在把它做成什么，含分工泳道图、运行路线、业务数据表、页面。`docs/stages/` 下的七份 md 是给你和后续 Agent 用的工作记录，服务端接口保留但**不在页面上展示**。工作台只读本地文件：改 `WORKSPACE.md`、`workspace.json`、`docs/**/*.md` 或 `docs/proposal/` 下任何文件，页面都会自动更新。
 
-**两个仓、两套服务。** 业务应用脚手架 `goalfy-app-scaffold` 生成应用工程，仓根就是 goalfy-app-workbench 目录；开发者中心 `goalfy-app-workbench` 是独立仓。工作台一次可以管多个应用：它按配置链找应用目录，优先级是命令行、环境变量、`workbench.config.local.json`、`workbench.config.json`、内置默认；`appsDir` 把一个目录下的每个一级子目录当成一个应用，`apps` 是显式清单，两者取并集。单应用调试用环境变量 `GOALFY_WORKBENCH_WORKSPACE` 直接指到应用目录。
+**两个仓、两套服务。** 业务应用脚手架 `goalfy-app-scaffold` 生成应用工程，本 Skill 把它的仓根称为 goalfy-app-workbench 目录；开发者中心 `goalfy-app-workbench` 是另一个独立仓。工作台一次可以管多个应用：它按配置链找应用目录，优先级是命令行、环境变量、`workbench.config.local.json`、`workbench.config.json`、内置默认；`appsDir` 把一个目录下的每个一级子目录当成一个应用，`apps` 是显式清单，两者取并集。单应用调试用环境变量 `GOALFY_WORKBENCH_WORKSPACE` 直接指到应用目录。
 
 **你的目录能不能被工作台看见，取决于两个文件。** 仓根必须有 `app.json` 且 `schema_version` 形如 `goalfy.app/vN`，否则这个目录**整体被忽略**，压根不进应用列表；有了 `app.json` 但 `WORKSPACE.md` 还没就绪，列表里显示"初始化中"且选不中。所以顺序固定：先 `app.json`，再 `WORKSPACE.md`，再七份阶段文档。
 
@@ -129,8 +129,8 @@ keywords:
    - **没有开发者中心时**：`download_app_template(template="app_workbench")` 取一小时有效的下载地址与包信息，拉开发者中心整仓模板。它只下开发者中心这一个模板，业务应用脚手架仍然自己 clone。
 
    `workspace.json` 是阶段状态正本，放在仓库根，由 `scaffold:init` 一并生成：七项按 G1 到 G7 的顺序排，`name` 是阶段的中文名如「业务目标与范围」，**不是** `G1` 这种编号，因为它直接渲染给开发者看；G1 置 `in_progress`、其余 `not_started`。此后由你全程维护，规则见协议四第 6 节，每次改都要与七份阶段文档 front matter 的 `status` 保持一致。它是开发期资产，打包时被排除，不进交付包。`docs/proposal/index.html` 由 `scaffold:init` 生成一份带模板标记的骨架，G1 结束前**必须**按本应用重写并删掉标记，规则与机器校验项见协议三第 7 节。G1 收敛四结论是"直接用能力容器"时 goalfy-app-workbench 目录 照样存在，代码目录空着。
-2. **起两套服务。** 在应用工程根执行 `npm run dev`，等价于 `./run-dev.sh start`：后端 8000、Direct Mock 5175、Dev Host 预览壳 5176，Dev Host 默认走 local-backend 模式，界面里的接口调用经它转发打到 8000。只验界面与内存 mock 时用 `npm run dev:bridge`。`npm run dev:status` 看本 checkout 的进程与当前接口模式，`npm run dev:stop` 只停本 checkout，多个会话共用同一台机器时**不要**用它去停别人的服务。在开发者中心仓执行 `./run-dev.sh start`：服务 5179、页面 5180。把 `http://127.0.0.1:5180/` 给开发者。中栏 G4 到 G7 的预览地址**不用手配**：Dev Host 启动时会往应用目录的 `.workbench/dev-host.json` 写调试地址声明，退出自动删，工作台按进程号加探活双重校验自动侦测；只有 QA 远端联调才用环境变量 `GOALFY_WORKBENCH_APP_URL` 显式覆盖。看不到预览就先确认应用工程那边的服务起没起，**不要**去手改那个文件。改了启动相关配置用 `restart`，其余时候**不重启**。
-3. **身份两处同改，用命令改。** `app.json` 的 `id` 与 `WORKSPACE.md` 的 `business_ui_id` 是同一个应用身份，不一致时工作台的应用列表会报警示。G1 到 G4 还没有业务界面草稿，两处写真实的 `null`，doctor 会报 `WORKSPACE_BUSINESS_UI_PENDING`，那是正常态，**禁止**编一个假 ID 绕过。G5 建出草稿后跑 `npm run scaffold:bind -- --business-ui-id <真实 ID>` 原子回填两处，它不动阶段正文与方案页，**不要**手改。`app.json` 是开发期身份，交付清单 `goalfy-app.json` 是另一回事，**不要**混。
+2. **起两套服务。** 在应用工程根执行 `npm run dev`，等价于 `./run-dev.sh start`：后端 8000、Direct Mock 5175、Dev Host 预览壳 5176，Dev Host 默认走 local-backend 模式，界面里的接口调用经它转发打到 8000。只验界面与内存 mock 时用 `npm run dev:bridge`。`npm run dev:status` 看本 checkout 的进程与当前接口模式，`npm run dev:stop` 只停本 checkout，多个会话共用同一台机器时**不要**用它去停别人的服务。在开发者中心仓执行 `GOALFY_WORKBENCH_WORKSPACE="<应用工程绝对路径>" ./run-dev.sh start`：服务 5179、页面 5180；这个变量必须指向当前应用工程，禁止写成开发者中心仓路径。把 `http://127.0.0.1:5180/` 给开发者。右栏 G4 到 G7 的预览地址**不用手配**：Dev Host 启动时会往应用目录的 `.workbench/dev-host.json` 写调试地址声明，退出自动删，工作台按进程号加探活双重校验自动侦测；只有 QA 远端联调才用环境变量 `GOALFY_WORKBENCH_APP_URL` 显式覆盖。看不到预览就先确认应用工程那边的服务起没起，**不要**去手改那个文件。改了启动相关配置用 `restart`，其余时候**不重启**。
+3. **身份两处同改，用命令改。** `app.json` 的 `id` 与 `WORKSPACE.md` 的 `business_ui_id` 是同一个应用身份，不一致时工作台的应用列表会报警示。G1 到 G4 的新应用两处写真实的 `null`，doctor 会报 `WORKSPACE_BUSINESS_UI_PENDING`，这是允许继续本地开发的状态，**禁止**编一个假 ID 绕过。G4 门禁通过后、推进 G5 前，先用已确认名称与场景包家族创建不带数据模板的 `business_ui` 草稿，再运行 `npm run scaffold:bind -- --business-ui-id <真实 ID>` 原子回填两处；绑定成功才允许进入 G5。G5 抽出数据模板后更新同一草稿，**禁止**再创建第二个业务应用。bind 不动阶段正文与方案页，**不要**手改。`app.json` 是开发期身份，交付清单 `goalfy-app.json` 是另一回事，**不要**混。
 4. **工作目录不动。** 会话的工作目录只能是应用工程根，Skill 执行中**禁止**切到别处。
 
 之后每个阶段按协议三第 7 节填页面、按协议四第 6 节写 md 与改状态，页面自动刷新；每个阶段出口按协议四第 6 节把整个 goalfy-app-workbench 目录 保存到云端。`.workbench/` 是工作台和 Dev Host 自己管的运行时目录，看到里面的文件出现又消失是正常的，**禁止**手改、提交，也**禁止**依赖它存在。
@@ -169,7 +169,7 @@ G7 预发布与交付          最终部署物完整验收、版本核对、授�
 
 **承诺清单是七个阶段的主线，阶段只是时间轴。** G1 把《业务计划书》里的每条承诺抽成编号 `C1`、`C2`…，此后 G2 每条对应一次能力实测或标"无需实测"，G3 每条映射到节点、页面或表，G4 到 G6 每条逐条拿证据，G7 逐条对账；每个阶段出口整份重写 `commitment_list`，并把每条承诺与状态显示在开发者中心页面顶部。规则见协议二第 1 节。
 
-**阶段文件读取纪律。** 进入任何阶段的第一个动作是完整读取该阶段文件；一次只读一份；出口条件满足后落 `stage_exit` 再进下一阶段；修正环内的回跳沿用原记录。每个阶段固定七项：进入依据、本阶段建设、给开发者看什么、要确认哪些边界、门禁 Checklist、证据与结论、失败回退。每个阶段给开发者看的展示物都是 goalfy-app-workbench 目录 `docs/stages/` 下该阶段的那一份 md，图用 Mermaid 写在文件里，开发者工作台经 SSE 实时渲染，工单标签存同一份全文，规范见协议三第 7 节。
+**阶段文件读取纪律。** 进入任何阶段的第一个动作是完整读取该阶段文件；一次只读一份；出口条件满足后落 `stage_exit` 再进下一阶段；修正环内的回跳沿用原记录。每个阶段固定七项：进入依据、本阶段建设、给开发者看什么、要确认哪些边界、门禁 Checklist、证据与结论、失败回退。`docs/stages/` 下的阶段 md 是给你和后续 Agent 的事实与证据记录，工单标签存同一份全文；开发者在右栏看 `docs/proposal/index.html` 的业务结论和应用预览，工作台不展示阶段 md，规范见协议三第 7 节。
 
 **平台对象什么时候创建。** **禁止**提前建空容器；**禁止**用页面替代单元证据。
 

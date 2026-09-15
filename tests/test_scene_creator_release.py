@@ -184,6 +184,49 @@ def test_single_skill_seven_stage_layout():
     assert "能力容器" in router
 
 
+def test_workbench_startup_and_columns_match_the_runtime_contract():
+    """单应用必须显式传应用目录；方案和预览位于右栏，阶段 md 不作为页面展示物。"""
+    router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    display = (SKILL_ROOT / "protocols" / "阶段展示与证据等级.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert 'GOALFY_WORKBENCH_WORKSPACE="<应用工程绝对路径>" ./run-dev.sh start' in router
+    assert "右栏 G4 到 G7 的预览地址" in router
+    assert "开发者中心右栏「方案」只渲染" in display
+    assert "工作台不展示阶段 md" in router
+
+
+def test_business_app_guidance_does_not_restore_removed_form_prefill():
+    """所有 app-creator 指引都必须沿用静态 Schema，不能从旁支重新引入已下线预填。"""
+    documents = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in SKILL_ROOT.rglob("*.md")
+    )
+
+    assert "已知信息的预填由业务应用实现" not in documents
+    assert "稳定业务事实由应用后端在发起时拼进 `submit_data`" in documents
+
+
+def test_business_ui_identity_is_bound_before_g5_transition():
+    """G4 出口先创建身份草稿并 bind；G5 只完善同一草稿。"""
+    router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    g4 = (SKILL_ROOT / "stages" / "G4-核心执行单元验证.md").read_text(
+        encoding="utf-8"
+    )
+    g5 = (SKILL_ROOT / "stages" / "G5-后端业务闭环验证.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "G1 到 G4 的新应用两处写真实的 `null`" in router
+    assert "绑定成功才允许进入 G5" in router
+    assert 'business_ui_manage(action="create"' in g4
+    assert "npm run scaffold:bind -- --business-ui-id <真实 ID>" in g4
+    assert "本阶段不打包部署" in g4
+    assert "完善并部署 G4 已创建的验证实例" in g5
+    assert "禁止**在这里再 create" in g5
+
+
 def test_stale_zip_is_rejected(tmp_path: Path):
     """源文件改了但没重新打包时必须报错，否则只能等 CI 兜底。"""
     copied = _copy_repo(tmp_path)
