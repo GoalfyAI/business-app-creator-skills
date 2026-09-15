@@ -198,15 +198,19 @@ def test_single_skill_seven_stage_layout():
     assert "能力容器" in router
 
 
-def test_workbench_startup_and_columns_match_the_runtime_contract():
-    """单应用必须显式传应用目录；方案和预览位于右栏，阶段 md 不作为页面展示物。"""
+def test_desktop_workbench_and_app_directory_contract():
+    """桌面接管工作台；每应用独立目录，不能恢复旧网页启动前置。"""
     router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
     display = (SKILL_ROOT / "protocols" / "阶段展示与证据等级.md").read_text(
         encoding="utf-8"
     )
 
-    assert 'GOALFY_WORKBENCH_WORKSPACE="<应用工程绝对路径>" ./run-dev.sh start' in router
-    assert "右栏 G4 到 G7 的预览地址" in router
+    assert "Goalfy App" in router
+    assert "apps/<本应用目录名>" in router
+    assert "GOALFY_DEV_FRAME_ANCESTORS" in router
+    assert "http://127.0.0.1:5180/" not in router
+    assert 'download_app_template(template="app_workbench")' not in router
+    assert "./run-dev.sh start" not in router
     assert "开发者中心右栏「方案」只渲染" in display
     assert "工作台不展示阶段 md" in router
 

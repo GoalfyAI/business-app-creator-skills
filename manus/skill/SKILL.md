@@ -98,48 +98,58 @@ keywords:
 | 开发者要做什么 | 任务类型 | 工单 | 从哪进 |
 |---|---|---|---|
 | 把业务目的、SOP、经验、参考项目做成业务应用 | 新建 | `write` | G1 |
-| 继续此前未完成的制作 | 接续 | `get` 原工单 | 先 `workspace_remote_status`、`workspace_pull` 恢复 goalfy-app-workbench 目录，再进 `WORKSPACE.md` 的 `current_stage` |
+| 继续此前未完成的制作 | 接续 | `get` 原工单 | 先 `workspace_remote_status`、`workspace_pull` 恢复本应用工程根，再进 `WORKSPACE.md` 的 `current_stage` |
 | 改已上线应用的页面、接口、表、路线、能力 | 修订 | `write`，先取可编辑草稿 | 受影响的最早阶段，规则见协议一约束 24 |
 | 效果差、报错、数据不对、页面异常 | 诊断 | `read`；转修复时新建 `write` | P8 定位后路由到所属阶段 |
 | 验证一个外部能力值不值得做进来 | 能力试用 | `write` | G2，流程见 P2 能力试用一节 |
 | 只想讨论方案、问概念 | 仅讨论 | 不建工单 | 不进阶段，不创建资产 |
 
-先过工单 Gate，规则见协议四第 1 节；再按 1.3 拉脚手架、起服务。意图或关键参数缺失时先问。缺口分六类：意图、关键参数、知识、工程偏好、产品决策、授权，判定方法见 P1 第 2 节。
+先过工单 Gate，规则见协议四第 1 节；再按 1.3 确认桌面工作区、核脚手架版本并初始化或接续应用。意图或关键参数缺失时先问。缺口分六类：意图、关键参数、知识、工程偏好、产品决策、授权，判定方法见 P1 第 2 节。
 
 **工程偏好有正本，开工前读一次。** `dev_preferences(pull)` 取当前开发者的个性化文档，一份 Markdown，记他的开发偏好与项目约定；返回的是下载地址，**按需读**，**禁止**把全文塞进对话。它替代"工程偏好缺失就用默认"里的猜测部分：文档里写过的照做，没写过的才用可逆默认。开发者**明确表达**且适用于后续工作的偏好，用 `dev_preferences(push)` 写回去，**必须**带 pull 时拿到的 `base_version`，冲突时重新 pull 合并再 push；临时要求和你自己的猜测**禁止**写入。**当前这次的指令优先于文档里的约定。** 平台问题与功能诉求不写这里，走 `submit_dev_feedback`。
 
-### 1.3 开发者中心：第一步永远是拉脚手架、起服务
+### 1.3 开发者中心：在 Goalfy 桌面工作台中制作应用
 
-**开发者中心是什么。** 一个跑在开发者本机的三栏网页，仓库 `goalfy-app-workbench`，地址 `http://127.0.0.1:5180/`。三栏各管一件事：
+**开发者中心是什么。** 开发者本机的 Goalfy App，是连接 Codex、同步开发对话并展示项目产出的桌面工作台。开发者在 App 里提出需求，你在当前应用对应的会话里制作。工作台由 App 自己管理，**不需要另起本地 Host**，也不再把一个本地网页地址当成开发者中心交给开发者。三栏各管一件事：
 
-- **左栏「项目阶段」**：按应用根 `workspace.json` 的 `targets` 渲染进度，`not_started` 的**不展示**，`in_progress` 的高亮，底部是应用选择框与当前应用信息。所以阶段一开工就要把对应项改成 `in_progress`，否则开发者那边看不到你在做什么。
-- **中栏**：你和开发者的开发对话。
-- **右栏「项目产出」**：两个分页。**「方案」**用内嵌框架渲染 `docs/proposal/index.html`，你改完自动重载，不需要开发者刷新；**「预览」**内嵌应用自己的 Dev Host 预览页，可以放大到隐藏中栏。
+- **左栏「项目阶段」**：按应用根 `workspace.json` 的 `targets` 渲染进度，`not_started` 的**不展示**，`in_progress` 的高亮。所以阶段一开工就要同步改状态。
+- **中栏**：你和开发者的开发对话，由 Goalfy 接入 Codex；接续当前应用，不要求开发者再去 Codex 新建另一段会话。
+- **右栏「项目产出」**：**「方案」**渲染 `docs/proposal/index.html`，改完自动更新；**「预览」**展示当前应用的实际页面，不能用方案原型冒充已实现应用。
 
-方案页只讲两件事：业务过程，替谁、按什么过程把事做成；开发内容，正在把它做成什么，含分工泳道图、运行路线、业务数据表、页面。`docs/stages/` 下的七份 md 是给你和后续 Agent 用的工作记录，服务端接口保留但**不在页面上展示**。工作台只读本地文件：改 `WORKSPACE.md`、`workspace.json`、`docs/**/*.md` 或 `docs/proposal/` 下任何文件，页面都会自动更新。
+方案页讲业务过程与开发内容，详细展示规则见协议三第 7 节。`docs/stages/` 下七份 md 是给你和后续 Agent 的工作记录，**不在页面上展示**。你维护应用工程中的身份、阶段与方案文件，Goalfy 负责展示和对话接续；**禁止**为了制作应用再下载、克隆或启动 `goalfy-app-workbench`，也不要修改 Goalfy 安装目录。
 
-**两个仓、两套服务。** 业务应用脚手架 `goalfy-app-scaffold` 生成应用工程，本 Skill 把它的仓根称为 goalfy-app-workbench 目录；开发者中心 `goalfy-app-workbench` 是另一个独立仓。工作台一次可以管多个应用：它按配置链找应用目录，优先级是命令行、环境变量、`workbench.config.local.json`、`workbench.config.json`、内置默认；`appsDir` 把一个目录下的每个一级子目录当成一个应用，`apps` 是显式清单，两者取并集。单应用调试用环境变量 `GOALFY_WORKBENCH_WORKSPACE` 直接指到应用目录。
+**工作台不是应用工程。** `goalfy-app-scaffold` 是业务应用的工程模板，不是开发者中心。下文“应用工程根”指本次应用自己的目录，**不再叫 goalfy-app-workbench 目录**。Goalfy 已分配专属工作目录时，先以当前会话的实际 cwd 和已有文件确认归属；桌面模式在该工作目录的 `apps/` 下维护本次应用，已有应用就接续它，**禁止**另建第二个应用。不要硬编码本机用户目录或 Goalfy 安装路径。
 
-**你的目录能不能被工作台看见，取决于两个文件。** 仓根必须有 `app.json` 且 `schema_version` 形如 `goalfy.app/vN`，否则这个目录**整体被忽略**，压根不进应用列表；有了 `app.json` 但 `WORKSPACE.md` 还没就绪，列表里显示"初始化中"且选不中。所以顺序固定：先 `app.json`，再 `WORKSPACE.md`，再七份阶段文档。
+**一应用一目录，顶层名称要能区分业务。** 新建时在工作台指定的位置使用与本次业务对应的稳定目录名，例如 `restaurant-koc`、`order-audit`，不能所有应用都叫 `app`、`template` 或 `goalfy-app-scaffold`。同名目录已存在时先读身份判断是不是接续；确为另一个应用才加有意义的区分，不直接解压覆盖。目录树的顶层也写实际应用目录名，不只写一个点或脚手架仓库名。以一个新应用为例：
 
-任何制作任务的第一个动作，在建工单之后、进入 G1 之前：
+```text
+restaurant-koc/             本次应用工程根，位于工作台分配的 apps/ 下
+├── app.json                本应用名称与业务界面身份
+├── WORKSPACE.md            本应用工作区身份与阶段索引
+├── workspace.json          七阶段状态
+├── scaffold-release.json   本应用实际采用的脚手架版本
+├── docs/                   本应用方案、阶段记录与历史
+├── frontend/
+└── backend/
+```
 
-1. **拿到 goalfy-app-workbench 目录。** 工作区文件由脚手架的命令生成，**不要**手写：
+不同应用分别初始化名称与工作区身份，不复制另一个应用的 `workspace_id`、`business_ui_id` 或阶段事实。工作台管理的外层目录即使使用机器标识，也**不要**自行改名；目录名用于人识别，不能代替平台身份。接续时保留已有实际目录与身份，不为符合示例改名或重建。
 
-   - **先核版本**：读取已有应用根 `scaffold-release.json`（缺失传空），调用 `business_ui_bundle(action="download_template", task_id=..., current_scaffold_version=..., skill_min_scaffold_version=<本入口机器标记>, workspace_id=<已有工作区标识>)`。新建从返回的下载地址获取模板并校验 `sha256`；已有应用按 `upgrade_required` 完成迁移后再继续。不要用远端开发分支或仓库 `package.json` 代替已登记发布版本。
+制作任务建工单后、初始化或继续开发之前，按下面顺序：
 
-   - **新建**：`npm run scaffold:init -- --environment <环境> --app-name "<业务应用名称>"`，已经有业务界面草稿时再加 `--business-ui-id <真实 ID>`。它一次生成 `app.json`、`WORKSPACE.md`、`docs/proposal/index.html`、七份阶段文档、`docs/proposal/screens/` 与 `docs/history/`，`workspace_id` 自动生成并落盘，G1 置 `in_progress`、其余 `not_started`。示例应用在 `examples/` 里，不会混进新应用。
-   - **旧应用缺工作台资产**：`npm run scaffold:repair -- --app-name "<业务应用名称>"`，只补缺失的文件，**不覆盖**已有事实。
-   - **接续**：先 `workspace_remote_status(workspaceId)` 看云端有没有保存，有就 `workspace_pull` 拉回，按协议四第 6 节恢复；没有就定位本地已有仓。**禁止**对已有工作区重跑 `scaffold:init`，脚本本身也会拒绝覆盖现有阶段事实。
-   - **装依赖并自检**：`npm run setup`，然后 `npm run doctor`。doctor 报的第一条 `FAIL` 先修再往下走，`WARN` 会说明当前阶段要不要处理。
-   - **没有开发者中心时**：`download_app_template(template="app_workbench")` 取一小时有效的下载地址与包信息，拉开发者中心整仓模板。业务应用脚手架使用上一条 `business_ui_bundle(download_template)` 返回的已登记模板。
+1. **先恢复归属，再核脚手架版本。** 新建先确认应用目录；接续先定位原应用，按协议四第 6 节恢复已有资料与代码。读取该应用根 `scaffold-release.json`（缺失传空），调用 `business_ui_bundle(action="download_template", task_id=..., current_scaffold_version=..., skill_min_scaffold_version=<本入口机器标记>, workspace_id=<已有工作区标识>)`。新建尚无工作区时省略 `workspace_id`。新建用当前环境已登记的最新模板，校验下载包 `sha256` 和解包后的 `version`；已有应用低于门槛时先迁移、验证再继续，不能只改版本标记。完整规则见[脚手架版本与升级](references/脚手架版本与升级.md)，不拿本地缓存、开发分支或 `package.json` 版本代替检查。
+2. **在本应用目录生成工作区。** 模板只解包到已确认的新应用目录；若压缩包带通用外层目录，整理为本应用工程根，不能多套一层让工作台读不到入口。工作区文件由脚手架命令生成，**不要**手写：
 
-   `workspace.json` 是阶段状态正本，放在仓库根，由 `scaffold:init` 一并生成：七项按 G1 到 G7 的顺序排，`name` 是阶段的中文名如「业务目标与范围」，**不是** `G1` 这种编号，因为它直接渲染给开发者看；G1 置 `in_progress`、其余 `not_started`。此后由你全程维护，规则见协议四第 6 节，每次改都要与七份阶段文档 front matter 的 `status` 保持一致。它是开发期资产，打包时被排除，不进交付包。`docs/proposal/index.html` 由 `scaffold:init` 生成一份带模板标记的骨架，G1 结束前**必须**按本应用重写并删掉标记，规则与机器校验项见协议三第 7 节。G1 收敛四结论是"直接用能力容器"时 goalfy-app-workbench 目录 照样存在，代码目录空着。
-2. **起两套服务。** 在应用工程根执行 `npm run dev`，等价于 `./run-dev.sh start`：后端 8000、Direct Mock 5175、Dev Host 预览壳 5176，Dev Host 默认走 local-backend 模式，界面里的接口调用经它转发打到 8000。只验界面与内存 mock 时用 `npm run dev:bridge`。`npm run dev:status` 看本 checkout 的进程与当前接口模式，`npm run dev:stop` 只停本 checkout，多个会话共用同一台机器时**不要**用它去停别人的服务。在开发者中心仓执行 `GOALFY_WORKBENCH_WORKSPACE="<应用工程绝对路径>" ./run-dev.sh start`：服务 5179、页面 5180；这个变量必须指向当前应用工程，禁止写成开发者中心仓路径。把 `http://127.0.0.1:5180/` 给开发者。右栏 G4 到 G7 的预览地址**不用手配**：Dev Host 启动时会往应用目录的 `.workbench/dev-host.json` 写调试地址声明，退出自动删，工作台按进程号加探活双重校验自动侦测；只有 QA 远端联调才用环境变量 `GOALFY_WORKBENCH_APP_URL` 显式覆盖。看不到预览就先确认应用工程那边的服务起没起，**不要**去手改那个文件。改了启动相关配置用 `restart`，其余时候**不重启**。
-3. **身份两处同改，用命令改。** `app.json` 的 `id` 与 `WORKSPACE.md` 的 `business_ui_id` 是同一个应用身份，不一致时工作台的应用列表会报警示。G1 到 G4 的新应用两处写真实的 `null`，doctor 会报 `WORKSPACE_BUSINESS_UI_PENDING`，这是允许继续本地开发的状态，**禁止**编一个假 ID 绕过。G4 门禁通过后、推进 G5 前，先用已确认名称与场景包家族创建不带数据模板的 `business_ui` 草稿，再运行 `npm run scaffold:bind -- --business-ui-id <真实 ID>` 原子回填两处；绑定成功才允许进入 G5。G5 抽出数据模板后更新同一草稿，**禁止**再创建第二个业务应用。bind 不动阶段正文与方案页，**不要**手改。`app.json` 是开发期身份，交付清单 `goalfy-app.json` 是另一回事，**不要**混。
-4. **工作目录不动。** 会话的工作目录只能是应用工程根，Skill 执行中**禁止**切到别处。
+   - **新建**：`npm run scaffold:init -- --environment <环境> --app-name "<业务应用名称>"`，已经有业务界面草稿时再加 `--business-ui-id <真实 ID>`。它生成本应用的 `app.json`、`WORKSPACE.md`、`workspace.json`、方案页和七份阶段文档；`workspace_id` 自动生成并落盘。示例应用在 `examples/`，不混进新应用。
+   - **旧应用缺工作台资产**：`npm run scaffold:repair -- --app-name "<业务应用名称>"`，只补缺失文件，**不覆盖**已有事实。**禁止**对已有工作区重跑 `scaffold:init`。
+   - **装依赖并自检**：`npm run setup`，然后 `npm run doctor`。先修第一条 `FAIL`；`WARN` 按当前阶段处理。
 
-之后每个阶段按协议三第 7 节填页面、按协议四第 6 节写 md 与改状态，页面自动刷新；每个阶段出口按协议四第 6 节把整个 goalfy-app-workbench 目录 保存到云端。`.workbench/` 是工作台和 Dev Host 自己管的运行时目录，看到里面的文件出现又消失是正常的，**禁止**手改、提交，也**禁止**依赖它存在。
+   应用工程根必须有合法 `app.json`，且 `schema_version` 形如 `goalfy.app/vN`；`WORKSPACE.md` 未就绪会显示“初始化中”。`workspace.json` 是阶段状态正本，七项按 G1 到 G7 排，`name` 用阶段中文名，G1 为 `in_progress`、其余 `not_started`，与阶段 md 的状态同步。`docs/proposal/index.html` 的模板标记必须在 G1 结束前按业务重写并删除。即使最终只用能力容器，仍保留本应用的方案与阶段工作目录。
+3. **工作台已经运行，应用调试按需准备。** G1 到 G3 的方案与原型由 Goalfy 展示，不因没有业务页面而另起服务。需要真实应用预览时，按已校验脚手架的命令准备应用自身的前后端调试；先查当前应用运行状态，已就绪就复用，不把“起两套服务”作为开工前置。预览连接由工作台与脚手架接管，保留桌面注入的 `GOALFY_DEV_FRAME_ANCESTORS`，不硬编码端口、不手写运行时声明、不放宽来源限制来绕过连接问题。预览失败先核应用版本、当前运行状态与连接提示，不重装工作台或重建会话。应用调试与预部署验证的区别见 P5 第 8 节。
+4. **身份两处同改，用命令改。** `app.json` 的 `id` 与 `WORKSPACE.md` 的 `business_ui_id` 是同一个应用身份。G1 到 G4 的新应用两处写真实的 `null`，`WORKSPACE_BUSINESS_UI_PENDING` 允许继续本地开发，**禁止**编假 ID。G4 门禁通过后、推进 G5 前，先创建不带数据模板的 `business_ui` 草稿，再运行 `npm run scaffold:bind -- --business-ui-id <真实 ID>` 原子回填，绑定成功才允许进入 G5；G5 更新同一草稿，**禁止**再建第二个应用。交付清单 `goalfy-app.json` 是另一回事，不与开发期身份混用。
+5. **命令只落在本应用。** 桌面会话 cwd 可能是外层专属工作目录；工程命令的工作目录必须明确指向 `apps/<本应用目录名>` 的实际绝对路径。已定位后固定该应用工程根，不切到其他应用、缓存模板或 Goalfy 安装目录操作。
+
+之后按协议三第 7 节更新方案、按协议四第 6 节记录阶段与保存云端。Goalfy 同步 Codex 对话不等于源码已上传或部署成功，保存范围仍按协议四执行。`.workbench/` 是机器管理的运行时目录，**禁止**手改、提交，也不依赖它持续存在。
 
 ### 1.4 前置：工具可用性
 
@@ -175,7 +185,7 @@ G7 预发布与交付          最终部署物完整验收、版本核对、授�
 
 **承诺清单是七个阶段的主线，阶段只是时间轴。** G1 把《业务计划书》里的每条承诺抽成编号 `C1`、`C2`…，此后 G2 每条对应一次能力实测或标"无需实测"，G3 每条映射到节点、页面或表，G4 到 G6 每条逐条拿证据，G7 逐条对账；每个阶段出口整份重写 `commitment_list`，并把每条承诺与状态显示在开发者中心页面顶部。规则见协议二第 1 节。
 
-**阶段文件读取纪律。** 进入任何阶段的第一个动作是完整读取该阶段文件；一次只读一份；出口条件满足后落 `stage_exit` 再进下一阶段；修正环内的回跳沿用原记录。每个阶段固定七项：进入依据、本阶段建设、给开发者看什么、要确认哪些边界、门禁 Checklist、证据与结论、失败回退。开发者在右栏看的方案是 goalfy-app-workbench 目录 `docs/proposal/index.html`，按阶段持续展示业务路线、能力与费用选择、原型、开发进度及交付摘要；真实应用通过宿主预览入口展示。`docs/stages/` 下七份 md 给 Agent 保留事实与完整证据，工单标签存同一份全文，工作台不展示阶段 md。载体、固定内容与更新规则见协议三第 7 节。
+**阶段文件读取纪律。** 进入任何阶段的第一个动作是完整读取该阶段文件；一次只读一份；出口条件满足后落 `stage_exit` 再进下一阶段；修正环内的回跳沿用原记录。每个阶段固定七项：进入依据、本阶段建设、给开发者看什么、要确认哪些边界、门禁 Checklist、证据与结论、失败回退。开发者在右栏看的方案是应用工程根下的 `docs/proposal/index.html`，按阶段持续展示业务路线、能力与费用选择、原型、开发进度及交付摘要；真实应用通过宿主预览入口展示。`docs/stages/` 下七份 md 给 Agent 保留事实与完整证据，工单标签存同一份全文，工作台不展示阶段 md。载体、固定内容与更新规则见协议三第 7 节。
 
 **平台对象什么时候创建。** **禁止**提前建空容器；**禁止**用页面替代单元证据。
 
