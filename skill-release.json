@@ -4,8 +4,8 @@
   "version": "v20260915-d36652",
   "package_version": "2.0.2",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-15T08:31:21Z",
-  "update_reason": "开发者中心：按产品会议补齐七阶段可见内容、业务路线、工具选型与费用、开发进度和交付摘要",
+  "released_at": "2026-09-15T08:37:36Z",
+  "update_reason": "开发者中心：整合重写 G1–G7 第3节给开发者看什么，按展示清单与反馈更新组织",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -108,12 +108,12 @@
     "references/脚手架版本与升级.md": "d375bca3c6d92477c0ac6910412b66139f42058660d0297895c1ee9a9cd1d0aa",
     "references/表结构与累加机制.md": "35f93344b8bdcd2cc3e81fe087a1009f18e110ed04fc52b2343e06c916f36adc",
     "scripts/feedback_report.py": "af618fa5d40e7c8c20c39b132c06384a0b895389954761543d0354b034e6a2a8",
-    "stages/G1-业务目标与范围.md": "108605d7bfdfd2afcbc1f957bc9aea241c6de7289d251fb075f734c5356eabe0",
-    "stages/G2-关键能力可行性.md": "d2c1a4aa6ab528b9e320308ef9da4d6be49df632bbd375507bcc851c24a28463",
-    "stages/G3-运行设计与验收基线.md": "a155fef9b39a522a89eff1f67357ae67b0b43cbad1d22da444144bc2008e3c61",
-    "stages/G4-核心执行单元验证.md": "2292e95a1e56e84ae4164137ff58900459579c6c4aa9d46cff4df839d51fac7c",
-    "stages/G5-后端业务闭环验证.md": "97146f86fdbce21980c66a4f1734c3ecfee3dcc3d64093f4e72866ebbe1e7dac",
-    "stages/G6-用户操作闭环验证.md": "fb78d60fc9bbef50a1916536d6bff6a1f0cc32aac6c34003043af5d8a3ab36bc",
-    "stages/G7-预发布与交付.md": "be7b87ff6149f37fabdcbd6ed4e41fc3816cf10531cc30bf7ad27721d9b1f6da"
+    "stages/G1-业务目标与范围.md": "2e4c69a660ff8ae555eeac97ad5659525661dc0b0c720e718eac11c8296b99c6",
+    "stages/G2-关键能力可行性.md": "539a81914c23df67400c91d939017c54999d72cd114169253d32cc79b98bd8c2",
+    "stages/G3-运行设计与验收基线.md": "1060c223a0426148222b980080c6f3456ef24fe514c300128e31e4187e6a4783",
+    "stages/G4-核心执行单元验证.md": "7c94c5baa0ce1b7e6a472aa5f63e0684736c4b50df3dfb1152b5326f132a3e23",
+    "stages/G5-后端业务闭环验证.md": "11fcfcc98ba426dbf33dce4e5e6d96f5bc83e877c7186e7613cdc14e45108c1f",
+    "stages/G6-用户操作闭环验证.md": "f1d8d323899552f6636ea80130239abadc60473ddf5c217c9ef302c963da8f27",
+    "stages/G7-预发布与交付.md": "cc8b8499eb6a64a9e7b1a44320724d685a18ad6cf845a8ec91ff73d3b12b707a"
   }
 }
