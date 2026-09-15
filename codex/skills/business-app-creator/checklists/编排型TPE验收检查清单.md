@@ -20,7 +20,7 @@
 3. 证据不足时按需读取实际引用的 FastAgent、Tool Group 或工具 Schema，不凭名称猜参数。
 4. 检查 input/output Schema 均为根对象，脚本为 `async def run(input, ctx)`，最终直接返回匹配对象。
 5. 检查每个 `tool()` 的文件 / 路径参数形态（`file_to_url` URL、`/workspace` 路径、内容本体）与该工具实时契约一致，`_output` 有真实样本或已声明的返回结构做依据（没读过契约、没取过样的按 P2 第 5 节 补）；再检查真实调用名（FastAgent 的调用名是返回值里的 `mr_name`，克隆后的副本调用名与源不同；禁止自行拼接 `PRIVATE_FASTAGENT_` 前缀或猜 ID）、required 参数、类型、来源、最小 `_output` 和业务化 `_rationale`。“最小”仍**必须**覆盖代码实际读取的完整嵌套路径；读数组元素字段时核对 `items.type=object`、`items.properties` 和未做缺省处理的 `items.required`。
-6. 检查文件只来自 input 文件字段、`ctx.skill_dir` 或本轮过程/输出目录；正式文件位于 `ctx.output_dir` 并以 `workspace-file-path` 返回。工具或 FastAgent 真正生成并返回的文件可以继续传递；作为路线交付返回的文件，须已收进最终节点 `ctx.output_dir`（G4 交付链）。仅计划使用的目标路径或目录不能冒充已经存在的交付文件。
+6. 检查文件只来自 input 文件字段、`ctx.skill_dir` 或本轮过程/输出目录；正式文件位于 `ctx.output_dir` 并以 `workspace-file-path` 返回。工具或 FastAgent 真正生成并返回的文件可以继续传递；作为路线交付返回的文件，须已收进最终节点 `ctx.output_dir`（G4 交付链）。仅计划使用的目标路径或目录不能冒充已经存在的交付文件。返回值由脚本按字段组装：没有把 `tool()` 或 FastAgent 的返回对象整个、或合并后写进返回值（P3 第 9.3 节按字段取用）。
 7. 区分三种结束语义：成功产物必须真实存在且满足成功契约；技术失败必须让异常冒泡；合法无产物必须有明确业务状态并省略文件字段，成功分支仍条件化要求产物。
    再列出每个 FastAgent `_output` 里的业务状态枚举，逐个非成功值（如 `needs_input`）在脚本里找到分支，确认它不会走到写库、发布或下游生成；Bubble 桩通常只返回成功示例，这些分支未触达时列为盲区，不当作已覆盖（P3 第 9.3 节）。
 8. 对照轨迹逐步核对 kind、状态、错误、输出形状、字段衔接和最终输出。
@@ -67,6 +67,8 @@ Preview 对事件生命周期采用保守的静态证明。用于满足生命周
 - 用目录约定拼接读取先前运行的产物（如 `{当前目录}/v{n}.json`）——运行产物目录逐次不同，跨运行引用必须传绝对 workspace 路径（见 G4）。
 - 门禁只查形状不裁业务状态：`_output` 声明了 `needs_input` 等非成功值，门禁却只核对数量、顺序、文件名，非成功结果照样进写库或下游；或对非成功状态原样重试；或最终 `status` 写死成功值。FastAgent 缺输入时照样会把形状填满，形状全过不代表结果可用。
 - 写库依赖的前置记录没有前置：写库调用只给自然语言、候选 JSON 和幂等键，没有后端预建的父记录 id、目标表与只写的列；或脚本没在入口门禁按齐全 / 全部缺失 / 部分缺失核验这组 id，要等写库 FastAgent 执行中才发现父记录不存在（P3 第 9.3 节）。
+- 把 `tool()` 或 FastAgent 的返回整包写进节点输出：返回里 `_output` 之外的字段（如 FastAgent 顺带的会话目录路径 `output_file`）随之进入交付——当前平台整次交付被 `ORCH_DELIVERY_FILE_UNVERIFIED` 拒收，新版平台替换成「内部资料：文件名」。冒泡中 FastAgent 是 Schema 桩，带不出这类字段，**必须**读脚本判定。
+- 要交付的文件只在返回里给了路径，没有复制进 `ctx.output_dir` 并声明为 `workspace-file-path`：文件不会成为附件（P3 第 12.1 节规则三）。
 - 写库 FastAgent 被要求建行：`context_hint` 让它"追加""新增"一条记录，或需要它填主键、父记录 id、`version_no` 等身份列；新行应由路线返回产出、后端生产回流接口建行，FastAgent 只 UPDATE 已建行的 agent 列，并在同一条更新里带 `updated_by='agent'`、`last_run_id`、`row_version+1`（P4 第 3 节「行由谁建」）。
 - 被下游节点 `input_mapping` 引用、且在下游 `input_schema` 中 required 的字段，未在本节点**所有 `return` 分支**返回：`after_success` 派发不看业务成败，blocked 分支同样被取字段，缺失即路线中断（与 G4 的 schema 裁决同一原理）。
 
