@@ -68,8 +68,8 @@ Preview 对事件生命周期采用保守的静态证明。用于满足生命周
 - 用目录约定拼接读取先前运行的产物（如 `{当前目录}/v{n}.json`）——运行产物目录逐次不同，跨运行引用必须传绝对 workspace 路径（见 G4）。
 - 门禁只查形状不裁业务状态：`_output` 声明了 `needs_input` 等非成功值，门禁却只核对数量、顺序、文件名，非成功结果照样进写库或下游；或对非成功状态原样重试；或最终 `status` 写死成功值。FastAgent 缺输入时照样会把形状填满，形状全过不代表结果可用。
 - 写库依赖的前置记录没有前置：写库调用只给自然语言、候选 JSON 和幂等键，没有后端预建的父记录 id、目标表与只写的列；或脚本没在入口门禁按齐全 / 全部缺失 / 部分缺失核验这组 id，要等写库 FastAgent 执行中才发现父记录不存在（P3 第 9.3 节）。
-- 把 `tool()` 或 FastAgent 的返回整包写进节点输出：返回里 `_output` 之外的字段（如 FastAgent 顺带的会话目录路径 `output_file`）随之进入交付——当前平台整次交付被 `ORCH_DELIVERY_FILE_UNVERIFIED` 拒收，新版平台替换成「内部资料：文件名」。冒泡中 FastAgent 是 Schema 桩，带不出这类字段，**必须**读脚本判定。
-- 要交付的文件只在返回里给了路径，没有复制进 `ctx.output_dir` 并声明为 `workspace-file-path`：文件不会成为附件（P3 第 12.1 节规则三）。
+- 把 `tool()` 或 FastAgent 的返回整包写进节点输出：返回里 `_output` 之外的字段（如 FastAgent 顺带的会话目录路径 `output_file`）随之进入交付——旧实现可能因未声明路径以 `ORCH_DELIVERY_FILE_UNVERIFIED` 拒收，已部署 T3415 配套实现的环境替换成「内部资料：文件名」（P3 第 12.1 节规则三）。冒泡中 FastAgent 是 Schema 桩，带不出这类字段，**必须**读脚本判定；`_output` 不是返回对象的自动裁剪器。
+- 混淆附件、出处引用与意外路径：要交付的文件漏复制、文件声明或 mapping；把「内部资料：文件名」当成附件；或把新实现对未声明路径的处理扩大成“已声明但不在产物目录的文件也不报错”。按 P3 第 12.1 节规则三逐字段判定用途与目标环境行为，保留有意的出处语义，去掉无用途的 FA 内部路径。
 - 写库 FastAgent 被要求建行：`context_hint` 让它"追加""新增"一条记录，或需要它填主键、父记录 id、`version_no` 等身份列；新行应由路线返回产出、后端生产回流接口建行，FastAgent 只 UPDATE 已建行的 agent 列，并在同一条更新里带 `updated_by='agent'`、`last_run_id`、`row_version+1`（P4 第 3 节「行由谁建」）。
 - 被下游节点 `input_mapping` 引用、且在下游 `input_schema` 中 required 的字段，未在本节点**所有 `return` 分支**返回：`after_success` 派发不看业务成败，blocked 分支同样被取字段，缺失即路线中断（与 G4 的 schema 裁决同一原理）。
 
