@@ -1,10 +1,11 @@
 {
+  "scaffold_min_required_version": "v20260915-041dbe",
   "skill_name": "business-app-creator",
   "version": "v20260911-2e3b1c",
   "package_version": "2.0.1",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-15T04:00:47Z",
-  "update_reason": "T-3415 移植：编排型 TPE 工具与 FastAgent 返回按字段取用、禁止整包转交；交付未声明 workspace 路径不会成为附件（当前平台 UNVERIFIED 拒收，新版替换为「内部资料：文件名」）；P3 修正「守卫只查目录不查声明」的矛盾说法，P8 补报错对照",
+  "released_at": "2026-09-15T06:46:42Z",
+  "update_reason": "脚手架版本治理：最低版本声明、升级流程、预部署证据与 QA 候选发布",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -49,6 +50,7 @@
     "references/应用结构表与结果检查表.md",
     "references/用户反馈报告.md",
     "references/能力容器组成与执行形态速查.md",
+    "references/脚手架版本与升级.md",
     "references/表结构与累加机制.md",
     "scripts/feedback_report.py",
     "stages/G1-业务目标与范围.md",
@@ -60,7 +62,7 @@
     "stages/G7-预发布与交付.md"
   ],
   "checksums": {
-    "SKILL.md": "2392997840048d2aa157aea41a7d43190341f5b2826ef2f9fd4e928fca581f7c",
+    "SKILL.md": "c785688109dcfa9cf6d1064f54f84c2ac88da112b4bebd232ad3eeae1c957311",
     "agents/openai.yaml": "f4a8c0b9b315ac9187e2eb006eefc676229bd31300763659fc692b6eb405c743",
     "checklists/G门禁检查清单.md": "ab90cf9ca62b0a3b70add5a367f309a410fd048134cd1f22bb9c1f8f2dddabbc",
     "checklists/U业务行为验收明细.md": "714467daaeab171758007b069dc6703e4e68e88325737a25c2caa86eb98f35f8",
@@ -74,7 +76,7 @@
     "modules/P4-数据建模与回流.md": "29a164bc4e1bc8f773c87de78cdb26949258b0877afac1128e436f773e4d1dc8",
     "modules/P5-应用脚手架与页面实现.md": "32207fc6ed7fb091df85bdb3cf4fab8d8aa96ad6c1f7e9f1379918803c747d89",
     "modules/P6-验证与证据裁决.md": "aa1c9adba27c860402e5e9ac73156f8210d9ae34749c52cebc620054dff50973",
-    "modules/P7-版本部署与上线.md": "d8cf0c3cc59003b84a1c3d46ae0e2b262e588413ff769b2a2e4ecd25d0098b54",
+    "modules/P7-版本部署与上线.md": "305c5dd190114528edbc5550fbade7ad5dc08c7471aae6ef9af5234d53c49d1c",
     "modules/P8-诊断归因与改进验证.md": "2c4bb61184aa3cee3a7539ba62442766d4c64f124f969e3ed6c382bd707b20c3",
     "protocols/事实决定授权与变更.md": "1c45e0928f39eebbe1e707c4052754116fc5e5c84e7d3d56d4dad421fccd57e0",
     "protocols/承诺实现验收追踪.md": "8d5abbe1f902b57619c945f060eadb5f858dd055d9e8e27c6824b1a316148374",
@@ -103,6 +105,7 @@
     "references/应用结构表与结果检查表.md": "f8c25ff64bda4668d17fc8fca09b73c39fafdfaa242c9dc8eedf08f460949935",
     "references/用户反馈报告.md": "d0d472f89e3348cba368f8cd23c9f703b628d59d0c502374a62f08ae6f9cb1c0",
     "references/能力容器组成与执行形态速查.md": "373dd4fddc5e81835fe760aa33ae516a2cce96ce5b897973567b65a4c0735074",
+    "references/脚手架版本与升级.md": "d375bca3c6d92477c0ac6910412b66139f42058660d0297895c1ee9a9cd1d0aa",
     "references/表结构与累加机制.md": "35f93344b8bdcd2cc3e81fe087a1009f18e110ed04fc52b2343e06c916f36adc",
     "scripts/feedback_report.py": "af618fa5d40e7c8c20c39b132c06384a0b895389954761543d0354b034e6a2a8",
     "stages/G1-业务目标与范围.md": "3111c042946df5d8a850e3460ecb2df621e523db65d98c762336b561c8a4f20a",

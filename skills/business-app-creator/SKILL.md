@@ -41,6 +41,10 @@ keywords:
 ---
 # 业务应用开发指南
 
+<!-- scaffold-min-required-version:v20260915-041dbe -->
+
+本 Skill 要求的脚手架最低版本由上述机器标记记录。它与 MCP 返回的环境抬杆共同生效，按服务端发布登记 ID 比较；开工、接续及预部署时执行[脚手架版本与升级](references/脚手架版本与升级.md)。
+
 > 版本 v3.0，2026-09-08。本 Skill 是**一个主导入口、七个阶段、一套共享协议、八份细则正本**。阶段文件 G1 至 G7 是唯一主线，读完即可执行；细则正本只放阶段文件写不下的表格、契约、纪律清单与示例，在阶段文件点名时查阅。总入口负责识别任务、盘点材料、路由阶段、控制范围与授权、验收整套业务应用。
 
 ## 0. 业务应用是什么
@@ -122,11 +126,13 @@ keywords:
 
 1. **拿到 goalfy-app-workbench 目录。** 工作区文件由脚手架的命令生成，**不要**手写：
 
+   - **先核版本**：读取已有应用根 `scaffold-release.json`（缺失传空），调用 `business_ui_bundle(action="download_template", task_id=..., current_scaffold_version=..., skill_min_scaffold_version=<本入口机器标记>, workspace_id=<已有工作区标识>)`。新建从返回的下载地址获取模板并校验 `sha256`；已有应用按 `upgrade_required` 完成迁移后再继续。不要用远端开发分支或仓库 `package.json` 代替已登记发布版本。
+
    - **新建**：`npm run scaffold:init -- --environment <环境> --app-name "<业务应用名称>"`，已经有业务界面草稿时再加 `--business-ui-id <真实 ID>`。它一次生成 `app.json`、`WORKSPACE.md`、`docs/proposal/index.html`、七份阶段文档、`docs/proposal/screens/` 与 `docs/history/`，`workspace_id` 自动生成并落盘，G1 置 `in_progress`、其余 `not_started`。示例应用在 `examples/` 里，不会混进新应用。
    - **旧应用缺工作台资产**：`npm run scaffold:repair -- --app-name "<业务应用名称>"`，只补缺失的文件，**不覆盖**已有事实。
    - **接续**：先 `workspace_remote_status(workspaceId)` 看云端有没有保存，有就 `workspace_pull` 拉回，按协议四第 6 节恢复；没有就定位本地已有仓。**禁止**对已有工作区重跑 `scaffold:init`，脚本本身也会拒绝覆盖现有阶段事实。
    - **装依赖并自检**：`npm run setup`，然后 `npm run doctor`。doctor 报的第一条 `FAIL` 先修再往下走，`WARN` 会说明当前阶段要不要处理。
-   - **没有开发者中心时**：`download_app_template(template="app_workbench")` 取一小时有效的下载地址与包信息，拉开发者中心整仓模板。它只下开发者中心这一个模板，业务应用脚手架仍然自己 clone。
+   - **没有开发者中心时**：`download_app_template(template="app_workbench")` 取一小时有效的下载地址与包信息，拉开发者中心整仓模板。业务应用脚手架使用上一条 `business_ui_bundle(download_template)` 返回的已登记模板。
 
    `workspace.json` 是阶段状态正本，放在仓库根，由 `scaffold:init` 一并生成：七项按 G1 到 G7 的顺序排，`name` 是阶段的中文名如「业务目标与范围」，**不是** `G1` 这种编号，因为它直接渲染给开发者看；G1 置 `in_progress`、其余 `not_started`。此后由你全程维护，规则见协议四第 6 节，每次改都要与七份阶段文档 front matter 的 `status` 保持一致。它是开发期资产，打包时被排除，不进交付包。`docs/proposal/index.html` 由 `scaffold:init` 生成一份带模板标记的骨架，G1 结束前**必须**按本应用重写并删掉标记，规则与机器校验项见协议三第 7 节。G1 收敛四结论是"直接用能力容器"时 goalfy-app-workbench 目录 照样存在，代码目录空着。
 2. **起两套服务。** 在应用工程根执行 `npm run dev`，等价于 `./run-dev.sh start`：后端 8000、Direct Mock 5175、Dev Host 预览壳 5176，Dev Host 默认走 local-backend 模式，界面里的接口调用经它转发打到 8000。只验界面与内存 mock 时用 `npm run dev:bridge`。`npm run dev:status` 看本 checkout 的进程与当前接口模式，`npm run dev:stop` 只停本 checkout，多个会话共用同一台机器时**不要**用它去停别人的服务。在开发者中心仓执行 `./run-dev.sh start`：服务 5179、页面 5180。把 `http://127.0.0.1:5180/` 给开发者。中栏 G4 到 G7 的预览地址**不用手配**：Dev Host 启动时会往应用目录的 `.workbench/dev-host.json` 写调试地址声明，退出自动删，工作台按进程号加探活双重校验自动侦测；只有 QA 远端联调才用环境变量 `GOALFY_WORKBENCH_APP_URL` 显式覆盖。看不到预览就先确认应用工程那边的服务起没起，**不要**去手改那个文件。改了启动相关配置用 `restart`，其余时候**不重启**。

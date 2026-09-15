@@ -54,6 +54,20 @@ def test_checked_in_release_is_current():
     assert manifest["skill_name"] == "business-app-creator"
     assert release_module._validate_skill_version(manifest["version"]) == manifest["version"]
     assert release_module._validate_package_version(manifest["package_version"])
+    assert manifest["scaffold_min_required_version"] == release_module.scaffold_min_required_version(SKILL_ROOT)
+
+
+def test_scaffold_floor_rejects_missing_or_duplicate_marker(tmp_path):
+    skill_root = _copy_repo(tmp_path)
+    entry = skill_root / "SKILL.md"
+    original = entry.read_text()
+    marker = re.search(r"<!-- scaffold-min-required-version:[^\s]+ -->", original).group()
+    entry.write_text(original.replace(marker, ""))
+    with pytest.raises(release_module.ReleaseError):
+        release_module.scaffold_min_required_version(skill_root)
+    entry.write_text(original + "\n" + marker)
+    with pytest.raises(release_module.ReleaseError):
+        release_module.scaffold_min_required_version(skill_root)
 
 
 def test_all_first_party_package_versions_are_synchronized():

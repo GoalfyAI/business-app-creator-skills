@@ -102,6 +102,7 @@ PACKAGE_MANIFESTS = (
     Path(".agents/plugins/marketplace.json"),
 )
 MANIFEST_KEYS = {
+    "scaffold_min_required_version",
     "skill_name",
     "version",
     "package_version",
@@ -593,6 +594,13 @@ def check_platform_zips(skill_root: Path) -> None:
         raise ReleaseError(f"平台压缩包已过期，请执行 release 或 zip：{sorted(stale)}")
 
 
+def scaffold_min_required_version(skill_root: Path) -> str:
+    markers = re.findall(r"<!-- scaffold-min-required-version:([^\s]+) -->", (skill_root / "SKILL.md").read_text(encoding="utf-8"))
+    if len(markers) != 1 or not DATA_SKILL_VERSION_RE.fullmatch(markers[0]):
+        raise ReleaseError("SKILL.md 必须包含唯一有效的 scaffold-min-required-version 标记")
+    return markers[0]
+
+
 def check_release(skill_root: Path) -> dict[str, Any]:
     """校验发布清单、Skill 内容校验和与各平台副本。"""
     skill_root = skill_root.resolve()
@@ -606,6 +614,8 @@ def check_release(skill_root: Path) -> dict[str, Any]:
     if manifest["skill_name"] != SKILL_NAME:
         raise ReleaseError(f"skill_name 必须是 {SKILL_NAME!r}")
     skill_version = _validate_skill_version(manifest["version"])
+    if manifest["scaffold_min_required_version"] != scaffold_min_required_version(skill_root):
+        raise ReleaseError("发布清单的脚手架最低版本与 SKILL.md 不一致")
     package_version = manifest["package_version"]
     _validate_package_version(package_version)
     if manifest["mcp_endpoint"] != _configured_mcp_endpoint(skill_root):
@@ -678,6 +688,7 @@ def release(
 
     files = discover_source_files(skill_root)
     manifest = {
+        "scaffold_min_required_version": scaffold_min_required_version(skill_root),
         "skill_name": SKILL_NAME,
         "version": skill_version,
         "package_version": package_version,
