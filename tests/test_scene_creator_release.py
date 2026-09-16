@@ -211,8 +211,8 @@ def test_desktop_workbench_and_app_directory_contract():
     assert "http://127.0.0.1:5180/" not in router
     assert 'download_app_template(template="app_workbench")' not in router
     assert "./run-dev.sh start" not in router
-    assert "开发者中心右栏「方案」只渲染" in display
-    assert "工作台不展示阶段 md" in router
+    assert "给开发者看的内容写在**一份 HTML**" in display
+    assert "七份 md 给 Agent 保留事实与完整证据" in router
 
 
 def test_retired_workbench_template_keeps_app_scaffold_and_cloud_workspace():
@@ -265,24 +265,24 @@ def test_desktop_resume_preserves_local_progress_before_cloud_restore():
     assert "工单是唯一能跨轮次续作的载体" not in recovery
 
 
-def test_desktop_sidebar_is_sessions_not_stage_navigation():
+def test_app_progress_contract_does_not_describe_workbench_layout():
     router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
     recovery = (SKILL_ROOT / "protocols" / "状态恢复知识归属与平台适配.md").read_text(
         encoding="utf-8"
     )
 
-    assert "左栏「Codex 对话」" in router
     assert "新建会话不等于新建应用" in router
     assert "保留其他会话的新改动" in router
-    assert "同步到右栏方案 HTML" in recovery
+    assert "同步到方案 HTML" in recovery
     assert "阶段状态的正本是应用工程根的 `workspace.json`" in recovery
-    assert "左栏「项目阶段」" not in router
-    assert "左栏直接把它渲染" not in recovery
-    assert "左栏**不展示** `not_started`" not in recovery
     assert "开发者中心只认这七个键" not in recovery
+    for path in SKILL_ROOT.rglob("*.md"):
+        content = path.read_text(encoding="utf-8")
+        for layout in ("左栏", "右栏", "开发者在右侧", "三栏各管一件事"):
+            assert layout not in content, path
 
 
-def test_g3_confirmation_uses_proposal_and_separates_screenshot_evidence():
+def test_g3_proposal_is_static_html_without_interaction_or_screenshot_gate():
     pages = (SKILL_ROOT / "modules" / "P5-应用脚手架与页面实现.md").read_text(
         encoding="utf-8"
     )
@@ -290,27 +290,31 @@ def test_g3_confirmation_uses_proposal_and_separates_screenshot_evidence():
         encoding="utf-8"
     )
 
-    assert "右栏 HTML 是开发者确认入口，阶段 MD 保存完整事实与证据" in pages
-    assert "截图作为展示替代" in pages
-    assert "截图作为验证证据" in pages
-    assert "不能因为已有可操作原型尚未截图就判页面未设计" in pages
-    assert "统一展示在右栏方案 HTML" in stage
-    for path in SKILL_ROOT.rglob("*.md"):
-        content = path.read_text(encoding="utf-8")
-        for retired in ("没有截图的页面视为未设计", "MD + 原型本地地址一起交开发者",
-                        "每页截图展示", "正文与截图目录指针"):
-            assert retired not in content, path
-
-
-def test_desktop_feedback_requires_supported_annotation_capability():
     display = (SKILL_ROOT / "protocols" / "阶段展示与证据等级.md").read_text(
         encoding="utf-8"
     )
 
-    assert "当前入口是旁边的开发对话" in display
+    assert "HTML 展示给开发者看的方案，阶段 MD 保存完整事实与证据" in pages
+    assert "不依赖点击或脚本执行，也不要求截图" in pages
+    assert "不依赖点击交互或截图" in stage
+    assert "不依赖点击、切换或脚本执行才能看到" in display
+    assert "静态布局和示例数据" in display
+    for path in SKILL_ROOT.rglob("*.md"):
+        content = path.read_text(encoding="utf-8")
+        for retired in ("没有截图的页面视为未设计", "MD + 原型本地地址一起交开发者",
+                        "每页截图展示", "正文与截图目录指针", "可点原型", "可点的页面原型",
+                        "做不成才用截图", "截图作为展示替代", "开发者点得动"):
+            assert retired not in content, path
+
+
+def test_proposal_feedback_uses_conversation_without_annotation_promises():
+    display = (SKILL_ROOT / "protocols" / "阶段展示与证据等级.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "开发者在开发对话中说明哪里不对" in display
     assert "由你核对当前应用、对应页面、业务步骤和版本" in display
-    assert "自动批注只在宿主实际提供能力时使用" in display
-    assert "仅有 iframe 展示不代表有批注回传" in display
+    assert "批注" not in display
     assert "每条自动带页面、步骤、版本上下文" not in display
 
 
