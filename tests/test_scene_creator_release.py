@@ -198,6 +198,80 @@ def test_single_skill_seven_stage_layout():
     assert "能力容器" in router
 
 
+def test_tool_task_scope_and_preferences_match_mcp_schema():
+    protocol = (SKILL_ROOT / "protocols/状态恢复知识归属与平台适配.md").read_text()
+    router = (SKILL_ROOT / "SKILL.md").read_text()
+    assert "按工具契约携带工单" in protocol
+    assert "这些入口没有 `task_id` 参数" in protocol
+    for tool in ("workspace_remote_status", "workspace_pull", "workspace_push",
+                 "dev_preferences", "query_dev_feedback"):
+        assert f"`{tool}`" in protocol
+    assert "携带也无害" not in protocol
+    assert "base_version=<pull 返回的 version>" in router
+    assert "首次 `exists=false` 时 `base_version` 传 `null`" in router
+    assert '`RESULT_UNKNOWN` 或 `result="unknown"`' in router
+
+
+def test_multi_pack_support_retains_entry_routing_limits():
+    content = (SKILL_ROOT / "modules/P6-验证与证据裁决.md").read_text()
+    assert "scenario_pack_refs=[{scenario_pack_id, scenario_pack_version}" in content
+    assert "`update` 时传完整挂载清单" in content
+    assert "当前 `chat_start` 用首个场景包" in content
+    assert "`scenario_package_ids` 只接受一个场景包" in content
+    for relative in ("SKILL.md", "protocols/事实决定授权与变更.md",
+                     "protocols/状态恢复知识归属与平台适配.md"):
+        text = (SKILL_ROOT / relative).read_text()
+        assert "恰好挂" not in text
+
+
+def test_g5_binds_workspace_and_checks_internal_run_owner():
+    stage = (SKILL_ROOT / "stages/G5-后端业务闭环验证.md").read_text()
+    data = (SKILL_ROOT / "modules/P4-数据建模与回流.md").read_text()
+    for text in (stage, data):
+        assert 'dataset_template_workspace(action="bind"' in text
+        assert 'database.purpose="template_workspace"' in text
+        assert "data_uid" in text
+    assert "当前 MCP 调用用户是该业务应用的创建者" in stage
+    for code in ("3033", "3025", "3029"):
+        assert code in stage
+    assert "所有者实例库" in stage and "开发工作集" in stage
+
+
+def test_draft_preview_gap_preserves_acceptance_before_finalize():
+    module = (SKILL_ROOT / "modules/P6-验证与证据裁决.md").read_text()
+    assert "发布管理中的交互预览依赖已定稿提交" in module
+    assert "草稿真宿主验收入口缺失" in module
+    assert "`finalize` 仍以验收与授权成立为前提" in module
+    assert "HTTP PUT 实际源码包" in module
+    for relative in ("modules/P6-验证与证据裁决.md", "stages/G6-用户操作闭环验证.md",
+                     "stages/G7-预发布与交付.md"):
+        text = (SKILL_ROOT / relative).read_text()
+        assert "platform_blocked" in text
+        assert "`business_ui_manage(get)` 反读预部署入口" not in text
+        assert "`business_ui_manage(get)` 反读的预部署入口" not in text
+
+
+def test_delivery_records_verified_deployment_scaffold_version():
+    versions = (SKILL_ROOT / "references/脚手架版本与升级.md").read_text()
+    assert "历史部署空值记为“未知”" in versions
+    assert "该实例自己的部署绑定及版本" in versions
+    assert "失败或进行中的部署仅记录本次尝试" in versions
+    for relative in ("references/脚手架版本与升级.md", "modules/P7-版本部署与上线.md",
+                     "stages/G7-预发布与交付.md"):
+        text = (SKILL_ROOT / relative).read_text()
+        for field in ("deployed_scaffold_version", "deployment_id", "source_sha256"):
+            assert field in text
+
+
+def test_real_trace_documents_summary_and_full_for_same_project():
+    for relative in ("modules/P2-能力发现与模型试验.md", "modules/P6-验证与证据裁决.md",
+                     "stages/G5-后端业务闭环验证.md"):
+        text = (SKILL_ROOT / relative).read_text()
+        assert 'evidence_level="summary"' in text
+        assert 'evidence_level="full"' in text
+        assert "同一 `project_id`" in text
+
+
 def test_desktop_workbench_and_app_directory_contract():
     """桌面接管工作台；每应用独立目录，不能恢复旧网页启动前置。"""
     router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
