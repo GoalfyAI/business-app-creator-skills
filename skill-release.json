@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20260916-55c753",
-  "package_version": "2.0.3",
+  "version": "v20260916-82b789",
+  "package_version": "2.0.4",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-16T14:09:16Z",
-  "update_reason": "统一引用已在 QA、预发、生产发布的脚手架 v20260916-8941ec",
+  "released_at": "2026-09-16T14:09:37Z",
+  "update_reason": "统一 QA、预发、生产智能应用脚手架依赖至 v20260916-8941ec，并发布七阶段 Skill",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -62,7 +62,7 @@
     "stages/G7-预发布与交付.md"
   ],
   "checksums": {
-    "SKILL.md": "33a6ede535399e708c283620463da5d3be0096e99ed46b85f1854a2df9bdb9f0",
+    "SKILL.md": "35a704df5aef405d5d437958cc8d7752967c65e1328214b02c5849e5c9795241",
     "agents/openai.yaml": "8b83462bd633f5b875c4e690c22131bbb63af3099ebf041e4f7493fe158f74e9",
     "checklists/G门禁检查清单.md": "ab90cf9ca62b0a3b70add5a367f309a410fd048134cd1f22bb9c1f8f2dddabbc",
     "checklists/U业务行为验收明细.md": "714467daaeab171758007b069dc6703e4e68e88325737a25c2caa86eb98f35f8",
