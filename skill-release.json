@@ -1,10 +1,10 @@
 {
   "skill_name": "scene-creator",
-  "version": "v20260908-2adafd",
-  "package_version": "1.24.0",
+  "version": "v20260908-de5292",
+  "package_version": "1.24.1",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-08T03:53:36Z",
-  "update_reason": "app-creator 新增用户反馈报告与采纳决定校验（T-3269）：business_ui_feedback 只读取证、本地 feedback_report.py 生成报告并校验创建者决定后才在授权内改应用；含 1.23.3–1.23.6 的后端边界、契约先行、预填下线等口径修正",
+  "released_at": "2026-09-08T07:03:56Z",
+  "update_reason": "用户反馈报告（T-3269）收口：报告正文精简为阅读与判断所需信息、内部核对项留在原始 JSON；插件副本同步 scripts/*.py；发布校验覆盖脚本文件",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -25,7 +25,7 @@
     "stages/ST-能力试用.md"
   ],
   "checksums": {
-    "SKILL.md": "7d13dc0cddb8c48c8fba0222cb5759c7c587ca134c630f6d31234142efccbb46",
+    "SKILL.md": "9310f5e72f2d6ac4edad11fbff339e68b82a2ab9f105e5c22fb7f515553668b0",
     "agents/openai.yaml": "31b2f074c7812791457462767fd2c43f97c4560fe750cb3267decdda1d0516e6",
     "checklists/场景包验收检查清单.md": "3cb35e9735efb4dcac77339a907c06b60f8a818b673bd19732dfc84f78901ff8",
     "checklists/方案挑战检查清单.md": "4cf75427bb11529480a0f82b6148f783d6d65f94b8dfac54927849e7f6bf8e22",
