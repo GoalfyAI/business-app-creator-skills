@@ -41,7 +41,7 @@ keywords:
 ---
 # 智能应用开发指南
 
-<!-- scaffold-min-required-version:v20260915-041dbe -->
+<!-- scaffold-min-required-version:v20260916-8941ec -->
 
 本 Skill 要求的脚手架最低版本由上述机器标记记录。它与 MCP 返回的环境抬杆共同生效，按服务端发布登记 ID 比较；开工、接续及预部署时执行[脚手架版本与升级](references/脚手架版本与升级.md)。
 
