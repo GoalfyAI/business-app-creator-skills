@@ -4,8 +4,8 @@
   "version": "v20260915-d36652",
   "package_version": "2.0.2",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-15T09:06:30Z",
-  "update_reason": "七阶段 Skill：对齐 Goalfy 桌面工作台、应用独立目录与脚手架版本检查，移除旧网页 Host 启动前置",
+  "released_at": "2026-09-16T05:41:36Z",
+  "update_reason": "桌面 App 接管开发者中心：停用旧工作台模板下载，保留业务应用脚手架版本检查与云端保存，澄清应用本地调试边界",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -62,7 +62,7 @@
     "stages/G7-预发布与交付.md"
   ],
   "checksums": {
-    "SKILL.md": "918ce8b1633de1b7d2a6d2c15a3e4d2c996d381764f7d1142787260bca00e53a",
+    "SKILL.md": "3192edbde4f3968253aef4012d24cf2c49ea505fb9f29566d77365731f40b972",
     "agents/openai.yaml": "f4a8c0b9b315ac9187e2eb006eefc676229bd31300763659fc692b6eb405c743",
     "checklists/G门禁检查清单.md": "ab90cf9ca62b0a3b70add5a367f309a410fd048134cd1f22bb9c1f8f2dddabbc",
     "checklists/U业务行为验收明细.md": "714467daaeab171758007b069dc6703e4e68e88325737a25c2caa86eb98f35f8",
@@ -74,7 +74,7 @@
     "modules/P2-能力发现与模型试验.md": "5894adc1b9a1ef2712e168729f00ad1617143283bc7a5b3d186d676f03faf350",
     "modules/P3-执行形态与路线制作.md": "5627e1f8197cca23f14d6aa3f413018948befb8ebd5e0b116bc41ebed09e54a4",
     "modules/P4-数据建模与回流.md": "664c6e56d08ad7b950852393326c02f93d91e6f737a95b8e7211288b6cbca973",
-    "modules/P5-应用脚手架与页面实现.md": "aeab46ef80e22315206cccdb8f95b7d110ececd6f4f5592ad5672c5421c29284",
+    "modules/P5-应用脚手架与页面实现.md": "cd094ba01ecbf4bc462a543f30900b8dc381a1a8bb0ea2c933073d0678dc675b",
     "modules/P6-验证与证据裁决.md": "fcf58f9f1f3ecf117d1fd2742d8dd5db3a20e92ff2a664f16f5fb85936df0ecf",
     "modules/P7-版本部署与上线.md": "305c5dd190114528edbc5550fbade7ad5dc08c7471aae6ef9af5234d53c49d1c",
     "modules/P8-诊断归因与改进验证.md": "2eb1f8326d699d694ddba18f706ae4ed8bd3fbfcdf59fd7688e0399b87f27910",
@@ -105,7 +105,7 @@
     "references/应用结构表与结果检查表.md": "f8c25ff64bda4668d17fc8fca09b73c39fafdfaa242c9dc8eedf08f460949935",
     "references/用户反馈报告.md": "d0d472f89e3348cba368f8cd23c9f703b628d59d0c502374a62f08ae6f9cb1c0",
     "references/能力容器组成与执行形态速查.md": "373dd4fddc5e81835fe760aa33ae516a2cce96ce5b897973567b65a4c0735074",
-    "references/脚手架版本与升级.md": "2551fb0e464c443b9849750d02c3835462784aa2e45966b292a4602f3033a617",
+    "references/脚手架版本与升级.md": "4554afe2655fdb6777464a44cb99a7201f1ed67f591017910cf94769c7a99f0d",
     "references/表结构与累加机制.md": "35f93344b8bdcd2cc3e81fe087a1009f18e110ed04fc52b2343e06c916f36adc",
     "scripts/feedback_report.py": "af618fa5d40e7c8c20c39b132c06384a0b895389954761543d0354b034e6a2a8",
     "stages/G1-业务目标与范围.md": "c311bb5d400d537ed6b4b9c8a33271688b01ffc4e4e46cfae1154b74ea5889c0",
@@ -113,7 +113,7 @@
     "stages/G3-运行设计与验收基线.md": "1a2568a9b441c30543a50f5ae0e80ef9a91ca4e24309d0aac2a34c50f3150b60",
     "stages/G4-核心执行单元验证.md": "59a43f605380f4f5a428a7db5d9d5c72ec92f9fdfa054bc02ce973a5d4d9f90a",
     "stages/G5-后端业务闭环验证.md": "b24531b550a2474d3000893c2b83b97bb6d225211a8c4666892c403c658dd281",
-    "stages/G6-用户操作闭环验证.md": "b5a38efc719ffb8cfedd48a8fe50b2ea85c80618d06fbb6c95759b581cda8051",
+    "stages/G6-用户操作闭环验证.md": "53868211e9ee1410bf1d65e3b0e1eccea3af232d3fa428e76c0803cb038e2690",
     "stages/G7-预发布与交付.md": "f7e32b17d8e1df0ce697cddffaadf8c9fc7d7d0895c9ef6b952163020fd81e94"
   }
 }

@@ -215,6 +215,33 @@ def test_desktop_workbench_and_app_directory_contract():
     assert "工作台不展示阶段 md" in router
 
 
+def test_retired_workbench_template_keeps_app_scaffold_and_cloud_workspace():
+    """取消工作台模板不等于取消应用脚手架、版本门禁或资料保存。"""
+    router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    versions = (SKILL_ROOT / "references" / "脚手架版本与升级.md").read_text(
+        encoding="utf-8"
+    )
+    preview = (SKILL_ROOT / "modules" / "P5-应用脚手架与页面实现.md").read_text(
+        encoding="utf-8"
+    )
+    stage = (SKILL_ROOT / "stages" / "G6-用户操作闭环验证.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "开发者中心不再作为脚手架下发" in router
+    assert "旧的 `download_app_template` 工作台下载入口不再使用" in router
+    assert 'business_ui_bundle(action="download_template"' in router
+    for tool in ("workspace_remote_status", "workspace_pull", "workspace_push"):
+        assert f"`{tool}`" in router
+    assert "更新 App 不会替当前应用迁移脚手架" in versions
+    assert "业务应用自己的预览与后端调试服务仍按模板准备" in preview
+    assert "不另起开发者中心" in stage
+    for path in SKILL_ROOT.rglob("*.md"):
+        content = path.read_text(encoding="utf-8")
+        assert 'download_app_template(template="app_workbench")' not in content, path
+        assert "./run-dev.sh start" not in content, path
+
+
 def test_business_app_guidance_does_not_restore_removed_form_prefill():
     """所有 app-creator 指引都必须沿用静态 Schema，不能从旁支重新引入已下线预填。"""
     documents = "\n".join(
