@@ -7,6 +7,13 @@
 # 用法：./scripts/release-skill.sh "变更说明"
 set -euo pipefail
 
+# Explicit QA candidates get fresh versions and packages, but no production release tag.
+QA_ONLY=false
+if [ "${1:-}" = "--qa" ]; then
+  QA_ONLY=true
+  shift
+fi
+
 NOTES="${*:-}"
 if [ -z "${NOTES}" ]; then
   echo "用法: $0 \"变更说明\"" >&2
@@ -26,7 +33,12 @@ if [ -n "$(git status --porcelain)" ]; then
   exit 1
 fi
 
-if [ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]; then
+BRANCH="$(git branch --show-current)"
+if [ "$QA_ONLY" = true ] && { [ -z "$BRANCH" ] || [ "$BRANCH" = main ]; }; then
+  echo "QA 候选版必须在已命名的测试分支生成" >&2
+  exit 1
+fi
+if [ "$QA_ONLY" = false ] && [ "$BRANCH" != "main" ]; then
   echo "只能在 main 分支发版，当前分支：$(git rev-parse --abbrev-ref HEAD)" >&2
   exit 1
 fi
@@ -48,6 +60,11 @@ python3 scripts/build_platform_packages.py check
 
 git add -A
 git commit -m "chore(skill): release ${VERSION}" -m "${NOTES}"
+if [ "$QA_ONLY" = true ]; then
+  echo "已生成 QA 候选版 ${VERSION}，未创建生产 tag、未登记版本、未抬杆。"
+  echo "推送当前测试分支到 origin 与 github 后，仅向指定 QA 环境登记。"
+  exit 0
+fi
 # 每个版本对应一次提交，GitHub Actions 据此发布 Release。
 git tag -a "skill/${VERSION}" -m "${NOTES}"
 
