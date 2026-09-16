@@ -242,6 +242,78 @@ def test_retired_workbench_template_keeps_app_scaffold_and_cloud_workspace():
         assert "./run-dev.sh start" not in content, path
 
 
+def test_desktop_resume_preserves_local_progress_before_cloud_restore():
+    router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    recovery = (SKILL_ROOT / "protocols" / "状态恢复知识归属与平台适配.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "先读当前应用本地文件" in router
+    for rule in (
+        "本机接续，本地工程仍在",
+        "换机或本地缺失",
+        "本地与云端都有内容",
+        "不默认写回或删除本地文件",
+        "不只凭 `updatedAt`、阶段号或版本字符串判断谁较新",
+        "冲突未解决前不整份覆盖任一侧",
+        "不包含之后未部署的改动",
+        "服务端没有并发版本保护",
+        "恢复会话不等于恢复文件，恢复文档不等于恢复源码",
+    ):
+        assert rule in recovery
+    assert "接续顺序固定：`workspace_remote_status`" not in recovery
+    assert "工单是唯一能跨轮次续作的载体" not in recovery
+
+
+def test_desktop_sidebar_is_sessions_not_stage_navigation():
+    router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    recovery = (SKILL_ROOT / "protocols" / "状态恢复知识归属与平台适配.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "左栏「Codex 对话」" in router
+    assert "新建会话不等于新建应用" in router
+    assert "保留其他会话的新改动" in router
+    assert "同步到右栏方案 HTML" in recovery
+    assert "阶段状态的正本是应用工程根的 `workspace.json`" in recovery
+    assert "左栏「项目阶段」" not in router
+    assert "左栏直接把它渲染" not in recovery
+    assert "左栏**不展示** `not_started`" not in recovery
+    assert "开发者中心只认这七个键" not in recovery
+
+
+def test_g3_confirmation_uses_proposal_and_separates_screenshot_evidence():
+    pages = (SKILL_ROOT / "modules" / "P5-应用脚手架与页面实现.md").read_text(
+        encoding="utf-8"
+    )
+    stage = (SKILL_ROOT / "stages" / "G3-运行设计与验收基线.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "右栏 HTML 是开发者确认入口，阶段 MD 保存完整事实与证据" in pages
+    assert "截图作为展示替代" in pages
+    assert "截图作为验证证据" in pages
+    assert "不能因为已有可操作原型尚未截图就判页面未设计" in pages
+    assert "统一展示在右栏方案 HTML" in stage
+    for path in SKILL_ROOT.rglob("*.md"):
+        content = path.read_text(encoding="utf-8")
+        for retired in ("没有截图的页面视为未设计", "MD + 原型本地地址一起交开发者",
+                        "每页截图展示", "正文与截图目录指针"):
+            assert retired not in content, path
+
+
+def test_desktop_feedback_requires_supported_annotation_capability():
+    display = (SKILL_ROOT / "protocols" / "阶段展示与证据等级.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "当前入口是旁边的开发对话" in display
+    assert "由你核对当前应用、对应页面、业务步骤和版本" in display
+    assert "自动批注只在宿主实际提供能力时使用" in display
+    assert "仅有 iframe 展示不代表有批注回传" in display
+    assert "每条自动带页面、步骤、版本上下文" not in display
+
+
 def test_business_app_guidance_does_not_restore_removed_form_prefill():
     """所有 app-creator 指引都必须沿用静态 Schema，不能从旁支重新引入已下线预填。"""
     documents = "\n".join(
