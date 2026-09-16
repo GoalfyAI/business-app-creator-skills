@@ -84,6 +84,34 @@ def test_all_first_party_package_versions_are_synchronized():
     assert lock_match and lock_match.group(1) == expected
 
 
+def test_plugin_display_metadata_follows_skill_without_changing_identity(tmp_path):
+    skill_root = _copy_repo(tmp_path)
+    before = {
+        relative: json.loads((tmp_path / relative).read_text())
+        for relative in release_module.PACKAGE_MANIFESTS
+    }
+    metadata_path = skill_root / "agents/openai.yaml"
+    metadata = yaml.safe_load(metadata_path.read_text())
+    metadata["interface"]["display_name"] = "智能应用制作"
+    metadata_path.write_text(yaml.safe_dump(metadata, allow_unicode=True))
+
+    release_module.sync_plugin_display_metadata(skill_root)
+
+    for relative, previous in before.items():
+        current = json.loads((tmp_path / relative).read_text())
+        assert current["name"] == previous["name"]
+        assert "业务应用" not in json.dumps(current, ensure_ascii=False)
+        assert "skill-version:" not in json.dumps(current)
+        plugin = current.get("plugins", [current])[0]
+        old_plugin = previous.get("plugins", [previous])[0]
+        for field in ("version", "source", "skills", "mcpServers", "author"):
+            assert plugin.get(field) == old_plugin.get(field)
+        if "interface" in plugin:
+            assert plugin["interface"]["displayName"] == "智能应用制作"
+        elif "displayName" in plugin:
+            assert plugin["displayName"] == "智能应用制作"
+
+
 def test_every_install_surface_ships_production_endpoint():
     """仓库里的安装物料必须与 PROD_MCP_ENDPOINT 一致（当前约定为 QA），别的环境地址混进来会被这里拦住。"""
     surfaces = [
@@ -152,7 +180,7 @@ def test_workflow_guidance_routes_event_workflows_through_business_runtime():
         assert "单节点业务路线" in document
         assert "直接派发" in document
     assert "验证身份只用于本次 Bubble" in asset_stage
-    assert "不得让脚本、Agent、业务应用或 MCP 调用方伪造" in checklist
+    assert "不得让脚本、Agent、智能应用或 MCP 调用方伪造" in checklist
     assert "只由服务端在正式路线运行中持久化生成" in acceptance
 
 
@@ -231,7 +259,7 @@ def test_g5_binds_workspace_and_checks_internal_run_owner():
         assert 'dataset_template_workspace(action="bind"' in text
         assert 'database.purpose="template_workspace"' in text
         assert "data_uid" in text
-    assert "当前 MCP 调用用户是该业务应用的创建者" in stage
+    assert "当前 MCP 调用用户是该智能应用的创建者" in stage
     for code in ("3033", "3025", "3029"):
         assert code in stage
     assert "所有者实例库" in stage and "开发工作集" in stage
@@ -310,7 +338,7 @@ def test_desktop_workflow_states_current_scaffold_and_workspace_responsibilities
     for tool in ("workspace_remote_status", "workspace_pull", "workspace_push"):
         assert f"`{tool}`" in router
     assert "工作台与应用脚手架分别更新" in versions
-    assert "业务应用自己的预览与后端调试服务按模板准备" in preview
+    assert "智能应用自己的预览与后端调试服务按模板准备" in preview
     assert "工作台运行由 Goalfy 管理" in stage
     for path in SKILL_ROOT.rglob("*.md"):
         content = path.read_text(encoding="utf-8")
@@ -462,7 +490,7 @@ def test_business_app_guidance_does_not_restore_removed_form_prefill():
         for path in SKILL_ROOT.rglob("*.md")
     )
 
-    assert "已知信息的预填由业务应用实现" not in documents
+    assert "已知信息的预填由智能应用实现" not in documents
     assert "稳定业务事实由应用后端在发起时拼进 `submit_data`" in documents
 
 

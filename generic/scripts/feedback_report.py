@@ -189,7 +189,7 @@ def render(raw, issues, previous=None, image_dir=None):
     )
     scope = raw.get("scope", {})
     lines = [
-        "# 业务应用用户反馈报告",
+        "# 智能应用用户反馈报告",
         "<!-- feedback-source-sha256:" + source_hash + " -->",
         "",
         literal("business_ui_id：" + ", ".join(map(str, scope.get("business_ui_ids", [])))),

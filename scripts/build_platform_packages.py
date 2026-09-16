@@ -89,7 +89,7 @@ REQUIRED_SKILL_KEYWORDS = {
     "场景包",
     "workflow",
     "business UI",
-    "业务应用",
+    "智能应用",
     "GoalfyMax",
     "MCP",
 }
@@ -416,6 +416,40 @@ def _bump_package_version(skill_root: Path, version: str) -> None:
             lockfile.write_text(updated, encoding="utf-8")
 
 
+def sync_plugin_display_metadata(skill_root: Path) -> None:
+    """安装入口的展示文案随 Skill 正本生成，保留插件身份与安装配置。"""
+    frontmatter = _load_yaml_mapping(
+        (skill_root / "SKILL.md").read_text(encoding="utf-8").split("---", 2)[1],
+        "SKILL.md frontmatter",
+    )
+    interface = _load_yaml_mapping(
+        (skill_root / OPENAI_METADATA_RELATIVE_PATH).read_text(encoding="utf-8"),
+        "agents/openai.yaml",
+    )["interface"]
+    description = SKILL_VERSION_RE.sub("", frontmatter["description"]).strip()
+    for relative in PACKAGE_MANIFESTS:
+        path = _repository_root(skill_root) / relative
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+        if "plugins" in manifest:
+            manifest["description"] = interface["short_description"]
+            plugin = next(item for item in manifest["plugins"] if item["name"] == SKILL_NAME)
+        else:
+            plugin = manifest
+        plugin["description"] = description
+        if "displayName" in plugin:
+            plugin["displayName"] = interface["display_name"]
+        if "keywords" in plugin:
+            plugin["keywords"] = frontmatter["keywords"]
+        if "interface" in plugin:
+            plugin["interface"].update({
+                "displayName": interface["display_name"],
+                "shortDescription": interface["short_description"],
+                "longDescription": description,
+                "defaultPrompt": interface["default_prompt"],
+            })
+        path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
 def _validate_released_at(value: Any) -> None:
     if not isinstance(value, str):
         raise ReleaseError("released_at 必须是 ISO-8601 字符串")
@@ -683,6 +717,7 @@ def release(
             raise ReleaseError("PROD Skill version 必须使用 vYYYYMMDD-6位小写hex")
 
     _bump_package_version(skill_root, package_version)
+    sync_plugin_display_metadata(skill_root)
     sync_platform_skills(skill_root)
     build_platform_zips(skill_root)
 

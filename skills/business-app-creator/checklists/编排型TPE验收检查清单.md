@@ -33,9 +33,9 @@
 - 两者都不含业务事件时，该编排型 TPE 可以按实时工具契约直接派发，本节其余事件覆盖项不适用。
 - 任一方出现业务事件时，另一方也必须形成一致的完整契约，并将该编排型 TPE 标记为“正式运行必须进入 Business Runtime”。单条编排型 TPE 也必须建立单节点业务路线，禁止直接派发。
 - Bubble 使用服务端分配的验证 Business/Runtime 身份；该身份不是正式业务身份，禁止复制、缓存或写入脚本。
-- 出现 `Workflow business event requires persisted Runtime identity` 时，正式运行优先检查是否误走直接派发；Bubble 则检查服务端是否分配验证身份。不得让脚本、Agent、业务应用或 MCP 调用方伪造 `workflow_runtime_id`（只由服务端生成）；`business_id` 本来就由调用方在发起时给出、同一业务实例内不变，`orchestration_id` 取自场景包已定义的路线 id，两者不是伪造，缺了才是错。
+- 出现 `Workflow business event requires persisted Runtime identity` 时，正式运行优先检查是否误走直接派发；Bubble 则检查服务端是否分配验证身份。不得让脚本、Agent、智能应用或 MCP 调用方伪造 `workflow_runtime_id`（只由服务端生成）；`business_id` 本来就由调用方在发起时给出、同一业务实例内不变，`orchestration_id` 取自场景包已定义的路线 id，两者不是伪造，缺了才是错。
 
-业务事件是面向 Business Runtime 和业务应用的公开事实，不是运行日志。对带事件编排型 TPE，按脚本全部可达终态分支逐项检查：
+业务事件是面向 Business Runtime 和智能应用的公开事实，不是运行日志。对带事件编排型 TPE，按脚本全部可达终态分支逐项检查：
 
 - Preview 已证明事件契约和原语调用要么同时为空，要么声明—调用一致且生命周期闭合；带事件时，开始事件位于首个业务动作前，每条可达 `return` 前存在结果或受控失败事件。
 - Bubble 的 `run_evidence.business_events` 已给出 `declared/emitted/missing_required/unreached_event_keys/order_valid/persistence_verified/passed`；只有数据库持久化成功的事件计入 `emitted`，实时推送不作为替代证据。
@@ -60,7 +60,7 @@ Preview 对事件生命周期采用保守的静态证明。用于满足生命周
 - 返回 URL、`/tmp`、固定共享路径或并不存在的文件作为正式产出。
 - 用 `""`、占位路径或虚构路径表示技术失败；或者只删除文件字段的 `required`，导致成功分支也可以无产物通过。
 - 已声明脚本业务事件，却只返回最终对象而没有脚本侧开始与结束事件；路线交付还需核对 Runtime 是否成功登记 Artifact、冻结 Delivery，并自动产生 `artifact_ready` 与 `delivery_ready`。核对以路线证据中的 `artifacts[].output_paths` 为准：其中的 mapping 表达式**必须**覆盖 `output_schema` 声明的全部文件路径字段，缺失即漏映射。
-- 在每个工具步骤后机械发送事件，或为业务应用声明、发送 `stage_progress`。
+- 在每个工具步骤后机械发送事件，或为智能应用声明、发送 `stage_progress`。
 - 用业务事件代替入口表单、运行中表单、Runtime 恢复或 Delivery Review。
 - 带业务事件的单条编排型 TPE 在正式运行时直接派发，随后通过补写或猜测 Runtime ID 绕过持久化身份门。
 - 上游已判定的结论（如素材可用性）没有随数据一起传给**所有据此做决策的下游环节**——只传数据不传判断即数据流断链。检查方式：画一遍环节间数据流，逐个确认下游拿到的信息足够做它要做的决定。
