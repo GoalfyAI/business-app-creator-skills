@@ -216,8 +216,8 @@ def test_desktop_workbench_and_app_directory_contract():
     assert "七份 md 给 Agent 保留事实与完整证据" in router
 
 
-def test_retired_workbench_template_keeps_app_scaffold_and_cloud_workspace():
-    """取消工作台模板不等于取消应用脚手架、版本门禁或资料保存。"""
+def test_desktop_workflow_states_current_scaffold_and_workspace_responsibilities():
+    """直接写当前制作职责，保留应用脚手架、版本门禁和资料保存契约。"""
     router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
     versions = (SKILL_ROOT / "references" / "脚手架版本与升级.md").read_text(
         encoding="utf-8"
@@ -229,18 +229,38 @@ def test_retired_workbench_template_keeps_app_scaffold_and_cloud_workspace():
         encoding="utf-8"
     )
 
-    assert "开发者中心不再作为脚手架下发" in router
-    assert "旧的 `download_app_template` 工作台下载入口不再使用" in router
+    assert "Goalfy App 负责工作台的安装、更新与运行" in router
+    assert "获取应用脚手架与保存资料" in router
+    assert "download_app_template" not in router
     assert 'business_ui_bundle(action="download_template"' in router
     for tool in ("workspace_remote_status", "workspace_pull", "workspace_push"):
         assert f"`{tool}`" in router
-    assert "更新 App 不会替当前应用迁移脚手架" in versions
-    assert "业务应用自己的预览与后端调试服务仍按模板准备" in preview
-    assert "不另起开发者中心" in stage
+    assert "工作台与应用脚手架分别更新" in versions
+    assert "业务应用自己的预览与后端调试服务按模板准备" in preview
+    assert "工作台运行由 Goalfy 管理" in stage
     for path in SKILL_ROOT.rglob("*.md"):
         content = path.read_text(encoding="utf-8")
         assert 'download_app_template(template="app_workbench")' not in content, path
         assert "./run-dev.sh start" not in content, path
+
+
+def test_desktop_entry_uses_positive_current_workflow_instructions():
+    router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    section = router.split("### 1.3 ", 1)[1].split("### 1.4 ", 1)[0]
+
+    for retired in ("不再", "不是", "不要", "不能", "不等于", "禁止",
+                    "download_app_template", "goalfy-app-workbench"):
+        assert retired not in section
+    for rule in (
+        "每个应用分别初始化名称与工作区身份",
+        "已有工作区使用 `npm run scaffold:repair",
+        "保留已有事实，只补缺失文件",
+        "完成实际代码迁移与验证，通过后继续",
+        "确认取舍后再写入",
+        "保留桌面注入的 `GOALFY_DEV_FRAME_ANCESTORS` 及来源限制",
+        "绑定成功才允许进入 G5",
+    ):
+        assert rule in section
 
 
 def test_desktop_resume_preserves_local_progress_before_cloud_restore():
@@ -272,7 +292,7 @@ def test_app_progress_contract_does_not_describe_workbench_layout():
         encoding="utf-8"
     )
 
-    assert "新建会话不等于新建应用" in router
+    assert "新建或切换会话时，先核当前应用目录与身份，接续已有工程" in router
     assert "保留其他会话的新改动" in router
     assert "同步到方案 HTML" in recovery
     assert "阶段状态的正本是应用工程根的 `workspace.json`" in recovery
@@ -315,7 +335,7 @@ def test_proposal_package_supports_local_assets_and_readable_fallback():
         encoding="utf-8"
     )
 
-    assert "HTML 组包，不限定为单页长文" in router
+    assert "方案是有统一入口的 HTML 组包" in router
     for rule in (
         "统一入口不等于所有内容必须塞进一个文件",
         "配套样式、脚本、图示与必要的子页面",
