@@ -211,7 +211,8 @@ def test_desktop_workbench_and_app_directory_contract():
     assert "http://127.0.0.1:5180/" not in router
     assert 'download_app_template(template="app_workbench")' not in router
     assert "./run-dev.sh start" not in router
-    assert "给开发者看的内容写在**一份 HTML**" in display
+    assert "HTML 方案包" in display
+    assert "统一入口是应用工程根下 `docs/proposal/index.html`" in display
     assert "七份 md 给 Agent 保留事实与完整证据" in router
 
 
@@ -282,7 +283,7 @@ def test_app_progress_contract_does_not_describe_workbench_layout():
             assert layout not in content, path
 
 
-def test_g3_proposal_is_static_html_without_interaction_or_screenshot_gate():
+def test_g3_proposal_allows_reading_interaction_without_business_or_screenshot_gate():
     pages = (SKILL_ROOT / "modules" / "P5-应用脚手架与页面实现.md").read_text(
         encoding="utf-8"
     )
@@ -295,16 +296,58 @@ def test_g3_proposal_is_static_html_without_interaction_or_screenshot_gate():
     )
 
     assert "HTML 展示给开发者看的方案，阶段 MD 保存完整事实与证据" in pages
-    assert "不依赖点击或脚本执行，也不要求截图" in pages
-    assert "不依赖点击交互或截图" in stage
-    assert "不依赖点击、切换或脚本执行才能看到" in display
-    assert "静态布局和示例数据" in display
+    assert "不要求完整可操作原型，也不要求截图" in pages
+    assert "操作前后可并列展示或轻量切换" in stage
+    assert "允许阅读辅助交互，不把它当成业务能力" in display
+    assert "Tab 切换、展开收起、页内定位、示例状态切换" in display
+    assert "禁止**接真实接口或把示例切换当成已验证的业务交互" in display
     for path in SKILL_ROOT.rglob("*.md"):
         content = path.read_text(encoding="utf-8")
         for retired in ("没有截图的页面视为未设计", "MD + 原型本地地址一起交开发者",
                         "每页截图展示", "正文与截图目录指针", "可点原型", "可点的页面原型",
                         "做不成才用截图", "截图作为展示替代", "开发者点得动"):
             assert retired not in content, path
+
+
+def test_proposal_package_supports_local_assets_and_readable_fallback():
+    router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    display = (SKILL_ROOT / "protocols" / "阶段展示与证据等级.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "HTML 组包，不限定为单页长文" in router
+    for rule in (
+        "统一入口不等于所有内容必须塞进一个文件",
+        "配套样式、脚本、图示与必要的子页面",
+        "所有内容从入口可达",
+        "脚本失败时仍能读到概览、承诺和待决定项",
+        "键盘可用、焦点与选中态可辨",
+        "禁止**加载包外或外网资源",
+    ):
+        assert rule in display
+    for path in SKILL_ROOT.rglob("*.md"):
+        content = path.read_text(encoding="utf-8")
+        assert "不依赖点击、切换或脚本执行才能看到" not in content, path
+        assert "不依赖点击或脚本执行，也不要求截图" not in content, path
+
+
+def test_proposal_visual_guidance_prioritizes_readability_over_decoration():
+    display = (SKILL_ROOT / "protocols" / "阶段展示与证据等级.md").read_text(
+        encoding="utf-8"
+    )
+
+    for rule in (
+        "结构为查阅服务，不强制一页长文",
+        "避免多层 Tab 套折叠",
+        "关键风险不能藏进默认收起的详情",
+        "审美为阅读服务，直观、克制，有业务感",
+        "不把每句话都塞进一张卡片",
+        "窄宽度下不挤字、不裁切关键信息",
+        "避免模板化的“AI 感”",
+        "不把方案做成营销落地页或复杂仪表盘",
+        "交付前按阅读路径检查",
+    ):
+        assert rule in display
 
 
 def test_proposal_feedback_uses_conversation_without_annotation_promises():
@@ -314,7 +357,7 @@ def test_proposal_feedback_uses_conversation_without_annotation_promises():
 
     assert "开发者在开发对话中说明哪里不对" in display
     assert "由你核对当前应用、对应页面、业务步骤和版本" in display
-    assert "批注" not in display
+    assert "不代表工作台提供自动截图、批注或反馈回传" in display
     assert "每条自动带页面、步骤、版本上下文" not in display
 
 
