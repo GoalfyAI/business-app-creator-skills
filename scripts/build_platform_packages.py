@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""校验并发布 business-app-creator 插件（含 scene-creator 与 app-creator 两个 Skill）。
+"""校验并发布 business-app-creator 插件（单一 Skill：business-app-creator，含 G1–G7 阶段层、P1–P8 模块层、协议层）。
 
-模型很简单：`skills/scene-creator/` 是唯一源，发布时把它复制到各平台的 `skills/scene-creator/`，
+模型很简单：`skills/business-app-creator/` 是唯一源，发布时把它复制到各平台的 `skills/business-app-creator/`，
 再给所有 SKILL.md 副本打上同一个版本标记。平台安装文档（README/AGENTS/UPDATE/.mcp.json）
 和插件 manifest 都是手工维护的最终文件，不做模板渲染。
 
@@ -25,23 +25,23 @@ from typing import Any
 
 import yaml
 
-SKILL_NAME = "scene-creator"
+SKILL_NAME = "business-app-creator"
 MCP_SERVER_NAME = "business-app-creator-mcp"  # 客户端 mcpServers 键 / 服务端 EXTERNAL_MCP_NAME
-PLUGIN_NAME = "business-app-creator"  # 插件 / 市场名（产品名），与 skill 名 scene-creator / app-creator 区分
-SKILL_CONTENT_DIR = "skills/scene-creator"
+PLUGIN_NAME = "business-app-creator"  # 插件 / 市场名（产品名），与 skill 同名
+SKILL_CONTENT_DIR = "skills/business-app-creator"
 MANIFEST_RELATIVE_PATH = Path("skill-release.json")
 OPENAI_METADATA_RELATIVE_PATH = Path("agents/openai.yaml")
 # 各平台的安装形态不同：插件市场平台把 Skill 放进 skills/ 子目录，
 # Manus 上传 skill 包，通用集成直接摊在目录根。Skill 内容本身四份完全一致。
 PLATFORM_LAYOUTS = {
     "claude-code": {
-        "skill_subdir": "skills/scene-creator",
+        "skill_subdir": "skills/business-app-creator",
         "with_openai_metadata": False,
         "mcp_config": ".mcp.json",
         "docs": ("README.md", "AGENTS.md", "UPDATE.md"),
     },
     "codex": {
-        "skill_subdir": "skills/scene-creator",
+        "skill_subdir": "skills/business-app-creator",
         # Codex 读 agents/openai.yaml 取展示名、默认提示词与 MCP 依赖声明
         "with_openai_metadata": True,
         "mcp_config": ".mcp.json",
@@ -54,7 +54,7 @@ PLATFORM_LAYOUTS = {
         "mcp_config": None,
         "docs": ("README.md", "UPDATE.md"),
         # Manus 要求 SKILL.md 位于压缩包根目录
-        "zip": ("business-app-creator-skill.zip", "skill", ("SKILL.md", "references", "stages", "checklists")),
+        "zip": ("business-app-creator-skill.zip", "skill", ("SKILL.md", "references", "stages", "modules", "protocols", "checklists", "scripts")),
     },
     "generic": {
         "skill_subdir": ".",
@@ -64,14 +64,14 @@ PLATFORM_LAYOUTS = {
         "zip": (
             "business-app-creator-generic.zip",
             ".",
-            (".mcp.json", "SKILL.md", "references", "stages", "checklists", "README.md"),
+            (".mcp.json", "SKILL.md", "references", "stages", "modules", "protocols", "checklists", "scripts", "README.md"),
         ),
     },
 }
 PLATFORM_NAMES = tuple(PLATFORM_LAYOUTS)
 # 附加 Skill：仓库根目录下自研的额外 Skill，随插件同步到 claude-code / codex 的 skills/ 下。
 # 不进 business-app-creator 的发布清单与版本闸门，随插件版本自然更新。
-EXTRA_SKILL_SOURCES = {"app-creator": Path("skills/app-creator")}
+EXTRA_SKILL_SOURCES: dict[str, Path] = {}  # app-creator 已并入 business-app-creator
 EXTRA_SKILL_PLATFORMS = ("claude-code", "codex")
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 # 仓库里的安装物料统一指向同一个 MCP 地址，由本常量唯一决定。
@@ -89,7 +89,7 @@ REQUIRED_SKILL_KEYWORDS = {
     "场景包",
     "workflow",
     "business UI",
-    "业务应用",
+    "智能应用",
     "GoalfyMax",
     "MCP",
 }
@@ -102,6 +102,7 @@ PACKAGE_MANIFESTS = (
     Path(".agents/plugins/marketplace.json"),
 )
 MANIFEST_KEYS = {
+    "scaffold_min_required_version",
     "skill_name",
     "version",
     "package_version",
@@ -145,7 +146,7 @@ def discover_source_files(skill_root: Path) -> list[Path]:
     if not openai_metadata.is_file():
         raise ReleaseError(f"缺少 Codex 元数据：{openai_metadata}")
 
-    for required_dir in ("references", "stages", "checklists"):
+    for required_dir in ("references", "stages", "modules", "protocols", "checklists"):
         if not (skill_root / required_dir).is_dir():
             raise ReleaseError(f"缺少 Skill 目录：{skill_root / required_dir}")
 
@@ -156,13 +157,21 @@ def discover_source_files(skill_root: Path) -> list[Path]:
             raise ReleaseError(f"Skill 发布文件不允许使用符号链接：{path}")
         if not path.is_file():
             continue
+        if "__pycache__" in relative_path.parts:
+            continue
         if any(part.startswith(".") for part in relative_path.parts):
             raise ReleaseError(f"不支持的 Skill 隐藏文件：{relative_path.as_posix()}")
         if relative_path == Path("SKILL.md") or relative_path == OPENAI_METADATA_RELATIVE_PATH:
             files.append(path)
             continue
-        if relative_path.parts[0] in ("references", "stages", "checklists") and path.suffix.lower() == ".md":
+        if relative_path.parts[0] in ("references", "stages", "modules", "protocols", "checklists") and path.suffix.lower() == ".md":
             files.append(path)
+            continue
+        if relative_path.parts[0] == "scripts" and path.suffix.lower() == ".py":
+            files.append(path)
+            continue
+        if relative_path.parts[:2] == ("references", "前端设计指南"):
+            # 官方前端 guidance 钉版副本里混有 LICENSE / json 等非 md 文件：只分发 md，其余静默跳过
             continue
         raise ReleaseError(f"不支持的 Skill 文件：{relative_path.as_posix()}")
 
@@ -407,6 +416,40 @@ def _bump_package_version(skill_root: Path, version: str) -> None:
             lockfile.write_text(updated, encoding="utf-8")
 
 
+def sync_plugin_display_metadata(skill_root: Path) -> None:
+    """安装入口的展示文案随 Skill 正本生成，保留插件身份与安装配置。"""
+    frontmatter = _load_yaml_mapping(
+        (skill_root / "SKILL.md").read_text(encoding="utf-8").split("---", 2)[1],
+        "SKILL.md frontmatter",
+    )
+    interface = _load_yaml_mapping(
+        (skill_root / OPENAI_METADATA_RELATIVE_PATH).read_text(encoding="utf-8"),
+        "agents/openai.yaml",
+    )["interface"]
+    description = SKILL_VERSION_RE.sub("", frontmatter["description"]).strip()
+    for relative in PACKAGE_MANIFESTS:
+        path = _repository_root(skill_root) / relative
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+        if "plugins" in manifest:
+            manifest["description"] = interface["short_description"]
+            plugin = next(item for item in manifest["plugins"] if item["name"] == SKILL_NAME)
+        else:
+            plugin = manifest
+        plugin["description"] = description
+        if "displayName" in plugin:
+            plugin["displayName"] = interface["display_name"]
+        if "keywords" in plugin:
+            plugin["keywords"] = frontmatter["keywords"]
+        if "interface" in plugin:
+            plugin["interface"].update({
+                "displayName": interface["display_name"],
+                "shortDescription": interface["short_description"],
+                "longDescription": description,
+                "defaultPrompt": interface["default_prompt"],
+            })
+        path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
 def _validate_released_at(value: Any) -> None:
     if not isinstance(value, str):
         raise ReleaseError("released_at 必须是 ISO-8601 字符串")
@@ -443,7 +486,7 @@ def sync_platform_skills(skill_root: Path) -> None:
     for platform in PLATFORM_NAMES:
         target_root = _platform_skill_dir(skill_root, platform)
         (target_root / "SKILL.md").unlink(missing_ok=True)
-        for stale in ("references", "stages", "checklists", "agents"):
+        for stale in ("references", "stages", "modules", "protocols", "checklists", "scripts", "agents"):
             shutil.rmtree(target_root / stale, ignore_errors=True)
         for relative, source in _platform_skill_files(skill_root, platform).items():
             destination = target_root / relative
@@ -585,6 +628,13 @@ def check_platform_zips(skill_root: Path) -> None:
         raise ReleaseError(f"平台压缩包已过期，请执行 release 或 zip：{sorted(stale)}")
 
 
+def scaffold_min_required_version(skill_root: Path) -> str:
+    markers = re.findall(r"<!-- scaffold-min-required-version:([^\s]+) -->", (skill_root / "SKILL.md").read_text(encoding="utf-8"))
+    if len(markers) != 1 or not DATA_SKILL_VERSION_RE.fullmatch(markers[0]):
+        raise ReleaseError("SKILL.md 必须包含唯一有效的 scaffold-min-required-version 标记")
+    return markers[0]
+
+
 def check_release(skill_root: Path) -> dict[str, Any]:
     """校验发布清单、Skill 内容校验和与各平台副本。"""
     skill_root = skill_root.resolve()
@@ -598,6 +648,8 @@ def check_release(skill_root: Path) -> dict[str, Any]:
     if manifest["skill_name"] != SKILL_NAME:
         raise ReleaseError(f"skill_name 必须是 {SKILL_NAME!r}")
     skill_version = _validate_skill_version(manifest["version"])
+    if manifest["scaffold_min_required_version"] != scaffold_min_required_version(skill_root):
+        raise ReleaseError("发布清单的脚手架最低版本与 SKILL.md 不一致")
     package_version = manifest["package_version"]
     _validate_package_version(package_version)
     if manifest["mcp_endpoint"] != _configured_mcp_endpoint(skill_root):
@@ -665,11 +717,13 @@ def release(
             raise ReleaseError("PROD Skill version 必须使用 vYYYYMMDD-6位小写hex")
 
     _bump_package_version(skill_root, package_version)
+    sync_plugin_display_metadata(skill_root)
     sync_platform_skills(skill_root)
     build_platform_zips(skill_root)
 
     files = discover_source_files(skill_root)
     manifest = {
+        "scaffold_min_required_version": scaffold_min_required_version(skill_root),
         "skill_name": SKILL_NAME,
         "version": skill_version,
         "package_version": package_version,
