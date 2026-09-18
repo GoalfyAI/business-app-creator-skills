@@ -4,8 +4,8 @@
   "version": "v20260915-d36652",
   "package_version": "2.0.2",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-16T12:31:42Z",
-  "update_reason": "统一智能应用名称，保留远端工具分段返回与错误语义补充",
+  "released_at": "2026-09-18T09:12:20Z",
+  "update_reason": "P5/G6 补「表单未答完不复用当前项目」，P8 报错对照加 WORKFLOW_FORM_PENDING [需求:T-3521]",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -74,10 +74,10 @@
     "modules/P2-能力发现与模型试验.md": "53a66e7159debb937572eab45d42a938f2352b716b043d2e3d1efa6cd4d659b5",
     "modules/P3-执行形态与路线制作.md": "5ae608d2681ef26b9328d729bb513014adae62a07909d170959907dc476b28bf",
     "modules/P4-数据建模与回流.md": "44df44d119922ae152fa5d623f9f3ff6502cae6212c33b86a66232c053476a18",
-    "modules/P5-应用脚手架与页面实现.md": "f768c52b7bc6937f73dc4ba5bd571ccc079e11a2ce5d38617ac82fd4d411f269",
+    "modules/P5-应用脚手架与页面实现.md": "33545b636df67d4296b99160ec5ae444aa2ff885cc68bc020316934934ff5191",
     "modules/P6-验证与证据裁决.md": "8e6d03d5cb753bb3547f43d04f5e0b81a73a02d3bb0e5f0046484c5d4a437e85",
     "modules/P7-版本部署与上线.md": "20e852c1f022b61a784a674ec3609e7a34a80baf5e54808a199bf636c6f4c27e",
-    "modules/P8-诊断归因与改进验证.md": "b150be9f3e1c50081f8ec1f9764fab18ee05c917d892b6d7f1ce2c721ca5bf85",
+    "modules/P8-诊断归因与改进验证.md": "d1c77a5552432f7ea4785b016fc869d091419c14bcf6a8f841dc70b51ed64ad5",
     "protocols/事实决定授权与变更.md": "0dc704feee6367cd3ac0f3fc981fb1ab71d1ad51b1aae71e6ebfb11532fcf082",
     "protocols/承诺实现验收追踪.md": "f705c1f5b91d2d6d90ab05da70ca451b4b3d58a3f1567950bc8d10cdbf3d3f9d",
     "protocols/状态恢复知识归属与平台适配.md": "2b97766b7b3d2cc28f91565d93a0f4723e26213ba40c4d1d3621fe2da7ded292",
@@ -113,7 +113,7 @@
     "stages/G3-运行设计与验收基线.md": "3b9fdaa6e50274ed7608a33c61f57ea5677a8f98eff16c40f1ea2af6902b6abf",
     "stages/G4-核心执行单元验证.md": "59a43f605380f4f5a428a7db5d9d5c72ec92f9fdfa054bc02ce973a5d4d9f90a",
     "stages/G5-后端业务闭环验证.md": "49eb3ba3325b57d9881a659a4fabdd692baece1939dfe74356540d799bc7c832",
-    "stages/G6-用户操作闭环验证.md": "0d522c216f7381be8f9679e7f5a0c63061cb3d68d8fb254f4f2fd0f6e7eeb3ae",
+    "stages/G6-用户操作闭环验证.md": "a7f4d66efd1b03d66f19d0e6f32693e442395b015047879bc3c76a57249b32f1",
     "stages/G7-预发布与交付.md": "7fb61a0c4c16fbfce4a9669b0a989c8e7a0f0d48099b12810d74d8f9a77ed2da"
   }
 }
