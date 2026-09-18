@@ -265,16 +265,17 @@ def test_g5_binds_workspace_and_checks_internal_run_owner():
     assert "所有者实例库" in stage and "开发工作集" in stage
 
 
-def test_draft_preview_gap_preserves_acceptance_before_finalize():
+def test_online_preview_is_the_deployed_app_acceptance_entry_before_finalize():
     module = (SKILL_ROOT / "modules/P6-验证与证据裁决.md").read_text()
-    assert "发布管理中的交互预览依赖已定稿提交" in module
-    assert "草稿真宿主验收入口缺失" in module
-    assert "`finalize` 仍以验收与授权成立为前提" in module
+    assert "工作台右侧「在线预览」页" in module
+    assert "在线预览按工作台启动时绑定的 `business_ui_id` 和环境获取一次性预览凭据" in module
+    assert "`PREVIEW_NOT_READY`" in module
+    assert "deploy 到 `success` 只证明部署物起来了" in module
     assert "HTTP PUT 实际源码包" in module
-    for relative in ("modules/P6-验证与证据裁决.md", "stages/G6-用户操作闭环验证.md",
-                     "stages/G7-预发布与交付.md"):
+    assert "platform_blocked" in module
+    for relative in ("stages/G6-用户操作闭环验证.md", "stages/G7-预发布与交付.md"):
         text = (SKILL_ROOT / relative).read_text()
-        assert "platform_blocked" in text
+        assert "在线预览" in text
         assert "`business_ui_manage(get)` 反读预部署入口" not in text
         assert "`business_ui_manage(get)` 反读的预部署入口" not in text
 

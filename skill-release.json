@@ -4,8 +4,8 @@
   "version": "v20260916-82b789",
   "package_version": "2.0.4",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-17T04:05:21Z",
-  "update_reason": "具体应用方案首轮落页，明确讨论路由与工作区准备时序",
+  "released_at": "2026-09-18T03:33:58Z",
+  "update_reason": "补充开发者中心在线预览作为 Max 真实交互入口",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -62,9 +62,9 @@
     "stages/G7-预发布与交付.md"
   ],
   "checksums": {
-    "SKILL.md": "ba3ea0874f1ee28d372a2bced37ee10edbedaf88e2380f7c45e8132cb2081905",
+    "SKILL.md": "7b5702b73c22ac0f95d4ef6ade88c1167d2e07bbd55f80cc0647de615adf4266",
     "agents/openai.yaml": "8b83462bd633f5b875c4e690c22131bbb63af3099ebf041e4f7493fe158f74e9",
-    "checklists/G门禁检查清单.md": "ab90cf9ca62b0a3b70add5a367f309a410fd048134cd1f22bb9c1f8f2dddabbc",
+    "checklists/G门禁检查清单.md": "351ef77fd3c2be4a61c442308e260d63562adf7eef3a0fd605ff6d9943b1b6f6",
     "checklists/U业务行为验收明细.md": "714467daaeab171758007b069dc6703e4e68e88325737a25c2caa86eb98f35f8",
     "checklists/场景包验收检查清单.md": "47284cb428533a1954cc4f8de1e989b140bdd1638576feb90eb995b5e353af36",
     "checklists/应用验收检查清单.md": "d9bf5bf95e5cbe36b3818398f8049adf7602fde8cc811fabd8e4f93d21de64b1",
@@ -74,8 +74,8 @@
     "modules/P2-能力发现与模型试验.md": "53a66e7159debb937572eab45d42a938f2352b716b043d2e3d1efa6cd4d659b5",
     "modules/P3-执行形态与路线制作.md": "fc139a0d2b366fe34238d3023699216ea3b90f08b8ecf045e33d072eef40c89f",
     "modules/P4-数据建模与回流.md": "e932ebb5f4e88f4faf39b568e18805af2df982d4a23ba2efe48c494fe56a6318",
-    "modules/P5-应用脚手架与页面实现.md": "f768c52b7bc6937f73dc4ba5bd571ccc079e11a2ce5d38617ac82fd4d411f269",
-    "modules/P6-验证与证据裁决.md": "43c7e55c199ad1ef7626d6efc398d728584cb730421d1655fc1d65f7444ef041",
+    "modules/P5-应用脚手架与页面实现.md": "0a1df72fe724b880c7c47c1514838f6c3d1ceddbc39bcf3fd9cdf5cd64c3dd6e",
+    "modules/P6-验证与证据裁决.md": "3502a9825468df35494d2b0aa68fadb04141a9a698df799ce54bb1d9e5938443",
     "modules/P7-版本部署与上线.md": "20e852c1f022b61a784a674ec3609e7a34a80baf5e54808a199bf636c6f4c27e",
     "modules/P8-诊断归因与改进验证.md": "b150be9f3e1c50081f8ec1f9764fab18ee05c917d892b6d7f1ce2c721ca5bf85",
     "protocols/事实决定授权与变更.md": "0dc704feee6367cd3ac0f3fc981fb1ab71d1ad51b1aae71e6ebfb11532fcf082",
@@ -102,7 +102,7 @@
     "references/场景包版本体系与发布逻辑.md": "c32e7062102467f157277cbfa963e7db956cb7d40f946dbc8616baaae6cb3cf4",
     "references/工具标识与版本术语速查.md": "bb14695704b3f089d5d3782a3c8685816846f0bf7de5e49094f70f668c7398f4",
     "references/平台对象与运行模型.md": "b4fac4ad071289790306737246cbd9cbd3dd7255f4a69238a2d24936e340f823",
-    "references/应用结构表与结果检查表.md": "f8c25ff64bda4668d17fc8fca09b73c39fafdfaa242c9dc8eedf08f460949935",
+    "references/应用结构表与结果检查表.md": "b7d3f3808c65766790715d9a558fde98a1d1f32a310cf328b36d53f064038b44",
     "references/用户反馈报告.md": "70b2b113f118f5726fa1f5362bf156277c9c758199d50cb391b4a57ce2b950ac",
     "references/能力容器组成与执行形态速查.md": "0486fa43399f291b91443980d518c8c66692ae12b972b184a8182536c79c7015",
     "references/脚手架版本与升级.md": "18d122c75f1479da3a6a93ec647667ddc911b9e3477c5ef4b23cdc0918859e27",
@@ -113,7 +113,7 @@
     "stages/G3-运行设计与验收基线.md": "3b9fdaa6e50274ed7608a33c61f57ea5677a8f98eff16c40f1ea2af6902b6abf",
     "stages/G4-核心执行单元验证.md": "59a43f605380f4f5a428a7db5d9d5c72ec92f9fdfa054bc02ce973a5d4d9f90a",
     "stages/G5-后端业务闭环验证.md": "cf7fbfdeeafd60e5d07f35a4264456f36d84d2ebd02d28a4ec23ba4d023cedc4",
-    "stages/G6-用户操作闭环验证.md": "0d522c216f7381be8f9679e7f5a0c63061cb3d68d8fb254f4f2fd0f6e7eeb3ae",
-    "stages/G7-预发布与交付.md": "7fb61a0c4c16fbfce4a9669b0a989c8e7a0f0d48099b12810d74d8f9a77ed2da"
+    "stages/G6-用户操作闭环验证.md": "6b12e4a5e87ea7c2599fab299b7a7308fb8ebc02dfc6ebb80678c8958916a788",
+    "stages/G7-预发布与交付.md": "20d906b006c147b94587f5c78ba161744fb410266f9be54c5b7152e550481a6d"
   }
 }
