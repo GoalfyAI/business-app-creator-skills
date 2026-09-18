@@ -80,9 +80,13 @@ def register_release(version: str) -> None:
     if not version.strip():
         raise RuntimeError("missing scene skill version")
     version = version.strip()
+    manifest = json.loads((Path(__file__).resolve().parents[1] / "skill-release.json").read_text(encoding="utf-8"))
+    if manifest["version"] != version:
+        raise RuntimeError("registration version must match skill-release.json")
     body = json.dumps(
         {
             "version_string": version,
+            "scaffold_min_required_version": manifest["scaffold_min_required_version"],
             "notes": os.environ.get("SCENE_SKILL_RELEASE_NOTES", "PROD pipeline release"),
             "source": "codeup-prod-pipeline",
         },
