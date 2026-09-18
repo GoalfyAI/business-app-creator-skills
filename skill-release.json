@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20260916-82b789",
-  "package_version": "2.0.4",
+  "version": "v20260918-26ea4f",
+  "package_version": "2.0.5",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-18T03:33:58Z",
-  "update_reason": "补充开发者中心在线预览作为 Max 真实交互入口",
+  "released_at": "2026-09-18T03:53:23Z",
+  "update_reason": "开发者中心在线预览承载 Max 真实交互验证",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -62,7 +62,7 @@
     "stages/G7-预发布与交付.md"
   ],
   "checksums": {
-    "SKILL.md": "7b5702b73c22ac0f95d4ef6ade88c1167d2e07bbd55f80cc0647de615adf4266",
+    "SKILL.md": "c61a38e6aaf0dd13d6b7ea37d0e1d3b3c0691459b947348103172059cf105014",
     "agents/openai.yaml": "8b83462bd633f5b875c4e690c22131bbb63af3099ebf041e4f7493fe158f74e9",
     "checklists/G门禁检查清单.md": "351ef77fd3c2be4a61c442308e260d63562adf7eef3a0fd605ff6d9943b1b6f6",
     "checklists/U业务行为验收明细.md": "714467daaeab171758007b069dc6703e4e68e88325737a25c2caa86eb98f35f8",
