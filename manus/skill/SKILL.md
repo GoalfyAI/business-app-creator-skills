@@ -141,7 +141,7 @@ restaurant-koc/             本次应用工程根，位于工作台分配的 app
 
 制作任务建工单后、初始化或继续开发之前，按下面顺序：
 
-1. **先确认归属，再核脚手架版本。** 新建先确认应用目录；接续先定位原应用并读本地文件，换机或本地缺失时按协议四第 6 节恢复，已有内容先比较、保留差异再处理。读取该应用根 `scaffold-release.json`（缺失传空），调用 `business_ui_bundle(action="download_template", task_id=..., current_scaffold_version=..., skill_min_scaffold_version=<本入口机器标记>, workspace_id=<已有工作区标识>)`。新建尚无工作区时省略 `workspace_id`。新建用当前环境已登记的最新模板，校验下载包 `sha256` 和解包后的 `version`；已有应用低于门槛时完成实际代码迁移与验证，通过后继续。每次检查以本应用清单和 MCP 在线结果为依据，完整规则见[脚手架版本与升级](references/脚手架版本与升级.md)。
+1. **先确认归属，再核脚手架版本。** 新建先确认应用目录；接续先定位原应用并读本地文件，换机或本地缺失时按协议四第 6 节恢复，已有内容先比较、保留差异再处理。读取该应用根 `scaffold-release.json`（缺失传空），调用 `business_ui_bundle(action="download_template", task_id=..., current_scaffold_version=..., skill_min_scaffold_version=<本入口机器标记>, workspace_id=<已有工作区标识>)`。新建尚无工作区时省略 `workspace_id`。新建用当前环境已登记的最新模板，校验下载包 `sha256` 和解包后的 `version`；已有应用低于必须线时完成实际代码迁移与验证，通过后继续；低于建议线时在开发记录中提示“建议升级脚手架版本”，安排升级后再进入预部署。每次检查以本应用清单和 MCP 在线结果为依据，完整规则见[脚手架版本与升级](references/脚手架版本与升级.md)。
 2. **在本应用目录生成工作区。** 模板解包到已确认的新应用目录；若压缩包带通用外层目录，整理到本应用工程根，使身份与方案入口位于约定路径。工作区文件统一由脚手架命令生成：
 
    - **新建**：`npm run scaffold:init -- --environment <环境> --app-name "<智能应用名称>"`，已经有业务界面草稿时再加 `--business-ui-id <真实 ID>`。它生成本应用的 `app.json`、`WORKSPACE.md`、`workspace.json`、方案页和七份阶段文档；`workspace_id` 自动生成并落盘。示例应用独立保存在 `examples/`。
