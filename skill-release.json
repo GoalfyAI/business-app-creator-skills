@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20260918-dad101",
-  "package_version": "2.0.6",
+  "version": "v20260920-3c8136",
+  "package_version": "2.0.7",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-18T09:57:14Z",
-  "update_reason": "T-3407 QA：明确前后端平台固定层迁移及充值代理验证",
+  "released_at": "2026-09-20T03:34:53Z",
+  "update_reason": "表单未答完的项目不进复用下拉框，后端对这类提交返回 WORKFLOW_FORM_PENDING；P8 报错对照补 WORKFLOW_FORM_PENDING / ORCH_INTERACTION_PENDING（T-3521）",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -62,7 +62,7 @@
     "stages/G7-预发布与交付.md"
   ],
   "checksums": {
-    "SKILL.md": "b2fae7409559946587c1b4953a5b0a973ab94017645e55759c5f0c9aa4ca068e",
+    "SKILL.md": "02a25b6502973acc0018f0d83bfbcb6368fb397a77d887c591f908df73a3f8c0",
     "agents/openai.yaml": "8b83462bd633f5b875c4e690c22131bbb63af3099ebf041e4f7493fe158f74e9",
     "checklists/G门禁检查清单.md": "351ef77fd3c2be4a61c442308e260d63562adf7eef3a0fd605ff6d9943b1b6f6",
     "checklists/U业务行为验收明细.md": "714467daaeab171758007b069dc6703e4e68e88325737a25c2caa86eb98f35f8",
@@ -74,10 +74,10 @@
     "modules/P2-能力发现与模型试验.md": "53a66e7159debb937572eab45d42a938f2352b716b043d2e3d1efa6cd4d659b5",
     "modules/P3-执行形态与路线制作.md": "fc139a0d2b366fe34238d3023699216ea3b90f08b8ecf045e33d072eef40c89f",
     "modules/P4-数据建模与回流.md": "e932ebb5f4e88f4faf39b568e18805af2df982d4a23ba2efe48c494fe56a6318",
-    "modules/P5-应用脚手架与页面实现.md": "1dc0e491bc46a2cb3456f0c723565fe80051ef81a12d67ee2d7bddcd5bcf909d",
+    "modules/P5-应用脚手架与页面实现.md": "93ad772c54ecef3892b6b1e6fd2b268ea7f4f884b499eb5b4a797c6cd0ab8746",
     "modules/P6-验证与证据裁决.md": "3502a9825468df35494d2b0aa68fadb04141a9a698df799ce54bb1d9e5938443",
     "modules/P7-版本部署与上线.md": "20e852c1f022b61a784a674ec3609e7a34a80baf5e54808a199bf636c6f4c27e",
-    "modules/P8-诊断归因与改进验证.md": "b150be9f3e1c50081f8ec1f9764fab18ee05c917d892b6d7f1ce2c721ca5bf85",
+    "modules/P8-诊断归因与改进验证.md": "e6f5cf1782ee27a8ffdf85c5d847bec537febf1037cefff135940fdf3a2e7824",
     "protocols/事实决定授权与变更.md": "0dc704feee6367cd3ac0f3fc981fb1ab71d1ad51b1aae71e6ebfb11532fcf082",
     "protocols/承诺实现验收追踪.md": "f705c1f5b91d2d6d90ab05da70ca451b4b3d58a3f1567950bc8d10cdbf3d3f9d",
     "protocols/状态恢复知识归属与平台适配.md": "a2d93ac18dfc42af9fa42fd8df5933944269f45899982351c86ec670a658564b",
@@ -105,15 +105,15 @@
     "references/应用结构表与结果检查表.md": "b7d3f3808c65766790715d9a558fde98a1d1f32a310cf328b36d53f064038b44",
     "references/用户反馈报告.md": "70b2b113f118f5726fa1f5362bf156277c9c758199d50cb391b4a57ce2b950ac",
     "references/能力容器组成与执行形态速查.md": "0486fa43399f291b91443980d518c8c66692ae12b972b184a8182536c79c7015",
-    "references/脚手架版本与升级.md": "28089d4c75b86b713ad78f2c815535082b1f8dd5797cde1ab14f296911e8ce5d",
+    "references/脚手架版本与升级.md": "b1e37a95910d7818a69c93341c4eecb3f12aefbfa6d05be5b8f40ef5fb4dd893",
     "references/表结构与累加机制.md": "35f93344b8bdcd2cc3e81fe087a1009f18e110ed04fc52b2343e06c916f36adc",
     "scripts/feedback_report.py": "7cfd21e480629f8f7443413281f14d9b8334998f53f348a54f5d939abcaa8013",
     "stages/G1-业务目标与范围.md": "aabf7cb607c26d0da2c3e0864e3ee3ef8809223e2f3ae81eb6bb4004ada16f8f",
-    "stages/G2-关键能力可行性.md": "3ee163a21dc9917a9f8313a4ad605a053b07c0cffd12d7eb239caf8a7a6e6d17",
+    "stages/G2-关键能力可行性.md": "c3c529d9a60c457883a997d4ce6770d776f1aa92b6bd8376a61221746a2d8de3",
     "stages/G3-运行设计与验收基线.md": "3b9fdaa6e50274ed7608a33c61f57ea5677a8f98eff16c40f1ea2af6902b6abf",
     "stages/G4-核心执行单元验证.md": "59a43f605380f4f5a428a7db5d9d5c72ec92f9fdfa054bc02ce973a5d4d9f90a",
-    "stages/G5-后端业务闭环验证.md": "b778ca777cbe87140af8e69518d325527317690eec464a34cd0c5a48a1ccdef3",
-    "stages/G6-用户操作闭环验证.md": "140cb08410323a381c1e9dc1d4eb1d666df4ce937a503ba69e49dee4246cc056",
-    "stages/G7-预发布与交付.md": "d3647b99d60cacd4b75bd1db07ff42922a2822ce68878860c642b762f67c2073"
+    "stages/G5-后端业务闭环验证.md": "cf7fbfdeeafd60e5d07f35a4264456f36d84d2ebd02d28a4ec23ba4d023cedc4",
+    "stages/G6-用户操作闭环验证.md": "febda9d68b637ca6c610800660f0ef8f94161fff242f6fa48c6363822a301b15",
+    "stages/G7-预发布与交付.md": "20d906b006c147b94587f5c78ba161744fb410266f9be54c5b7152e550481a6d"
   }
 }
