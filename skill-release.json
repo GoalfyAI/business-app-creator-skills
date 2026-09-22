@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20260920-3c8136",
-  "package_version": "2.0.7",
+  "version": "v20260922-2ad4aa",
+  "package_version": "2.0.8",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-22T13:52:51Z",
-  "update_reason": "合流 T-3546/T-3675/T-3617 与 T-3569 后重生成平台副本与校验和",
+  "released_at": "2026-09-22T13:52:52Z",
+  "update_reason": "脚本失败处理：第三方只读工具失败按 recoverable 分支、ORCH_NODE_FAILED 按 failure_class 归因（T-3546/T-3675）；派 FastAgent 的 _output 必须声明 status（completed/partial/blocked）与 note 留失败出口（T-3617）；FastAgent max_turns 按预估步数×1.5 取值，与 FA 三条出口按返回值分流（T-3569）合流",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -62,7 +62,7 @@
     "stages/G7-预发布与交付.md"
   ],
   "checksums": {
-    "SKILL.md": "02a25b6502973acc0018f0d83bfbcb6368fb397a77d887c591f908df73a3f8c0",
+    "SKILL.md": "04bcb597f3b615ab49e6e9c15662c5e8d0bee05273be90e3fa2db16093791680",
     "agents/openai.yaml": "8b83462bd633f5b875c4e690c22131bbb63af3099ebf041e4f7493fe158f74e9",
     "checklists/G门禁检查清单.md": "351ef77fd3c2be4a61c442308e260d63562adf7eef3a0fd605ff6d9943b1b6f6",
     "checklists/U业务行为验收明细.md": "714467daaeab171758007b069dc6703e4e68e88325737a25c2caa86eb98f35f8",
