@@ -1,0 +1,14 @@
+interface:
+  display_name: "智能应用快速制作"
+  brand_color: "#10B981"
+  short_description: "判断复杂度后用预置件与生成器快速做出 GoalfyMax 智能应用并验证上线"
+  default_prompt: "使用 $business-app-creator-lite 帮我把这项业务做成智能应用：先判断需不需要梳理分工表，能直接做的就直接做，做完给我预览。"
+policy:
+  allow_implicit_invocation: true
+dependencies:
+  tools:
+    - type: mcp
+      value: business-app-creator-mcp
+      transport: streamable_http
+      url: https://business-app-creator-mcp.goalfyai.cn/mcp
+      bearer_token_env_var: BUSINESS_APP_CREATOR_API_KEY

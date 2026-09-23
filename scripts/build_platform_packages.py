@@ -71,7 +71,10 @@ PLATFORM_LAYOUTS = {
 PLATFORM_NAMES = tuple(PLATFORM_LAYOUTS)
 # 附加 Skill：仓库根目录下自研的额外 Skill，随插件同步到 claude-code / codex 的 skills/ 下。
 # 不进 business-app-creator 的发布清单与版本闸门，随插件版本自然更新。
-EXTRA_SKILL_SOURCES: dict[str, Path] = {}  # app-creator 已并入 business-app-creator
+EXTRA_SKILL_SOURCES: dict[str, Path] = {
+    # 加速版 Skill（T-3724 A/B 的 B 组）：独立目录、独立版本标记，不进主 Skill 的发布闸门。
+    "business-app-creator-lite": Path("skills/business-app-creator-lite"),
+}
 EXTRA_SKILL_PLATFORMS = ("claude-code", "codex")
 ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 # 仓库里的安装物料统一指向同一个 MCP 地址，由本常量唯一决定。
@@ -503,6 +506,7 @@ def _extra_skill_files(repository_root: Path, source: Path) -> dict[str, Path]:
         if not path.is_file() or not (
             path.suffix == ".md"
             or (relative.parts[0] == "scripts" and path.suffix == ".py")
+            or (relative.parts[0] == "agents" and path.suffix in {".yaml", ".yml"})
         ):
             continue
         if any(part.startswith(".") for part in relative.parts):
