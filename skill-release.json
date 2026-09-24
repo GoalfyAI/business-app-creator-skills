@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20260924-6d0a46",
-  "package_version": "2.0.12",
+  "version": "v20260924-921836",
+  "package_version": "2.0.13",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-24T11:27:07Z",
-  "update_reason": "合入交付跑：G5 冒泡 full_run、G7/P7 结单门交代与豁免（T-3810/T-3815）；按合流后源重新生成产物",
+  "released_at": "2026-09-24T11:34:04Z",
+  "update_reason": "交付跑：冒泡可 full_run 让 FA 真跑作结单证据，结单门每条路线要有交代、失败或未验证可写 route_verification_waived 并写进交付报告（T-3810/T-3815）；download_template 不再上报 skill_min_scaffold_version，部署低于脚手架建议线时写进开发记录与交付报告（T-3749）；初始化补三条硬约束（T-3719）；修正 P1 模块失效引用并校验正文引用（T-3753）；Codeup qa/main 自动生成 QA 版插件（T-3784）",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -63,7 +63,7 @@
     "stages/G7-预发布与交付.md"
   ],
   "checksums": {
-    "SKILL.md": "e45ed0dbbf8f2130d7744e15ac501a69516045d0f4287a70b54a8ff49ea8e9fd",
+    "SKILL.md": "7feac851ba8951aa130c889df9f4627ab695ba81f343ee6b6d5454bc80edd2a3",
     "agents/openai.yaml": "8b83462bd633f5b875c4e690c22131bbb63af3099ebf041e4f7493fe158f74e9",
     "checklists/G门禁检查清单.md": "d576b14ed2b833f718406f40347e6cab02f286b0b22d56eba3a8f45353e413ee",
     "checklists/U业务行为验收明细.md": "c3cbb24ff1778131d90e2a268d7ab8d8bfd4b467a61e3a7eca6cbea1189fb601",
