@@ -544,6 +544,10 @@ def test_install_docs_state_the_required_facts():
             assert "BUSINESS_APP_CREATOR_API_KEY" in docs, f"{platform} 未说明密钥环境变量"
         if layout["skill_subdir"].startswith("skills/"):
             assert "GoalfyAI/business-app-creator-skills" in docs, f"{platform} 缺少公开市场来源"
+        # 仓库已公开：任何平台文档都不得再引导用户走 Codeup 内网 / SSH 地址，
+        # 否则外部用户会被带去云效配公钥（T-3741）。
+        for forbidden in ("codeup.aliyun.com", "git@"):
+            assert forbidden not in docs, f"{platform} 文档含内网/SSH 地址 {forbidden!r}"
 
 
 def test_docs_do_not_pin_a_stale_package_version():
