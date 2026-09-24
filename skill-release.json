@@ -4,8 +4,8 @@
   "version": "v20260924-2c476f",
   "package_version": "2.0.11",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-24T02:40:44Z",
-  "update_reason": "升级文档兜底命令改指向公开仓库 GoalfyAI/business-app-creator-skills，不再引导外部用户配置 Codeup SSH 公钥；发布校验禁止平台文档出现 Codeup/SSH 地址（T-3741）",
+  "released_at": "2026-09-24T02:52:43Z",
+  "update_reason": "T-3749：download_template 调用说明去掉 skill_min_scaffold_version",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -62,7 +62,7 @@
     "stages/G7-预发布与交付.md"
   ],
   "checksums": {
-    "SKILL.md": "69a3852cc45c0054d1e683160eab631d41462afdcfd75388082243c6b2a8b62b",
+    "SKILL.md": "f43a46e9dc47e4fc1fbb94b5b16a55bcfc1bbfb28893cfdb3cd2213df6286122",
     "agents/openai.yaml": "8b83462bd633f5b875c4e690c22131bbb63af3099ebf041e4f7493fe158f74e9",
     "checklists/G门禁检查清单.md": "d576b14ed2b833f718406f40347e6cab02f286b0b22d56eba3a8f45353e413ee",
     "checklists/U业务行为验收明细.md": "c3cbb24ff1778131d90e2a268d7ab8d8bfd4b467a61e3a7eca6cbea1189fb601",
@@ -105,7 +105,7 @@
     "references/应用结构表与结果检查表.md": "b7d3f3808c65766790715d9a558fde98a1d1f32a310cf328b36d53f064038b44",
     "references/用户反馈报告.md": "70b2b113f118f5726fa1f5362bf156277c9c758199d50cb391b4a57ce2b950ac",
     "references/能力容器组成与执行形态速查.md": "0486fa43399f291b91443980d518c8c66692ae12b972b184a8182536c79c7015",
-    "references/脚手架版本与升级.md": "d9eb79c35734060dedf4c8f7f50c9d21c46a65874979d77acd8ed0ac0d2821fe",
+    "references/脚手架版本与升级.md": "73f7af72fd296ba7aa9bdba932c1f5c909bec2c8c629845c984ab8d5e029701f",
     "references/表结构与累加机制.md": "35f93344b8bdcd2cc3e81fe087a1009f18e110ed04fc52b2343e06c916f36adc",
     "scripts/feedback_report.py": "7cfd21e480629f8f7443413281f14d9b8334998f53f348a54f5d939abcaa8013",
     "stages/G1-业务目标与范围.md": "b2d2d88eb9774bc43bfe65395638c5ec60a55612b5a32dfc01ee7298a89112dc",
