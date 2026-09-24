@@ -301,6 +301,60 @@ def validate_platform_install_files(skill_root: Path) -> None:
             raise ReleaseError(f"{platform} 安装文档必须给出公开插件市场来源")
 
 
+MODULE_HEADING_RE = re.compile(r"^#{2,4}\s+(\d+(?:\.\d+)*)\.?\s+(.+?)\s*$")
+# 指向 modules/P<n>-*.md 的节号引用：带路径（`modules/P3-….md` 第 10 节 / 9.1）或简写（P3 第 9.3 节），
+# 节号后可跟「标题」或（标题）声明所指章节。
+SECTION_REFERENCE_RE = re.compile(
+    r"(?:`?modules/(?P<file>P\d-[^`\s）)]+?\.md)`?\s*(?:第\s*)?|(?<![A-Za-z0-9])(?P<short>P\d)\s*第\s*)"
+    r"(?P<number>\d+(?:\.\d+)?)(?![\d.]\d)\s*(?:节|章)?\s*(?:「(?P<quoted>[^」]+)」|（(?P<paren>[^）]+)）)?"
+)
+
+
+def _module_headings(skill_root: Path) -> dict[str, tuple[str, dict[str, str]]]:
+    """modules/ 下每个 P<n> 模块的文件名与「节号 → 标题」表。"""
+    modules: dict[str, tuple[str, dict[str, str]]] = {}
+    for path in sorted((skill_root / "modules").glob("P*.md")):
+        headings = {}
+        for line in path.read_text(encoding="utf-8").splitlines():
+            match = MODULE_HEADING_RE.match(line)
+            if match:
+                headings[match.group(1)] = match.group(2)
+        modules[path.name.split("-", 1)[0]] = (path.name, headings)
+    return modules
+
+
+def validate_section_references(skill_root: Path) -> None:
+    """校验指向 modules/P<n> 的节号引用：编号必须是目标模块里真实存在的标题；
+    节号后若写了该模块的某个标题名，必须与所引编号的标题一致（章节重排后编号还在、
+    主题已变的引用由此拦下）。文件路径本身是否存在不在这里校验。 [任务:T-3805]"""
+    skill_root = skill_root.resolve()
+    modules = _module_headings(skill_root)
+    errors = []
+    for path in discover_source_files(skill_root):
+        if path.suffix.lower() != ".md":
+            continue
+        relative = _relative(path, skill_root)
+        for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            for match in SECTION_REFERENCE_RE.finditer(line):
+                module_file = match.group("file")
+                key = (module_file or match.group("short")).split("-", 1)[0]
+                if key not in modules or (module_file and module_file != modules[key][0]):
+                    continue
+                target, headings = modules[key]
+                number = match.group("number")
+                title = headings.get(number)
+                if title is None:
+                    errors.append(f"{relative}:{line_number} 引用 {target} 的 {number} 节不存在")
+                    continue
+                claimed = (match.group("quoted") or match.group("paren") or "").strip()
+                if claimed and claimed != title and claimed in headings.values():
+                    errors.append(
+                        f"{relative}:{line_number} 引用 {target} 的 {number} 节写成「{claimed}」，实际标题是「{title}」"
+                    )
+    if errors:
+        raise ReleaseError("节号引用与目标章节不符：\n" + "\n".join(errors))
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as file_handle:
@@ -640,6 +694,7 @@ def check_release(skill_root: Path) -> dict[str, Any]:
     skill_root = skill_root.resolve()
     validate_skill_metadata(skill_root)
     validate_platform_install_files(skill_root)
+    validate_section_references(skill_root)
     manifest = _load_manifest(skill_root)
     if set(manifest) != MANIFEST_KEYS:
         missing = sorted(MANIFEST_KEYS - set(manifest))
@@ -696,6 +751,7 @@ def release(
     skill_root = skill_root.resolve()
     validate_skill_metadata(skill_root)
     validate_platform_install_files(skill_root)
+    validate_section_references(skill_root)
     _validate_package_version(package_version)
     skill_version = _validate_skill_version(skill_version or _current_skill_version(skill_root))
     reason = reason.strip()
