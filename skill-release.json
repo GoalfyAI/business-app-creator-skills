@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20260924-2c476f",
-  "package_version": "2.0.11",
+  "version": "v20260924-6d0a46",
+  "package_version": "2.0.12",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-24T08:01:14Z",
-  "update_reason": "修正 P3 节号引用并新增节号校验 [任务:T-3805]",
+  "released_at": "2026-09-24T08:01:24Z",
+  "update_reason": "修正《平台对象与运行模型》14 处 P3 节号引用与 P6 的 P1 节号；发布检查新增节号与标题校验 [任务:T-3805]",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -62,7 +62,7 @@
     "stages/G7-预发布与交付.md"
   ],
   "checksums": {
-    "SKILL.md": "69a3852cc45c0054d1e683160eab631d41462afdcfd75388082243c6b2a8b62b",
+    "SKILL.md": "836f4c2397e50feac9fc6b799505619f60b66e3c0374db39068e329badf9313d",
     "agents/openai.yaml": "8b83462bd633f5b875c4e690c22131bbb63af3099ebf041e4f7493fe158f74e9",
     "checklists/G门禁检查清单.md": "d576b14ed2b833f718406f40347e6cab02f286b0b22d56eba3a8f45353e413ee",
     "checklists/U业务行为验收明细.md": "c3cbb24ff1778131d90e2a268d7ab8d8bfd4b467a61e3a7eca6cbea1189fb601",
