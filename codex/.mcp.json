@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "business-app-creator-mcp": {
+      "url": "https://business-app-creator-mcp.qa.goalfyai.cn/mcp",
+      "transport": "streamable_http",
+      "bearer_token_env_var": "BUSINESS_APP_CREATOR_QA_API_KEY"
+    }
+  }
+}

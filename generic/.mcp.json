@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "business-app-creator-mcp": {
+      "type": "streamable-http",
+      "url": "https://business-app-creator-mcp.qa.goalfyai.cn/mcp",
+      "headers": {
+        "Authorization": "Bearer ${BUSINESS_APP_CREATOR_QA_API_KEY}"
+      }
+    }
+  }
+}
