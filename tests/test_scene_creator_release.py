@@ -544,6 +544,10 @@ def test_install_docs_state_the_required_facts():
             assert "BUSINESS_APP_CREATOR_API_KEY" in docs, f"{platform} 未说明密钥环境变量"
         if layout["skill_subdir"].startswith("skills/"):
             assert "GoalfyAI/business-app-creator-skills" in docs, f"{platform} 缺少公开市场来源"
+        # 仓库已公开：任何平台文档都不得再引导用户走 Codeup 内网 / SSH 地址，
+        # 否则外部用户会被带去云效配公钥（T-3741）。
+        for forbidden in ("codeup.aliyun.com", "git@"):
+            assert forbidden not in docs, f"{platform} 文档含内网/SSH 地址 {forbidden!r}"
 
 
 def test_docs_do_not_pin_a_stale_package_version():
@@ -871,3 +875,57 @@ def test_feedback_report_script_is_shipped_with_skill(tmp_path):
     for platform in ("codex", "claude-code"):
         target = tmp_path / platform / "skills/business-app-creator/scripts/feedback_report.py"
         assert target.read_bytes() == source.read_bytes()
+
+
+# ---------------------------------------------------------------- 节号引用 [任务:T-3805]
+
+
+def test_current_section_references_point_to_existing_headings():
+    release_module.validate_section_references(SKILL_ROOT)
+
+
+def test_platform_object_model_p3_references_name_their_headings():
+    """《平台对象与运行模型》指向 P3 的节号带标题名，校验才能在章节重排后发现主题错位。"""
+    text = (SKILL_ROOT / "references" / "平台对象与运行模型.md").read_text(encoding="utf-8")
+    for expected in (
+        "第 3 节「业务路线设计」",
+        "7.2「工具集上线的两道检查」",
+        "第 10 节「业务事件设计」",
+        "9.1「契约读取路由」",
+        "第 2 节「执行形态选择」",
+        "10.4「事件密度与契约字段」",
+        "12.3「面向界面的公开语义」",
+    ):
+        assert expected in text
+
+
+@pytest.mark.parametrize(
+    ("reference", "message"),
+    [
+        ("见 `modules/P3-执行形态与路线制作.md` 第 99 节", "P3-执行形态与路线制作.md 的 99 节不存在"),
+        ("见 P3 第 4.9 节", "P3-执行形态与路线制作.md 的 4.9 节不存在"),
+        ("见 `modules/P3-执行形态与路线制作.md` 第 5 节「业务事件设计」", "实际标题是「方案挑战与制作书定稿」"),
+        ("见 P3 第 4.1 节（契约读取路由）", "实际标题是「工具集划分」"),
+    ],
+)
+def test_stale_section_reference_is_rejected(tmp_path: Path, reference: str, message: str):
+    copied = _copy_repo(tmp_path)
+    target = copied / "references" / "平台对象与运行模型.md"
+    target.write_text(target.read_text(encoding="utf-8") + f"\n{reference}\n", encoding="utf-8")
+    line = len(target.read_text(encoding="utf-8").splitlines())
+
+    for action in (
+        lambda: release_module.check_release(copied),
+        lambda: release_module.release(copied, _package_version(copied), "节号引用校验"),
+    ):
+        with pytest.raises(release_module.ReleaseError, match=re.escape(message)) as error:
+            action()
+        assert f"references/平台对象与运行模型.md:{line}" in str(error.value)
+
+
+def test_descriptive_parenthesis_after_section_reference_is_not_a_title(tmp_path: Path):
+    copied = _copy_repo(tmp_path)
+    target = copied / "references" / "平台对象与运行模型.md"
+    target.write_text(target.read_text(encoding="utf-8") + "\n流程见 P3 第 9.3 节（先读契约再写脚本）\n", encoding="utf-8")
+
+    release_module.validate_section_references(copied)

@@ -1,6 +1,6 @@
 ---
 name: business-app-creator
-description: 当开发者需要把一个业务目的、SOP、实操经验、参考项目或已有应用的问题，变成一个最终用户能持续使用的 GoalfyMax 智能应用（含其能力容器、数据模板与前后端应用），或需要接续、修订、诊断、试用能力、仅讨论方案时使用。按七阶段推进：G1 业务目标与范围 → G2 关键能力可行性 → G3 运行设计与验收基线 → G4 核心执行单元验证 → G5 后端业务闭环验证 → G6 用户操作闭环验证 → G7 预发布与交付；每阶段给开发者看结论、证据与待决定项，按需调用细则正本。只执行一次性业务任务、只咨询平台概念时不要使用。[skill-version:v20260922-3f87e4]
+description: 当开发者需要把一个业务目的、SOP、实操经验、参考项目或已有应用的问题，变成一个最终用户能持续使用的 GoalfyMax 智能应用（含其能力容器、数据模板与前后端应用），或需要接续、修订、诊断、试用能力、仅讨论方案时使用。按七阶段推进：G1 业务目标与范围 → G2 关键能力可行性 → G3 运行设计与验收基线 → G4 核心执行单元验证 → G5 后端业务闭环验证 → G6 用户操作闭环验证 → G7 预发布与交付；每阶段给开发者看结论、证据与待决定项，按需调用细则正本。只执行一次性业务任务、只咨询平台概念时不要使用。[skill-version:v20260924-6d0a46]
 keywords:
   - 智能应用助手
   - 智能应用
@@ -141,12 +141,13 @@ restaurant-koc/             本次应用工程根，位于工作台分配的 app
 
 制作任务建工单后、初始化或继续开发之前，按下面顺序：
 
-1. **先确认归属，再核脚手架版本。** 新建先确认应用目录；接续先定位原应用并读本地文件，换机或本地缺失时按协议四第 6 节恢复，已有内容先比较、保留差异再处理。读取该应用根 `scaffold-release.json`（缺失传空），调用 `business_ui_bundle(action="download_template", task_id=..., current_scaffold_version=..., skill_min_scaffold_version=<本入口机器标记>, workspace_id=<已有工作区标识>)`。新建尚无工作区时省略 `workspace_id`。新建用当前环境已登记的最新模板，校验下载包 `sha256` 和解包后的 `version`；已有应用低于必须线时完成实际代码迁移与验证，通过后继续；低于建议线时在开发记录中提示“建议升级脚手架版本”，安排升级后再进入预部署。每次检查以本应用清单和 MCP 在线结果为依据，完整规则见[脚手架版本与升级](references/脚手架版本与升级.md)。
+1. **先确认归属，再核脚手架版本。** 新建先确认应用目录；接续先定位原应用并读本地文件，换机或本地缺失时按协议四第 6 节恢复，已有内容先比较、保留差异再处理。读取该应用根 `scaffold-release.json`（缺失传空），调用 `business_ui_bundle(action="download_template", task_id=..., current_scaffold_version=..., workspace_id=<已有工作区标识>)`。新建尚无工作区时省略 `workspace_id`。最低版本由服务端按工单绑定的 Skill 版本取已登记值，调用时只传这些参数。新建用当前环境已登记的最新模板，校验下载包 `sha256` 和解包后的 `version`；已有应用低于必须线时完成实际代码迁移与验证，通过后继续；低于建议线时在开发记录中提示“建议升级脚手架版本”，安排升级后再进入预部署。每次检查以本应用清单和 MCP 在线结果为依据，完整规则见[脚手架版本与升级](references/脚手架版本与升级.md)。
 2. **在本应用目录生成工作区。** 模板解包到已确认的新应用目录；若压缩包带通用外层目录，整理到本应用工程根，使身份与方案入口位于约定路径。工作区文件统一由脚手架命令生成：
 
    - **新建**：`npm run scaffold:init -- --environment <环境> --app-name "<智能应用名称>"`，已经有业务界面草稿时再加 `--business-ui-id <真实 ID>`。它生成本应用的 `app.json`、`WORKSPACE.md`、`workspace.json`、方案页和七份阶段文档；`workspace_id` 自动生成并落盘。示例应用独立保存在 `examples/`。
    - **接续时补齐工作区文件**：已有工作区使用 `npm run scaffold:repair -- --app-name "<智能应用名称>"`，保留已有事实，只补缺失文件。
    - **装依赖并自检**：`npm run setup`，然后 `npm run doctor`。先修第一条 `FAIL`；`WARN` 按当前阶段处理。
+   - **三条硬约束**（prod 观测里两个应用因此没上线）：① `app.json`、`WORKSPACE.md`、`workspace.json`、方案页与阶段文档一律由 `scaffold:init` / `scaffold:repair` 生成，手写的文件会被契约逐条打回；② 应用工程根必须是 Git 根——`scaffold:init` 默认在应用根 `git init` 并提交模板基线，旧版本或传了 `--no-git` 时自己在应用根做，应用嵌在开发者中心 `apps/<app>/` 子目录时同样在应用根单独初始化，否则 doctor 报 `GIT_ROOT_MISMATCH`；③ 模板自带示例包 `frontend/schema/packs/demo-pack/` 且已在 `goalfy-app.json.packs` 声明，用 `scaffold:init -- --without-demo-pack` 去掉它（或删目录并同步移出 packs），二者一致 verify 才会通过。
 
    应用工程根必须有合法 `app.json`，且 `schema_version` 形如 `goalfy.app/vN`；`WORKSPACE.md` 未就绪会显示“初始化中”。`workspace.json` 是阶段状态正本，七项按 G1 到 G7 排，`name` 用阶段中文名，G1 为 `in_progress`、其余 `not_started`，与阶段 md 的状态同步。`docs/proposal/index.html` 必须在首次实质性方案答复结束前按已知业务重写并删除模板标记；缺口写未知，不保留通用占位文案。即使最终只用能力容器，仍保留本应用的方案与阶段工作目录。
 3. **应用调试按需准备。** App 管理工作台内部服务，G1 到 G3 的方案与设计由 Goalfy 展示。需要真实应用预览时，按已校验脚手架的命令准备本应用的前后端调试；先查当前运行状态，已就绪就复用。预览连接、端口与运行时声明由工作台和脚手架管理，保留桌面注入的 `GOALFY_DEV_FRAME_ANCESTORS` 及来源限制。预览失败先核应用版本、运行状态与连接提示，定位原因后处理。应用调试与预部署验证的区别见 P5 第 8 节。

@@ -13,13 +13,13 @@
 claude plugin update business-app-creator@business-app-creator
 ```
 
-插件市场会拉取内网仓库、比较 `plugin.json` 版本并完成更新。
+插件市场会拉取公开仓库、比较 `plugin.json` 版本并完成更新。
 
 **兜底**：如果提示插件市场不是 Git 市场，或升级后 `[skill-version:...]` 标记仍是旧值，说明市场
-当初是从本地目录添加的，一直在复用陈旧缓存。重新绑回内网仓库后再执行上面的升级：
+当初是从本地目录添加的，一直在复用陈旧缓存。重新绑回公开仓库后再执行上面的升级：
 
 ```bash
-claude plugin marketplace add git@codeup.aliyun.com:goalfyai/goalfyagent/business-app-creator-skills.git
+claude plugin marketplace add GoalfyAI/business-app-creator-skills
 ```
 
 ### 第 2 步：读取新版本标记并重试（在本次会话内完成，先不要让用户重启）
@@ -34,7 +34,7 @@ claude plugin marketplace add git@codeup.aliyun.com:goalfyai/goalfyagent/busines
 
 ```bash
 claude plugin uninstall business-app-creator@business-app-creator
-claude plugin marketplace add git@codeup.aliyun.com:goalfyai/goalfyagent/business-app-creator-skills.git
+claude plugin marketplace add GoalfyAI/business-app-creator-skills
 claude plugin install business-app-creator@business-app-creator
 ```
 
