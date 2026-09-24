@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20260922-3f87e4",
-  "package_version": "2.0.9",
+  "version": "v20260924-c9cc75",
+  "package_version": "2.0.10",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-23T13:12:52Z",
-  "update_reason": "按 review 去掉写死的平台常量，拆分 U9-07 与 G1 自动化要点（T-3531）",
+  "released_at": "2026-09-24T02:26:34Z",
+  "update_reason": "合入 T-3531 智能应用自动化开发说明：U9-07 与 G1 自动化要点拆分、去掉写死的平台常量",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -62,7 +62,7 @@
     "stages/G7-预发布与交付.md"
   ],
   "checksums": {
-    "SKILL.md": "58372566a4a6291ea0b08ce7d553cd81326ee376b71ae4fe6444f304723b8cab",
+    "SKILL.md": "2eba8792fbb0b52f97fadace36cb1c049424a3925e3c032fd6421a642813c0ab",
     "agents/openai.yaml": "8b83462bd633f5b875c4e690c22131bbb63af3099ebf041e4f7493fe158f74e9",
     "checklists/G门禁检查清单.md": "d576b14ed2b833f718406f40347e6cab02f286b0b22d56eba3a8f45353e413ee",
     "checklists/U业务行为验收明细.md": "c3cbb24ff1778131d90e2a268d7ab8d8bfd4b467a61e3a7eca6cbea1189fb601",
