@@ -15,14 +15,14 @@ codex plugin remove business-app-creator@business-app-creator
 codex plugin add business-app-creator@business-app-creator
 ```
 
-先升级市场再重装插件，Codex 由此拉到内网仓库的新版本。
+先升级市场再重装插件，Codex 由此拉到公开仓库的新版本。
 
 **兜底**：如果提示 `marketplace 'business-app-creator' is not configured as a Git marketplace`，或重装后
 `[skill-version:...]` 标记仍是旧值，说明市场当初是从本地目录添加的，一直在复用陈旧缓存。
-重新绑回内网仓库后再执行上面的 remove/add：
+重新绑回公开仓库后再执行上面的 remove/add：
 
 ```bash
-codex plugin marketplace add git@codeup.aliyun.com:goalfyai/goalfyagent/business-app-creator-skills.git
+codex plugin marketplace add GoalfyAI/business-app-creator-skills
 ```
 
 ### 第 2 步：读取新版本标记并重试（在本次会话内完成，先不要让用户重启）
@@ -37,7 +37,7 @@ codex plugin marketplace add git@codeup.aliyun.com:goalfyai/goalfyagent/business
 
 ```bash
 codex plugin remove business-app-creator@business-app-creator
-codex plugin marketplace add git@codeup.aliyun.com:goalfyai/goalfyagent/business-app-creator-skills.git
+codex plugin marketplace add GoalfyAI/business-app-creator-skills
 codex plugin add business-app-creator@business-app-creator
 ```
 
