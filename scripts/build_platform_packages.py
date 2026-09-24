@@ -20,7 +20,7 @@ import sys
 import zipfile
 from collections.abc import Iterable
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 import yaml
@@ -171,11 +171,96 @@ def discover_source_files(skill_root: Path) -> list[Path]:
             files.append(path)
             continue
         if relative_path.parts[:2] == ("references", "前端设计指南"):
-            # 官方前端 guidance 钉版副本里混有 LICENSE / json 等非 md 文件：只分发 md，其余静默跳过
+            # 官方前端 guidance 钉版副本：md 与目录数据 json（components 入口第一步就要读 components.json）
+            # 随包分发，LICENSE 等其余文件静默跳过
+            if path.suffix.lower() == ".json":
+                files.append(path)
             continue
         raise ReleaseError(f"不支持的 Skill 文件：{relative_path.as_posix()}")
 
     return sorted(files, key=lambda path: _relative(path, skill_root))
+
+
+# 正文里指向 Skill 自身文件的路径，Agent 会照着去读或执行；指向发布包里不存在的文件时，
+# 用户侧直接表现为 No such file。Markdown 链接一律检查；`代码` 里的路径只检查以 Skill 内容目录
+# 开头的写法——`workspace.json`、`backend/README.md` 这类是智能应用工程里的文件，不在发布包内。
+_REFERENCE_SPAN_RE = re.compile(r"`([^`\n]+)`|\]\(([^)\s]+)\)")
+_REFERENCE_PATH_RE = re.compile(r"^(?:\.{1,2}/)*[\w\-.]+(?:/[\w\-.]+)*\.(?:md|py|json|ya?ml|sh|ts|js|txt)$")
+_SKILL_CONTENT_DIRS = {"modules", "references", "stages", "protocols", "checklists", "scripts", "agents", "templates"}
+_VENDORED_GUIDANCE_DIR = ("references", "前端设计指南")
+# 允许不在发布包里的引用：(引用所在文件的前缀, 引用原文, 原因)。前缀为空表示任意文件。
+REFERENCE_ALLOWLIST: tuple[tuple[str, str, str], ...] = (
+    ("", "./scripts/pack.sh", "智能应用工程里的打包脚本"),
+    ("", "scripts/gen-types.ts", "智能应用工程里的类型生成脚本"),
+    # 前端 guidance 副本一字不改，上游仓里未随包分发的文件由 references/前端设计指南/README.md 逐项声明
+    ("references/前端设计指南/components/SKILL.md", "README.md", "上游副本未随包分发"),
+    ("references/前端设计指南/", "references/dependencies.md", "上游副本未随包分发"),
+    ("references/前端设计指南/", "scripts/health-check.py", "上游副本未随包分发"),
+    ("references/前端设计指南/", "scripts/init_frontend_quality.py", "上游副本未随包分发"),
+    ("references/前端设计指南/", "templates/DESIGN.md", "上游副本未随包分发"),
+    ("references/前端设计指南/", "templates/FRONTEND_CONTRACT.md", "上游副本未随包分发"),
+    ("references/前端设计指南/", "templates/PAGE_BRIEF.md", "上游副本未随包分发"),
+    ("references/前端设计指南/", "templates/FRONTEND_REVIEW.md", "上游副本未随包分发"),
+)
+
+
+def _reference_allowed(source: str, reference: str) -> bool:
+    return any(
+        reference == allowed and source.startswith(prefix)
+        for prefix, allowed, _reason in REFERENCE_ALLOWLIST
+    )
+
+
+def _normalize_reference(base: PurePosixPath, reference: str) -> str | None:
+    parts: list[str] = []
+    for part in (base / reference).parts:
+        if part in ("", "."):
+            continue
+        if part == "..":
+            if not parts:
+                return None
+            parts.pop()
+            continue
+        parts.append(part)
+    return "/".join(parts)
+
+
+def find_broken_references(skill_root: Path) -> list[str]:
+    """列出发布包内 md 正文中指向不存在文件的引用（文件:行号: 引用）。
+
+    解析顺序：引用所在目录、Skill 根目录、前端 guidance 副本所在的子 Skill 根目录。
+    """
+    skill_root = skill_root.resolve()
+    shipped = {_relative(path, skill_root) for path in discover_source_files(skill_root)}
+    shipped_dirs = {str(parent) for item in shipped for parent in PurePosixPath(item).parents}
+    broken = []
+    for source in sorted(item for item in shipped if item.endswith(".md")):
+        source_path = PurePosixPath(source)
+        bases = [source_path.parent, PurePosixPath("")]
+        if source_path.parts[:2] == _VENDORED_GUIDANCE_DIR and len(source_path.parts) > 3:
+            bases.append(PurePosixPath(*source_path.parts[:3]))
+        text = (skill_root / source).read_text(encoding="utf-8")
+        for line_number, line in enumerate(text.splitlines(), start=1):
+            for match in _REFERENCE_SPAN_RE.finditer(line):
+                code_span, link_target = match.groups()
+                reference = (code_span or link_target).split("#", 1)[0].strip()
+                if not _REFERENCE_PATH_RE.fullmatch(reference) or _reference_allowed(source, reference):
+                    continue
+                if code_span is not None:
+                    leading = [part for part in PurePosixPath(reference).parts if part not in (".", "..")]
+                    if not reference.startswith("../") and (len(leading) < 2 or leading[0] not in _SKILL_CONTENT_DIRS):
+                        continue
+                candidates = (_normalize_reference(base, reference) for base in bases)
+                if any(item in shipped or item in shipped_dirs for item in candidates if item):
+                    continue
+                broken.append(f"{source}:{line_number}: {reference}")
+    return broken
+
+
+def validate_internal_references(skill_root: Path) -> None:
+    broken = find_broken_references(skill_root)
+    if broken:
+        raise ReleaseError("Skill 正文引用了发布包里不存在的文件：\n" + "\n".join(broken))
 
 
 def _load_yaml_mapping(content: str, label: str) -> dict[str, Any]:
@@ -640,6 +725,7 @@ def check_release(skill_root: Path) -> dict[str, Any]:
     skill_root = skill_root.resolve()
     validate_skill_metadata(skill_root)
     validate_platform_install_files(skill_root)
+    validate_internal_references(skill_root)
     manifest = _load_manifest(skill_root)
     if set(manifest) != MANIFEST_KEYS:
         missing = sorted(MANIFEST_KEYS - set(manifest))
@@ -696,6 +782,7 @@ def release(
     skill_root = skill_root.resolve()
     validate_skill_metadata(skill_root)
     validate_platform_install_files(skill_root)
+    validate_internal_references(skill_root)
     _validate_package_version(package_version)
     skill_version = _validate_skill_version(skill_version or _current_skill_version(skill_root))
     reason = reason.strip()
