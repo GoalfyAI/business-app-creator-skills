@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import secrets
 import shutil
@@ -78,11 +79,28 @@ ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 # 2026-09-02 拍板：生产 MCP 尚未部署（404），安装物料先指向 QA；切回生产时改这一处 +
 # 文档里的 API 密钥页域名（goalfymax.goalfyai.cn ↔ goalfymax.goalfyai.cn），再发版。
 PROD_MCP_ENDPOINT = "https://business-app-creator-mcp.goalfyai.cn/mcp"
+# 渠道：同一份 Skill 源码按环境生成不同的安装物料。main 分支就是 prod 渠道（已安装用户都在这里），
+# qa 渠道由 scripts/build_qa_branch.py 从 qa/main 生成、推到 GitHub 的 qa 分支。环境相关的只有
+# MCP 地址、密钥环境变量名与 API 密钥页；源码一律保持 prod 写法。 [任务:T-3784]
+RELEASE_CHANNELS = {
+    "prod": {
+        "mcp_endpoint": PROD_MCP_ENDPOINT,
+        "api_key_env": "BUSINESS_APP_CREATOR_API_KEY",
+        "api_keys_page": "https://goalfymax.goalfyai.cn/developer/api-keys",
+    },
+    "qa": {
+        "mcp_endpoint": "https://business-app-creator-mcp.qa.goalfyai.cn/mcp",
+        "api_key_env": "BUSINESS_APP_CREATOR_QA_API_KEY",
+        "api_keys_page": "https://goalfymax.qa.goalfyai.cn/developer/api-keys",
+    },
+}
+CHANNEL_ENV = "SKILL_RELEASE_CHANNEL"
+QA_PACKAGE_VERSION_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-qa\.(0|[1-9]\d*)$")
 DATA_SKILL_VERSION_RE = re.compile(r"^v\d{8}-[0-9a-f]{6}$")
 LEGACY_SKILL_VERSION_RE = re.compile(r"^v\d+\.\d+\.\d+$")
 SKILL_VERSION_RE = re.compile(r"\[skill-version:(v(?:\d+\.\d+\.\d+|\d{8}-[0-9a-f]{6}))\]")
 SEMVER_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
-PACKAGE_VERSION_RE = re.compile(r'("version":\s*")(\d+)\.(\d+)\.(\d+)(")')
+PACKAGE_VERSION_RE = re.compile(r'("version":\s*")(\d+\.\d+\.\d+(?:-qa\.\d+)?)(")')
 REQUIRED_SKILL_KEYWORDS = {
     "scene package",
     "scenario package",
@@ -116,6 +134,24 @@ MANIFEST_KEYS = {
 
 class ReleaseError(ValueError):
     """仓库中的 Skill 发布信息无效或已过期。"""
+
+
+def release_channel() -> str:
+    """当前构建渠道，默认 prod；只接受 RELEASE_CHANNELS 里的值。"""
+    channel = os.environ.get(CHANNEL_ENV, "prod").strip() or "prod"
+    if channel not in RELEASE_CHANNELS:
+        raise ReleaseError(f"{CHANNEL_ENV} 只能是 {sorted(RELEASE_CHANNELS)}，当前为 {channel!r}")
+    return channel
+
+
+def channel_config(channel: str | None = None) -> dict[str, str]:
+    return RELEASE_CHANNELS[channel or release_channel()]
+
+
+def _other_channel_markers(channel: str) -> list[str]:
+    """其他渠道独有的环境值：出现在本渠道产物里就说明配置串了。"""
+    own = set(channel_config(channel).values())
+    return sorted({value for name, config in RELEASE_CHANNELS.items() if name != channel for value in config.values()} - own)
 
 
 def _skill_root() -> Path:
@@ -198,8 +234,9 @@ def _configured_mcp_endpoint(skill_root: Path) -> str:
     if not isinstance(tools, list) or len(tools) != 1 or not isinstance(tools[0], dict):
         raise ReleaseError("agents/openai.yaml 必须声明唯一的 business-app-creator MCP 依赖")
     endpoint = tools[0].get("url")
-    if endpoint != PROD_MCP_ENDPOINT:
-        raise ReleaseError("agents/openai.yaml 必须使用仓库约定的 MCP 地址（PROD_MCP_ENDPOINT）")
+    expected = channel_config()["mcp_endpoint"]
+    if endpoint != expected:
+        raise ReleaseError(f"agents/openai.yaml 必须使用 {release_channel()} 渠道的 MCP 地址 {expected}")
     return endpoint
 
 
@@ -264,6 +301,9 @@ def validate_skill_metadata(skill_root: Path) -> None:
 def validate_platform_install_files(skill_root: Path) -> None:
     """校验各平台安装文件的安全契约与必备事实。"""
     repository_root = _repository_root(skill_root)
+    channel = release_channel()
+    config = channel_config(channel)
+    foreign = _other_channel_markers(channel)
     for platform, layout in PLATFORM_LAYOUTS.items():
         platform_root = repository_root / platform
         mcp_name = layout["mcp_config"]
@@ -273,10 +313,10 @@ def validate_platform_install_files(skill_root: Path) -> None:
                 raise ReleaseError(f"缺少 {platform} 的 MCP 配置：{mcp_path}")
             mcp = json.loads(mcp_path.read_text(encoding="utf-8"))
             server = (mcp.get("mcpServers") or {}).get(MCP_SERVER_NAME) or {}
-            if server.get("url") != PROD_MCP_ENDPOINT:
-                raise ReleaseError(f"{platform} MCP 必须使用仓库约定的 MCP 地址（PROD_MCP_ENDPOINT）")
+            if server.get("url") != config["mcp_endpoint"]:
+                raise ReleaseError(f"{platform} MCP 必须使用 {channel} 渠道的 MCP 地址 {config['mcp_endpoint']}")
             serialized = json.dumps(server, ensure_ascii=False)
-            if "BUSINESS_APP_CREATOR_API_KEY" not in serialized:
+            if config["api_key_env"] not in serialized:
                 raise ReleaseError(f"{platform} MCP 必须引用 API Key 环境变量")
             if re.search(r"Bearer\s+sk_[A-Za-z0-9]", serialized):
                 raise ReleaseError(f"{platform} MCP 不得包含明文 API Key")
@@ -291,8 +331,13 @@ def validate_platform_install_files(skill_root: Path) -> None:
                 raise ReleaseError(f"{platform} 安装文档必须提到 {required_text!r}")
         # 有 .mcp.json 的平台靠环境变量注入密钥，文档必须写明变量名；
         # Manus 在网页里直接填明文密钥，没有环境变量可言。
-        if mcp_name and "BUSINESS_APP_CREATOR_API_KEY" not in docs:
-            raise ReleaseError(f"{platform} 安装文档必须说明 API Key 环境变量")
+        if mcp_name and config["api_key_env"] not in docs:
+            raise ReleaseError(f"{platform} 安装文档必须说明 API Key 环境变量 {config['api_key_env']}")
+        # 渠道之间不能串：prod 物料里出现 QA 地址或 QA 变量名（反之亦然）都拒绝发布 [任务:T-3784]
+        mcp_text = (platform_root / mcp_name).read_text(encoding="utf-8") if mcp_name else ""
+        leaked = [marker for marker in foreign if marker in docs or marker in mcp_text]
+        if leaked:
+            raise ReleaseError(f"{platform} 的安装物料混入了其他渠道的配置：{leaked}")
         # 走插件市场的平台必须给出公开来源；Manus 与通用集成是手工配置，不适用
         if (
             layout["skill_subdir"].startswith("skills/")
@@ -381,7 +426,15 @@ def _load_manifest(skill_root: Path) -> dict[str, Any]:
 
 
 def _validate_package_version(version: Any) -> tuple[int, int, int]:
-    if not isinstance(version, str) or not SEMVER_RE.fullmatch(version):
+    """prod 渠道只接受 MAJOR.MINOR.PATCH；qa 渠道只接受 MAJOR.MINOR.PATCH-qa.N。"""
+    if not isinstance(version, str):
+        raise ReleaseError("package version 必须是字符串")
+    if release_channel() == "qa":
+        matched = QA_PACKAGE_VERSION_RE.fullmatch(version)
+        if not matched:
+            raise ReleaseError("qa 渠道的 package version 必须是 MAJOR.MINOR.PATCH-qa.N")
+        return tuple(int(part) for part in matched.groups()[:3])  # type: ignore[return-value]
+    if not SEMVER_RE.fullmatch(version):
         raise ReleaseError("package version 必须是 MAJOR.MINOR.PATCH")
     return tuple(int(part) for part in version.split("."))  # type: ignore[return-value]
 
@@ -428,7 +481,7 @@ def _repository_package_version(skill_root: Path) -> str:
         found = PACKAGE_VERSION_RE.search(path.read_text(encoding="utf-8"))
         if not found:
             raise ReleaseError(f"{relative} 缺少 version 字段")
-        versions[relative.as_posix()] = f"{found.group(2)}.{found.group(3)}.{found.group(4)}"
+        versions[relative.as_posix()] = found.group(2)
     unique = set(versions.values())
     if len(unique) != 1:
         raise ReleaseError(f"插件 manifest 版本不一致：{versions}")
@@ -443,12 +496,15 @@ def _bump_package_version(skill_root: Path, version: str) -> None:
         path = repository_root / relative
         content = path.read_text(encoding="utf-8")
         updated, count = PACKAGE_VERSION_RE.subn(
-            lambda match, new=version: f"{match.group(1)}{new}{match.group(5)}", content, count=1
+            lambda match, new=version: f"{match.group(1)}{new}{match.group(3)}", content, count=1
         )
         if count != 1:
             raise ReleaseError(f"{relative} 的 version 字段替换失败")
         path.write_text(updated, encoding="utf-8")
 
+    # pyproject / uv.lock 只跟 prod 版本走：qa 的预发布后缀不是合法的 PEP 440 版本，且不影响插件分发
+    if release_channel() != "prod":
+        return
     pyproject = repository_root / "pyproject.toml"
     if pyproject.is_file():
         content = pyproject.read_text(encoding="utf-8")
@@ -759,7 +815,8 @@ def release(
         raise ReleaseError("update_reason 必须包含 1～1024 个字符")
 
     manifest_path = _manifest_path(skill_root)
-    if manifest_path.exists():
+    # qa 渠道的版本号是「main 的 package version + -qa.N」，由 build_qa_branch.py 生成，不走 prod 的递增规则
+    if manifest_path.exists() and release_channel() == "prod":
         current = _load_manifest(skill_root)
         current_package_version = current.get("package_version")
         _validate_package_version(current_package_version)

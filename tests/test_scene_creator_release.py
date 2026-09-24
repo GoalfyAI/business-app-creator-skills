@@ -929,3 +929,60 @@ def test_descriptive_parenthesis_after_section_reference_is_not_a_title(tmp_path
     target.write_text(target.read_text(encoding="utf-8") + "\n流程见 P3 第 9.3 节（先读契约再写脚本）\n", encoding="utf-8")
 
     release_module.validate_section_references(copied)
+
+
+# ---------------------------------------------------------------- QA 渠道 [任务:T-3784]
+
+
+QA_BUILD_SPEC = importlib.util.spec_from_file_location("build_qa_branch", ROOT / "scripts" / "build_qa_branch.py")
+assert QA_BUILD_SPEC and QA_BUILD_SPEC.loader
+qa_build_module = importlib.util.module_from_spec(QA_BUILD_SPEC)
+QA_BUILD_SPEC.loader.exec_module(qa_build_module)
+
+
+def test_prod_install_files_reject_qa_values(tmp_path: Path):
+    copied = _copy_repo(tmp_path)
+    readme = tmp_path / "claude-code" / "README.md"
+    readme.write_text(readme.read_text(encoding="utf-8") + "\nBUSINESS_APP_CREATOR_QA_API_KEY\n", encoding="utf-8")
+
+    with pytest.raises(release_module.ReleaseError, match="混入了其他渠道的配置"):
+        release_module.validate_platform_install_files(copied)
+
+
+def test_prod_channel_rejects_qa_package_version(monkeypatch):
+    monkeypatch.setenv(release_module.CHANNEL_ENV, "prod")
+    with pytest.raises(release_module.ReleaseError, match="MAJOR.MINOR.PATCH"):
+        release_module._validate_package_version("2.0.12-qa.3")
+    monkeypatch.setenv(release_module.CHANNEL_ENV, "qa")
+    assert release_module._validate_package_version("2.0.12-qa.3") == (2, 0, 12)
+    with pytest.raises(release_module.ReleaseError, match="-qa.N"):
+        release_module._validate_package_version("2.0.12")
+
+
+def test_unknown_channel_is_rejected(monkeypatch):
+    monkeypatch.setenv(release_module.CHANNEL_ENV, "staging")
+    with pytest.raises(release_module.ReleaseError, match="SKILL_RELEASE_CHANNEL"):
+        release_module.release_channel()
+
+
+def test_qa_build_switches_every_environment_value(tmp_path: Path, monkeypatch):
+    out = tmp_path / "qa"
+    out.mkdir()
+    info = qa_build_module.build(out, "HEAD", 7)
+    monkeypatch.setenv(release_module.CHANNEL_ENV, "qa")
+
+    assert info["package_version"].endswith("-qa.7")
+    manifest = json.loads((out / "skill-release.json").read_text(encoding="utf-8"))
+    assert manifest["mcp_endpoint"] == release_module.RELEASE_CHANNELS["qa"]["mcp_endpoint"]
+    prod = release_module.RELEASE_CHANNELS["prod"]
+    install_roots = ("skills", "claude-code", "codex", "manus", "generic", "docs", "README.md")
+    for root_name in install_roots:
+        base = out / root_name
+        files = [base] if base.is_file() else [p for p in base.rglob("*") if p.suffix in {".md", ".json", ".yaml"}]
+        for path in files:
+            text = path.read_text(encoding="utf-8")
+            for value in prod.values():
+                assert value not in text, f"{path.relative_to(out)} 仍含 prod 值 {value}"
+    claude_readme = (out / "claude-code" / "README.md").read_text(encoding="utf-8")
+    assert '.git#business-qa"' in claude_readme
+    assert "--ref business-qa" in (out / "codex" / "README.md").read_text(encoding="utf-8")
