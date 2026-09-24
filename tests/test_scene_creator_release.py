@@ -577,6 +577,51 @@ def test_new_reference_requires_a_new_release(tmp_path: Path):
         release_module.check_release(copied)
 
 
+def test_skill_body_references_resolve_to_shipped_files():
+    """正文里指向 Skill 自身文件的路径必须在发布包里（FB-38：P1 改名后引用未同步）。"""
+    assert release_module.find_broken_references(SKILL_ROOT) == []
+    shipped = _manifest()["source_files"]
+    assert "modules/P1-业务基线细则.md" in shipped
+    # components 入口第一步就读目录数据，必须随包分发
+    assert "references/前端设计指南/components/components.json" in shipped
+
+
+@pytest.mark.parametrize(
+    ("relative", "line", "reported"),
+    [
+        ("SKILL.md", "见 `modules/P1-业务访谈与价值判断.md` 第 9 节。", "SKILL.md:"),
+        (
+            "references/平台对象与运行模型.md",
+            "详见 [P3](../modules/P3-不存在.md#第-5-节)。",
+            "references/平台对象与运行模型.md:",
+        ),
+    ],
+)
+def test_broken_body_reference_is_rejected(tmp_path: Path, relative: str, line: str, reported: str):
+    copied = _copy_repo(tmp_path)
+    target = copied / relative
+    target.write_text(target.read_text(encoding="utf-8") + "\n" + line + "\n", encoding="utf-8")
+
+    with pytest.raises(release_module.ReleaseError, match="Skill 正文引用了发布包里不存在的文件") as error:
+        release_module.check_release(copied)
+    assert reported in str(error.value)
+    with pytest.raises(release_module.ReleaseError, match="Skill 正文引用了发布包里不存在的文件"):
+        release_module.release(copied, _package_version(copied), "broken reference")
+
+
+def test_application_workspace_paths_are_not_skill_references(tmp_path: Path):
+    """`workspace.json`、`backend/README.md` 是智能应用工程里的文件，不按 Skill 引用校验。"""
+    copied = _copy_repo(tmp_path)
+    skill_file = copied / "SKILL.md"
+    skill_file.write_text(
+        skill_file.read_text(encoding="utf-8")
+        + "\n先读 `workspace.json`、`backend/README.md` 与 `docs/stages/G1-业务目标与范围.md`。\n",
+        encoding="utf-8",
+    )
+
+    assert release_module.find_broken_references(copied) == []
+
+
 @pytest.mark.parametrize(
     "relative",
     [
