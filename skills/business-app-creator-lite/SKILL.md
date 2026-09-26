@@ -1,6 +1,6 @@
 ---
 name: business-app-creator-lite
-description: 把一个业务需求快速做成最终用户能持续使用的 GoalfyMax 智能应用（场景包 + 数据模板 + 前后端应用）的加速版：先判断需求复杂度，简单需求直接从预置件与生成器搭，复杂需求先用一张「人 / 模型 / 规则」分工表对齐再编译成资产；核实资产、搭积木、verify、预览、上线。与 business-app-creator 并存，用于 A/B。[skill-version:v20260923-lite01]
+description: 把一个业务需求快速做成最终用户能持续使用的 GoalfyMax 智能应用（场景包 + 数据模板 + 前后端应用）的加速版：先判断需求复杂度，简单需求直接从预置件与生成器搭，复杂需求先用一张「人 / 模型 / 规则」分工表对齐再编译成资产；核实资产、搭积木、verify、预览、上线。与 business-app-creator 并存，用于 A/B。[skill-version:v20260926-lite02]
 keywords:
   - 智能应用
   - 智能应用开发
