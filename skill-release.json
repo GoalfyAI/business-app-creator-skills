@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20260924-921836",
-  "package_version": "2.0.13",
+  "version": "v20260927-1b323b",
+  "package_version": "2.0.14",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-27T11:00:30Z",
-  "update_reason": "冒泡终态复读窗口改为 2 小时",
+  "released_at": "2026-09-27T11:09:14Z",
+  "update_reason": "lite 并为唯一 Skill：新框架（SKILL.md 入口路由 + flow 七段 需求确认/核实资产/方案编译/能力制作/数据与应用/预览验收/上线交付 + tasks/design/reference/checklists），旧七阶段版退役（tag past/business-app-creator-20260927）；冒泡后 verify 收口、结单门与 full_run 口径、冒泡终态约 2 小时内可复读 [任务:T-3724][任务:T-3840]",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -41,7 +41,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "69ce01c31df02ff13660a6bf4ba06b1e8e4f8952a426bed30b02be62a02dfdcb",
+    "SKILL.md": "d9491f89e674d05a3f65890f68a903ad8d2818f609e4e4d483c7d81e15c757af",
     "agents/openai.yaml": "b35e79b29a395164ee262626517065532fc10dfa0ca8f23ee4aa261d32655f75",
     "checklists/验收清单.md": "be43f95dfa742d9491c00d75450cfd1052cfe96fb0e4159dd910cfe811e39018",
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
