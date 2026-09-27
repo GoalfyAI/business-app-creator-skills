@@ -33,7 +33,7 @@ description 里读出 `[skill-version:...]`（你知道它落在哪，不需要�
 
 # 需要操作：重新载入 Skill 并开新会话
 
-**1. 按初次配置的方式，把更新后的 `SKILL.md` 和 `references/` 重新载入你的工具。**
+**1. 按初次配置的方式，把更新后的 `SKILL.md` 与 `flow/`、`tasks/`、`design/`、`reference/`、`checklists/`、`scripts/` 重新载入你的工具。**
 
 **2. 开一个新会话——Skill 只在会话开始时加载，不开新会话更新内容不会生效。**
 

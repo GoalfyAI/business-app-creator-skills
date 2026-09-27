@@ -17,7 +17,7 @@
 
 | 目录 | 说明 |
 |---|---|
-| `skills/scene-creator/`、`skills/app-creator/` | 两个 Skill 的唯一源：各自 `SKILL.md`、`stages/`、`references/`、`checklists/`（business-app-creator 另有 `agents/openai.yaml`） |
+| `skills/business-app-creator/` | Skill 的唯一源：`SKILL.md`（入口与路由）、`flow/`（七段主流程）、`tasks/`（非新建任务入口）、`design/`（沟通模板）、`reference/`（按需查阅的正本）、`checklists/`、`scripts/`、`agents/openai.yaml` |
 | `scripts/` | 构建与发布工具 |
 | `tests/` | 测试 |
 | `claude-code/`、`codex/` | 插件安装文档手工维护；`skills/` 子目录由发布流程复制，**不要手工编辑** |
@@ -29,7 +29,7 @@ Skill 副本与压缩包由发布流程重建，手工改动会被覆盖并导�
 
 ## 提交代码
 
-只修改 `skill/`、各平台目录下的安装文档、`scripts/`、`tests/`。
+只修改 `skills/business-app-creator/`、各平台目录下的安装文档、`scripts/`、`tests/`。
 
 改完源文件后必须刷新发布清单，否则校验不通过——这一步会同时重建四个平台的 Skill
 副本和两个压缩包：
@@ -55,11 +55,20 @@ uv run python scripts/build_platform_packages.py check
 
 ## 修改 Skill 内容
 
-`skill/SKILL.md` 是给 Agent 读的执行指引，不是给人读的说明书。写作时注意：
+`skills/business-app-creator/` 是给 Agent 读的执行指引，不是给人读的说明书。每类文件有固定写法，发布检查会校验：
+
+- `flow/` 正好七段文件，每份依次六节：进入条件、做什么、产出与落盘、给开发者看什么、出口、出问题怎么办
+- `reference/` 每份依次四节：适用场景、规则、常见错误、相关工具与契约主题
+- `tasks/` 每份依次三节：识别信号、先读什么、从哪一段进
+- 行数预算：`SKILL.md` ≤ 200 行，`flow/` 单文件 ≤ 150 行，`reference/` 单文件 ≤ 400 行；超了就拆进 `reference/`
+- 正文里指向 Skill 自身文件的链接必须存在
+
+写作时注意：
 
 - 用**必须** / **禁止**这类明确的强调词，不要写模棱两可的建议
 - 不要出现平台内部实现细节、代码或组件名
-- 参考资料放 `skill/references/`，主文件只保留流程主干
+- 同事补内容主要往 `reference/` 和 `tasks/` 里加；`SKILL.md` 只做入口和路由，`flow/` 只写每段做什么
+- 一个事实只放一处，别处用相对路径引用；平台参数、错误码全文、契约字段不抄，写工具 Schema 或 `get_diagnosis_doc` 的 topic 名
 - 对外文案（description、keywords）是唯一源，会被注入到各平台安装文件
 
 ## 环境约定
