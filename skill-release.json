@@ -4,8 +4,8 @@
   "version": "v20260924-921836",
   "package_version": "2.0.13",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-26T08:17:20Z",
-  "update_reason": "P6 路线 Bubble 结单口径与冒泡语义对齐交付跑（T-3815/T-3810）",
+  "released_at": "2026-09-27T04:56:47Z",
+  "update_reason": "Skills 减重：新增加速版 business-app-creator-lite（与主 Skill 同版本号），主 Skill 描述改为新建应用默认用 lite；P3 补 assemble、P5 补脚手架 0.8 预置件、P6 冒泡后 verify 收口 [任务:T-3724][任务:T-3840][任务:T-3841][任务:T-3842]",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -63,7 +63,7 @@
     "stages/G7-预发布与交付.md"
   ],
   "checksums": {
-    "SKILL.md": "7feac851ba8951aa130c889df9f4627ab695ba81f343ee6b6d5454bc80edd2a3",
+    "SKILL.md": "89bccb40b4a94e32d1707b90e25e56abdf1c42138093ed846c486fb3db38146c",
     "agents/openai.yaml": "8b83462bd633f5b875c4e690c22131bbb63af3099ebf041e4f7493fe158f74e9",
     "checklists/G门禁检查清单.md": "d576b14ed2b833f718406f40347e6cab02f286b0b22d56eba3a8f45353e413ee",
     "checklists/U业务行为验收明细.md": "c3cbb24ff1778131d90e2a268d7ab8d8bfd4b467a61e3a7eca6cbea1189fb601",
@@ -73,10 +73,10 @@
     "checklists/编排型TPE验收检查清单.md": "b73e47c2544b5f4a5b81eb8611c8f6276bb005d0d84e2f9d40b0260e22e0d8d8",
     "modules/P1-业务基线细则.md": "5182346e4f33b190084e1ea46929aebc7cd0f720f951f2c7a40e72661e6eac36",
     "modules/P2-能力发现与模型试验.md": "53a66e7159debb937572eab45d42a938f2352b716b043d2e3d1efa6cd4d659b5",
-    "modules/P3-执行形态与路线制作.md": "c92cc819615ba3fe4f76a87a9b2f181433c5222f45815d80b7842e8bbff22bb9",
+    "modules/P3-执行形态与路线制作.md": "92e8436dbc7bccbc8354eda2959f250c1d177d4008f1d61c657f5d6ed49f7092",
     "modules/P4-数据建模与回流.md": "87c4ef35bd109061cb1fd167389868095402c7b943761607c69837715f4d9f67",
-    "modules/P5-应用脚手架与页面实现.md": "167d9c08e0bc2a64448c70af658486c8016a14d4153dafdfb708db2560444e0d",
-    "modules/P6-验证与证据裁决.md": "fc4b818ecc36d220cc93d157de8cc0fcc69fbb1dab5297cea3e7d396dd0bb8d8",
+    "modules/P5-应用脚手架与页面实现.md": "692d4036a40893206af5dbeaf4c06d00f60a30b19a751069a3e47c8602476020",
+    "modules/P6-验证与证据裁决.md": "20bae8471f31f41e6caaf1df733b6da6ab15d8b39bd9b687c575a486fb4d6891",
     "modules/P7-版本部署与上线.md": "889e8c1eb5a031dd888617e06b91434b5607df27b0c254cdbeec02c025bccd67",
     "modules/P8-诊断归因与改进验证.md": "766871a74da0a9b3a3c4a998309c6fd51e1d58e6fc8daedf14c1614a2a42f5f4",
     "protocols/事实决定授权与变更.md": "0dc704feee6367cd3ac0f3fc981fb1ab71d1ad51b1aae71e6ebfb11532fcf082",

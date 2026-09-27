@@ -73,7 +73,7 @@ PLATFORM_NAMES = tuple(PLATFORM_LAYOUTS)
 # 附加 Skill：仓库根目录下自研的额外 Skill，随插件同步到 claude-code / codex 的 skills/ 下。
 # 不进 business-app-creator 的发布清单与版本闸门，随插件版本自然更新。
 EXTRA_SKILL_SOURCES: dict[str, Path] = {
-    # 加速版 Skill（T-3724 A/B 的 B 组）：独立目录、独立版本标记，不进主 Skill 的发布闸门。
+    # 加速版 Skill：独立目录，版本标记在发版时与主 Skill 统一，Hub 只登记一个版本。 [任务:T-3724]
     "business-app-creator-lite": Path("skills/business-app-creator-lite"),
 }
 EXTRA_SKILL_PLATFORMS = ("claude-code", "codex")
@@ -725,6 +725,40 @@ def sync_extra_skills(skill_root: Path) -> None:
                 shutil.copy2(src, destination)
 
 
+def _extra_skill_markers(skill_root: Path) -> dict[str, Path]:
+    repository_root = _repository_root(skill_root)
+    return {
+        name: repository_root / source / "SKILL.md"
+        for name, source in EXTRA_SKILL_SOURCES.items()
+        if (repository_root / source / "SKILL.md").is_file()
+    }
+
+
+def stamp_extra_skill_versions(skill_root: Path, version: str) -> dict[Path, str]:
+    """把附加 Skill 的 skill-version 标记改成与主 Skill 相同的版本，返回改前内容供失败时还原。
+
+    Hub 的版本闸门只按上报的版本号判定；附加 Skill 若保留独立标记，主 Skill 每次抬强制线后
+    都会被拒（426）。统一版本后只需登记一次。 [任务:T-3724]
+    """
+    originals: dict[Path, str] = {}
+    for name, skill_file in _extra_skill_markers(skill_root).items():
+        original = skill_file.read_text(encoding="utf-8")
+        updated, count = SKILL_VERSION_RE.subn(f"[skill-version:{version}]", original, count=1)
+        if count != 1 or len(SKILL_VERSION_RE.findall(original)) != 1:
+            raise ReleaseError(f"附加 Skill {name} 的 SKILL.md 必须且只能包含一个 skill-version 标记")
+        originals[skill_file] = original
+        if updated != original:
+            skill_file.write_text(updated, encoding="utf-8")
+    return originals
+
+
+def check_extra_skill_versions(skill_root: Path, version: str) -> None:
+    for name, skill_file in _extra_skill_markers(skill_root).items():
+        markers = SKILL_VERSION_RE.findall(skill_file.read_text(encoding="utf-8"))
+        if markers != [version]:
+            raise ReleaseError(f"附加 Skill {name} 的 skill-version 必须等于主 Skill 的 {version}，当前 {markers}")
+
+
 def check_extra_skills(skill_root: Path) -> None:
     repository_root = _repository_root(skill_root)
     for name, source in EXTRA_SKILL_SOURCES.items():
@@ -857,6 +891,7 @@ def check_release(skill_root: Path) -> dict[str, Any]:
         raise ReleaseError("skill-release.json.mcp_endpoint 与当前 Skill MCP 环境不一致")
     if _current_skill_version(skill_root) != skill_version:
         raise ReleaseError("SKILL.md 标记必须等于 skill-release.json.version")
+    check_extra_skill_versions(skill_root, skill_version)
     if _repository_package_version(skill_root) != package_version:
         raise ReleaseError("插件 manifest 版本必须等于 skill-release.json.package_version")
     _validate_released_at(manifest["released_at"])
@@ -920,6 +955,7 @@ def release(
         if allow_package_bump and not DATA_SKILL_VERSION_RE.fullmatch(skill_version):
             raise ReleaseError("PROD Skill version 必须使用 vYYYYMMDD-6位小写hex")
 
+    stamp_extra_skill_versions(skill_root, skill_version)
     _bump_package_version(skill_root, package_version)
     sync_plugin_display_metadata(skill_root)
     sync_platform_skills(skill_root)
@@ -972,6 +1008,7 @@ def release_prod_source(
     if count != 1:
         raise ReleaseError("SKILL.md 必须且只能更新一个 skill-version 标记")
     skill_file.write_text(updated, encoding="utf-8")
+    extra_originals = {path: path.read_text(encoding="utf-8") for path in _extra_skill_markers(skill_root).values()}
     try:
         release(
             skill_root,
@@ -982,6 +1019,8 @@ def release_prod_source(
         )
     except Exception:
         skill_file.write_text(original, encoding="utf-8")
+        for path, content in extra_originals.items():
+            path.write_text(content, encoding="utf-8")
         raise
     return version
 

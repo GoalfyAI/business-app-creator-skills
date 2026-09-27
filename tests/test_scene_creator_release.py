@@ -1031,3 +1031,43 @@ def test_qa_build_switches_every_environment_value(tmp_path: Path, monkeypatch):
     claude_readme = (out / "claude-code" / "README.md").read_text(encoding="utf-8")
     assert '.git#business-qa"' in claude_readme
     assert "--ref business-qa" in (out / "codex" / "README.md").read_text(encoding="utf-8")
+
+
+def _lite_skill(root: Path) -> Path:
+    return root / "skills/business-app-creator-lite/SKILL.md"
+
+
+def test_prod_release_stamps_lite_with_the_same_version(tmp_path: Path):
+    """附加 Skill（lite）随主 Skill 一起换版本号，平台副本同步，发布检查要求两者一致。 [任务:T-3724]"""
+    copied = _copy_repo(tmp_path)
+    if not _lite_skill(tmp_path).exists():
+        pytest.skip("仓库没有附加 Skill")
+    version = release_module.release_prod_source(copied, "PROD release", random_hex="c0ffee")
+    marker = f"[skill-version:{version}]"
+    assert marker in _lite_skill(tmp_path).read_text(encoding="utf-8")
+    for platform in release_module.EXTRA_SKILL_PLATFORMS:
+        copy = tmp_path / platform / "skills/business-app-creator-lite/SKILL.md"
+        assert marker in copy.read_text(encoding="utf-8")
+    release_module.check_release(copied)
+
+
+def test_check_release_rejects_lite_version_drift(tmp_path: Path):
+    copied = _copy_repo(tmp_path)
+    if not _lite_skill(tmp_path).exists():
+        pytest.skip("仓库没有附加 Skill")
+    lite = _lite_skill(tmp_path)
+    content = lite.read_text(encoding="utf-8")
+    lite.write_text(release_module.SKILL_VERSION_RE.sub("[skill-version:v20260101-abcdef]", content, count=1), encoding="utf-8")
+    with pytest.raises(release_module.ReleaseError, match="附加 Skill"):
+        release_module.check_release(copied)
+
+
+def test_prod_release_rolls_back_lite_marker_on_failure(tmp_path: Path):
+    copied = _copy_repo(tmp_path)
+    if not _lite_skill(tmp_path).exists():
+        pytest.skip("仓库没有附加 Skill")
+    original = _lite_skill(tmp_path).read_text(encoding="utf-8")
+    (copied / "notes.txt").write_text("unsupported\n", encoding="utf-8")
+    with pytest.raises(release_module.ReleaseError):
+        release_module.release_prod_source(copied, "will fail", random_hex="a1b2c3")
+    assert _lite_skill(tmp_path).read_text(encoding="utf-8") == original
