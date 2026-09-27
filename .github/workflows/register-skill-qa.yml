@@ -1,0 +1,69 @@
+name: Register Skill QA Candidate
+
+# business-qa 分支由 scripts/build_qa_branch.py 从 Codeup 的 qa/main 生成（云效流水线自动推送）。
+# 这里只做两件事：按 qa 渠道校验产物，登记到 QA Hub 并把 QA 建议线抬到这个版本。
+# 不向 PRE / prod 登记任何东西。 [任务:T-3784]
+on:
+  push:
+    branches: [business-qa]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: register-skill-qa
+  cancel-in-progress: false
+
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    env:
+      SKILL_RELEASE_CHANNEL: qa
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify QA build
+        run: |
+          python3 -m pip install --quiet pyyaml
+          python3 scripts/build_platform_packages.py check
+
+      # 只配 QA 一个目标；Hub 登记时会校验 SKILL.md 声明的最低脚手架版本在 QA 已登记，
+      # 未登记会拒绝，流水线失败——先跑脚手架的 qa/main 流水线再重试。
+      - name: Register in QA Hub
+        env:
+          SCENE_SKILL_RELEASE_REGISTRY_TARGETS: ${{ secrets.QA_SKILL_RELEASE_REGISTRY_TARGET }}
+        run: |
+          if [ -z "${SCENE_SKILL_RELEASE_REGISTRY_TARGETS}" ]; then
+            echo "未配置 QA_SKILL_RELEASE_REGISTRY_TARGET（格式 <url>|<secret>），跳过登记"
+            exit 0
+          fi
+          python3 - <<'PY'
+          import json, os, runpy, sys
+          from pathlib import Path
+          release = json.load(open('skill-release.json', encoding='utf-8'))
+          os.environ['SCENE_SKILL_VERSION'] = release['version']
+          os.environ['SCENE_SKILL_RELEASE_NOTES'] = release.get('update_reason', '')
+          sys.argv = ['register-skill-release.py', '--register-only']
+          module = runpy.run_path(str(Path('scripts/register-skill-release.py')))
+          module['register_release'](release['version'])
+          PY
+
+      - name: Raise QA recommended version
+        env:
+          HUB_URL: https://goalfyhub.qa.goalfyai.cn
+          HUB_API_KEY: ${{ secrets.QA_HUB_API_KEY }}
+          HUB_APP_ID: ${{ secrets.QA_HUB_APP_ID }}
+          HUB_OPERATOR_EMAIL: ${{ vars.QA_HUB_OPERATOR_EMAIL }}
+          HUB_OPERATOR_ID: ${{ vars.QA_HUB_OPERATOR_ID }}
+        run: |
+          if [ -z "${HUB_API_KEY}" ] || [ -z "${HUB_OPERATOR_EMAIL}" ] || [ -z "${HUB_OPERATOR_ID}" ]; then
+            echo "未配置 QA_HUB_API_KEY / QA_HUB_OPERATOR_*，只登记不抬建议线"
+            exit 0
+          fi
+          python3 scripts/raise_skill_recommended.py "$(python3 -c "import json;print(json.load(open('skill-release.json'))['version'])")"

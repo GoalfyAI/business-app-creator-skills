@@ -544,6 +544,10 @@ def test_install_docs_state_the_required_facts():
             assert "BUSINESS_APP_CREATOR_API_KEY" in docs, f"{platform} 未说明密钥环境变量"
         if layout["skill_subdir"].startswith("skills/"):
             assert "GoalfyAI/business-app-creator-skills" in docs, f"{platform} 缺少公开市场来源"
+        # 仓库已公开：任何平台文档都不得再引导用户走 Codeup 内网 / SSH 地址，
+        # 否则外部用户会被带去云效配公钥（T-3741）。
+        for forbidden in ("codeup.aliyun.com", "git@"):
+            assert forbidden not in docs, f"{platform} 文档含内网/SSH 地址 {forbidden!r}"
 
 
 def test_docs_do_not_pin_a_stale_package_version():
@@ -571,6 +575,51 @@ def test_new_reference_requires_a_new_release(tmp_path: Path):
 
     with pytest.raises(release_module.ReleaseError, match="source_files 与 Skill 唯一源文件不一致"):
         release_module.check_release(copied)
+
+
+def test_skill_body_references_resolve_to_shipped_files():
+    """正文里指向 Skill 自身文件的路径必须在发布包里（FB-38：P1 改名后引用未同步）。"""
+    assert release_module.find_broken_references(SKILL_ROOT) == []
+    shipped = _manifest()["source_files"]
+    assert "modules/P1-业务基线细则.md" in shipped
+    # components 入口第一步就读目录数据，必须随包分发
+    assert "references/前端设计指南/components/components.json" in shipped
+
+
+@pytest.mark.parametrize(
+    ("relative", "line", "reported"),
+    [
+        ("SKILL.md", "见 `modules/P1-业务访谈与价值判断.md` 第 9 节。", "SKILL.md:"),
+        (
+            "references/平台对象与运行模型.md",
+            "详见 [P3](../modules/P3-不存在.md#第-5-节)。",
+            "references/平台对象与运行模型.md:",
+        ),
+    ],
+)
+def test_broken_body_reference_is_rejected(tmp_path: Path, relative: str, line: str, reported: str):
+    copied = _copy_repo(tmp_path)
+    target = copied / relative
+    target.write_text(target.read_text(encoding="utf-8") + "\n" + line + "\n", encoding="utf-8")
+
+    with pytest.raises(release_module.ReleaseError, match="Skill 正文引用了发布包里不存在的文件") as error:
+        release_module.check_release(copied)
+    assert reported in str(error.value)
+    with pytest.raises(release_module.ReleaseError, match="Skill 正文引用了发布包里不存在的文件"):
+        release_module.release(copied, _package_version(copied), "broken reference")
+
+
+def test_application_workspace_paths_are_not_skill_references(tmp_path: Path):
+    """`workspace.json`、`backend/README.md` 是智能应用工程里的文件，不按 Skill 引用校验。"""
+    copied = _copy_repo(tmp_path)
+    skill_file = copied / "SKILL.md"
+    skill_file.write_text(
+        skill_file.read_text(encoding="utf-8")
+        + "\n先读 `workspace.json`、`backend/README.md` 与 `docs/stages/G1-业务目标与范围.md`。\n",
+        encoding="utf-8",
+    )
+
+    assert release_module.find_broken_references(copied) == []
 
 
 @pytest.mark.parametrize(
@@ -871,3 +920,114 @@ def test_feedback_report_script_is_shipped_with_skill(tmp_path):
     for platform in ("codex", "claude-code"):
         target = tmp_path / platform / "skills/business-app-creator/scripts/feedback_report.py"
         assert target.read_bytes() == source.read_bytes()
+
+
+# ---------------------------------------------------------------- 节号引用 [任务:T-3805]
+
+
+def test_current_section_references_point_to_existing_headings():
+    release_module.validate_section_references(SKILL_ROOT)
+
+
+def test_platform_object_model_p3_references_name_their_headings():
+    """《平台对象与运行模型》指向 P3 的节号带标题名，校验才能在章节重排后发现主题错位。"""
+    text = (SKILL_ROOT / "references" / "平台对象与运行模型.md").read_text(encoding="utf-8")
+    for expected in (
+        "第 3 节「业务路线设计」",
+        "7.2「工具集上线的两道检查」",
+        "第 10 节「业务事件设计」",
+        "9.1「契约读取路由」",
+        "第 2 节「执行形态选择」",
+        "10.4「事件密度与契约字段」",
+        "12.3「面向界面的公开语义」",
+    ):
+        assert expected in text
+
+
+@pytest.mark.parametrize(
+    ("reference", "message"),
+    [
+        ("见 `modules/P3-执行形态与路线制作.md` 第 99 节", "P3-执行形态与路线制作.md 的 99 节不存在"),
+        ("见 P3 第 4.9 节", "P3-执行形态与路线制作.md 的 4.9 节不存在"),
+        ("见 `modules/P3-执行形态与路线制作.md` 第 5 节「业务事件设计」", "实际标题是「方案挑战与制作书定稿」"),
+        ("见 P3 第 4.1 节（契约读取路由）", "实际标题是「工具集划分」"),
+    ],
+)
+def test_stale_section_reference_is_rejected(tmp_path: Path, reference: str, message: str):
+    copied = _copy_repo(tmp_path)
+    target = copied / "references" / "平台对象与运行模型.md"
+    target.write_text(target.read_text(encoding="utf-8") + f"\n{reference}\n", encoding="utf-8")
+    line = len(target.read_text(encoding="utf-8").splitlines())
+
+    for action in (
+        lambda: release_module.check_release(copied),
+        lambda: release_module.release(copied, _package_version(copied), "节号引用校验"),
+    ):
+        with pytest.raises(release_module.ReleaseError, match=re.escape(message)) as error:
+            action()
+        assert f"references/平台对象与运行模型.md:{line}" in str(error.value)
+
+
+def test_descriptive_parenthesis_after_section_reference_is_not_a_title(tmp_path: Path):
+    copied = _copy_repo(tmp_path)
+    target = copied / "references" / "平台对象与运行模型.md"
+    target.write_text(target.read_text(encoding="utf-8") + "\n流程见 P3 第 9.3 节（先读契约再写脚本）\n", encoding="utf-8")
+
+    release_module.validate_section_references(copied)
+
+
+# ---------------------------------------------------------------- QA 渠道 [任务:T-3784]
+
+
+QA_BUILD_SPEC = importlib.util.spec_from_file_location("build_qa_branch", ROOT / "scripts" / "build_qa_branch.py")
+assert QA_BUILD_SPEC and QA_BUILD_SPEC.loader
+qa_build_module = importlib.util.module_from_spec(QA_BUILD_SPEC)
+QA_BUILD_SPEC.loader.exec_module(qa_build_module)
+
+
+def test_prod_install_files_reject_qa_values(tmp_path: Path):
+    copied = _copy_repo(tmp_path)
+    readme = tmp_path / "claude-code" / "README.md"
+    readme.write_text(readme.read_text(encoding="utf-8") + "\nBUSINESS_APP_CREATOR_QA_API_KEY\n", encoding="utf-8")
+
+    with pytest.raises(release_module.ReleaseError, match="混入了其他渠道的配置"):
+        release_module.validate_platform_install_files(copied)
+
+
+def test_prod_channel_rejects_qa_package_version(monkeypatch):
+    monkeypatch.setenv(release_module.CHANNEL_ENV, "prod")
+    with pytest.raises(release_module.ReleaseError, match="MAJOR.MINOR.PATCH"):
+        release_module._validate_package_version("2.0.12-qa.3")
+    monkeypatch.setenv(release_module.CHANNEL_ENV, "qa")
+    assert release_module._validate_package_version("2.0.12-qa.3") == (2, 0, 12)
+    with pytest.raises(release_module.ReleaseError, match="-qa.N"):
+        release_module._validate_package_version("2.0.12")
+
+
+def test_unknown_channel_is_rejected(monkeypatch):
+    monkeypatch.setenv(release_module.CHANNEL_ENV, "staging")
+    with pytest.raises(release_module.ReleaseError, match="SKILL_RELEASE_CHANNEL"):
+        release_module.release_channel()
+
+
+def test_qa_build_switches_every_environment_value(tmp_path: Path, monkeypatch):
+    out = tmp_path / "qa"
+    out.mkdir()
+    info = qa_build_module.build(out, "HEAD", 7)
+    monkeypatch.setenv(release_module.CHANNEL_ENV, "qa")
+
+    assert info["package_version"].endswith("-qa.7")
+    manifest = json.loads((out / "skill-release.json").read_text(encoding="utf-8"))
+    assert manifest["mcp_endpoint"] == release_module.RELEASE_CHANNELS["qa"]["mcp_endpoint"]
+    prod = release_module.RELEASE_CHANNELS["prod"]
+    install_roots = ("skills", "claude-code", "codex", "manus", "generic", "docs", "README.md")
+    for root_name in install_roots:
+        base = out / root_name
+        files = [base] if base.is_file() else [p for p in base.rglob("*") if p.suffix in {".md", ".json", ".yaml"}]
+        for path in files:
+            text = path.read_text(encoding="utf-8")
+            for value in prod.values():
+                assert value not in text, f"{path.relative_to(out)} 仍含 prod 值 {value}"
+    claude_readme = (out / "claude-code" / "README.md").read_text(encoding="utf-8")
+    assert '.git#business-qa"' in claude_readme
+    assert "--ref business-qa" in (out / "codex" / "README.md").read_text(encoding="utf-8")
