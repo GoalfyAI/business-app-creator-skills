@@ -133,7 +133,7 @@ keywords:
 
 | 情况 | 读 |
 |---|---|
-| 分不清对象、执行形态、`*_id` 指什么、版本术语 | [reference/平台对象速查.md](reference/平台对象速查.md) |
+| 分不清对象、执行形态、`*_id` 指什么、版本术语、积分怎么算 | [reference/平台对象速查.md](reference/平台对象速查.md) |
 | 工作区三件套、方案页、阶段状态、在线预览、换机接续 | [reference/开发者中心与工作区.md](reference/开发者中心与工作区.md) |
 | 脚手架版本闸门、升级迁移、预置件、生成器、verify | [reference/脚手架与预置件.md](reference/脚手架与预置件.md) |
 | 写编排脚本、`_output`、失败出口、事件契约、冒泡里的 FA 桩 | [reference/编排脚本.md](reference/编排脚本.md) |
