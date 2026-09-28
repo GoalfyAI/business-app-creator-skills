@@ -116,7 +116,7 @@ keywords:
 | 编排型 TPE | `otpe_manage(action=preview / create / update / attach / online / bubble / verify)` |
 | 场景包与路线 | `scene_package_manage(action=create / get / ensure_draft / update / assemble / bubble / finalize / online)` |
 | 数据模板 | `dataset_template_workspace(action=open / connect / bind / create_table / set_relations / inspect / extract / close)` |
-| 应用身份与部署 | `business_ui_manage`、`business_ui_bundle(action=download_template / prepare_upload / complete_upload / deploy / status)` |
+| 应用身份与部署 | `business_ui_manage`、`business_ui_manage(action=setup)`、`business_ui_bundle(action=download_template / ship)`；单步兜底 `prepare_upload / complete_upload / deploy / status` |
 | 自动化、用户反馈 | `business_ui_automation`、`business_ui_feedback` |
 | 真跑与日志 | `manage_goalfymax_project(action=run / wait / status / reply / stop)`，`get_project_execution_logs` |
 | 版本 | `list_asset_versions`、`ensure_editable_asset_draft`、`finalize_asset_version_online`、`compare_asset_versions`、`rollback_asset_version`、`get_asset_usage_impact` |
@@ -133,7 +133,7 @@ keywords:
 
 | 情况 | 读 |
 |---|---|
-| 分不清对象、执行形态、`*_id` 指什么、版本术语 | [reference/平台对象速查.md](reference/平台对象速查.md) |
+| 分不清对象、执行形态、`*_id` 指什么、版本术语、积分怎么算 | [reference/平台对象速查.md](reference/平台对象速查.md) |
 | 工作区三件套、方案页、阶段状态、在线预览、换机接续 | [reference/开发者中心与工作区.md](reference/开发者中心与工作区.md) |
 | 脚手架版本闸门、升级迁移、预置件、生成器、verify | [reference/脚手架与预置件.md](reference/脚手架与预置件.md) |
 | 写编排脚本、`_output`、失败出口、事件契约、冒泡里的 FA 桩 | [reference/编排脚本.md](reference/编排脚本.md) |
