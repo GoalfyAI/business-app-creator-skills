@@ -1,6 +1,6 @@
 ---
 name: business-app-creator
-description: 制作和维护 GoalfyMax 智能应用（场景包 + 数据模板 + 前后端应用）时使用：新建、接续、修订、诊断已有应用、试用外部能力、讨论方案，都从这里进。先用一页确认页（有模型或人工参与的步骤时附「人 / 模型 / 规则」分工表）和开发者确认一次，再按七段推进：需求确认 → 核实资产 → 方案编译 → 能力制作 → 数据与应用 → 预览验收 → 上线交付；优先复用脚手架预置件、按表生成器、verify 与 assemble。只执行一次性业务任务、只咨询平台概念时不要使用。[skill-version:v20260928-f46d8f]
+description: 制作和维护 GoalfyMax 智能应用（场景包 + 数据模板 + 前后端应用）时使用：新建、接续、修订、诊断已有应用、试用外部能力、讨论方案，都从这里进。先用一页确认页（有模型或人工参与的步骤时附「人 / 模型 / 规则」分工表）和开发者确认一次，再按七段推进：需求确认 → 核实资产 → 方案编译 → 能力制作 → 数据与应用 → 预览验收 → 上线交付；优先复用脚手架预置件、按表生成器、verify 与 assemble。只执行一次性业务任务、只咨询平台概念时不要使用。[skill-version:v20260928-57e5ea]
 keywords:
   - 智能应用
   - 智能应用开发
@@ -116,7 +116,7 @@ keywords:
 | 编排型 TPE | `otpe_manage(action=preview / create / update / attach / online / bubble / verify)` |
 | 场景包与路线 | `scene_package_manage(action=create / get / ensure_draft / update / assemble / bubble / finalize / online)` |
 | 数据模板 | `dataset_template_workspace(action=open / connect / bind / create_table / set_relations / inspect / extract / close)` |
-| 应用身份与部署 | `business_ui_manage`、`business_ui_bundle(action=download_template / prepare_upload / complete_upload / deploy / status)` |
+| 应用身份与部署 | `business_ui_manage`、`business_ui_manage(action=setup)`、`business_ui_bundle(action=download_template / ship)`；单步兜底 `prepare_upload / complete_upload / deploy / status` |
 | 自动化、用户反馈 | `business_ui_automation`、`business_ui_feedback` |
 | 真跑与日志 | `manage_goalfymax_project(action=run / wait / status / reply / stop)`，`get_project_execution_logs` |
 | 版本 | `list_asset_versions`、`ensure_editable_asset_draft`、`finalize_asset_version_online`、`compare_asset_versions`、`rollback_asset_version`、`get_asset_usage_impact` |
