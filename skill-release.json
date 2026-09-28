@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20260927-1b323b",
-  "package_version": "2.0.14",
+  "version": "v20260928-40cd66",
+  "package_version": "2.0.15",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-28T07:01:07Z",
-  "update_reason": "Document shared responsive Web and React Native app design, local dual-host validation, and acceptance evidence boundaries.",
+  "released_at": "2026-09-28T09:51:00Z",
+  "update_reason": "Release mobile and web app design guidance from docs/T3405-mobile.",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -41,7 +41,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "bcc8f95470c3a4cc96ea59809ef8da80311424440349e864637a358b72a8721f",
+    "SKILL.md": "999f0302a4b72e480d81db9cd4a6a97c2d8b94eadfc00da98339bdd87cf1ce0e",
     "agents/openai.yaml": "b35e79b29a395164ee262626517065532fc10dfa0ca8f23ee4aa261d32655f75",
     "checklists/验收清单.md": "fd709722a2c3c841a2f56df49c928b3e710d7f70697e463899a320e61ae0c906",
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
