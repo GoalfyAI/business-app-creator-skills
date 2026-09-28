@@ -132,7 +132,7 @@ def push(out: Path, info: dict[str, str]) -> str:
         work = Path(tmp)
         run("git", "init", "-q", cwd=work)
         run("git", "remote", "add", "origin", push_url, cwd=work)
-        exists = subprocess.run(["git", "ls-remote", "--exit-code", "--heads", "origin", QA_BRANCH], cwd=work, capture_output=True).returncode == 0
+        exists = subprocess.run(["git", "ls-remote", "--exit-code", "--heads", "origin", QA_BRANCH], cwd=work, capture_output=True, check=False).returncode == 0
         if exists:
             run("git", "fetch", "-q", "--depth=1", "origin", QA_BRANCH, cwd=work)
             run("git", "checkout", "-q", "-b", QA_BRANCH, "FETCH_HEAD", cwd=work)
@@ -143,7 +143,7 @@ def push(out: Path, info: dict[str, str]) -> str:
                 shutil.rmtree(child) if child.is_dir() else child.unlink()
         shutil.copytree(out, work, dirs_exist_ok=True)
         run("git", "add", "-A", cwd=work)
-        if not subprocess.run(["git", "status", "--porcelain"], cwd=work, capture_output=True, text=True).stdout.strip():
+        if not subprocess.run(["git", "status", "--porcelain"], cwd=work, capture_output=True, text=True, check=True).stdout.strip():
             return "unchanged"
         message = (
             f"chore(skill): QA {info['skill_version']} ({info['package_version']})\n\n"
