@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20260927-1b323b",
-  "package_version": "2.0.14",
+  "version": "v20260928-6d22e8",
+  "package_version": "2.0.15",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-28T12:54:39Z",
-  "update_reason": "关工作集前先解绑并重新 deploy 开发者预览，close 被拒按 next_action 处理 [任务:T-3999]；随 main 合入 T-3937 文件来源边界与 T-3884 撤回镜像站说明",
+  "released_at": "2026-09-28T13:44:09Z",
+  "update_reason": "方案页固定版式与积分说明 [需求:T-3993]；界面风格 [需求:T-4005]；草稿场景包随应用定版、部署改用 ship、建身份改用 setup [任务:T-3976][任务:T-3977]；带 business_ui_id 的真跑须先定版上线 [任务:T-4000]；关工作集前先解绑并重新部署 [任务:T-3999]；文件来源边界 [任务:T-3937]；FA 失败逐轮排查与冒泡模型说明 [任务:T-3938][任务:T-3917]",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -41,7 +41,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "413bacd351a331fd3da99249595e3baa62922526d3a0bc8dbcc9dbfb1ad558de",
+    "SKILL.md": "246693ebfe826a515108ab7208e938eb7108f467eff84e026fad79f7c92a4c17",
     "agents/openai.yaml": "b35e79b29a395164ee262626517065532fc10dfa0ca8f23ee4aa261d32655f75",
     "checklists/验收清单.md": "be43f95dfa742d9491c00d75450cfd1052cfe96fb0e4159dd910cfe811e39018",
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
