@@ -200,7 +200,10 @@ def test_business_ui_identity_is_bound_before_g5_transition():
 def test_online_preview_is_the_developer_acceptance_entry():
     g6 = _read("flow/G6-预览验收.md")
     assert "在线预览" in g6 and "deployed_scaffold_version" in g6
-    assert 'finalize_asset_version_online(asset_type="scenario_pack"' in g6
+    # 部署预览可挂本人场景包草稿，G6 不再单独上线场景包；定版应用时草稿随应用一起上线。 [任务:T-3976]
+    assert 'finalize_asset_version_online(asset_type="scenario_pack"' not in g6
+    assert "场景包不必先上线" in g6
+    assert "一起定版上线" in _read("flow/G7-上线交付.md")
 
 
 def test_task_closing_gate_and_waiver_are_documented():
