@@ -118,7 +118,7 @@ Skill 是否需要升级；版本过期时写操作会被拒绝。插件版本�
 | **Claude Code** | `claude plugin update business-app-creator@business-app-creator` | [claude-code/UPDATE.md](claude-code/UPDATE.md) |
 | **Codex** | `codex plugin marketplace upgrade business-app-creator` 后 remove + add | [codex/UPDATE.md](codex/UPDATE.md) |
 | **Manus** | 重新下载 zip，在 Skills 页删旧传新，然后开新对话 | [manus/UPDATE.md](manus/UPDATE.md) |
-| **其他 MCP 客户端** | 重新获取 `SKILL.md` 与 `references/` 并重新载入 | [generic/UPDATE.md](generic/UPDATE.md) |
+| **其他 MCP 客户端** | 重新获取 `SKILL.md` 与各内容目录并重新载入 | [generic/UPDATE.md](generic/UPDATE.md) |
 
 被服务端提示版本过期时，按上表对应的 `UPDATE.md` 执行——那些文档是写给 Agent 直接照做的，
 包含读取新版本标记、当前会话内重试、以及何时该提示你重启。

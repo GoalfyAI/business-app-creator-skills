@@ -146,372 +146,86 @@ def test_platform_skill_copies_match_the_single_source():
         assert not target.exists(), platform
 
 
-def test_workflow_guidance_distinguishes_output_end_states():
-    # Workflow 三种结束语义的正本随 §7.3 下沉到 references/平台对象与运行模型.md（1.8.0）
-    skill = (SKILL_ROOT / "references" / "平台对象与运行模型.md").read_text(encoding="utf-8")
-    checklist = (SKILL_ROOT / "checklists" / "编排型TPE验收检查清单.md").read_text(
-        encoding="utf-8"
-    )
-
-    for document in (skill, checklist):
-        assert "技术失败" in document
-        assert "合法无产物" in document
-    assert "禁止用空字符串或虚构路径凑成功对象" in skill
-    assert "只删除文件字段的 `required`" in checklist
+def _read(relative: str) -> str:
+    return (SKILL_ROOT / relative).read_text(encoding="utf-8")
 
 
-def test_workflow_guidance_routes_event_workflows_through_business_runtime():
-    """业务事件必须触发正式业务路线；无事件单 Workflow 仍可直接派发。"""
-    # 路由器约束 5 讲"单节点业务路线"，执行形态正本（references）讲"直接派发"——合并断言
-    skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8") + (
-        SKILL_ROOT / "protocols" / "事实决定授权与变更.md"
-    ).read_text(encoding="utf-8") + (
-        SKILL_ROOT / "references" / "平台对象与运行模型.md"
-    ).read_text(encoding="utf-8")
-    asset_stage = (SKILL_ROOT / "modules" / "P3-执行形态与路线制作.md").read_text(encoding="utf-8")
-    checklist = (SKILL_ROOT / "checklists" / "编排型TPE验收检查清单.md").read_text(
-        encoding="utf-8"
-    )
-    acceptance = (SKILL_ROOT / "checklists" / "场景包验收检查清单.md").read_text(
-        encoding="utf-8"
-    )
-
-    for document in (skill, checklist, acceptance):
-        assert "单节点业务路线" in document
-        assert "直接派发" in document
-    assert "验证身份只用于本次 Bubble" in asset_stage
-    assert "不得让脚本、Agent、智能应用或 MCP 调用方伪造" in checklist
-    assert "只由服务端在正式路线运行中持久化生成" in acceptance
+def test_single_skill_follows_the_lite_framework():
+    """lite 并入后只剩一个 Skill：入口路由、七段主流程、任务入口、沟通模板与按需参考。 [任务:T-3724]"""
+    for directory in release_module.SKILL_CONTENT_MD_DIRS:
+        assert (SKILL_ROOT / directory).is_dir(), directory
+    for retired in release_module.RETIRED_SKILL_DIRS:
+        assert not (SKILL_ROOT / retired).exists(), retired
+    assert not (ROOT / "skills" / "business-app-creator-lite").exists()
+    router = _read("SKILL.md")
+    for name in release_module.FLOW_STAGE_FILES:
+        assert f"flow/{name}" in router, name
+    for task in ("接续", "修订", "诊断", "能力试用", "仅讨论"):
+        assert f"tasks/{task}.md" in router, task
+    assert "business-app-creator-lite" not in router
+    release_module.validate_skill_layout(SKILL_ROOT)
 
 
-def test_workflow_guidance_separates_delivery_verification_from_business_acceptance():
-    """最终交付必须先核验真实结果，再由明确责任方完成业务审阅。"""
-    design = (SKILL_ROOT / "modules" / "P1-业务基线细则.md").read_text(encoding="utf-8")
-    challenge = (SKILL_ROOT / "checklists" / "方案挑战检查清单.md").read_text(
-        encoding="utf-8"
-    )
-    acceptance = (SKILL_ROOT / "checklists" / "场景包验收检查清单.md").read_text(
-        encoding="utf-8"
-    )
-    assert "交付核验回答" in design
-    assert "最终审阅回答" in design
-    assert "质量检查编排型 TPE" in challenge
-    assert "若声明了修订、重做或改路线" in acceptance
-    assert "能力容器只声明对外稳定的资产契约" in design
-    assert "属于平台实现细节" in design
-    assert "没有把 Max Runtime 的 Agent 边界通知" in challenge
-    assert "Runtime 直接执行所选" in design
-    assert "只有已声明的 `agent_gate` 边界" in acceptance
+def test_confirmation_page_is_the_only_design_gate():
+    """所有应用都走一页确认页；有模型或人工参与的步骤时才附分工表。"""
+    g1 = _read("flow/G1-需求确认.md")
+    assert "design/分工表.md" in g1 and "design/确认页.md" in g1
+    assert "平台要求至少一条路线" in g1
+    page = _read("design/确认页.md")
+    assert "费用与副作用" in page and "可以上线" in page
 
 
-def test_single_skill_seven_stage_layout():
-    """v3：scene-creator 与 app-creator 已并入 business-app-creator——阶段层 G1–G7、模块层 P1–P8、协议层四份、两层 Checklist。"""
-    router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    protocol = (SKILL_ROOT / "protocols" / "事实决定授权与变更.md").read_text(encoding="utf-8")
-
-    for stage in ("G1-业务目标与范围", "G2-关键能力可行性", "G3-运行设计与验收基线", "G4-核心执行单元验证",
-                  "G5-后端业务闭环验证", "G6-用户操作闭环验证", "G7-预发布与交付"):
-        assert (SKILL_ROOT / "stages" / f"{stage}.md").is_file(), stage
-    assert len(list((SKILL_ROOT / "modules").glob("P*.md"))) == 8
-    assert len(list((SKILL_ROOT / "protocols").glob("*.md"))) == 4
-    assert (SKILL_ROOT / "checklists" / "G门禁检查清单.md").is_file()
-    assert (SKILL_ROOT / "checklists" / "U业务行为验收明细.md").is_file()
-    assert (SKILL_ROOT / "scripts" / "feedback_report.py").is_file()
-    assert not (ROOT / "skills" / "scene-creator" / "SKILL.md").exists()
-    assert not (ROOT / "skills" / "app-creator" / "SKILL.md").exists()
-    assert "name: business-app-creator" in router
-    for g in ("G1", "G2", "G3", "G4", "G5", "G6", "G7"):
-        assert f"stages/{g}-" in router
-    assert "先包后应用只是工程前置" in protocol
-    assert "能力容器" in router
+def test_identity_rules_forbid_forging_runtime_ids():
+    router = _read("SKILL.md")
+    assert "`workflow_runtime_id` 只由服务端生成" in router
+    assert "`business_id` 由调用方在发起时生成" in router
 
 
-def test_tool_task_scope_and_preferences_match_mcp_schema():
-    protocol = (SKILL_ROOT / "protocols/状态恢复知识归属与平台适配.md").read_text()
-    router = (SKILL_ROOT / "SKILL.md").read_text()
-    assert "按工具契约携带工单" in protocol
-    assert "这些入口没有 `task_id` 参数" in protocol
-    for tool in ("workspace_remote_status", "workspace_pull", "workspace_push",
-                 "dev_preferences", "query_dev_feedback"):
-        assert f"`{tool}`" in protocol
-    assert "携带也无害" not in protocol
-    assert "base_version=<pull 返回的 version>" in router
-    assert "首次 `exists=false` 时 `base_version` 传 `null`" in router
-    assert '`RESULT_UNKNOWN` 或 `result="unknown"`' in router
-
-
-def test_multi_pack_support_retains_entry_routing_limits():
-    content = (SKILL_ROOT / "modules/P6-验证与证据裁决.md").read_text()
-    assert "scenario_pack_refs=[{scenario_pack_id, scenario_pack_version}" in content
-    assert "`update` 时传完整挂载清单" in content
-    assert "当前 `chat_start` 用首个场景包" in content
-    assert "`scenario_package_ids` 只接受一个场景包" in content
-    for relative in ("SKILL.md", "protocols/事实决定授权与变更.md",
-                     "protocols/状态恢复知识归属与平台适配.md"):
-        text = (SKILL_ROOT / relative).read_text()
-        assert "恰好挂" not in text
-
-
-def test_g5_binds_workspace_and_checks_internal_run_owner():
-    stage = (SKILL_ROOT / "stages/G5-后端业务闭环验证.md").read_text()
-    data = (SKILL_ROOT / "modules/P4-数据建模与回流.md").read_text()
-    for text in (stage, data):
-        assert 'dataset_template_workspace(action="bind"' in text
-        assert 'database.purpose="template_workspace"' in text
-        assert "data_uid" in text
-    assert "当前 MCP 调用用户是该智能应用的创建者" in stage
-    for code in ("3033", "3025", "3029"):
-        assert code in stage
-    assert "所有者实例库" in stage and "开发工作集" in stage
-
-
-def test_online_preview_is_the_deployed_app_acceptance_entry_before_finalize():
-    module = (SKILL_ROOT / "modules/P6-验证与证据裁决.md").read_text()
-    assert "工作台右侧「在线预览」页" in module
-    assert "在线预览按工作台启动时绑定的 `business_ui_id` 和环境获取一次性预览凭据" in module
-    assert "`PREVIEW_NOT_READY`" in module
-    assert "deploy 到 `success` 只证明部署物起来了" in module
-    assert "HTTP PUT 实际源码包" in module
-    assert "platform_blocked" in module
-    for relative in ("stages/G6-用户操作闭环验证.md", "stages/G7-预发布与交付.md"):
-        text = (SKILL_ROOT / relative).read_text()
-        assert "在线预览" in text
-        assert "`business_ui_manage(get)` 反读预部署入口" not in text
-        assert "`business_ui_manage(get)` 反读的预部署入口" not in text
-
-
-def test_delivery_records_verified_deployment_scaffold_version():
-    versions = (SKILL_ROOT / "references/脚手架版本与升级.md").read_text()
-    assert "历史部署空值记为“未知”" in versions
-    assert "该实例自己的部署绑定及版本" in versions
-    assert "失败或进行中的部署仅记录本次尝试" in versions
-    for relative in ("references/脚手架版本与升级.md", "modules/P7-版本部署与上线.md",
-                     "stages/G7-预发布与交付.md"):
-        text = (SKILL_ROOT / relative).read_text()
-        for field in ("deployed_scaffold_version", "deployment_id", "source_sha256"):
-            assert field in text
-
-
-def test_real_trace_documents_summary_and_full_for_same_project():
-    for relative in ("modules/P2-能力发现与模型试验.md", "modules/P6-验证与证据裁决.md",
-                     "stages/G5-后端业务闭环验证.md"):
-        text = (SKILL_ROOT / relative).read_text()
-        assert 'evidence_level="summary"' in text
-        assert 'evidence_level="full"' in text
-        assert "同一 `project_id`" in text
-
-
-def test_desktop_workbench_and_app_directory_contract():
-    """桌面接管工作台；每应用独立目录，不能恢复旧网页启动前置。"""
-    router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    display = (SKILL_ROOT / "protocols" / "阶段展示与证据等级.md").read_text(
-        encoding="utf-8"
-    )
-
-    assert "Goalfy App" in router
-    assert "apps/<本应用目录名>" in router
-    assert "GOALFY_DEV_FRAME_ANCESTORS" in router
-    assert "http://127.0.0.1:5180/" not in router
-    assert 'download_app_template(template="app_workbench")' not in router
-    assert "./run-dev.sh start" not in router
-    assert "HTML 方案包" in display
-    assert "统一入口是应用工程根下 `docs/proposal/index.html`" in display
-    assert "七份 md 给 Agent 保留事实与完整证据" in router
-
-
-def test_desktop_workflow_states_current_scaffold_and_workspace_responsibilities():
-    """直接写当前制作职责，保留应用脚手架、版本门禁和资料保存契约。"""
-    router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    versions = (SKILL_ROOT / "references" / "脚手架版本与升级.md").read_text(
-        encoding="utf-8"
-    )
-    preview = (SKILL_ROOT / "modules" / "P5-应用脚手架与页面实现.md").read_text(
-        encoding="utf-8"
-    )
-    stage = (SKILL_ROOT / "stages" / "G6-用户操作闭环验证.md").read_text(
-        encoding="utf-8"
-    )
-
-    assert "Goalfy App 负责工作台的安装、更新与运行" in router
-    assert "获取应用脚手架与保存资料" in router
-    assert "download_app_template" not in router
-    assert 'business_ui_bundle(action="download_template"' in router
-    for tool in ("workspace_remote_status", "workspace_pull", "workspace_push"):
-        assert f"`{tool}`" in router
-    assert "工作台与应用脚手架分别更新" in versions
-    assert "智能应用自己的预览与后端调试服务按模板准备" in preview
-    assert "工作台运行由 Goalfy 管理" in stage
-    for path in SKILL_ROOT.rglob("*.md"):
-        content = path.read_text(encoding="utf-8")
-        assert 'download_app_template(template="app_workbench")' not in content, path
-        assert "./run-dev.sh start" not in content, path
-
-
-def test_desktop_entry_uses_positive_current_workflow_instructions():
-    router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    section = router.split("### 1.3 ", 1)[1].split("### 1.4 ", 1)[0]
-
-    for retired in ("不再", "不是", "不要", "不能", "不等于", "禁止",
-                    "download_app_template", "goalfy-app-workbench"):
-        assert retired not in section
-    for rule in (
-        "每个应用分别初始化名称与工作区身份",
-        "已有工作区使用 `npm run scaffold:repair",
-        "保留已有事实，只补缺失文件",
-        "完成实际代码迁移与验证，通过后继续",
-        "确认取舍后再写入",
-        "保留桌面注入的 `GOALFY_DEV_FRAME_ANCESTORS` 及来源限制",
-        "绑定成功才允许进入 G5",
-    ):
-        assert rule in section
-
-
-def test_desktop_resume_preserves_local_progress_before_cloud_restore():
-    router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    recovery = (SKILL_ROOT / "protocols" / "状态恢复知识归属与平台适配.md").read_text(
-        encoding="utf-8"
-    )
-
-    assert "先读当前应用本地文件" in router
-    for rule in (
-        "本机接续，本地工程仍在",
-        "换机或本地缺失",
-        "本地与云端都有内容",
-        "不默认写回或删除本地文件",
-        "不只凭 `updatedAt`、阶段号或版本字符串判断谁较新",
-        "冲突未解决前不整份覆盖任一侧",
-        "不包含之后未部署的改动",
-        "服务端没有并发版本保护",
-        "恢复会话不等于恢复文件，恢复文档不等于恢复源码",
-    ):
-        assert rule in recovery
-    assert "接续顺序固定：`workspace_remote_status`" not in recovery
-    assert "工单是唯一能跨轮次续作的载体" not in recovery
-
-
-def test_app_progress_contract_does_not_describe_workbench_layout():
-    router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    recovery = (SKILL_ROOT / "protocols" / "状态恢复知识归属与平台适配.md").read_text(
-        encoding="utf-8"
-    )
-
-    assert "新建或切换会话时，先核当前应用目录与身份，接续已有工程" in router
-    assert "保留其他会话的新改动" in router
-    assert "同步到方案 HTML" in recovery
-    assert "阶段状态的正本是应用工程根的 `workspace.json`" in recovery
-    assert "开发者中心只认这七个键" not in recovery
-    for path in SKILL_ROOT.rglob("*.md"):
-        content = path.read_text(encoding="utf-8")
-        for layout in ("左栏", "右栏", "开发者在右侧", "三栏各管一件事"):
-            assert layout not in content, path
-
-
-def test_g3_proposal_allows_reading_interaction_without_business_or_screenshot_gate():
-    pages = (SKILL_ROOT / "modules" / "P5-应用脚手架与页面实现.md").read_text(
-        encoding="utf-8"
-    )
-    stage = (SKILL_ROOT / "stages" / "G3-运行设计与验收基线.md").read_text(
-        encoding="utf-8"
-    )
-
-    display = (SKILL_ROOT / "protocols" / "阶段展示与证据等级.md").read_text(
-        encoding="utf-8"
-    )
-
-    assert "HTML 展示给开发者看的方案，阶段 MD 保存完整事实与证据" in pages
-    assert "不要求完整可操作原型，也不要求截图" in pages
-    assert "操作前后可并列展示或轻量切换" in stage
-    assert "允许阅读辅助交互，不把它当成业务能力" in display
-    assert "Tab 切换、展开收起、页内定位、示例状态切换" in display
-    assert "禁止**接真实接口或把示例切换当成已验证的业务交互" in display
-    for path in SKILL_ROOT.rglob("*.md"):
-        content = path.read_text(encoding="utf-8")
-        for retired in ("没有截图的页面视为未设计", "MD + 原型本地地址一起交开发者",
-                        "每页截图展示", "正文与截图目录指针", "可点原型", "可点的页面原型",
-                        "做不成才用截图", "截图作为展示替代", "开发者点得动"):
-            assert retired not in content, path
-
-
-def test_proposal_package_supports_local_assets_and_readable_fallback():
-    router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    display = (SKILL_ROOT / "protocols" / "阶段展示与证据等级.md").read_text(
-        encoding="utf-8"
-    )
-
-    assert "方案是有统一入口的 HTML 组包" in router
-    for rule in (
-        "统一入口不等于所有内容必须塞进一个文件",
-        "配套样式、脚本、图示与必要的子页面",
-        "所有内容从入口可达",
-        "脚本失败时仍能读到概览、承诺和待决定项",
-        "键盘可用、焦点与选中态可辨",
-        "禁止**加载包外或外网资源",
-    ):
-        assert rule in display
-    for path in SKILL_ROOT.rglob("*.md"):
-        content = path.read_text(encoding="utf-8")
-        assert "不依赖点击、切换或脚本执行才能看到" not in content, path
-        assert "不依赖点击或脚本执行，也不要求截图" not in content, path
-
-
-def test_proposal_visual_guidance_prioritizes_readability_over_decoration():
-    display = (SKILL_ROOT / "protocols" / "阶段展示与证据等级.md").read_text(
-        encoding="utf-8"
-    )
-
-    for rule in (
-        "结构为查阅服务，不强制一页长文",
-        "避免多层 Tab 套折叠",
-        "关键风险不能藏进默认收起的详情",
-        "审美为阅读服务，直观、克制，有业务感",
-        "不把每句话都塞进一张卡片",
-        "窄宽度下不挤字、不裁切关键信息",
-        "避免模板化的“AI 感”",
-        "不把方案做成营销落地页或复杂仪表盘",
-        "交付前按阅读路径检查",
-    ):
-        assert rule in display
-
-
-def test_proposal_feedback_uses_conversation_without_annotation_promises():
-    display = (SKILL_ROOT / "protocols" / "阶段展示与证据等级.md").read_text(
-        encoding="utf-8"
-    )
-
-    assert "开发者在开发对话中说明哪里不对" in display
-    assert "由你核对当前应用、对应页面、业务步骤和版本" in display
-    assert "不代表工作台提供自动截图、批注或反馈回传" in display
-    assert "每条自动带页面、步骤、版本上下文" not in display
-
-
-def test_business_app_guidance_does_not_restore_removed_form_prefill():
-    """所有 app-creator 指引都必须沿用静态 Schema，不能从旁支重新引入已下线预填。"""
-    documents = "\n".join(
-        path.read_text(encoding="utf-8")
-        for path in SKILL_ROOT.rglob("*.md")
-    )
-
-    assert "已知信息的预填由智能应用实现" not in documents
-    assert "稳定业务事实由应用后端在发起时拼进 `submit_data`" in documents
+def test_bubble_verify_and_full_run_boundaries_are_documented():
+    g4 = _read("flow/G4-能力制作.md")
+    for fact in ('otpe_manage(action="verify"', "`needs_bubble`", 'action="assemble"', "full_run=true", "ctx.dry_run"):
+        assert fact in g4, fact
+    script = _read("reference/编排脚本.md")
+    assert "`partial`" in script and "`blocked`" in script and "`recoverable`" in script
 
 
 def test_business_ui_identity_is_bound_before_g5_transition():
-    """G4 出口先创建身份草稿并 bind；G5 只完善同一草稿。"""
-    router = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    g4 = (SKILL_ROOT / "stages" / "G4-核心执行单元验证.md").read_text(
-        encoding="utf-8"
-    )
-    g5 = (SKILL_ROOT / "stages" / "G5-后端业务闭环验证.md").read_text(
-        encoding="utf-8"
-    )
+    g5 = _read("flow/G5-数据与应用.md")
+    assert "npm run scaffold:bind -- --business-ui-id" in g5
+    assert "先于把 `current_stage` 改成 G5" in g5
+    workspace = _read("reference/开发者中心与工作区.md")
+    assert "进 G5 前用 `npm run scaffold:bind" in workspace
 
-    assert "G1 到 G4 的新应用两处写真实的 `null`" in router
-    assert "绑定成功才允许进入 G5" in router
-    assert 'business_ui_manage(action="create"' in g4
-    assert "npm run scaffold:bind -- --business-ui-id <真实 ID>" in g4
-    assert "本阶段不打包部署" in g4
-    assert "完善并部署 G4 已创建的验证实例" in g5
-    assert "禁止**在这里再 create" in g5
+
+def test_online_preview_is_the_developer_acceptance_entry():
+    g6 = _read("flow/G6-预览验收.md")
+    assert "在线预览" in g6 and "deployed_scaffold_version" in g6
+    assert 'finalize_asset_version_online(asset_type="scenario_pack"' in g6
+
+
+def test_task_closing_gate_and_waiver_are_documented():
+    g7 = _read("flow/G7-上线交付.md")
+    assert "route_verification_waived" in g7
+    assert "WORKFLOW_TASK_ROUTE_BUBBLE_EVIDENCE_REQUIRED" in g7
+    assert 'business_ui_manage(action="resolve")' in g7
+
+
+def test_stage_names_follow_workspace_not_skill():
+    """旧应用的阶段名可能是旧名：Skill 只按 G 键更新状态，不改名。"""
+    assert "只改状态，不改名" in _read("SKILL.md")
+    assert "旧应用的七段可能是旧名" in _read("reference/开发者中心与工作区.md")
+
+
+def test_data_writes_follow_row_ownership():
+    data = _read("reference/数据模板.md")
+    for fact in ("数据集 FA 只更新已建行的 agent 列", "row_version=row_version+1", "`found=false`"):
+        assert fact in data, fact
+
+
+def test_business_app_guidance_does_not_restore_removed_form_prefill():
+    pages = _read("reference/前端页面.md")
+    assert "表单预填已下线" in pages
+    assert "useFormPrefill" not in pages
 
 
 def test_stale_zip_is_rejected(tmp_path: Path):
@@ -571,29 +285,31 @@ def test_skill_source_change_requires_a_new_release(tmp_path: Path):
 
 def test_new_reference_requires_a_new_release(tmp_path: Path):
     copied = _copy_repo(tmp_path)
-    (copied / "references" / "unreleased.md").write_text("unreleased\n", encoding="utf-8")
+    (copied / "reference" / "unreleased.md").write_text(
+        "# 未发布\n\n## 适用场景\n\n## 规则\n\n## 常见错误\n\n## 相关工具与契约主题\n", encoding="utf-8"
+    )
 
     with pytest.raises(release_module.ReleaseError, match="source_files 与 Skill 唯一源文件不一致"):
         release_module.check_release(copied)
 
 
 def test_skill_body_references_resolve_to_shipped_files():
-    """正文里指向 Skill 自身文件的路径必须在发布包里（FB-38：P1 改名后引用未同步）。"""
+    """正文里指向 Skill 自身文件的路径必须在发布包里（FB-38：改名后引用未同步）。"""
     assert release_module.find_broken_references(SKILL_ROOT) == []
     shipped = _manifest()["source_files"]
-    assert "modules/P1-业务基线细则.md" in shipped
-    # components 入口第一步就读目录数据，必须随包分发
-    assert "references/前端设计指南/components/components.json" in shipped
+    assert "flow/G1-需求确认.md" in shipped
+    assert "scripts/feedback_report.py" in shipped
+    assert not any(item.startswith("references/") for item in shipped)
 
 
 @pytest.mark.parametrize(
     ("relative", "line", "reported"),
     [
-        ("SKILL.md", "见 `modules/P1-业务访谈与价值判断.md` 第 9 节。", "SKILL.md:"),
+        ("SKILL.md", "见 `reference/不存在的参考.md`。", "SKILL.md:"),
         (
-            "references/平台对象与运行模型.md",
-            "详见 [P3](../modules/P3-不存在.md#第-5-节)。",
-            "references/平台对象与运行模型.md:",
+            "reference/平台对象速查.md",
+            "详见 [G9](../flow/G9-不存在.md#出口)。",
+            "reference/平台对象速查.md:",
         ),
     ],
 )
@@ -922,58 +638,51 @@ def test_feedback_report_script_is_shipped_with_skill(tmp_path):
         assert target.read_bytes() == source.read_bytes()
 
 
-# ---------------------------------------------------------------- 节号引用 [任务:T-3805]
+# ---------------------------------------------------------------- 框架骨架 [任务:T-3724]
 
 
-def test_current_section_references_point_to_existing_headings():
-    release_module.validate_section_references(SKILL_ROOT)
-
-
-def test_platform_object_model_p3_references_name_their_headings():
-    """《平台对象与运行模型》指向 P3 的节号带标题名，校验才能在章节重排后发现主题错位。"""
-    text = (SKILL_ROOT / "references" / "平台对象与运行模型.md").read_text(encoding="utf-8")
-    for expected in (
-        "第 3 节「业务路线设计」",
-        "7.2「工具集上线的两道检查」",
-        "第 10 节「业务事件设计」",
-        "9.1「契约读取路由」",
-        "第 2 节「执行形态选择」",
-        "10.4「事件密度与契约字段」",
-        "12.3「面向界面的公开语义」",
-    ):
-        assert expected in text
+def test_current_skill_layout_passes():
+    release_module.validate_skill_layout(SKILL_ROOT)
 
 
 @pytest.mark.parametrize(
-    ("reference", "message"),
+    ("relative", "mutate", "message"),
     [
-        ("见 `modules/P3-执行形态与路线制作.md` 第 99 节", "P3-执行形态与路线制作.md 的 99 节不存在"),
-        ("见 P3 第 4.9 节", "P3-执行形态与路线制作.md 的 4.9 节不存在"),
-        ("见 `modules/P3-执行形态与路线制作.md` 第 5 节「业务事件设计」", "实际标题是「方案挑战与制作书定稿」"),
-        ("见 P3 第 4.1 节（契约读取路由）", "实际标题是「工具集划分」"),
+        ("flow/G4-能力制作.md", lambda text: text.replace("## 5. 出口", "## 5. 完成标准"), "二级标题必须依次为"),
+        ("reference/数据模板.md", lambda text: text.replace("## 常见错误\n", ""), "二级标题必须依次为"),
+        ("tasks/诊断.md", lambda text: text + "\n## 补充\n", "二级标题必须依次为"),
+        ("SKILL.md", lambda text: text + "\n" * 60, "行预算"),
     ],
 )
-def test_stale_section_reference_is_rejected(tmp_path: Path, reference: str, message: str):
+def test_skeleton_drift_is_rejected(tmp_path: Path, relative: str, mutate, message: str):
     copied = _copy_repo(tmp_path)
-    target = copied / "references" / "平台对象与运行模型.md"
-    target.write_text(target.read_text(encoding="utf-8") + f"\n{reference}\n", encoding="utf-8")
-    line = len(target.read_text(encoding="utf-8").splitlines())
+    target = copied / relative
+    target.write_text(mutate(target.read_text(encoding="utf-8")), encoding="utf-8")
 
     for action in (
         lambda: release_module.check_release(copied),
-        lambda: release_module.release(copied, _package_version(copied), "节号引用校验"),
+        lambda: release_module.release(copied, _package_version(copied), "骨架校验"),
     ):
-        with pytest.raises(release_module.ReleaseError, match=re.escape(message)) as error:
+        with pytest.raises(release_module.ReleaseError, match=message) as error:
             action()
-        assert f"references/平台对象与运行模型.md:{line}" in str(error.value)
+        assert relative in str(error.value)
 
 
-def test_descriptive_parenthesis_after_section_reference_is_not_a_title(tmp_path: Path):
+def test_missing_flow_stage_is_rejected(tmp_path: Path):
     copied = _copy_repo(tmp_path)
-    target = copied / "references" / "平台对象与运行模型.md"
-    target.write_text(target.read_text(encoding="utf-8") + "\n流程见 P3 第 9.3 节（先读契约再写脚本）\n", encoding="utf-8")
+    (copied / "flow" / "G7-上线交付.md").unlink()
+    with pytest.raises(release_module.ReleaseError, match="flow/ 必须正好是七段文件"):
+        release_module.validate_skill_layout(copied)
 
-    release_module.validate_section_references(copied)
+
+def test_code_block_headings_do_not_count_as_sections(tmp_path: Path):
+    copied = _copy_repo(tmp_path)
+    target = copied / "reference" / "编排脚本.md"
+    text = target.read_text(encoding="utf-8").replace(
+        "## 常见错误", "```text\n## 示例里的标题\n```\n\n## 常见错误", 1
+    )
+    target.write_text(text, encoding="utf-8")
+    release_module.validate_skill_layout(copied)
 
 
 # ---------------------------------------------------------------- QA 渠道 [任务:T-3784]
@@ -1031,3 +740,27 @@ def test_qa_build_switches_every_environment_value(tmp_path: Path, monkeypatch):
     claude_readme = (out / "claude-code" / "README.md").read_text(encoding="utf-8")
     assert '.git#business-qa"' in claude_readme
     assert "--ref business-qa" in (out / "codex" / "README.md").read_text(encoding="utf-8")
+
+
+def test_retired_lite_copies_are_removed_and_rejected(tmp_path: Path):
+    """lite 已并入主 Skill：同步时删掉平台里的旧副本，残留即拒绝发布。 [任务:T-3724]"""
+    copied = _copy_repo(tmp_path)
+    for platform in release_module.EXTRA_SKILL_PLATFORMS:
+        assert not (tmp_path / platform / "skills/business-app-creator-lite").exists(), platform
+    stale = tmp_path / "codex/skills/business-app-creator-lite"
+    stale.mkdir(parents=True)
+    (stale / "SKILL.md").write_text("stale\n", encoding="utf-8")
+    with pytest.raises(release_module.ReleaseError, match="已退役的附加 Skill"):
+        release_module.check_release(copied)
+    release_module.sync_platform_skills(copied)
+    assert not stale.exists()
+    release_module.check_release(copied)
+
+
+def test_retired_structure_directories_are_rejected_in_platform_copies(tmp_path: Path):
+    copied = _copy_repo(tmp_path)
+    leftover = tmp_path / "claude-code/skills/business-app-creator/stages"
+    leftover.mkdir()
+    (leftover / "G1-业务目标与范围.md").write_text("old\n", encoding="utf-8")
+    with pytest.raises(release_module.ReleaseError, match="旧结构目录"):
+        release_module.check_release(copied)

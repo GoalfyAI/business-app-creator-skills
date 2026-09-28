@@ -69,7 +69,7 @@ Manus 要求上传 `.zip` 或 `.skill` 文件，且 `SKILL.md` 必须在压缩�
 **或手工打包**：
 
 ```bash
-cd manus/skill && zip -r ../business-app-creator-skill.zip SKILL.md references/
+cd manus/skill && zip -r ../business-app-creator-skill.zip SKILL.md flow tasks design reference checklists scripts
 ```
 
 ## 第 4 步：验证

@@ -39,11 +39,11 @@
 
 ### 第 3 步：加载 Skill
 
-把本目录的 [`SKILL.md`](SKILL.md) 与 [`references/`](references/) 一并提供给你的 Agent。
+把本目录的 [`SKILL.md`](SKILL.md) 与 `flow/`、`tasks/`、`design/`、`reference/`、`checklists/`、`scripts/` 一并提供给你的 Agent。
 
 - 客户端支持 Skill 机制：按其规范放入 Skill 目录
 - 不支持：把 `SKILL.md` 全文作为系统提示或长期上下文提供，Agent 需要引用时再读
-  `references/` 下的对应文件
+  `flow/`、`reference/` 等目录下的对应文件
 
 `SKILL.md` 与其他平台完全一致，逐字节相同。
 
