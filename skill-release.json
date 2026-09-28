@@ -4,7 +4,7 @@
   "version": "v20260927-1b323b",
   "package_version": "2.0.14",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-28T08:29:03Z",
+  "released_at": "2026-09-28T08:30:25Z",
   "update_reason": "方案页固定版式与积分说明 [需求:T-3993]；冒泡回执 resolved_model 是 SA 模型的说明 [任务:T-3917]",
   "source_files": [
     "SKILL.md",
