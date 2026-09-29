@@ -167,6 +167,10 @@ def _assert_fa_orchestration_guardrails(skill_root: Path) -> None:
     assert "给用户看的列表、正文、结论仍以业务字段出现" in script
     assert '"findings": result["findings"]' in script
     assert '"draft_body": draft["draft_body"]' in script
+    # 模板二的 blocked 出口会发 stage_failed，契约说明不能让它删掉这条声明；partial 要把 note 带给用户。 [任务:T-3941]
+    assert 'event_key="diagnosis_failed"' in script
+    assert "模板二、三用到了 `stage_failed`，用模板一时删掉第三条契约" in script
+    assert '"status": result["status"], "note": result["note"]' in script
     for exit_contract in (
         "`completed`（全部做完、数据真实）",
         "`partial`（做了一部分，未做的不补不编）",
@@ -242,6 +246,8 @@ def test_fa_orchestration_guardrails_are_documented():
         ("reference/平台对象速查.md", "一个 FA 只承担一个语义责任", "一个 FA 可承担多个语义责任"),
         ("flow/G4-能力制作.md", "同类错误连续两轮就停止扩 Schema", "同类错误后继续扩 Schema"),
         ("reference/编排脚本.md", '"findings": result["findings"]', '"report_path": result["report_path"]'),
+        ("reference/编排脚本.md", "模板二、三用到了 `stage_failed`，用模板一时删掉第三条契约", "模板三里用到了 `stage_failed`，用模板一、二时删掉第三条契约"),
+        ("reference/编排脚本.md", '"status": result["status"], "note": result["note"]', '"status": result["status"]'),
     ],
 )
 def test_fa_orchestration_guardrail_regressions_are_rejected(tmp_path, relative, old, new):
