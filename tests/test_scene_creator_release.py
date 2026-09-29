@@ -289,7 +289,23 @@ def test_task_closing_gate_and_waiver_are_documented():
 def test_stage_names_follow_workspace_not_skill():
     """旧应用的阶段名可能是旧名：Skill 只按 G 键更新状态，不改名。"""
     assert "只改状态，不改名" in _read("SKILL.md")
-    assert "旧应用的七段可能是旧名" in _read("reference/开发者中心与工作区.md")
+    assert "旧应用的七项可能是旧名" in _read("reference/开发者中心与工作区.md")
+
+
+def test_flows_are_chosen_by_agent_with_hard_rules_kept():
+    """flow 按需选用，但开发者确认、上线前预览验收两条不能跳过。"""
+    skill = _read("SKILL.md")
+    assert "做哪些由你按需求选" in skill
+    assert "左栏" not in skill
+    for rule in ("开发者至少确认过一次要做什么", "上线前必须有开发者在在线预览里的确认", "跳过的保持 `not_started`"):
+        assert rule in skill, rule
+
+
+def test_empty_demo_preview_is_restarted_in_background():
+    """T-3943：演示预览为空时由 Agent 在应用根用 run-dev 后台命令起本地服务。"""
+    workspace = _read("reference/开发者中心与工作区.md")
+    for fact in ("#### 演示预览为空", "npm run dev:status", "npm run dev:restart", "不要让开发者自己去启动"):
+        assert fact in workspace, fact
 
 
 def test_data_writes_follow_row_ownership():

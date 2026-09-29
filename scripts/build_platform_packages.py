@@ -34,7 +34,7 @@ MANIFEST_RELATIVE_PATH = Path("skill-release.json")
 OPENAI_METADATA_RELATIVE_PATH = Path("agents/openai.yaml")
 # 各平台的安装形态不同：插件市场平台把 Skill 放进 skills/ 子目录，
 # Manus 上传 skill 包，通用集成直接摊在目录根。Skill 内容本身四份完全一致。
-# Skill 内容目录（只放 .md）：flow 七段主流程、tasks 非新建任务入口、design 沟通模板、
+# Skill 内容目录（只放 .md）：flow 七个按需选用的流程、tasks 非新建任务入口、design 沟通模板、
 # reference 按需查阅的正本、checklists 人判验收项。发布包按这个清单收文件。 [任务:T-3724]
 SKILL_CONTENT_MD_DIRS = ("flow", "tasks", "design", "reference", "checklists")
 # 旧七阶段结构的目录，同步平台副本时一并清掉，避免已删除的旧文件残留在安装包里。
