@@ -947,3 +947,11 @@ def test_self_supply_route_matches_dataset_fa_contract():
         "业务键在模板里必须有唯一约束",
     ):
         assert fact in template, fact
+
+
+def test_delivery_review_reply_only_action_key():
+    """线上 50829：审阅应答夹带商家数据被拒后应用没展示；Skill 写明只提交 action_key、展示被拒原因。"""
+    pages = _read("reference/前端页面.md")
+    assert "**交付审阅只提交所选动作**" in pages
+    assert "`data.field_errors`" in pages
+    assert "DELIVERY_REVIEW_REPLY_INVALID" in _read("reference/报错对照.md")
