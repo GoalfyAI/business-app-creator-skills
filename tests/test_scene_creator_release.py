@@ -935,3 +935,15 @@ def test_confirmed_interface_beats_preset_look():
     assert "**不为了用预置件把确认过的界面改掉**" in pages
     assert "**界面**（开发者给过截图、参考或说过样子时才写）" in _read("design/确认页.md")
     assert "按确认过的界面写业务页" in _read("flow/G5-数据与应用.md")
+
+
+def test_self_supply_route_matches_dataset_fa_contract():
+    """自给路线建行要按数据集 FA 的约定写 context_hint（FA 只在「自给建行」时允许 INSERT）。"""
+    template = _read("reference/数据模板.md")
+    for fact in (
+        "`context_hint` 写明「自给建行」",
+        "业务键列与值、要填的身份列与值、本次 `run_id`",
+        "没写「自给建行」，数据集 FA 只按行 id 更新、不建行",
+        "业务键在模板里必须有唯一约束",
+    ):
+        assert fact in template, fact
