@@ -38,6 +38,7 @@ keywords:
 - **禁止**伪造平台身份：`workflow_runtime_id` 只由服务端生成；`orchestration_id` 只取自场景包里已定义的路线；`business_id` 由调用方在发起时生成、同一实例内不变。
 - 零捏造：没读过的契约不猜参数，没跑过的结果不说通过，证据不足就写「未验证」。报告里的数字逐条对照原始证据，对不上的删掉或标为假设。
 - 共享资产（官方或他人的场景包、FA、工具集）先 `clone_asset` 再改；他人名下的资产不擅自上线、下线或删除。
+- **禁止**用 Codex 内置浏览器、Playwright 或任何浏览器打开 GoalfyMax 正式入口、`passport` 登录页、在线预览地址或容器地址，也不借用开发者的登录会话。看页面一律通过开发者中心，规则见 [reference/开发者中心与工作区.md](reference/开发者中心与工作区.md)「看页面只用开发者中心」。
 
 ## 1. 智能应用是什么
 
@@ -127,6 +128,7 @@ G1–G7 是七个可选的工作步骤，每个解决一类问题。按这次需
 | 版本 | `list_asset_versions`、`ensure_editable_asset_draft`、`finalize_asset_version_online`、`compare_asset_versions`、`rollback_asset_version`、`get_asset_usage_impact` |
 | 工作区云端保存 | `workspace_remote_status / workspace_pull / workspace_push` |
 | 平台问题 | `submit_dev_feedback`、`query_dev_feedback` |
+| 看页面效果 | 开发者看：开发者中心「演示预览」「在线预览」；你自己查：`npm run check` 与脚手架本地布局回归（不开浏览器访问线上地址） |
 
 用某个工具前先确认它在你当前的工具列表里；找不到就如实说该能力当前不可用，**禁止**虚构平行工具。调用被拒时按返回的提示改，不猜、不自造兼容字段。
 

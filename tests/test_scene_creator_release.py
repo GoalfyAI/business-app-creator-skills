@@ -856,3 +856,63 @@ def test_retired_structure_directories_are_rejected_in_platform_copies(tmp_path:
     (leftover / "G1-业务目标与范围.md").write_text("old\n", encoding="utf-8")
     with pytest.raises(release_module.ReleaseError, match="旧结构目录"):
         release_module.check_release(copied)
+
+
+def test_delivery_separates_deploy_status_from_real_entry():
+    """T-4130：entry_url 是开发者容器地址，交付只写部署状态与真实入口，不把它当用户入口。"""
+    deploy = _read("reference/部署与版本.md")
+    for fact in ("### 部署状态与入口", "直接打开只会进入 mock 模式", "GoalfyMax → 智能应用 → 预览", "开发者中心右侧「在线预览」"):
+        assert fact in deploy, fact
+    delivery = _read("flow/G7-上线交付.md")
+    assert "消费者视角的 `entry_url`" not in delivery
+    assert "| 应用 | 名称、上线版本、`entry_url`" not in delivery
+    assert "不写容器地址" in delivery
+    assert "读预览入口" not in _read("flow/G6-预览验收.md")
+
+
+def test_draft_resolve_is_not_platform_blocked():
+    """T-4130（并入 T-4062）：定版前 resolve 报只有草稿是正常结果，草稿验收走在线预览，不记平台阻塞。"""
+    assert "`resolve` 只认上线版本" in _read("reference/部署与版本.md")
+    g6 = _read("flow/G6-预览验收.md")
+    assert "定版前 `resolve` 报「还没有上线版本（只有草稿）」" in g6
+    assert "不记 platform_blocked，也不为拿入口去 finalize" in g6
+
+
+def test_page_checks_go_through_developer_center_not_agent_browser():
+    """Agent 不用内置浏览器访问正式入口或登录页；看页面走开发者中心，审批拒绝不绕过。"""
+    assert "**禁止**用 Codex 内置浏览器" in _read("SKILL.md")
+    workspace = _read("reference/开发者中心与工作区.md")
+    for fact in ("#### 看页面只用开发者中心", "`passport` 登录页", "不借用开发者已登录的会话", "访问被工具审批拒绝时不重试", "test:e2e:layout"):
+        assert fact in workspace, fact
+    assert "在开发者中心「演示预览」里看真实渲染，桌面与移动各过一遍" not in _read("reference/前端页面.md")
+
+
+def test_stage_name_describes_concrete_business_step():
+    """执行状态条显示 stage_name：写具体动作，多个业务步骤各发一次 stage_started。"""
+    script = _read("reference/编排脚本.md")
+    for fact in (
+        "`stage_name` 就是使用者在应用顶部执行状态条上看到的那句话",
+        "**禁止**「正在处理本次任务」「正在执行」这类看不出在做什么的泛词",
+        "每个步骤开始前各发一次 `stage_started`，各用自己的 `event_key`、`stage_key` 并各自声明契约",
+        "**禁止**在每个 `tool()` 后机械发事件",
+    ):
+        assert fact in script, fact
+
+
+def test_online_preview_needs_deployed_draft_not_finalize():
+    """在线预览只要草稿部署成功；需要上线的操作列在同一张表里，上线不是发布。"""
+    deploy = _read("reference/部署与版本.md")
+    assert "### 哪些用草稿就行，哪些要先上线" in deploy
+    assert "不为打开它去 finalize" in deploy
+    for path in ("reference/开发者中心与工作区.md", "flow/G6-预览验收.md"):
+        text = _read(path)
+        assert "`PREVIEW_NOT_READY` 记为阻塞" not in text, path
+        assert "记为阻塞处理" not in text, path
+    assert "定稿并对最终用户可运行" not in _read("reference/平台对象速查.md")
+
+
+def test_long_text_tool_output_declares_single_string_field():
+    """FB-147：返回整段文本的工具 `_output` 只声明一个 string 字段，平台直接包装原文，不经模型抽取。"""
+    script = _read("reference/编排脚本.md")
+    for fact in ("`_output` 只声明一个必填 string 字段", "平台直接把原文包进去，不经模型", "`_output extraction` 45 秒"):
+        assert fact in script, fact
