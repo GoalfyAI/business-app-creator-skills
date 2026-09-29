@@ -909,3 +909,10 @@ def test_online_preview_needs_deployed_draft_not_finalize():
         assert "`PREVIEW_NOT_READY` 记为阻塞" not in text, path
         assert "记为阻塞处理" not in text, path
     assert "定稿并对最终用户可运行" not in _read("reference/平台对象速查.md")
+
+
+def test_long_text_tool_output_declares_single_string_field():
+    """FB-147：返回整段文本的工具 `_output` 只声明一个 string 字段，平台直接包装原文，不经模型抽取。"""
+    script = _read("reference/编排脚本.md")
+    for fact in ("`_output` 只声明一个必填 string 字段", "平台直接把原文包进去，不经模型", "`_output extraction` 45 秒"):
+        assert fact in script, fact
