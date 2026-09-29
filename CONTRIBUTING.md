@@ -17,7 +17,7 @@
 
 | 目录 | 说明 |
 |---|---|
-| `skills/business-app-creator/` | Skill 的唯一源：`SKILL.md`（入口与路由）、`flow/`（七段主流程）、`tasks/`（非新建任务入口）、`design/`（沟通模板）、`reference/`（按需查阅的正本）、`checklists/`、`scripts/`、`agents/openai.yaml` |
+| `skills/business-app-creator/` | Skill 的唯一源：`SKILL.md`（入口与路由）、`flow/`（七个按需选用的 flow）、`tasks/`（非新建任务入口）、`design/`（沟通模板）、`reference/`（按需查阅的正本）、`checklists/`、`scripts/`、`agents/openai.yaml` |
 | `scripts/` | 构建与发布工具 |
 | `tests/` | 测试 |
 | `claude-code/`、`codex/` | 插件安装文档手工维护；`skills/` 子目录由发布流程复制，**不要手工编辑** |
