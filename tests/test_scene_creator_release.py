@@ -150,6 +150,35 @@ def _read(relative: str) -> str:
     return (SKILL_ROOT / relative).read_text(encoding="utf-8")
 
 
+def _assert_fa_orchestration_guardrails(skill_root: Path) -> None:
+    script = (skill_root / "reference/编排脚本.md").read_text(encoding="utf-8")
+    for fact in (
+        "控制面最小合同",
+        "顶层字段不超过 8 个",
+        "对象嵌套不超过 2 层",
+        "把内容改成稳定载体引用",
+        "Schema 只校验形状，不能证明内容真实",
+        "事实区与推断区",
+        "连续两轮出现时，停止加字段",
+    ):
+        assert fact in script, fact
+    for exit_contract in (
+        "`completed`（全部做完、数据真实）",
+        "`partial`（做了一部分，未做的不补不编）",
+        "`blocked`（一条没做成，数据字段留空）",
+    ):
+        assert exit_contract in script, exit_contract
+
+    platform = (skill_root / "reference/平台对象速查.md").read_text(encoding="utf-8")
+    assert "一个 FA 只承担一个语义责任" in platform
+    assert "编排脚本只做确定性准备、分发、汇合和固定收口" in platform
+    assert "编排脚本.md#fa-与脚本的职责边界" in platform
+
+    g4 = (skill_root / "flow/G4-能力制作.md").read_text(encoding="utf-8")
+    assert "内容走稳定载体引用" in g4
+    assert "同类错误连续两轮就停止扩 Schema" in g4
+
+
 def test_single_skill_follows_the_lite_framework():
     """lite 并入后只剩一个 Skill：入口路由、七段主流程、任务入口、沟通模板与按需参考。 [任务:T-3724]"""
     for directory in release_module.SKILL_CONTENT_MD_DIRS:
@@ -187,6 +216,38 @@ def test_bubble_verify_and_full_run_boundaries_are_documented():
         assert fact in g4, fact
     script = _read("reference/编排脚本.md")
     assert "`partial`" in script and "`blocked`" in script and "`recoverable`" in script
+
+
+def test_fa_orchestration_guardrails_are_documented():
+    """内容型 FA 必须保持职责边界、最小控制面和重复错误止损。"""
+    _assert_fa_orchestration_guardrails(SKILL_ROOT)
+
+
+@pytest.mark.parametrize(
+    ("relative", "old", "new"),
+    [
+        ("reference/编排脚本.md", "顶层字段不超过 8 个", "顶层字段按需增加"),
+        ("reference/编排脚本.md", "对象嵌套不超过 2 层", "对象嵌套按需增加"),
+        ("reference/编排脚本.md", "把内容改成稳定载体引用", "把内容内联进控制面"),
+        ("reference/编排脚本.md", "Schema 只校验形状，不能证明内容真实", "Schema 同时保证内容真实"),
+        ("reference/编排脚本.md", "事实区与推断区", "统一内容区"),
+        ("reference/编排脚本.md", "连续两轮出现时，停止加字段", "连续出现时继续加字段"),
+        ("reference/编排脚本.md", "`partial`（做了一部分，未做的不补不编）", "`completed`（全部做完）"),
+        ("reference/编排脚本.md", "`blocked`（一条没做成，数据字段留空）", "`completed`（全部做完）"),
+        ("reference/平台对象速查.md", "一个 FA 只承担一个语义责任", "一个 FA 可承担多个语义责任"),
+        ("flow/G4-能力制作.md", "同类错误连续两轮就停止扩 Schema", "同类错误后继续扩 Schema"),
+    ],
+)
+def test_fa_orchestration_guardrail_regressions_are_rejected(tmp_path, relative, old, new):
+    """精确撤掉任一门禁都必须让聚焦合同失败。"""
+    skill_root = _copy_repo(tmp_path)
+    target = skill_root / relative
+    text = target.read_text(encoding="utf-8")
+    assert old in text
+    target.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+    with pytest.raises(AssertionError):
+        _assert_fa_orchestration_guardrails(skill_root)
 
 
 def test_business_ui_identity_is_bound_before_g5_transition():
