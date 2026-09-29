@@ -162,6 +162,11 @@ def _assert_fa_orchestration_guardrails(skill_root: Path) -> None:
         "连续两轮出现时，停止加字段",
     ):
         assert fact in script, fact
+    # 控制面收窄不能让用户可见内容只落文件：短内容照常返回，中间文件放 process_dir。 [任务:T-3941]
+    assert "`ctx.process_dir` 文件等稳定载体" in script
+    assert "给用户看的列表、正文、结论仍以业务字段出现" in script
+    assert '"findings": result["findings"]' in script
+    assert '"draft_body": draft["draft_body"]' in script
     for exit_contract in (
         "`completed`（全部做完、数据真实）",
         "`partial`（做了一部分，未做的不补不编）",
@@ -236,6 +241,7 @@ def test_fa_orchestration_guardrails_are_documented():
         ("reference/编排脚本.md", "`blocked`（一条没做成，数据字段留空）", "`completed`（全部做完）"),
         ("reference/平台对象速查.md", "一个 FA 只承担一个语义责任", "一个 FA 可承担多个语义责任"),
         ("flow/G4-能力制作.md", "同类错误连续两轮就停止扩 Schema", "同类错误后继续扩 Schema"),
+        ("reference/编排脚本.md", '"findings": result["findings"]', '"report_path": result["report_path"]'),
     ],
 )
 def test_fa_orchestration_guardrail_regressions_are_rejected(tmp_path, relative, old, new):
