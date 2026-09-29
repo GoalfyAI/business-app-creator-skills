@@ -868,3 +868,11 @@ def test_delivery_separates_deploy_status_from_real_entry():
     assert "| 应用 | 名称、上线版本、`entry_url`" not in delivery
     assert "不写容器地址" in delivery
     assert "读预览入口" not in _read("flow/G6-预览验收.md")
+
+
+def test_draft_resolve_is_not_platform_blocked():
+    """T-4130（并入 T-4062）：定版前 resolve 报只有草稿是正常结果，草稿验收走在线预览，不记平台阻塞。"""
+    assert "`resolve` 只认上线版本" in _read("reference/部署与版本.md")
+    g6 = _read("flow/G6-预览验收.md")
+    assert "定版前 `resolve` 报「还没有上线版本（只有草稿）」" in g6
+    assert "不记 platform_blocked，也不为拿入口去 finalize" in g6
