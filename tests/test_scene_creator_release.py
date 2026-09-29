@@ -856,3 +856,15 @@ def test_retired_structure_directories_are_rejected_in_platform_copies(tmp_path:
     (leftover / "G1-业务目标与范围.md").write_text("old\n", encoding="utf-8")
     with pytest.raises(release_module.ReleaseError, match="旧结构目录"):
         release_module.check_release(copied)
+
+
+def test_delivery_separates_deploy_status_from_real_entry():
+    """T-4130：entry_url 是开发者容器地址，交付只写部署状态与真实入口，不把它当用户入口。"""
+    deploy = _read("reference/部署与版本.md")
+    for fact in ("### 部署状态与入口", "直接打开只会进入 mock 模式", "GoalfyMax → 智能应用 → 预览", "开发者中心右侧「在线预览」"):
+        assert fact in deploy, fact
+    delivery = _read("flow/G7-上线交付.md")
+    assert "消费者视角的 `entry_url`" not in delivery
+    assert "| 应用 | 名称、上线版本、`entry_url`" not in delivery
+    assert "不写容器地址" in delivery
+    assert "读预览入口" not in _read("flow/G6-预览验收.md")
