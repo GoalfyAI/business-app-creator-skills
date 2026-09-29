@@ -885,3 +885,15 @@ def test_page_checks_go_through_developer_center_not_agent_browser():
     for fact in ("#### 看页面只用开发者中心", "`passport` 登录页", "不借用开发者已登录的会话", "访问被工具审批拒绝时不重试", "test:e2e:layout"):
         assert fact in workspace, fact
     assert "在开发者中心「演示预览」里看真实渲染，桌面与移动各过一遍" not in _read("reference/前端页面.md")
+
+
+def test_stage_name_describes_concrete_business_step():
+    """执行状态条显示 stage_name：写具体动作，多个业务步骤各发一次 stage_started。"""
+    script = _read("reference/编排脚本.md")
+    for fact in (
+        "`stage_name` 就是使用者在应用顶部执行状态条上看到的那句话",
+        "**禁止**「正在处理本次任务」「正在执行」这类看不出在做什么的泛词",
+        "每个步骤开始前各发一次 `stage_started`，各用自己的 `event_key`、`stage_key` 并各自声明契约",
+        "**禁止**在每个 `tool()` 后机械发事件",
+    ):
+        assert fact in script, fact
