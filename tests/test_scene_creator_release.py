@@ -897,3 +897,15 @@ def test_stage_name_describes_concrete_business_step():
         "**禁止**在每个 `tool()` 后机械发事件",
     ):
         assert fact in script, fact
+
+
+def test_online_preview_needs_deployed_draft_not_finalize():
+    """在线预览只要草稿部署成功；需要上线的操作列在同一张表里，上线不是发布。"""
+    deploy = _read("reference/部署与版本.md")
+    assert "### 哪些用草稿就行，哪些要先上线" in deploy
+    assert "不为打开它去 finalize" in deploy
+    for path in ("reference/开发者中心与工作区.md", "flow/G6-预览验收.md"):
+        text = _read(path)
+        assert "`PREVIEW_NOT_READY` 记为阻塞" not in text, path
+        assert "记为阻塞处理" not in text, path
+    assert "定稿并对最终用户可运行" not in _read("reference/平台对象速查.md")
