@@ -876,3 +876,12 @@ def test_draft_resolve_is_not_platform_blocked():
     g6 = _read("flow/G6-预览验收.md")
     assert "定版前 `resolve` 报「还没有上线版本（只有草稿）」" in g6
     assert "不记 platform_blocked，也不为拿入口去 finalize" in g6
+
+
+def test_page_checks_go_through_developer_center_not_agent_browser():
+    """Agent 不用内置浏览器访问正式入口或登录页；看页面走开发者中心，审批拒绝不绕过。"""
+    assert "**禁止**用 Codex 内置浏览器" in _read("SKILL.md")
+    workspace = _read("reference/开发者中心与工作区.md")
+    for fact in ("#### 看页面只用开发者中心", "`passport` 登录页", "不借用开发者已登录的会话", "访问被工具审批拒绝时不重试", "test:e2e:layout"):
+        assert fact in workspace, fact
+    assert "在开发者中心「演示预览」里看真实渲染，桌面与移动各过一遍" not in _read("reference/前端页面.md")
