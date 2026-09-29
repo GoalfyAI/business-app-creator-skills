@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20260928-6d22e8",
-  "package_version": "2.0.15",
+  "version": "v20260929-69711e",
+  "package_version": "2.0.16",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-29T12:03:25Z",
-  "update_reason": "交付审阅只提交所选动作，展示被拒原因；编排型 TPE 读长期数据集改由脚本用 shell 执行 ds-cli exec 读出后交给 FA [T-3995]",
+  "released_at": "2026-09-29T12:56:50Z",
+  "update_reason": "flow 按需选用、确认后不再逐项等开发者、确认过的界面优先于预置件；演示预览为空由 Agent 后台启动（T-3943）；交付入口与在线预览口径统一、禁止内置浏览器访问正式入口（T-4130）；长文本工具 _output 单 string 字段（T-4126）；交付审阅只提交所选动作（T-4171）；界面去内部标识、预览数据不进正式版（T-4139/T-3944）；编排 FA 职责边界（T-3941）；工作集改结构（T-4131）；编排读长期数据集（T-3995）；自给路线建行（T-3940）",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -41,7 +41,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "e5035134ef62ea0d0c0bc8c2aa0f53b5173348b7a491e3a7b2ebb9f50b1fb4b8",
+    "SKILL.md": "8908fe1322ea37433e433941ab47a996775bad5c2835b8cd53422af7da3627b0",
     "agents/openai.yaml": "b35e79b29a395164ee262626517065532fc10dfa0ca8f23ee4aa261d32655f75",
     "checklists/验收清单.md": "b237afc3ce39ae7f09ede11d883d9ca90c075f227723a1dcd4379759eee7d075",
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
