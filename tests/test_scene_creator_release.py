@@ -916,3 +916,22 @@ def test_long_text_tool_output_declares_single_string_field():
     script = _read("reference/编排脚本.md")
     for fact in ("`_output` 只声明一个必填 string 字段", "平台直接把原文包进去，不经模型", "`_output extraction` 45 秒"):
         assert fact in script, fact
+
+
+def test_no_waiting_on_developer_after_confirmation():
+    """确认页确认后一路做到在线预览可用；制作中的测试费用已在确认页同意，不再逐次等开发者。"""
+    skill = _read("SKILL.md")
+    assert "中间不设等开发者的环节" in skill
+    assert "先向开发者说明费用并取得同意" not in _read("flow/G4-能力制作.md")
+    confirm = _read("design/确认页.md")
+    assert "制作中的测试：冒泡与真跑约" in confirm
+    assert "部署预览前要先把场景包上线" not in confirm
+
+
+def test_confirmed_interface_beats_preset_look():
+    """开发者确认过的界面优先；预置件只是工具，保住的是行为不是外观。"""
+    pages = _read("reference/前端页面.md")
+    assert "### 预置件怎么用" in pages
+    assert "**不为了用预置件把确认过的界面改掉**" in pages
+    assert "**界面**（开发者给过截图、参考或说过样子时才写）" in _read("design/确认页.md")
+    assert "按确认过的界面写业务页" in _read("flow/G5-数据与应用.md")
