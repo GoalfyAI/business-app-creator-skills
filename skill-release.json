@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20260929-69711e",
-  "package_version": "2.0.16",
+  "version": "v20260930-0b74e7",
+  "package_version": "2.0.17",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-30T13:21:30Z",
-  "update_reason": "无人路线写库规则补过渡期口径，固定 SQL 的写入值走 params 占位符（T-3940）",
+  "released_at": "2026-09-30T14:57:56Z",
+  "update_reason": "无人写库路线自给与固定 SQL 参数化 [任务:T-3940]；小喇叭路由与待填表单跳转 [需求:D-3062][任务:T-3797]；自动化直接交付 [任务:T-4185]；自动化规则只读查询 [任务:T-4182]；上线后自测走正式入口 [任务:T-4181]；自动化校验认本人草稿 [任务:T-4180]；审计列带库级默认值 [任务:T-4177]；开发者中心分页名「在线试用」",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -41,7 +41,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "67094f82252809ac6eedd62786ed51080b6550656a6ba10823abdb9654c5092a",
+    "SKILL.md": "8c029aa0cfdb84ddde887e047fd90331377224945d35c1126bb30e3e7329793c",
     "agents/openai.yaml": "53f536bc0e7d54fb811ce78217b93f4cafcde48ca2a2be5ba23f04aff92b6f0b",
     "checklists/验收清单.md": "059223981bc531ba112f4ce492dcfe5f21c6a69c3ac8c12cd818866c633fe72d",
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
