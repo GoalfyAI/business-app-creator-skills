@@ -17,7 +17,7 @@
       "business-app",
       "mcp"
     ],
-    "defaultPrompt": "使用 $business-app-creator 帮我把这项业务做成智能应用：先给我一页确认页，确认后直接做，做完让我在「在线使用」里验收。"
+    "defaultPrompt": "使用 $business-app-creator 帮我把这项业务做成智能应用：先给我一页确认页，确认后直接做，做完让我在「在线试用」里验收。"
   },
   "mcpServers": "./.mcp.json",
   "keywords": [
