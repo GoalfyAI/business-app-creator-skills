@@ -4,7 +4,7 @@
   "version": "v20260929-69711e",
   "package_version": "2.0.16",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-09-30T04:16:27Z",
+  "released_at": "2026-09-30T06:32:11Z",
   "update_reason": "开发者中心分页名为在线试用；自动化验证新增 rules / runs 只读查看开发者本人规则与运行记录（T-4182）",
   "source_files": [
     "SKILL.md",
@@ -65,7 +65,7 @@
     "reference/用户反馈.md": "0e2a19f5e140b5bb8f97ae7e65042aa97d42c791902257ab6ce5d462b3d85d2a",
     "reference/编排脚本.md": "ff7746fe32e71c627c3cf1596551281fa31853786de694075969ee6a91a6b142",
     "reference/脚手架与预置件.md": "1708c3aa0bf3bdc4fcd579e5e87f3b5fc199ff45164866b567f01cce3b84141f",
-    "reference/自动化.md": "accf0dbc311d05256eb62e0853d67e1e5666dc2b9ec90664ec896f60b6e920a2",
+    "reference/自动化.md": "ea1499f2bb7fc2abb704853cbe1ee9b742c8d7377db05128f7f80e8b23760e3e",
     "reference/部署与版本.md": "23ead3d76ad009a0b128c22ee077e96b186471367c9267f36da79b44a1720ecf",
     "scripts/feedback_report.py": "7cfd21e480629f8f7443413281f14d9b8334998f53f348a54f5d939abcaa8013",
     "tasks/仅讨论.md": "4a36e0261fcf939ac3926596ac25dc2f453350150f2961c31fc0796a72eab20d",
