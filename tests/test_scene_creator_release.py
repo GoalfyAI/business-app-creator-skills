@@ -861,8 +861,10 @@ def test_retired_structure_directories_are_rejected_in_platform_copies(tmp_path:
 def test_delivery_separates_deploy_status_from_real_entry():
     """T-4130：entry_url 是开发者容器地址，交付只写部署状态与真实入口，不把它当用户入口。"""
     deploy = _read("reference/部署与版本.md")
-    for fact in ("### 部署状态与入口", "直接打开只会进入 mock 模式", "GoalfyMax → 智能应用 → 预览", "开发者中心右侧「在线试用」"):
+    # T-4181：上线后自测走正式入口（作者自己的应用库、原生定时任务），不再指向走开发工作集的「预览」。
+    for fact in ("### 部署状态与入口", "直接打开只会进入 mock 模式", "GoalfyMax → 我的资产 → 智能应用 → 打开", "开发者中心右侧「在线试用」"):
         assert fact in deploy, fact
+    assert "GoalfyMax → 智能应用 → 预览" not in deploy
     delivery = _read("flow/G7-上线交付.md")
     assert "消费者视角的 `entry_url`" not in delivery
     assert "| 应用 | 名称、上线版本、`entry_url`" not in delivery
