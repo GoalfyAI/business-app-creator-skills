@@ -272,7 +272,7 @@ def test_business_ui_identity_is_bound_before_g5_transition():
 
 def test_online_preview_is_the_developer_acceptance_entry():
     g6 = _read("flow/G6-预览验收.md")
-    assert "在线预览" in g6 and "deployed_scaffold_version" in g6
+    assert "「在线试用」" in g6 and "deployed_scaffold_version" in g6
     # 部署预览可挂本人场景包草稿，G6 不再单独上线场景包；定版应用时草稿随应用一起上线。 [任务:T-3976]
     assert 'finalize_asset_version_online(asset_type="scenario_pack"' not in g6
     assert "场景包不必先上线" in g6
@@ -297,7 +297,7 @@ def test_flows_are_chosen_by_agent_with_hard_rules_kept():
     skill = _read("SKILL.md")
     assert "做哪些由你按需求选" in skill
     assert "左栏" not in skill
-    for rule in ("开发者至少确认过一次要做什么", "上线前必须有开发者在在线预览里的确认", "跳过的保持 `not_started`"):
+    for rule in ("开发者至少确认过一次要做什么", "上线前必须有开发者在「在线试用」里的确认", "跳过的保持 `not_started`"):
         assert rule in skill, rule
 
 
@@ -861,8 +861,10 @@ def test_retired_structure_directories_are_rejected_in_platform_copies(tmp_path:
 def test_delivery_separates_deploy_status_from_real_entry():
     """T-4130：entry_url 是开发者容器地址，交付只写部署状态与真实入口，不把它当用户入口。"""
     deploy = _read("reference/部署与版本.md")
-    for fact in ("### 部署状态与入口", "直接打开只会进入 mock 模式", "GoalfyMax → 智能应用 → 预览", "开发者中心右侧「在线预览」"):
+    # T-4181：上线后自测走正式入口（作者自己的应用库、原生定时任务），不再指向走开发工作集的「预览」。
+    for fact in ("### 部署状态与入口", "直接打开只会进入 mock 模式", "GoalfyMax → 我的资产 → 智能应用 → 打开", "开发者中心右侧「在线试用」"):
         assert fact in deploy, fact
+    assert "GoalfyMax → 智能应用 → 预览" not in deploy
     delivery = _read("flow/G7-上线交付.md")
     assert "消费者视角的 `entry_url`" not in delivery
     assert "| 应用 | 名称、上线版本、`entry_url`" not in delivery
@@ -871,7 +873,7 @@ def test_delivery_separates_deploy_status_from_real_entry():
 
 
 def test_draft_resolve_is_not_platform_blocked():
-    """T-4130（并入 T-4062）：定版前 resolve 报只有草稿是正常结果，草稿验收走在线预览，不记平台阻塞。"""
+    """T-4130（并入 T-4062）：定版前 resolve 报只有草稿是正常结果，草稿验收走在线试用，不记平台阻塞。"""
     assert "`resolve` 只认上线版本" in _read("reference/部署与版本.md")
     g6 = _read("flow/G6-预览验收.md")
     assert "定版前 `resolve` 报「还没有上线版本（只有草稿）」" in g6
@@ -900,7 +902,7 @@ def test_stage_name_describes_concrete_business_step():
 
 
 def test_online_preview_needs_deployed_draft_not_finalize():
-    """在线预览只要草稿部署成功；需要上线的操作列在同一张表里，上线不是发布。"""
+    """在线试用只要草稿部署成功；需要上线的操作列在同一张表里，上线不是发布。"""
     deploy = _read("reference/部署与版本.md")
     assert "### 哪些用草稿就行，哪些要先上线" in deploy
     assert "不为打开它去 finalize" in deploy
@@ -919,7 +921,7 @@ def test_long_text_tool_output_declares_single_string_field():
 
 
 def test_no_waiting_on_developer_after_confirmation():
-    """确认页确认后一路做到在线预览可用；制作中的测试费用已在确认页同意，不再逐次等开发者。"""
+    """确认页确认后一路做到在线试用可用；制作中的测试费用已在确认页同意，不再逐次等开发者。"""
     skill = _read("SKILL.md")
     assert "中间不设等开发者的环节" in skill
     assert "先向开发者说明费用并取得同意" not in _read("flow/G4-能力制作.md")
@@ -955,3 +957,12 @@ def test_delivery_review_reply_only_action_key():
     assert "**交付审阅只提交所选动作**" in pages
     assert "`data.field_errors`" in pages
     assert "DELIVERY_REVIEW_REPLY_INVALID" in _read("reference/报错对照.md")
+
+
+def test_online_tab_named_zaixian_shiyong():
+    """开发者中心右栏分页名是「在线试用」，Skill 不再出现「在线预览」「在线使用」等叫法。"""
+    root = Path(__file__).resolve().parents[1] / "skills" / "business-app-creator"
+    for path in root.rglob("*"):
+        if path.suffix in (".md", ".yaml") and path.is_file():
+            text = path.read_text(encoding="utf-8")
+            assert "在线预览" not in text and "在线使用" not in text, path
