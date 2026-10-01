@@ -310,7 +310,7 @@ def test_empty_demo_preview_is_restarted_in_background():
 
 def test_data_writes_follow_row_ownership():
     data = _read("reference/数据模板.md")
-    for fact in ("数据集 FA 只更新已建行的 agent 列", "row_version=row_version+1", "`found=false`"):
+    for fact in ("路线只更新已建行的 agent 列", "row_version=row_version+1", "`found`"):
         assert fact in data, fact
 
 
@@ -939,16 +939,21 @@ def test_confirmed_interface_beats_preset_look():
     assert "按确认过的界面写业务页" in _read("flow/G5-数据与应用.md")
 
 
-def test_self_supply_route_matches_dataset_fa_contract():
-    """自给路线建行要按数据集 FA 的约定写 context_hint（FA 只在「自给建行」时允许 INSERT）。"""
+def test_route_reads_and_writes_app_db_through_the_dataset_tool():
+    """应用库读写走数据集工具：固定语句由脚本经 db() 执行，要判断的给业务 FA 挂工具只读，平台数据集 FA 只留给存量。"""
     template = _read("reference/数据模板.md")
     for fact in (
-        "`context_hint` 写明「自给建行」",
-        "业务键列与值、要填的身份列与值、本次 `run_id`",
-        "没写「自给建行」，数据集 FA 只按行 id 更新、不建行",
+        "GOALFYAI_TOOL_query_business_app_dataset",
+        "async def db(sql, mode=\"reader\", params=None",
+        "业务 FA 挂上这个工具自己查，只用 `mode=\"reader\"`",
+        "**禁止**让 FA 用 `mode=\"writer\"`",
+        "只为存量路线保留，新路线不用",
         "业务键在模板里必须有唯一约束",
     ):
         assert fact in template, fact
+    script = _read("reference/编排脚本.md")
+    assert "<写库 FA 的 mr_name>" not in script and "<读库 FA 的 mr_name>" not in script
+    assert "jsonb_to_recordset(:rows::jsonb)" in script
 
 
 def test_delivery_review_reply_only_action_key():
