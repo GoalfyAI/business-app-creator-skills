@@ -940,20 +940,34 @@ def test_confirmed_interface_beats_preset_look():
 
 
 def test_route_reads_and_writes_app_db_through_the_dataset_tool():
-    """应用库读写走数据集工具：固定语句由脚本经 db() 执行，要判断的给业务 FA 挂工具只读，平台数据集 FA 只留给存量。"""
+    """应用库读写走数据集工具：db() 唯一定义在《编排脚本》，读失败按空、写失败 blocked；业务 FA 建时挂工具只读；数据集 FA 只留存量。"""
+    script = _read("reference/编排脚本.md")
+    for fact in (
+        "### 读写应用库",
+        "async def db(sql, mode=\"reader\", params=None, why=\"读写应用库\"):",
+        "**禁止**改成 `**kwargs` 展开",
+        "冒泡碰不到应用库",
+        "`preload_toolset_ids` 里要有一个装了工具组「query_business_app_dataset」的工具集",
+        "jsonb_to_recordset(:rows::jsonb)",
+    ):
+        assert fact in script, fact
+    assert "<写库 FA 的 mr_name>" not in script and "<读库 FA 的 mr_name>" not in script
+    db_block = script[script.index("async def db("):script.index("```", script.index("async def db("))]
+    assert "**kwargs" not in db_block and "raise" not in db_block
     template = _read("reference/数据模板.md")
     for fact in (
         "GOALFYAI_TOOL_query_business_app_dataset",
-        "async def db(sql, mode=\"reader\", params=None",
-        "业务 FA 挂上这个工具自己查，只用 `mode=\"reader\"`",
+        'list_assets(asset_type="tool_group", keyword="query_business_app_dataset")',
+        "**禁止**退回「把素材都从入口传进来」",
         "**禁止**让 FA 用 `mode=\"writer\"`",
         "只为存量路线保留，新路线不用",
         "业务键在模板里必须有唯一约束",
     ):
         assert fact in template, fact
-    script = _read("reference/编排脚本.md")
-    assert "<写库 FA 的 mr_name>" not in script and "<读库 FA 的 mr_name>" not in script
-    assert "jsonb_to_recordset(:rows::jsonb)" in script
+    assert "async def db(" not in template
+    assert "现在就读 [../reference/数据模板.md]" in _read("flow/G3-方案编译.md")
+    g4 = _read("flow/G4-能力制作.md")
+    assert "建 FA 时就按" in g4 and "把工具组「query_business_app_dataset」也装进来" in g4
 
 
 def test_delivery_review_reply_only_action_key():
