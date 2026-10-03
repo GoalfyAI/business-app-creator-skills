@@ -968,6 +968,14 @@ def test_route_reads_and_writes_app_db_through_the_dataset_tool():
     assert "现在就读 [../reference/数据模板.md]" in _read("flow/G3-方案编译.md")
     g4 = _read("flow/G4-能力制作.md")
     assert "建 FA 时就按" in g4 and "把工具组「query_business_app_dataset」也装进来" in g4
+    assert "不管施工单怎么写" in g4 and "preview 前逐项自查" in g4 and "`materials_summary`、`snippets`、`records_json`" in g4
+    assert "禁止**改成入口传全部素材或规则预填" in _read("flow/G3-方案编译.md")
+    assert "json 是脚本环境内置的" in script and "**禁止**补 `import json`" in script
+    assert "冒泡照样算通过" in script and "冒泡照样算通过" in template
+    assert "### 读长期数据集（不是智能应用的应用库）" in script
+    assert "不能铺底，交给 FA 挂工具查" in template
+    scaffold = _read("reference/脚手架与预置件.md")
+    assert "**禁止**加 `--strip-components`" in scaffold and "tar -xzf <包> -C <应用目录>" in scaffold
 
 
 def test_delivery_review_reply_only_action_key():
