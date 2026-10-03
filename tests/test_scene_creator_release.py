@@ -954,6 +954,8 @@ def test_route_reads_and_writes_app_db_through_the_dataset_tool():
     assert "<写库 FA 的 mr_name>" not in script and "<读库 FA 的 mr_name>" not in script
     db_block = script[script.index("async def db("):script.index("```", script.index("async def db("))]
     assert "**kwargs" not in db_block and "raise" not in db_block
+    assert "except Exception as exc" in db_block and 'body.get("results") or []' in db_block
+    assert "not_a_business_app_project" in script and "冒泡无法验证真实读写" in script
     template = _read("reference/数据模板.md")
     for fact in (
         "GOALFYAI_TOOL_query_business_app_dataset",
@@ -968,7 +970,10 @@ def test_route_reads_and_writes_app_db_through_the_dataset_tool():
     assert "现在就读 [../reference/数据模板.md]" in _read("flow/G3-方案编译.md")
     g4 = _read("flow/G4-能力制作.md")
     assert "建 FA 时就按" in g4 and "把工具组「query_business_app_dataset」也装进来" in g4
-    assert "不管施工单怎么写" in g4 and "preview 前逐项自查" in g4 and "`materials_summary`、`snippets`、`records_json`" in g4
+    assert "不管施工单怎么写" in g4 and "任一项不满足先改，禁止 preview / create" in g4
+    for field in ("`materials_text`", "`records`", "`customer_profile`", "`query_db`", "`sql_literal`"):
+        assert field in g4, field
+    assert "**禁止**自写 `sql_literal()`" in template and "读出来交给 FA 总结、判断是允许的" in template
     assert "禁止**改成入口传全部素材或规则预填" in _read("flow/G3-方案编译.md")
     assert "json 是脚本环境内置的" in script and "**禁止**补 `import json`" in script
     assert "冒泡照样算通过" in script and "冒泡照样算通过" in template
