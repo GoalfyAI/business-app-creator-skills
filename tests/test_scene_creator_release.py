@@ -946,7 +946,7 @@ def test_route_reads_and_writes_app_db_through_the_dataset_tool():
         "### 读写应用库",
         "async def db(sql, mode=\"reader\", params=None, why=\"读写应用库\"):",
         "**禁止**改成 `**kwargs` 展开",
-        "冒泡碰不到应用库",
+        "读库不用包",
         "`preload_toolset_ids` 里要有一个装了工具组「query_business_app_dataset」的工具集",
         "jsonb_to_recordset(:rows::jsonb)",
     ):
@@ -955,7 +955,10 @@ def test_route_reads_and_writes_app_db_through_the_dataset_tool():
     db_block = script[script.index("async def db("):script.index("```", script.index("async def db("))]
     assert "**kwargs" not in db_block and "raise" not in db_block
     assert "except Exception as exc" in db_block and 'body.get("results") or []' in db_block
-    assert "not_a_business_app_project" in script and "冒泡无法验证真实读写" in script
+    assert "not_a_business_app_project" in script and "冒泡无法验证真实读写" not in script
+    assert "写库包在 `if not ctx.dry_run:` 里" in script and "**跳过不是删除**" in script
+    assert script.count("if not ctx.dry_run:  # 冒泡跳过写库，真跑照常写") == 2
+    assert "开发者本人的正式实例" in template and "写库语句包在 `if not ctx.dry_run:` 里" in _read("flow/G4-能力制作.md")
     template = _read("reference/数据模板.md")
     for fact in (
         "GOALFYAI_TOOL_query_business_app_dataset",
