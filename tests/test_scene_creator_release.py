@@ -958,7 +958,6 @@ def test_route_reads_and_writes_app_db_through_the_dataset_tool():
     assert "not_a_business_app_project" in script and "冒泡无法验证真实读写" not in script
     assert "写库包在 `if not ctx.dry_run:` 里" in script and "**跳过不是删除**" in script
     assert script.count("if not ctx.dry_run:  # 冒泡跳过写库，真跑照常写") == 2
-    assert "开发者本人的正式实例" in template and "写库语句包在 `if not ctx.dry_run:` 里" in _read("flow/G4-能力制作.md")
     template = _read("reference/数据模板.md")
     for fact in (
         "GOALFYAI_TOOL_query_business_app_dataset",
@@ -970,6 +969,7 @@ def test_route_reads_and_writes_app_db_through_the_dataset_tool():
     ):
         assert fact in template, fact
     assert "async def db(" not in template
+    assert "开发者本人的正式实例" in template and "写库语句包在 `if not ctx.dry_run:` 里" in _read("flow/G4-能力制作.md")
     assert "现在就读 [../reference/数据模板.md]" in _read("flow/G3-方案编译.md")
     g4 = _read("flow/G4-能力制作.md")
     assert "建 FA 时就按" in g4 and "把工具组「query_business_app_dataset」也装进来" in g4
@@ -979,7 +979,7 @@ def test_route_reads_and_writes_app_db_through_the_dataset_tool():
     assert "**禁止**自写 `sql_literal()`" in template and "读出来交给 FA 总结、判断是允许的" in template
     assert "禁止**改成入口传全部素材或规则预填" in _read("flow/G3-方案编译.md")
     assert "json 是脚本环境内置的" in script and "**禁止**补 `import json`" in script
-    assert "冒泡照样算通过" in script and "冒泡照样算通过" in template
+    assert "冒泡时跳过、不报「未入库」" in script and "冒泡时跳过（见" in template
     assert "### 读长期数据集（不是智能应用的应用库）" in script
     assert "不能铺底，交给 FA 挂工具查" in template
     scaffold = _read("reference/脚手架与预置件.md")
