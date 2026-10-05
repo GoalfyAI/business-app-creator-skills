@@ -1001,3 +1001,15 @@ def test_online_tab_named_zaixian_shiyong():
         if path.suffix in (".md", ".yaml") and path.is_file():
             text = path.read_text(encoding="utf-8")
             assert "在线预览" not in text and "在线使用" not in text, path
+
+
+def test_app_db_routes_prove_with_workspace_real_run():
+    """读写应用库的路线：G4 不为冒泡改脚本，G6 带 workspace 真跑并用 verify(project_id) 作证据，不为真跑 finalize。"""
+    g4 = _read("flow/G4-能力制作.md")
+    assert "运行证据留到 G6 部署后真跑、用 `verify(tpe_id, project_id)` 补" in g4
+    assert "**不要**为了让冒泡通过把读库包进 `dry_run`" in g4
+    g6 = _read("flow/G6-预览验收.md")
+    assert 'business_ui_data_space="workspace"' in g6
+    assert 'otpe_manage(action="verify", task_id, tpe_id, project_id)' in g6
+    assert "先 `business_ui_manage(action=\"finalize\")` 上线再跑" not in g6
+    assert "BUSINESS_UI_NOT_DEPLOYED" in g6 and "BUSINESS_UI_NOT_DEPLOYED" in _read("reference/报错对照.md")
