@@ -4,7 +4,7 @@
   "version": "v20260930-0b74e7",
   "package_version": "2.0.17",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-05T02:24:40Z",
+  "released_at": "2026-10-05T03:30:09Z",
   "update_reason": "带应用的真跑可读写开发工作集，verify 接受真跑作证据",
   "source_files": [
     "SKILL.md",
@@ -61,7 +61,7 @@
     "reference/开发者中心与工作区.md": "01d68bfca57bc7d8b6d3f2805fb02a98179902f8a70b5a3645fc2269c71a3087",
     "reference/报错对照.md": "ce7dc52a91b697b501ae96321d80759f11cfbae1c64ea4c0910023c7aaeef698",
     "reference/授权与充值.md": "a5f642a93d98c694e89ede7bd764bbe108ef1ada6389703c8d7c528fd7d235e8",
-    "reference/数据模板.md": "b05218e414316f8c9aca04dcfec559cbb415504f8e76c55730dfc704f8ad989d",
+    "reference/数据模板.md": "c9d08a9228fe7b733aafe10a06531ed2e53a95a2f025098001cc2e4a6ca74174",
     "reference/用户反馈.md": "0e2a19f5e140b5bb8f97ae7e65042aa97d42c791902257ab6ce5d462b3d85d2a",
     "reference/编排脚本.md": "f37098dfced2b5f3de6d5c694ecb199a69a2aabc6b4d002cebf9b1c5c963089d",
     "reference/脚手架与预置件.md": "23ed447e8f78d073b33a3f1364538a5b8b7f83bd723a5c4a7ab369c1e1377653",
