@@ -1,28 +1,8 @@
 # Business App Creator Skills
 
-把一段业务流程做成 GoalfyMax 上可以直接交给用户用的**智能应用**，并诊断、优化、迭代已有的智能应用。
+本仓库提供制作和维护 GoalfyMax 智能应用的统一 Skill `business-app-creator` 与 MCP 连接配置。
 
-这个仓库提供统一 Skill `business-app-creator` 和外部 MCP 连接配置（`business-app-creator-mcp`），让 Claude Code、Codex 这类编码 Agent 直接为你制作智能应用——从业务访谈、界面与数据设计、资产制作，到分层验收、上线发布和配套前后端应用的部署。
-
-**智能应用是这套工具的主要产物，场景包只是智能应用下面的一个资产。**
-
-## 智能应用是什么
-
-智能应用是 GoalfyMax 上交付给最终用户的一个完整产品：用户在里面发起一次生产、跟进进度、审阅交付、记载和查看自己的业务数据。它由三部分组成：
-
-| 组成 | 是什么 | 由哪个流程制作 |
-|---|---|---|
-| **场景包（编排形）** | 智能应用的能力资产：业务路线编排 + Workflow + FastAgent + 工具集 + 任务点，定义了每个入口背后怎么跑 | G4 能力制作 |
-| **智能应用数据集模板** | 每个用户各得一份的业务数据库结构（实体 / 情境 / 历史事件三类表） | G5 数据与应用 |
-| **前后端应用** | 用户看到的页面与专属后端：看板、数据管理、业务发起、项目页；预填、回流、编辑都在这里 | G5 数据与应用、G6 预览验收 |
-
-三个概念不要混：**有业务路线编排的场景包才能有智能应用**；一个智能应用恰好挂载一个场景包，入口表单、中途表单、交付字段、事件全部来自这个包的契约；对用户说"智能应用"，对工具和资产关系说"场景包"。没有配套前后端应用的场景包也能在聊天里被调用，那是文件交付型，不是本仓库的主线。
-
-## 职责与合同来源
-
-本 Skill 编排需求确认、能力选择、制作顺序、授权与验收，不定义另一套平台工具参数或工程命令。平台操作查 MCP 当前注册的 Schema 与共享诊断合同；工程实现查当前应用采用脚手架的 README、package.json、SDK 与接口合同。共同职责与主流程见 `goalfy-spec/main:goalfy-knowledge/product-spec/功能/智能应用开发与发布.md`。
-
-本地检查、部署成功、业务验收、定版上线和发布到目录分别报告；具体执行边界只在 [Skill 入口](skills/business-app-creator/SKILL.md) 和其参考文件维护。各客户端副本由发布脚本生成，不手工修改。
+制作入口、对象关系和合同来源见 [Skill](skills/business-app-creator/SKILL.md)，贡献与生成规则见 [CONTRIBUTING](CONTRIBUTING.md)。
 
 ## 支持的平台
 
@@ -35,47 +15,6 @@
 | **Codex** | 把 [安装指南](https://raw.githubusercontent.com/GoalfyAI/business-app-creator-skills/main/codex/AGENTS.md) 发给 Agent，它会自己装完并验证 | [Codex 快速上手](docs/codex-quickstart.md) | 可用 |
 | **Manus** | 在网页添加 MCP 连接器，上传 Skill 压缩包 | [Manus 快速上手](docs/manus-quickstart.md) | 可用，需手工操作 |
 | **其他 MCP 客户端** | 手工配置远端 MCP，加载通用 Skill | [通用集成指南](generic/README.md) | 可用，步骤因客户端而异 |
-
-**最省事的装法**：把上表「最快上手」里的安装指南链接直接发给你的 Agent，让它照着执行——
-它会自己添加插件市场、安装插件、引导你提供密钥、写入配置，并在重启后验证工具是否可用。
-你不需要自己敲任何命令。
-
-> Manus 目前只能在其网页界面手工配置，无法把安装说明丢给 Agent 自动完成。
-
-## 快速开始
-
-### Claude Code
-
-```bash
-claude plugin marketplace add GoalfyAI/business-app-creator-skills
-claude plugin install business-app-creator@business-app-creator
-```
-
-### Codex
-
-```bash
-codex plugin marketplace add GoalfyAI/business-app-creator-skills
-codex plugin add business-app-creator@business-app-creator
-```
-
-不想自己敲命令的话，把对应平台的安装指南链接发给 Agent 即可（见上表）。
-Manus 与其他客户端请看上表对应的指南。
-
-### 配置访问密钥
-
-在 GoalfyMax 的 [开发者工具 → API 密钥](https://goalfymax.goalfyai.cn/developer/api-keys) 创建个人密钥，然后写进客户端配置：
-
-```bash
-# Claude Code：~/.claude/settings.json 的 env
-"BUSINESS_APP_CREATOR_API_KEY": "<你的密钥>"
-
-# Codex：~/.codex/.env
-BUSINESS_APP_CREATOR_API_KEY=<你的密钥>
-```
-
-重启客户端，然后让 Agent 做一次只读验证，例如「列出我能访问的场景包」。
-
-各平台完整安装说明见 [`claude-code/`](claude-code/README.md) 与 [`codex/`](codex/README.md)。
 
 ## 怎么用
 
@@ -116,8 +55,7 @@ scripts/        构建与发布工具
 
 ## 更新
 
-Skill 版本写在 `SKILL.md` 的 description 里（`[skill-version:...]`），服务端据此判断你的
-Skill 是否需要升级；版本过期时写操作会被拒绝。插件版本另走语义化递增，供插件管理器判断有无新版。
+按对应客户端的更新指南执行：
 
 | 平台 | 更新方式 | 详细步骤 |
 |---|---|---|
@@ -125,12 +63,6 @@ Skill 是否需要升级；版本过期时写操作会被拒绝。插件版本�
 | **Codex** | `codex plugin marketplace upgrade business-app-creator` 后 remove + add | [codex/UPDATE.md](codex/UPDATE.md) |
 | **Manus** | 重新下载 zip，在 Skills 页删旧传新，然后开新对话 | [manus/UPDATE.md](manus/UPDATE.md) |
 | **其他 MCP 客户端** | 重新获取 `SKILL.md` 与各内容目录并重新载入 | [generic/UPDATE.md](generic/UPDATE.md) |
-
-被服务端提示版本过期时，按上表对应的 `UPDATE.md` 执行——那些文档是写给 Agent 直接照做的，
-包含读取新版本标记、当前会话内重试、以及何时该提示你重启。
-
-**升级后要重启**（Claude Code 可用 `/reload-plugins`）：版本闸门只校验版本串，读到新标记就能
-继续工作，但 Agent 上下文里加载的 Skill 内容仍是旧版，重启后才真正生效。
 
 ## 文档
 
