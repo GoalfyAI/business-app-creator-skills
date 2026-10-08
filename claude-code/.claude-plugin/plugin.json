@@ -1,7 +1,7 @@
 {
   "name": "business-app-creator",
   "displayName": "智能应用开发",
-  "version": "2.0.17",
+  "version": "2.0.18",
   "description": "制作和维护 GoalfyMax 智能应用（场景包 + 数据模板 + 前后端应用）时使用，涵盖新建、接续、修订、诊断、能力试用和方案讨论。负责需求确认、能力选择、制作与验收编排；平台操作引用 MCP 合同，工程实现引用脚手架合同。一次性业务执行或平台概念咨询不使用。",
   "author": {
     "name": "GoalfyAI"
