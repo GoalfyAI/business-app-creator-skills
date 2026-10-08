@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20260930-0b74e7",
-  "package_version": "2.0.17",
+  "version": "v20261008-6b7412",
+  "package_version": "2.0.18",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-08T10:01:33Z",
-  "update_reason": "读写应用库的路线在 G6 用 workspace 真跑并 verify(project_id) 作证据，不为真跑定版（T-4244）",
+  "released_at": "2026-10-08T13:27:40Z",
+  "update_reason": "每个应用必须有数据模板与至少一张业务表(T-4254)；历史运行入口替代项目列表(T-4198)；G3 客户验收条目与 G6 目标客户逐条验收(T-4197)；event_field 参数必须写中文 label(T-4060)；读写应用库路线 G6 用 workspace 真跑并 verify(project_id) 作证(T-4244/T-4243)；应用库读写改走数据集工具与 db()(T-3940)；文档去重与三方边界对齐",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -41,7 +41,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "ba2e308f7a6916241658c1e88633117a44a7b92161c2018c32eb10e09bc3d9b9",
+    "SKILL.md": "76a44b49eb619d78cbefc2a27bb6c530f209c01cd9cce437da51ced55b44c26c",
     "agents/openai.yaml": "53f536bc0e7d54fb811ce78217b93f4cafcde48ca2a2be5ba23f04aff92b6f0b",
     "checklists/验收清单.md": "c74c67db9b42d92dd2521cfbdd6d471ea171458faf0e2847fb8873ebd49af009",
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
