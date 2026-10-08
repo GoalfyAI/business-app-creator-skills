@@ -862,8 +862,9 @@ def test_delivery_separates_deploy_status_from_real_entry():
     """T-4130：entry_url 是开发者容器地址，交付只写部署状态与真实入口，不把它当用户入口。"""
     deploy = _read("reference/部署与版本.md")
     # T-4181：上线后自测走正式入口（作者自己的应用库、原生定时任务），不再指向走开发工作集的「预览」。
-    for fact in ("### 部署状态与入口", "直接打开只会进入 mock 模式", "GoalfyMax → 我的资产 → 智能应用 → 打开", "开发者中心右侧「在线试用」"):
+    for fact in ("### 部署状态与入口", "生产构建直开返回 `HOST_REQUIRED`", "只有本地开发构建直开才进入 Mock", "GoalfyMax → 我的资产 → 智能应用 → 打开", "开发者中心右侧「在线试用」"):
         assert fact in deploy, fact
+    assert "直接打开只会进入 mock 模式" not in deploy
     assert "GoalfyMax → 智能应用 → 预览" not in deploy
     delivery = _read("flow/G7-上线交付.md")
     assert "消费者视角的 `entry_url`" not in delivery
@@ -1014,3 +1015,9 @@ def test_app_db_routes_prove_with_workspace_real_run():
     assert "先 `business_ui_manage(action=\"finalize\")` 上线再跑" not in g6
     assert "不要为真跑去 finalize" in g6 and "不能用在线试用人工验收、冒泡或结单门豁免代替" in g6
     assert "BUSINESS_UI_NOT_DEPLOYED" in g6 and "BUSINESS_UI_NOT_DEPLOYED" in _read("reference/报错对照.md")
+    # 出口要接上 G4「passed 由 G6 真跑补上」；残留的「核对上线版本 / 先定版自测」会把 Agent 引去定版
+    assert "每条 TPE 最近一次 `verify(tpe_id, project_id)` 为 `passed`" in g6
+    assert "按第 3 步核对上线版本" not in g6
+    deploy = _read("reference/部署与版本.md")
+    assert "按 G6 第 3 步先定版自测" not in deploy and "首版先 finalize" not in deploy
+    assert "读写正式实例的真跑和 `run_once` 要先定版" in deploy
