@@ -150,6 +150,44 @@ def _read(relative: str) -> str:
     return (SKILL_ROOT / relative).read_text(encoding="utf-8")
 
 
+def _assert_fa_orchestration_guardrails(skill_root: Path) -> None:
+    script = (skill_root / "reference/编排脚本.md").read_text(encoding="utf-8")
+    for fact in (
+        "控制面最小合同",
+        "顶层字段不超过 8 个",
+        "对象嵌套不超过 2 层",
+        "把内容改成稳定载体引用",
+        "Schema 只校验形状，不能证明内容真实",
+        "事实区与推断区",
+        "连续两轮出现时，停止加字段",
+    ):
+        assert fact in script, fact
+    # 控制面收窄不能让用户可见内容只落文件：短内容照常返回，中间文件放 process_dir。 [任务:T-3941]
+    assert "`ctx.process_dir` 文件等稳定载体" in script
+    assert "给用户看的列表、正文、结论仍以业务字段出现" in script
+    assert '"findings": result["findings"]' in script
+    assert '"draft_body": draft["draft_body"]' in script
+    # 模板二的 blocked 出口会发 stage_failed，契约说明不能让它删掉这条声明；partial 要把 note 带给用户。 [任务:T-3941]
+    assert 'event_key="diagnosis_failed"' in script
+    assert "模板二、三用到了 `stage_failed`，用模板一时删掉第三条契约" in script
+    assert '"status": result["status"], "note": result["note"]' in script
+    for exit_contract in (
+        "`completed`（全部做完、数据真实）",
+        "`partial`（做了一部分，未做的不补不编）",
+        "`blocked`（一条没做成，数据字段留空）",
+    ):
+        assert exit_contract in script, exit_contract
+
+    platform = (skill_root / "reference/平台对象速查.md").read_text(encoding="utf-8")
+    assert "一个 FA 只承担一个语义责任" in platform
+    assert "编排脚本只做确定性准备、分发、汇合和固定收口" in platform
+    assert "编排脚本.md#fa-与脚本的职责边界" in platform
+
+    g4 = (skill_root / "flow/G4-能力制作.md").read_text(encoding="utf-8")
+    assert "内容走稳定载体引用" in g4
+    assert "同类错误连续两轮就停止扩 Schema" in g4
+
+
 def test_single_skill_follows_the_lite_framework():
     """lite 并入后只剩一个 Skill：入口路由、七段主流程、任务入口、沟通模板与按需参考。 [任务:T-3724]"""
     for directory in release_module.SKILL_CONTENT_MD_DIRS:
@@ -189,6 +227,41 @@ def test_bubble_verify_and_full_run_boundaries_are_documented():
     assert "`partial`" in script and "`blocked`" in script and "`recoverable`" in script
 
 
+def test_fa_orchestration_guardrails_are_documented():
+    """内容型 FA 必须保持职责边界、最小控制面和重复错误止损。"""
+    _assert_fa_orchestration_guardrails(SKILL_ROOT)
+
+
+@pytest.mark.parametrize(
+    ("relative", "old", "new"),
+    [
+        ("reference/编排脚本.md", "顶层字段不超过 8 个", "顶层字段按需增加"),
+        ("reference/编排脚本.md", "对象嵌套不超过 2 层", "对象嵌套按需增加"),
+        ("reference/编排脚本.md", "把内容改成稳定载体引用", "把内容内联进控制面"),
+        ("reference/编排脚本.md", "Schema 只校验形状，不能证明内容真实", "Schema 同时保证内容真实"),
+        ("reference/编排脚本.md", "事实区与推断区", "统一内容区"),
+        ("reference/编排脚本.md", "连续两轮出现时，停止加字段", "连续出现时继续加字段"),
+        ("reference/编排脚本.md", "`partial`（做了一部分，未做的不补不编）", "`completed`（全部做完）"),
+        ("reference/编排脚本.md", "`blocked`（一条没做成，数据字段留空）", "`completed`（全部做完）"),
+        ("reference/平台对象速查.md", "一个 FA 只承担一个语义责任", "一个 FA 可承担多个语义责任"),
+        ("flow/G4-能力制作.md", "同类错误连续两轮就停止扩 Schema", "同类错误后继续扩 Schema"),
+        ("reference/编排脚本.md", '"findings": result["findings"]', '"report_path": result["report_path"]'),
+        ("reference/编排脚本.md", "模板二、三用到了 `stage_failed`，用模板一时删掉第三条契约", "模板三里用到了 `stage_failed`，用模板一、二时删掉第三条契约"),
+        ("reference/编排脚本.md", '"status": result["status"], "note": result["note"]', '"status": result["status"]'),
+    ],
+)
+def test_fa_orchestration_guardrail_regressions_are_rejected(tmp_path, relative, old, new):
+    """精确撤掉任一门禁都必须让聚焦合同失败。"""
+    skill_root = _copy_repo(tmp_path)
+    target = skill_root / relative
+    text = target.read_text(encoding="utf-8")
+    assert old in text
+    target.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+    with pytest.raises(AssertionError):
+        _assert_fa_orchestration_guardrails(skill_root)
+
+
 def test_business_ui_identity_is_bound_before_g5_transition():
     g5 = _read("flow/G5-数据与应用.md")
     assert "npm run scaffold:bind -- --business-ui-id" in g5
@@ -216,7 +289,23 @@ def test_task_closing_gate_and_waiver_are_documented():
 def test_stage_names_follow_workspace_not_skill():
     """旧应用的阶段名可能是旧名：Skill 只按 G 键更新状态，不改名。"""
     assert "只改状态，不改名" in _read("SKILL.md")
-    assert "旧应用的七段可能是旧名" in _read("reference/开发者中心与工作区.md")
+    assert "旧应用的七项可能是旧名" in _read("reference/开发者中心与工作区.md")
+
+
+def test_flows_are_chosen_by_agent_with_hard_rules_kept():
+    """flow 按需选用，但开发者确认、上线前预览验收两条不能跳过。"""
+    skill = _read("SKILL.md")
+    assert "做哪些由你按需求选" in skill
+    assert "左栏" not in skill
+    for rule in ("开发者至少确认过一次要做什么", "上线前必须有开发者在在线预览里的确认", "跳过的保持 `not_started`"):
+        assert rule in skill, rule
+
+
+def test_empty_demo_preview_is_restarted_in_background():
+    """T-3943：演示预览为空时由 Agent 在应用根用 run-dev 后台命令起本地服务。"""
+    workspace = _read("reference/开发者中心与工作区.md")
+    for fact in ("#### 演示预览为空", "npm run dev:status", "npm run dev:restart", "不要让开发者自己去启动"):
+        assert fact in workspace, fact
 
 
 def test_data_writes_follow_row_ownership():
@@ -767,3 +856,102 @@ def test_retired_structure_directories_are_rejected_in_platform_copies(tmp_path:
     (leftover / "G1-业务目标与范围.md").write_text("old\n", encoding="utf-8")
     with pytest.raises(release_module.ReleaseError, match="旧结构目录"):
         release_module.check_release(copied)
+
+
+def test_delivery_separates_deploy_status_from_real_entry():
+    """T-4130：entry_url 是开发者容器地址，交付只写部署状态与真实入口，不把它当用户入口。"""
+    deploy = _read("reference/部署与版本.md")
+    for fact in ("### 部署状态与入口", "直接打开只会进入 mock 模式", "GoalfyMax → 智能应用 → 预览", "开发者中心右侧「在线预览」"):
+        assert fact in deploy, fact
+    delivery = _read("flow/G7-上线交付.md")
+    assert "消费者视角的 `entry_url`" not in delivery
+    assert "| 应用 | 名称、上线版本、`entry_url`" not in delivery
+    assert "不写容器地址" in delivery
+    assert "读预览入口" not in _read("flow/G6-预览验收.md")
+
+
+def test_draft_resolve_is_not_platform_blocked():
+    """T-4130（并入 T-4062）：定版前 resolve 报只有草稿是正常结果，草稿验收走在线预览，不记平台阻塞。"""
+    assert "`resolve` 只认上线版本" in _read("reference/部署与版本.md")
+    g6 = _read("flow/G6-预览验收.md")
+    assert "定版前 `resolve` 报「还没有上线版本（只有草稿）」" in g6
+    assert "不记 platform_blocked，也不为拿入口去 finalize" in g6
+
+
+def test_page_checks_go_through_developer_center_not_agent_browser():
+    """Agent 不用内置浏览器访问正式入口或登录页；看页面走开发者中心，审批拒绝不绕过。"""
+    assert "**禁止**用 Codex 内置浏览器" in _read("SKILL.md")
+    workspace = _read("reference/开发者中心与工作区.md")
+    for fact in ("#### 看页面只用开发者中心", "`passport` 登录页", "不借用开发者已登录的会话", "访问被工具审批拒绝时不重试", "test:e2e:layout"):
+        assert fact in workspace, fact
+    assert "在开发者中心「演示预览」里看真实渲染，桌面与移动各过一遍" not in _read("reference/前端页面.md")
+
+
+def test_stage_name_describes_concrete_business_step():
+    """执行状态条显示 stage_name：写具体动作，多个业务步骤各发一次 stage_started。"""
+    script = _read("reference/编排脚本.md")
+    for fact in (
+        "`stage_name` 就是使用者在应用顶部执行状态条上看到的那句话",
+        "**禁止**「正在处理本次任务」「正在执行」这类看不出在做什么的泛词",
+        "每个步骤开始前各发一次 `stage_started`，各用自己的 `event_key`、`stage_key` 并各自声明契约",
+        "**禁止**在每个 `tool()` 后机械发事件",
+    ):
+        assert fact in script, fact
+
+
+def test_online_preview_needs_deployed_draft_not_finalize():
+    """在线预览只要草稿部署成功；需要上线的操作列在同一张表里，上线不是发布。"""
+    deploy = _read("reference/部署与版本.md")
+    assert "### 哪些用草稿就行，哪些要先上线" in deploy
+    assert "不为打开它去 finalize" in deploy
+    for path in ("reference/开发者中心与工作区.md", "flow/G6-预览验收.md"):
+        text = _read(path)
+        assert "`PREVIEW_NOT_READY` 记为阻塞" not in text, path
+        assert "记为阻塞处理" not in text, path
+    assert "定稿并对最终用户可运行" not in _read("reference/平台对象速查.md")
+
+
+def test_long_text_tool_output_declares_single_string_field():
+    """FB-147：返回整段文本的工具 `_output` 只声明一个 string 字段，平台直接包装原文，不经模型抽取。"""
+    script = _read("reference/编排脚本.md")
+    for fact in ("`_output` 只声明一个必填 string 字段", "平台直接把原文包进去，不经模型", "`_output extraction` 45 秒"):
+        assert fact in script, fact
+
+
+def test_no_waiting_on_developer_after_confirmation():
+    """确认页确认后一路做到在线预览可用；制作中的测试费用已在确认页同意，不再逐次等开发者。"""
+    skill = _read("SKILL.md")
+    assert "中间不设等开发者的环节" in skill
+    assert "先向开发者说明费用并取得同意" not in _read("flow/G4-能力制作.md")
+    confirm = _read("design/确认页.md")
+    assert "制作中的测试：冒泡与真跑约" in confirm
+    assert "部署预览前要先把场景包上线" not in confirm
+
+
+def test_confirmed_interface_beats_preset_look():
+    """开发者确认过的界面优先；预置件只是工具，保住的是行为不是外观。"""
+    pages = _read("reference/前端页面.md")
+    assert "### 预置件怎么用" in pages
+    assert "**不为了用预置件把确认过的界面改掉**" in pages
+    assert "**界面**（开发者给过截图、参考或说过样子时才写）" in _read("design/确认页.md")
+    assert "按确认过的界面写业务页" in _read("flow/G5-数据与应用.md")
+
+
+def test_self_supply_route_matches_dataset_fa_contract():
+    """自给路线建行要按数据集 FA 的约定写 context_hint（FA 只在「自给建行」时允许 INSERT）。"""
+    template = _read("reference/数据模板.md")
+    for fact in (
+        "`context_hint` 写明「自给建行」",
+        "业务键列与值、要填的身份列与值、本次 `run_id`",
+        "没写「自给建行」，数据集 FA 只按行 id 更新、不建行",
+        "业务键在模板里必须有唯一约束",
+    ):
+        assert fact in template, fact
+
+
+def test_delivery_review_reply_only_action_key():
+    """线上 50829：审阅应答夹带商家数据被拒后应用没展示；Skill 写明只提交 action_key、展示被拒原因。"""
+    pages = _read("reference/前端页面.md")
+    assert "**交付审阅只提交所选动作**" in pages
+    assert "`data.field_errors`" in pages
+    assert "DELIVERY_REVIEW_REPLY_INVALID" in _read("reference/报错对照.md")
