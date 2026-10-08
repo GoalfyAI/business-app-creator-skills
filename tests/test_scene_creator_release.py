@@ -310,7 +310,7 @@ def test_empty_demo_preview_is_restarted_in_background():
 
 def test_data_writes_follow_row_ownership():
     data = _read("reference/数据模板.md")
-    for fact in ("数据集 FA 只更新已建行的 agent 列", "row_version=row_version+1", "`found=false`"):
+    for fact in ("路线只更新已建行的 agent 列", "row_version=row_version+1", "`found`"):
         assert fact in data, fact
 
 
@@ -940,16 +940,51 @@ def test_confirmed_interface_beats_preset_look():
     assert "按确认过的界面写业务页" in _read("flow/G5-数据与应用.md")
 
 
-def test_self_supply_route_matches_dataset_fa_contract():
-    """自给路线建行要按数据集 FA 的约定写 context_hint（FA 只在「自给建行」时允许 INSERT）。"""
+def test_route_reads_and_writes_app_db_through_the_dataset_tool():
+    """应用库读写走数据集工具：db() 唯一定义在《编排脚本》，读失败按空、写失败 blocked；业务 FA 建时挂工具只读；数据集 FA 只留存量。"""
+    script = _read("reference/编排脚本.md")
+    for fact in (
+        "### 读写应用库",
+        "async def db(sql, mode=\"reader\", params=None, why=\"读写应用库\"):",
+        "**禁止**改成 `**kwargs` 展开",
+        "读库不用包",
+        "`preload_toolset_ids` 里要有一个装了工具组「query_business_app_dataset」的工具集",
+        "jsonb_to_recordset(:rows::jsonb)",
+    ):
+        assert fact in script, fact
+    assert "<写库 FA 的 mr_name>" not in script and "<读库 FA 的 mr_name>" not in script
+    db_block = script[script.index("async def db("):script.index("```", script.index("async def db("))]
+    assert "**kwargs" not in db_block and "raise" not in db_block
+    assert "except Exception as exc" in db_block and 'body.get("results") or []' in db_block
+    assert "not_a_business_app_project" in script and "冒泡无法验证真实读写" not in script
+    assert "写库包在 `if not ctx.dry_run:` 里" in script and "**跳过不是删除**" in script
+    assert script.count("if not ctx.dry_run:  # 冒泡跳过写库，真跑照常写") == 2
     template = _read("reference/数据模板.md")
     for fact in (
-        "`context_hint` 写明「自给建行」",
-        "业务键列与值、要填的身份列与值、本次 `run_id`",
-        "没写「自给建行」，数据集 FA 只按行 id 更新、不建行",
+        "GOALFYAI_TOOL_query_business_app_dataset",
+        'list_assets(asset_type="tool_group", keyword="query_business_app_dataset")',
+        "**禁止**退回「把素材都从入口传进来」",
+        "**禁止**让 FA 用 `mode=\"writer\"`",
+        "只为存量路线保留，新路线不用",
         "业务键在模板里必须有唯一约束",
     ):
         assert fact in template, fact
+    assert "async def db(" not in template
+    assert "开发者本人的正式实例" in template and "写库语句包在 `if not ctx.dry_run:` 里" in _read("flow/G4-能力制作.md")
+    assert "现在就读 [../reference/数据模板.md]" in _read("flow/G3-方案编译.md")
+    g4 = _read("flow/G4-能力制作.md")
+    assert "建 FA 时就按" in g4 and "把工具组「query_business_app_dataset」也装进来" in g4
+    assert "不管施工单怎么写" in g4 and "任一项不满足先改，禁止 preview / create" in g4
+    for field in ("`materials_text`", "`records`", "`customer_profile`", "`query_db`", "`sql_literal`"):
+        assert field in g4, field
+    assert "**禁止**自写 `sql_literal()`" in template and "读出来交给 FA 总结、判断是允许的" in template
+    assert "禁止**改成入口传全部素材或规则预填" in _read("flow/G3-方案编译.md")
+    assert "json 是脚本环境内置的" in script and "**禁止**补 `import json`" in script
+    assert "冒泡时跳过、不报「未入库」" in script and "冒泡时跳过（见" in template
+    assert "### 读长期数据集（不是智能应用的应用库）" in script
+    assert "不能铺底，交给 FA 挂工具查" in template
+    scaffold = _read("reference/脚手架与预置件.md")
+    assert "**禁止**加 `--strip-components`" in scaffold and "tar -xzf <包> -C <应用目录>" in scaffold
 
 
 def test_delivery_review_reply_only_action_key():
@@ -967,3 +1002,22 @@ def test_online_tab_named_zaixian_shiyong():
         if path.suffix in (".md", ".yaml") and path.is_file():
             text = path.read_text(encoding="utf-8")
             assert "在线预览" not in text and "在线使用" not in text, path
+
+
+def test_app_db_routes_prove_with_workspace_real_run():
+    """读写应用库的路线：G4 不为冒泡改脚本，G6 带 workspace 真跑并用 verify(project_id) 作证据，不为真跑 finalize。"""
+    g4 = _read("flow/G4-能力制作.md")
+    assert "G4 不要求路线冒泡作证据" in g4 and "`verify(tpe_id, project_id)` 补" in g4
+    assert "**不要**为了让冒泡通过把读库包进 `dry_run`" in g4 and "`fallback_*`" in g4
+    g6 = _read("flow/G6-预览验收.md")
+    assert 'business_ui_data_space="workspace"' in g6
+    assert 'otpe_manage(action="verify", task_id, tpe_id, project_id)' in g6
+    assert "先 `business_ui_manage(action=\"finalize\")` 上线再跑" not in g6
+    assert "不要为真跑去 finalize" in g6 and "不能用在线试用人工验收、冒泡或结单门豁免代替" in g6
+    assert "BUSINESS_UI_NOT_DEPLOYED" in g6 and "BUSINESS_UI_NOT_DEPLOYED" in _read("reference/报错对照.md")
+    # 出口要接上 G4「passed 由 G6 真跑补上」；残留的「核对上线版本 / 先定版自测」会把 Agent 引去定版
+    assert "每条 TPE 最近一次 `verify(tpe_id, project_id)` 为 `passed`" in g6
+    assert "按第 3 步核对上线版本" not in g6
+    deploy = _read("reference/部署与版本.md")
+    assert "按 G6 第 3 步先定版自测" not in deploy and "首版先 finalize" not in deploy
+    assert "读写正式实例的真跑和 `run_once` 要先定版" in deploy
