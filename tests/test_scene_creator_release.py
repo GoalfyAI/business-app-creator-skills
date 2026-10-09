@@ -1021,3 +1021,16 @@ def test_app_db_routes_prove_with_workspace_real_run():
     deploy = _read("reference/部署与版本.md")
     assert "按 G6 第 3 步先定版自测" not in deploy and "首版先 finalize" not in deploy
     assert "读写正式实例的真跑和 `run_once` 要先定版" in deploy
+
+
+def test_dev_feedback_reports_by_blocking():
+    """平台问题按阻塞程度报：走不下去立即提并带两项标注，已绕过与诉求交付时汇总，应用自身问题不提。"""
+    skill = _read("SKILL.md")
+    assert "平台问题按阻塞程度报" in skill and "已经绕过去的也照提" not in skill
+    assert 'blocking="blocked"' in skill and "`attribution`" in skill
+    assert "交付或本次会话结束时汇总成一条" in skill and "先 `query_dev_feedback` 查本人未关闭的反馈" in skill
+    assert "应用自己的脚本、页面、数据格式、提示词问题自己改，不提交" in skill
+    errors = _read("reference/报错对照.md")
+    assert "`platform_defect`" in errors and "`skill_mismatch`" in errors and "`environment`" in errors
+    assert "汇总成一条 `submit_dev_feedback`" in _read("flow/G7-上线交付.md")
+    assert "绕过后继续" not in _read("flow/G6-预览验收.md")
