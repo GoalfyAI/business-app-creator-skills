@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20260930-0b74e7",
-  "package_version": "2.0.17",
+  "version": "v20261008-e7694b",
+  "package_version": "2.0.19",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-08T12:37:54Z",
-  "update_reason": "平台问题按阻塞程度报：阻塞立即提并标注归属，已绕过与诉求交付时汇总，应用自身问题不提",
+  "released_at": "2026-10-09T05:54:32Z",
+  "update_reason": "平台问题按阻塞程度报：阻塞立即提并标注归属，已绕过与诉求交付时汇总，应用自身问题不提（T-4296）",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -41,7 +41,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "df852487b8a5c0884c55ce3a6f84af8523ab9acb1319289049ec1947602b658a",
+    "SKILL.md": "f8350b9fc4ae5e06fb527e82bae61bf750acb62a2df171b27cf2801a905edc90",
     "agents/openai.yaml": "53f536bc0e7d54fb811ce78217b93f4cafcde48ca2a2be5ba23f04aff92b6f0b",
     "checklists/验收清单.md": "c74c67db9b42d92dd2521cfbdd6d471ea171458faf0e2847fb8873ebd49af009",
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
@@ -52,9 +52,9 @@
     "flow/G3-方案编译.md": "da0b70fa6eae1233cbc1c04116ff89534c33a76f83c1214a9f94049561978b74",
     "flow/G4-能力制作.md": "86e4b2fa430d831ca3b04acf27d75acd1e1375fc3eda7cb59be2f1783e21c58d",
     "flow/G5-数据与应用.md": "350fc66c5af8de57876f9d7b1e57970196152bd671dfe1f425175bc07e5751e7",
-    "flow/G6-预览验收.md": "862dc1c7f00117f2ff7a58854fdaf76607c1a846cee3087660da56a0807cf16a",
+    "flow/G6-预览验收.md": "e6c27dbb3d7b4d2a60506eb4b2238b74ff09271d41046374b7f8de8b10fcfbc6",
     "flow/G7-上线交付.md": "febf6e88a13ad66db64679496c289bef75f25c88edcb44ed1cb0cce0765c7e09",
-    "reference/业务路线.md": "175aae91d2d48acdab8abf269c9d77e89ed23e53e8126d81040899bcfe7f6be7",
+    "reference/业务路线.md": "96874f08938d9bd6e8054396790728b9b1fba4a3f32353490ef53e73acbf3c74",
     "reference/依赖与MCP接入.md": "5e897a4d8517873f76da8264d811d2f43262a278fa60679989fe77a10189cd55",
     "reference/前端页面.md": "c342caf82ecb51e6feaaa6e6f63153c56ca510f204cba0f31dfaf7c7dc644474",
     "reference/平台对象速查.md": "587f988f2e58a81cdc4ea34599ae96bea39ad538be040fb743a768ce87a079fb",
