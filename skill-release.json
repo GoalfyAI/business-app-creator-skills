@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20261008-e7694b",
-  "package_version": "2.0.19",
+  "version": "v20261009-d904bb",
+  "package_version": "2.0.20",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-09T09:48:16Z",
-  "update_reason": "编排脚本：给 FA 读的过程文件按行或分片、单片控制在读取上限内，确定性统计交脚本（T-4263/FB-197）",
+  "released_at": "2026-10-09T12:51:53Z",
+  "update_reason": "开发者反馈按阻塞程度报、已绕过与诉求交付时汇总 [D-3373]；只含 FA 的工具集反读配置后即可上线，首次运行测试放到路线冒泡 [D-3392/FK-236]；给 FA 读的过程文件按行或分片 [T-4263]；明确打包产物并统一智能应用示例 [D-3331]",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -41,7 +41,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "f8350b9fc4ae5e06fb527e82bae61bf750acb62a2df171b27cf2801a905edc90",
+    "SKILL.md": "ffe3d0edcddb39961d78e216e3ee0026b97a20066466a6794cbf682b4246caba",
     "agents/openai.yaml": "53f536bc0e7d54fb811ce78217b93f4cafcde48ca2a2be5ba23f04aff92b6f0b",
     "checklists/验收清单.md": "c74c67db9b42d92dd2521cfbdd6d471ea171458faf0e2847fb8873ebd49af009",
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
