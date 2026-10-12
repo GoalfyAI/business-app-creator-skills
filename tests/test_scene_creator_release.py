@@ -1041,3 +1041,10 @@ def test_dev_feedback_reports_by_blocking():
     assert "`platform_defect`" in errors and "`skill_mismatch`" in errors and "`environment`" in errors
     assert "汇总成一条 `submit_dev_feedback`" in _read("flow/G7-上线交付.md")
     assert "绕过后继续" not in _read("flow/G6-预览验收.md")
+
+
+def test_shell_success_is_judged_by_exit_code_of_whole_pipeline():
+    """T-4417：shell 成败只看退出码，管道前段失败要用 && 或子 shell 内 pipefail 显式表达。"""
+    script = _read("reference/编排脚本.md")
+    for fact in ("### shell 步骤的成败", "退出码只看**最后一条命令**", "( set -o pipefail;", "|| true"):
+        assert fact in script, fact
