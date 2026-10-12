@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20261012-dd2b3c",
-  "package_version": "2.0.23",
+  "version": "v20261012-9277bf",
+  "package_version": "2.0.24",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-12T13:05:29Z",
-  "update_reason": "db() 模板判断外层信封不再用 \"output\" in body [反馈:FK-262]",
+  "released_at": "2026-10-12T13:08:10Z",
+  "update_reason": "演示预览按工作台完成版口径与右栏标题说明 [FK-264/D-3475]；db() 模板外层信封判断不再用 \"output\" in body [FK-262/D-3467]；shell 成败只看退出码，管道前段失败用 && 或子 shell 内 pipefail [T-4417/D-3470]",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -41,7 +41,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "6db86d4b0a58ebadbb097414b2676f98f2a556e36d0374cbc7627f9d25ae7677",
+    "SKILL.md": "62abebfbee2928fa79d82fd6df388c3d02e15667e2febee272f62d551e43e6be",
     "agents/openai.yaml": "53f536bc0e7d54fb811ce78217b93f4cafcde48ca2a2be5ba23f04aff92b6f0b",
     "checklists/验收清单.md": "c74c67db9b42d92dd2521cfbdd6d471ea171458faf0e2847fb8873ebd49af009",
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
