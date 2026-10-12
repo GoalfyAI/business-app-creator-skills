@@ -305,10 +305,14 @@ def test_empty_demo_preview_follows_completed_copy_gate():
     """FK-264：演示预览只展示完成版固定副本，不需要部署；为空按原因处理，不用 npm run dev 冒充。"""
     workspace = _read("reference/开发者中心与工作区.md")
     for fact in ("#### 演示预览为空", "完成版固定副本", "不需要部署", "completedPreview.argv",
-                 "不要**为了提前打开演示预览去生成完成版", "completed-preview.json"):
+                 "不要**为了提前打开演示预览去生成完成版", "completed-preview.json",
+                 "「应用尚未完成」", "「预览未启动」", "「暂时无法确认应用完成状态」", "不启动服务",
+                 "「重新启动」", "「重新检查」", "内容已保存，切换到完成版"):
         assert fact in workspace, fact
     assert "工作台读应用目录 `.workbench/dev-host.json`" not in workspace
+    assert "成功后工作台自动显示" not in workspace
     assert "完成版命令" in _read("flow/G6-预览验收.md")
+    assert "在开发者中心的「演示预览」里看" not in _read("flow/G5-数据与应用.md")
 
 
 def test_data_writes_follow_row_ownership():
