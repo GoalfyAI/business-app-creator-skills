@@ -1,10 +1,10 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20261012-a506f8",
-  "package_version": "2.0.22",
+  "version": "v20261012-dd2b3c",
+  "package_version": "2.0.23",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-12T10:04:50Z",
+  "released_at": "2026-10-12T10:09:01Z",
   "update_reason": "G6 打包只走 verify:release、ship 的 file_name 只写文件名；FA 只收过程文件路径、按 record_id 逐条打标签，计数由脚本统计",
   "source_files": [
     "SKILL.md",
@@ -41,7 +41,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "b3d1965eb3913e00a685d0e517aa2fc30145610d4bf89ae97676370871d0086d",
+    "SKILL.md": "6db86d4b0a58ebadbb097414b2676f98f2a556e36d0374cbc7627f9d25ae7677",
     "agents/openai.yaml": "53f536bc0e7d54fb811ce78217b93f4cafcde48ca2a2be5ba23f04aff92b6f0b",
     "checklists/验收清单.md": "c74c67db9b42d92dd2521cfbdd6d471ea171458faf0e2847fb8873ebd49af009",
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
