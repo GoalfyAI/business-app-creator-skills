@@ -1048,3 +1048,4 @@ def test_shell_success_is_judged_by_exit_code_of_whole_pipeline():
     script = _read("reference/编排脚本.md")
     for fact in ("### shell 步骤的成败", "退出码只看**最后一条命令**", "( set -o pipefail;", "|| true"):
         assert fact in script, fact
+    assert "共用一个会话" in script and "只写在子 shell 的括号里" in script
