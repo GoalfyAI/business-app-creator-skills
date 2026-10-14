@@ -658,7 +658,9 @@ def test_registration_workflow_reuses_the_release_script():
 
     assert "build_platform_packages.py check" in workflow, "登记前必须校验产物"
     assert "scripts/register-skill-release.py" in workflow
-    assert "register_release" in workflow
+    assert "--register-and-recommend" in workflow
+    script = PROD_SCRIPT_PATH.read_text(encoding="utf-8")
+    assert "register_release(version)" in script
 
 
 

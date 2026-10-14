@@ -2,7 +2,8 @@
 """把已发布的 Skill 版本登记到各环境 Max Hub，并探测生产 MCP 是否就绪。
 
 版本切换由 scripts/release-skill.sh 在本地完成，本脚本只负责发布之后的事：
---register-only 由 GitHub Actions 在推送后调用；--verify-runtime-only 供发版前手工检查。
+--register-and-recommend 用于正式发布；--register-only 保留 QA 登记入口；
+--verify-runtime-only 供发版前手工检查。
 """
 
 from __future__ import annotations
@@ -12,6 +13,7 @@ import hashlib
 import hmac
 import json
 import os
+import runpy
 import sys
 import time
 import urllib.error
@@ -29,6 +31,11 @@ def required_env(name: str) -> str:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     actions = parser.add_mutually_exclusive_group(required=True)
+    actions.add_argument(
+        "--register-and-recommend",
+        action="store_true",
+        help="register the manifest release, then raise each Hub recommended version",
+    )
     actions.add_argument(
         "--register-only",
         action="store_true",
@@ -118,6 +125,23 @@ def register_release(version: str) -> None:
         )
 
 
+def register_and_recommend(version: str) -> None:
+    """先校验全部目标，再登记，全部登记成功后才逐环境抬建议线。 [任务:T-4466]"""
+    recommendation = runpy.run_path(str(Path(__file__).with_name("raise_skill_recommended.py")))
+    targets = recommendation["release_targets"](_registry_targets())
+    register_release(version)
+    failures = []
+    for hub, headers in targets:
+        try:
+            recommendation["raise_recommended"](version, hub, headers)
+        except (OSError, ValueError, TypeError, RuntimeError) as exc:
+            # 只输出目标根地址与异常类别，避免异常正文回显凭据。
+            print(f"FAILED recommendation at {hub}: {type(exc).__name__}", file=sys.stderr)
+            failures.append(hub)
+    if failures:
+        raise RuntimeError(f"recommended version update failed for {len(failures)} target(s)")
+
+
 def verify_prod_runtime(root: Path) -> None:
     sys.path.insert(0, str(root / "scripts"))
     from build_platform_packages import PROD_MCP_ENDPOINT
@@ -152,6 +176,12 @@ def main() -> int:
     if args.verify_runtime_only:
         verify_prod_runtime(root)
         print("CN PROD business-app-creator MCP route is ready")
+    elif args.register_and_recommend:
+        manifest = json.loads((root / "skill-release.json").read_text(encoding="utf-8"))
+        version = manifest["version"]
+        os.environ["SCENE_SKILL_RELEASE_NOTES"] = manifest.get("update_reason", "")
+        register_and_recommend(version)
+        print(version)
     else:
         version = required_env("SCENE_SKILL_VERSION")
         register_release(version)

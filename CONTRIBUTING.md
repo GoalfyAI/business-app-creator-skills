@@ -112,11 +112,36 @@ git push --follow-tags github main
 
 | Workflow | 触发 | 作用 |
 |---|---|---|
-| `register-skill-release` | push main | 校验产物一致后，向各环境 Hub 登记版本 |
+| `register-skill-release` | push main | 校验产物一致后，向各环境 Hub 登记版本并抬建议线 |
 | `publish-skill-release` | `skill/v*` tag | 从发布清单创建 GitHub Release |
 | `build-platform-zips` | Skill 内容变更 | 重新打包 Manus 与通用集成的压缩包 |
 
 校验只在 GitHub Actions 上跑，推送到 GitHub 后自动触发。
+
+正式发布需配置两个 GitHub Actions Secret。`SCENE_SKILL_RELEASE_REGISTRY_TARGETS`
+沿用每行 `<登记 URL>|<S2S 密钥>`；新增 `SCENE_SKILL_RELEASE_RECOMMENDED_TARGETS`
+为 JSON 数组，每项提供对应 Hub 的根地址与受限操作身份：
+
+```json
+[
+  {
+    "hub_url": "https://<对应环境的 Hub 域名>",
+    "api_key": "<该环境的 Internal API Key>",
+    "operator_email": "<操作人邮箱>",
+    "operator_id": "<操作人正整数 ID>",
+    "app_id": "goalfymax"
+  }
+]
+```
+
+`app_id` 可省略，默认 `goalfymax`。两份配置的 Hub 必须一一对应且不能重复；缺配置或
+错配会在写入前失败。全部登记成功后才逐环境抬建议线，保留强制线和应急开关；同版或
+较旧登记版本重跑不会回退建议线。部分抬线失败时汇总报错，重跑会先读取当前状态对账。
+
+正式与 QA 发布共用串行组。现有策略接口是整体 PUT，人工编辑策略须避开发布写窗口；
+脚本不提供跨外部写者的原子保护，也不自动回滚整份策略。新增 Secret 配好并完成授权的
+环境验证后才启用正式发布；启用前同步 QA 产物分支的 workflow，确认串行组一致且旧版
+发布运行已经结束。不把代码合入当成环境策略已经更新。
 
 ## 提交信息
 
