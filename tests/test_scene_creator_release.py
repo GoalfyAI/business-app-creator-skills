@@ -939,13 +939,28 @@ def test_no_waiting_on_developer_after_confirmation():
 
 
 def test_confirmed_interface_beats_preset_look():
-    """开发者确认过的界面优先；预置件只是工具，保住的是行为不是外观。"""
+    """开发者要的界面是最高依据：G1 主动问、确认页必填、预置件可用可不用、参考网站只借样式、验收要对照。"""
     pages = _read("reference/前端页面.md")
-    assert "### 预置件怎么用" in pages
-    assert "**不为了用预置件把确认过的界面改掉**" in pages
-    assert "**界面**（开发者给过截图、参考或说过样子时才写）" in _read("design/确认页.md")
+    for fact in (
+        "### 界面以开发者为准，预置件可用可不用",
+        "**开发者在确认页「界面」一节和之后反馈里说的样子**",
+        "用不用预置件、用多少、改到什么程度由你按开发者要求判断",
+        "**禁止**只换品牌色、圆角就当作满足了开发者的风格要求",
+        "外壳（导航、布局、配色体系）也可以自己写",
+        "自写或大改时**必须**保住平台行为，不是外观",
+        "### 参考网站",
+        "**只借样式，不搬内容**",
+        "**禁止**保留对参考站接口、脚本或 CDN 的引用",
+    ):
+        assert fact in pages, fact
+    g1 = _read("flow/G1-需求确认.md")
+    assert "**主动问界面**" in g1 and "**必须**在写确认页前主动问一次" in g1
+    confirm = _read("design/确认页.md")
+    assert "**界面**（必填；来自 G1 第 2 步主动问的回答）" in confirm
+    assert "开发者不指定，按《前端页面》界面风格自定" in confirm
+    assert "页面的**最高依据**，高于脚手架预置件和默认外观" in confirm
     assert "按确认过的界面写业务页" in _read("flow/G5-数据与应用.md")
-
+    assert "14. 页面样子与确认页「界面」一致" in _read("checklists/验收清单.md")
 
 def test_route_reads_and_writes_app_db_through_the_dataset_tool():
     """应用库读写走数据集工具：db() 唯一定义在《编排脚本》，读失败按空、写失败 blocked；业务 FA 建时挂工具只读；数据集 FA 只留存量。"""
