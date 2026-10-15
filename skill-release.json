@@ -4,7 +4,7 @@
   "version": "v20261012-9277bf",
   "package_version": "2.0.24",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-15T03:36:06Z",
+  "released_at": "2026-10-15T06:24:33Z",
   "update_reason": "G1/G6/G7 结束时 Codex 在对话里请开发者三项五星评分并回传 OA 反馈（T-4511）",
   "source_files": [
     "SKILL.md",
@@ -48,7 +48,7 @@
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
     "design/咨询模式.md": "2cdb8ffade6308edf080cafbd5e3d51098e0cc2a59d79f251f92850825181a8a",
     "design/确认页.md": "31d6a97d27bb132d3436857cc09e524278c8e08342b3db062a3d11d9b50ef2ec",
-    "design/阶段评分.md": "e6add972a6b4f72f5cafbe78d89461616879ce3a43cb2e7c6ae2f9a66b26beac",
+    "design/阶段评分.md": "b5c2ed84841a9a29dfbd4f68c55238c61d90deee9160c8fe149ed02a111771cb",
     "flow/G1-需求确认.md": "006f0bef088fcc96283f177d82f24bca85833ce32f86528c7eb1323e6a1c4c71",
     "flow/G2-核实资产.md": "308c00e3856cf0730196fa74efbfd6b5346b8a45240637ed5d462a6a98a54f0e",
     "flow/G3-方案编译.md": "da0b70fa6eae1233cbc1c04116ff89534c33a76f83c1214a9f94049561978b74",
