@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20261012-9277bf",
-  "package_version": "2.0.24",
+  "version": "v20261015-81ca0c",
+  "package_version": "2.0.25",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-15T06:40:58Z",
-  "update_reason": "G1/G6/G7 结束时 Codex 在对话里请开发者三项五星评分并回传 OA 反馈（T-4511）；私有包时区依赖（T-4516）",
+  "released_at": "2026-10-15T06:42:41Z",
+  "update_reason": "business-app-creator：G1/G6/G7 结束时 Codex 在对话里请开发者三项五星阶段评分，记入阶段文档并经 submit_dev_feedback 回传 OA 反馈（R-221/T-4511）；私有包须声明 tzdata 依赖（T-4516）；反馈图片为公开永久地址（T-4498）",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -42,7 +42,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "1fabaa12968d434634e5436ba9bd48e4dd0dbd12e66a6c3e23bf8139580cd205",
+    "SKILL.md": "b18ed789494d64a14005115c93ad4060413078ef14395b53d17132ea86196a06",
     "agents/openai.yaml": "53f536bc0e7d54fb811ce78217b93f4cafcde48ca2a2be5ba23f04aff92b6f0b",
     "checklists/验收清单.md": "fe617b94aa47656d0b972c474a5a572569b0c0d780f984ace3df8ee54f75af3e",
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
