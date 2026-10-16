@@ -84,7 +84,7 @@ keywords:
 2. **定位应用工程并核脚手架版本**：在开发者中心分配的 `apps/<应用目录>/` 下工作；读应用根的 `scaffold-release.json`，调用 `business_ui_bundle(action="download_template")` 核版本。规则见 [reference/脚手架与预置件.md](reference/脚手架与预置件.md)。
 3. **初始化或接续工作区**：新建用 `npm run scaffold:init -- --environment <环境> --app-name "<应用名>"`，接续时补齐缺失文件用 `npm run scaffold:repair -- --app-name "<应用名>"`；然后 `npm run setup`、`npm run doctor`。三件套、方案页、阶段标记的规则见 [reference/开发者中心与工作区.md](reference/开发者中心与工作区.md)。
 4. **读一次开发者偏好**：`dev_preferences(action="pull")`，按需阅读；写过的照做，其余用可逆默认，当前指令优先。
-5. **写开工阶段记录**：前四步做完、定下第一个 flow 后，`stage_record(action="create", task_id, stage="kickoff", …)`，`next_stage` 填第一个 flow；修订工单带 `business_ui_id`。写法见 [reference/阶段记录.md](reference/阶段记录.md)。
+5. **写开工阶段记录**：前四步做完、定下第一个 flow 后，`business_ui_stage(action="create", task_id, stage="kickoff", …)`，`next_stage` 填第一个 flow；修订工单带 `business_ui_id`。写法见 [reference/阶段记录.md](reference/阶段记录.md)。
 
 开工后在第一次实质答复结束前，把已知的业务目标、范围和待明确事项写进 `docs/proposal/index.html`，未知的标「未知」。
 
@@ -112,14 +112,14 @@ G1–G7 是七个可选的工作步骤，每个解决一类问题。按这次需
 
 **阶段标记怎么写**：工作区里的 `workspace.json` 的 `targets[n].status`、对应 `docs/stages/` 文档 front matter 的 `status`、`WORKSPACE.md` 的 `current_stage` 是给后续 Agent 和开发观测看的记录，`doctor` 校验格式。只标实际做过的 flow：开始时 `in_progress`，出口满足 `passed`，失败 `failed`，跳过的保持 `not_started`；三处在同一动作里更新，`current_stage` 指向正在做的那个。阶段显示名以工作区里已有的为准（旧应用可能是旧名），只改状态，不改名。
 
-**阶段记录怎么写**：每个 flow 出口满足后，和阶段标记同一步写一条 `stage_record(action="create")`：本段完成情况、为什么进下一段、下一段计划、跳过了哪些阶段及理由；G7 的那条（下一阶段 `closeout`）写在 `task_manager(action="complete")` 之前。阶段出口叙述只写阶段记录，工单 checkpoint 只记业务事实和结单门要的路线证据。它不是任何 flow 的进入条件，结单也不检查它；写失败**禁止**停下制作或反复重试。字段、跳过、改删、补记与失败处理见 [reference/阶段记录.md](reference/阶段记录.md)。
+**阶段记录怎么写**：每个 flow 出口满足后，和阶段标记同一步写一条 `business_ui_stage(action="create")`：本段完成情况、为什么进下一段、下一段计划、跳过了哪些阶段及理由；G7 的那条（下一阶段 `closeout`）写在 `task_manager(action="complete")` 之前。阶段出口叙述只写阶段记录，工单 checkpoint 只记业务事实和结单门要的路线证据。它不是任何 flow 的进入条件，结单也不检查它；写失败**禁止**停下制作或反复重试。字段、跳过、改删、补记与失败处理见 [reference/阶段记录.md](reference/阶段记录.md)。
 
 ## 6. 工具速查
 
 | 要做的事 | 工具与动作 |
 |---|---|
 | 工单 | `task_manager(action=create / get / insert / complete)` |
-| 阶段记录 | `stage_record(action=create / list / get / update / delete)` |
+| 阶段记录 | `business_ui_stage(action=create / list / get / update / delete)` |
 | 找可复用资产 | `list_assets(asset_type=…, keyword=…)` → `get_asset(asset_type=…, asset_ids=[…])`；复制用 `clone_asset` |
 | 真调一次工具看返回 | `otpe_tool_test(tool_group_id, tool_id, input)` |
 | 接入新工具 | `preview_tool_group` → `register_and_refresh_tool_group`；私有包 `file_to_url` → `upload_and_register_tool_group`；授权卡 `create_auth_card / update_auth_card / link_auth_card` |
