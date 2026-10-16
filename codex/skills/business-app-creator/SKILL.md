@@ -112,7 +112,7 @@ G1–G7 是七个可选的工作步骤，每个解决一类问题。按这次需
 
 **阶段标记怎么写**：工作区里的 `workspace.json` 的 `targets[n].status`、对应 `docs/stages/` 文档 front matter 的 `status`、`WORKSPACE.md` 的 `current_stage` 是给后续 Agent 和开发观测看的记录，`doctor` 校验格式。只标实际做过的 flow：开始时 `in_progress`，出口满足 `passed`，失败 `failed`，跳过的保持 `not_started`；三处在同一动作里更新，`current_stage` 指向正在做的那个。阶段显示名以工作区里已有的为准（旧应用可能是旧名），只改状态，不改名。
 
-**阶段记录怎么写**：每个 flow 出口满足后，和阶段标记同一步写一条 `business_ui_stage(action="create")`：本段完成情况、为什么进下一段、下一段计划、跳过了哪些阶段及理由；G7 的那条（下一阶段 `closeout`）写在 `task_manager(action="complete")` 之前。阶段出口叙述只写阶段记录，工单 checkpoint 只记业务事实和结单门要的路线证据。它不是任何 flow 的进入条件，结单也不检查它；写失败**禁止**停下制作或反复重试；一次失败只影响那一个出口，之后**每个**出口照常先 `list` 再写，**禁止**沿用上次「链已关闭」「写不进」的结论跳过。字段、跳过、改删、补记与失败处理见 [reference/阶段记录.md](reference/阶段记录.md)。
+**阶段记录怎么写**：每个 flow 出口满足后，和阶段标记同一步写一条 `business_ui_stage(action="create")`：本段完成情况、为什么进下一段、下一段计划、跳过了哪些阶段及理由；G7 的那条（下一阶段 `closeout`）写在 `task_manager(action="complete")` 之前。阶段出口叙述只写阶段记录，工单 checkpoint 只记业务事实和结单门要的路线证据；G1「确认页已确认」与 G6 验收原话两条 checkpoint 照写，不能用阶段记录代替。它不是任何 flow 的进入条件，结单也不检查它；写失败**禁止**停下制作或反复重试；一次失败只影响那一个出口，之后**每个**出口照常先 `list` 再写，**禁止**沿用上次「链已关闭」「写不进」的结论跳过。字段、跳过、改删、补记与失败处理见 [reference/阶段记录.md](reference/阶段记录.md)。
 
 ## 6. 工具速查
 
