@@ -1019,13 +1019,28 @@ def test_delivery_review_reply_only_action_key():
     assert "DELIVERY_REVIEW_REPLY_INVALID" in _read("reference/报错对照.md")
 
 
-def test_online_tab_named_zaixian_shiyong():
-    """开发者中心右栏分页名是「在线试用」，Skill 不再出现「在线预览」「在线使用」等叫法。"""
-    root = Path(__file__).resolve().parents[1] / "skills" / "business-app-creator"
-    for path in root.rglob("*"):
+def test_online_tab_names_follow_the_host_contract():
+    """旧宿主保留在线试用；R-256 Studio 正式在线页的名称不能被旧术语门禁误拒。"""
+    studio_files = {
+        "reference/Studio自动交付.md",
+        "reference/开发者中心与工作区.md",
+        "flow/G7-上线交付.md",
+    }
+    for path in SKILL_ROOT.rglob("*"):
         if path.suffix in (".md", ".yaml") and path.is_file():
             text = path.read_text(encoding="utf-8")
-            assert "在线预览" not in text and "在线使用" not in text, path
+            assert "在线使用" not in text, path
+            if path.relative_to(SKILL_ROOT).as_posix() == "design/确认页.md":
+                studio = _section(text, "### Studio 上线范围正文")
+                ordinary = _section(text, "### 普通宿主上线范围正文")
+                assert "在线预览" in studio and "在线试用" not in studio
+                assert "在线预览" not in text.replace(studio, "", 1)
+                assert "在线试用" in ordinary
+                continue
+            if "在线预览" in text:
+                assert path.relative_to(SKILL_ROOT).as_posix() in studio_files, path
+                assert "Studio" in text, path
+    assert "在线试用" in _read("flow/G6-预览验收.md")
 
 
 def test_app_db_routes_prove_with_workspace_real_run():
@@ -1066,3 +1081,125 @@ def test_shell_success_is_judged_by_exit_code_of_whole_pipeline():
     for fact in ("### shell 步骤的成败", "退出码只看**最后一条命令**", "( set -o pipefail;", "|| true"):
         assert fact in script, fact
     assert "共用一个会话" in script and "只写在子 shell 的括号里" in script
+
+
+# R-256 SK-F1/F2/O1: narrow source-contract regression checks, not Agent behavior eval.
+def _section(text: str, heading: str) -> str:
+    """Read a real Markdown section; code-fence contents do not create boundaries."""
+    lines = text.splitlines()
+    start = lines.index(heading) + 1
+    level = len(heading.split(" ", 1)[0])
+    fenced = False
+    result = []
+    for line in lines[start:]:
+        if line.startswith("```"):
+            fenced = not fenced
+        if not fenced and re.match(rf"^#{{1,{level}}} ", line):
+            break
+        result.append(line)
+    return "\n".join(result)
+
+
+def _assert_studio_confirmation_contract(documents: dict[str, str]) -> None:
+    native = documents["reference/Studio自动交付.md"]
+    gate = next(line for line in native.splitlines() if line.startswith("2. `studio_read_creation"))
+    page = documents["design/确认页.md"]
+    rules = _section(page, "### Studio 确认规则")
+    g1 = _section(documents["flow/G1-需求确认.md"], "## 5. 出口")
+    for clause in (gate, rules.splitlines()[1], g1.splitlines()[1]):
+        assert set(re.findall(r"proposal\.status=(\w+)", clause)) == {"confirmed"}
+        assert "confirmationCommandId" in clause and "accepted receipt" in clause
+        assert ("version" in clause and "digest" in clause) or "版本/摘要" in clause
+    # Editing must invalidate the previous approval before any engineering continues.
+    for required in ("旧确认失效", "新 version", "新 digest", "新的原生确认",
+                     "新确认前不 scaffold:init", "不建业务资产", "不改业务源文件"):
+        assert required in rules, required
+    assert "改完不用再问一遍，直接做" not in rules
+    assert "旧版确认" in gate and "draft" in gate
+
+
+def _assert_studio_delivery_contract(text: str, stage: str) -> None:
+    steps = _section(text, "## 2. 做什么")
+    studio = _section(steps, "### Studio")
+    calls = set(re.findall(r"\b([a-z][a-z_]+)\s*\(", studio))
+    expected = {"studio_read_creation", "studio_deliver"} if stage == "G6" else {"studio_read_creation"}
+    assert calls == expected, (stage, calls)
+    assert not re.search(r"(?:Studio|Agent)\s*(?:调用|直接调用|自行调用)[^。\n]*publish", studio)
+    assert re.search(r"unknown\s*只查原", studio)
+    assert "宿主" in studio and "不换" in studio
+    if stage == "G7":
+        shared = _section(steps, "### 两种宿主共用")
+        assert not re.search(r"\b(?:studio_deliver|business_ui_bundle|business_ui_manage|publish)\s*\(", shared)
+
+
+def _assert_studio_proposal_body(page: str) -> None:
+    studio = _section(page, "### Studio 上线范围正文")
+    ordinary = _section(page, "### 普通宿主上线范围正文")
+    assert "确认卡" in studio and "自动制作、检查、定版和发布" in studio
+    assert "重新请你确认" in studio and "确认前不继续制作" in studio
+    assert "已有授权" in studio and "费用" in studio and "正式数据" in studio
+    for manual in ("你说「可以上线」", "由你在发布管理页操作"):
+        assert manual not in studio
+        assert manual in ordinary
+    common = page.split("### Studio 上线范围正文", 1)[0]
+    assert "你说「可以上线」" not in common and "由你在发布管理页操作" not in common
+
+
+def _studio_contract_documents() -> dict[str, str]:
+    return {relative: _read(relative) for relative in (
+        "reference/Studio自动交付.md", "design/确认页.md", "flow/G1-需求确认.md",
+        "flow/G6-预览验收.md", "flow/G7-上线交付.md",
+    )}
+
+
+def test_studio_current_native_confirmation_precedes_engineering():
+    _assert_studio_confirmation_contract(_studio_contract_documents())
+
+
+@pytest.mark.parametrize("stage,relative", [
+    ("G6", "flow/G6-预览验收.md"), ("G7", "flow/G7-上线交付.md"),
+])
+def test_studio_has_one_delivery_writer(stage, relative):
+    _assert_studio_delivery_contract(_read(relative), stage)
+
+
+def test_studio_proposal_body_matches_automatic_delivery():
+    _assert_studio_proposal_body(_read("design/确认页.md"))
+
+
+def test_studio_split_retains_ordinary_host_actions_and_authorization():
+    g6 = _section(_section(_read("flow/G6-预览验收.md"), "## 2. 做什么"), "### 普通宿主")
+    g7 = _section(_section(_read("flow/G7-上线交付.md"), "## 2. 做什么"), "### 普通宿主")
+    ordinary = _section(_read("design/确认页.md"), "### 普通宿主确认规则")
+    assert 'business_ui_bundle(action="ship"' in g6
+    assert 'business_ui_manage(action="finalize"' in g7
+    assert 'business_ui_data_space="workspace"' in g6
+    assert 'otpe_manage(action="verify", task_id, tpe_id, project_id)' in g6
+    assert "可以上线" in ordinary and "确认页没列" in ordinary
+    assert "发布管理页发布" in g7
+
+
+@pytest.mark.parametrize("relative,old,new,check", [
+    ("reference/Studio自动交付.md", "proposal.status=confirmed", "proposal.status=draft", "confirmation"),
+    ("reference/Studio自动交付.md", "当前 `version`、`digest` 与", "", "confirmation"),
+    ("design/确认页.md", "精确原生 accepted receipt", "已提交卡片", "confirmation"),
+    ("design/确认页.md", "新确认前不 scaffold:init", "改完不用再问一遍，直接做", "confirmation"),
+    ("design/确认页.md", "自动制作、检查、定版和发布", "你说「可以上线」再定版，由你在发布管理页操作", "body"),
+    ("flow/G6-预览验收.md", "### Studio\n", '### Studio\n再调 `business_ui_bundle(action="ship")`。\n', "G6"),
+    ("flow/G7-上线交付.md", "### Studio\n", '### Studio\n调用 `business_ui_manage(action="finalize")`。\n', "G7"),
+    ("flow/G7-上线交付.md", "### Studio\n", "### Studio\nStudio 调用宿主公布的受限 publish 能力。\n", "G7"),
+    ("flow/G7-上线交付.md", "### Studio\n", "### Studio\n再次调用 `studio_deliver({proposalVersion, proposalDigest})`。\n", "G7"),
+    ("flow/G6-预览验收.md", "unknown 只查原记录", "unknown 重新 ship", "G6"),
+])
+def test_studio_known_contract_regressions_are_detected(relative, old, new, check):
+    """In-memory negative controls: no source, generated package or platform writes."""
+    documents = _studio_contract_documents()
+    assert old in documents[relative]
+    documents[relative] = documents[relative].replace(old, new, 1)
+    with pytest.raises(AssertionError):
+        if check == "confirmation":
+            _assert_studio_confirmation_contract(documents)
+        elif check == "body":
+            _assert_studio_proposal_body(documents[relative])
+        else:
+            _assert_studio_delivery_contract(documents[relative], check)
