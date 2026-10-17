@@ -33,7 +33,7 @@
 - 固定顶层为 `version:1, proposalDigest, roles, steps, crud, tpes, network`；不加 `passed`、证据对象或任意脚本。单文件不超过 48 KiB。
 - `steps` 最多 100 条，只接受 `fill(selector,value)`、`click(selector)`、`wait(selector,text?)`、`read(selector,expectedText)`、`reload`、`screenshot`。动作以 JSON 对象 `{action,...}` 表达。截图须有宿主现有许可。
 - `crud` 每项为 `{id,writeStep,reloadStep,readStep}`，零基序号，按 click → reload → read 的顺序绑定真实 UI。最多 32 项。
-- `tpes` 每项为 `{id,scenarioPackageId,tpeId,submitData:{business_id,form_id,orchestration_id,formdata}}`，最多 64 项。物理 ID 从已创建的真实场景包/路线读取，formdata 只放有界 JSON 标量。必须覆盖候选实际挂载包的完整适用 TPE 集；不能用 null 隐去真实场景版本，也不自造成功记录。
+- `tpes` 每项为 `{id,scenarioPackageId,tpeId,submitData:{business_id,form_id,orchestration_id,formdata}}`，最多 64 项。物理 ID 从已创建的真实场景包/路线读取，formdata 只放有界 JSON 标量。必须覆盖候选实际挂载包的完整适用 TPE 集；不能用 null 隐去真实场景版本，也不自造成功记录。平台要求的场景包及编排型 TPE 仍须真实准备并回读版本，但依赖存在不代表有适用业务路线。已确认纯 CRUD 且 `tpes=[]` 时保持空集合，不为通过宿主检查增加用户路线，也不伪造 TPE 通过；已确认非空集合不能删项或缩成空集合。
 - `network` 定义真实后端回读谓词，格式见下。前端正常通过 `sdk.api.request` 发请求，宿主只观察实际 Max api-proxy 网络响应；不会替模型执行任意 URL/API，也不接受 DOM 文字作为持久证据。候选的 `frontend/schema/api/<operationId>.yaml` 必须先定义实际请求/响应合同；路径、字段和预期按它填写。
 
 最小网络声明示意（须替换成该应用实际 API、字段及步骤；这里的保存 click 位于步骤 1，刷新位于步骤 2，之前的 fill 填入同一测试标记）：
@@ -47,7 +47,7 @@
 
 每候选生成新的 `studio-test-` 加 16–80 位字母数字/下划线/短横线标记，只写隔离开发工作集内的授权测试记录。`body` 是待观察请求体的 JSON Pointer → 预期标量映射，不是由宿主发出的写请求；`values` 相对真实响应 `data` 中 `recordPath` 选出的记录检查字段，`keyPath` 指向其稳定主键。读请求仅 GET，`query` 可给 SDK 已编码的完整查询串；路径/查询只允许 `{{record}}` 引用 `recordFrom` 的真实主键，不支持表达式。列表接口可用真实记录位置，如 `/items/0`，但必须同主键和标记匹配，不能把首条任意记录算通过。
 
-每项最少 `create,read`。方案有修改与还原时完整列 `create,read,update,read_updated,restore,read_restored`；每次写用 click，每次后端回读绑定一次新的 reload。后五项 `recordFrom` 都绑定该项原 create，步骤严格递增；更新/还原必须走实际 POST/PUT/PATCH 写接口。创建与首次回读的字段谓词一致；六阶段须检查同一组字段，修改后至少一项不同且测试标记不变，修改回读与修改响应一致，还原响应与最后回读都恢复创建时的原值。响应须有可判定记录键与字段；缺协议时说明具体缺口，不能改成空谓词、只看 HTTP200 或直接填回执。宿主保存原 request_id、候选及响应摘要；超时/未知不重放写入。
+每项最少 `create,read`。已确认单向修改（例如仅归还、不撤销归还）列 `create,read,update,read_updated`，不得为凑阶段增加撤销业务；方案有修改与还原时完整列 `create,read,update,read_updated,restore,read_restored`，不得降成四阶段。每次写用 click，每次后端回读绑定一次新的 reload。创建之后各项 `recordFrom` 都绑定该项原 create，步骤严格递增；更新/还原必须走实际 POST/PUT/PATCH 写接口。创建与首次回读的字段谓词一致；四/六阶段均检查同一组字段，修改后至少一项不同且测试标记在原字段保持不变，修改回读与修改响应一致；六阶段还原响应与最后回读都恢复创建时的原值。响应须有可判定记录键与字段；缺协议时说明具体缺口，不能改成空谓词、只看 HTTP200 或直接填回执。每次实际请求只能对应一个探针，原 request_id 不可跨探针或用例复用。登记、查询、归还等多项验收须安排各自实际请求步骤和测试记录，不让同一步同一请求命中多项。宿主保存原 request_id、候选及响应摘要；超时/未知不重放写入。
 
 ### 方案先于工程
 

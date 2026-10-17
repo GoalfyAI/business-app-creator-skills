@@ -55,7 +55,7 @@ keywords:
 | 数据模板 | 表、字段、逐列可编辑性（user / agent / system）；用户首次打开时从模板复制出自己的一份 | 不用每次重复交代；可查看、可纠正 |
 | 场景包 | 平台里的能力容器：业务路线、编排型 TPE、工具集与 FastAgent、`apc_skill` | 在必要节点补信息、做选择、审阅结果 |
 
-发布单位是 `business_ui`：它挂一个场景包和**必须一份**数据模板（至少一张业务表，平台维护的系统表如 `app_write_requests` 不算）。平台要求每个应用挂的场景包至少有一条路线。对象之间的关系查 [reference/平台对象速查.md](reference/平台对象速查.md)。
+发布单位是 `business_ui`：它挂一个场景包和**必须一份**数据模板（至少一张业务表，平台维护的系统表如 `app_write_requests` 不算）。平台要求每个应用挂的场景包至少有一条路线。Studio 中平台挂载要求与已确认的适用业务路线分开判定，纯 CRUD 的处理见 [Studio自动交付](reference/Studio自动交付.md)。对象之间的关系查 [reference/平台对象速查.md](reference/平台对象速查.md)。
 
 ## 2. 角色与称谓
 
