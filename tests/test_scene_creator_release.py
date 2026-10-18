@@ -933,7 +933,8 @@ def test_long_text_tool_output_declares_single_string_field():
 def test_no_waiting_on_developer_after_confirmation():
     """确认页确认后一路做到在线试用可用；制作中的测试费用已在确认页同意，不再逐次等开发者。"""
     skill = _read("SKILL.md")
-    assert "中间不设等开发者的环节" in skill
+    assert "Studio 一路制作到本地工程与演示可检查" in skill
+    assert "需要上线时另行询问" in skill
     assert "先向开发者说明费用并取得同意" not in _read("flow/G4-能力制作.md")
     confirm = _read("design/确认页.md")
     assert "制作中的测试：冒泡与真跑约" in confirm
@@ -1132,30 +1133,28 @@ def test_studio_acceptance_example_preserves_confirmed_lifecycle():
 
 
 def _assert_studio_delivery_contract(text: str, stage: str) -> None:
-    steps = _section(text, "## 2. 做什么")
-    studio = _section(steps, "### Studio")
+    studio = _section(_section(text, "## 2. 做什么"), "### Studio")
     calls = set(re.findall(r"\b([a-z][a-z_]+)\s*\(", studio))
-    expected = {"studio_read_creation", "studio_deliver"} if stage == "G6" else {"studio_read_creation"}
+    expected = {"studio_read_creation"} if stage == "G6" else {"business_ui_bundle", "business_ui_manage"}
     assert calls == expected, (stage, calls)
-    assert not re.search(r"(?:Studio|Agent)\s*(?:调用|直接调用|自行调用)[^。\n]*publish", studio)
-    assert re.search(r"unknown\s*只查原", studio)
-    assert "宿主" in studio and "不换" in studio
+    assert "只有用户明确同意本次范围" in studio
+    assert "未答复或拒绝" in studio
+    assert "unknown 只查原记录" in studio and "不换" in studio
+    assert not re.search(r"studio_deliver\s*\(", studio)
     if stage == "G7":
-        shared = _section(steps, "### 两种宿主共用")
-        assert not re.search(r"\b(?:studio_deliver|business_ui_bundle|business_ui_manage|publish)\s*\(", shared)
+        assert studio.index("只有用户明确同意本次范围") < studio.index('business_ui_manage(action="finalize"')
+        assert "不编造 publish 动作" in studio and "不回退自动 HTTP 发布" in studio
 
 
 def _assert_studio_proposal_body(page: str) -> None:
     studio = _section(page, "### Studio 上线范围正文")
     ordinary = _section(page, "### 普通宿主上线范围正文")
-    assert "确认卡" in studio and "自动制作、检查、定版和发布" in studio
+    assert "确认卡" in studio and "确认只授权制作，不授权上线" in studio
+    assert "只有你明确同意本次范围" in studio and "未答复或拒绝" in studio
     assert "重新请你确认" in studio and "确认前不继续制作" in studio
-    assert "已有授权" in studio and "费用" in studio and "正式数据" in studio
-    for manual in ("你说「可以上线」", "由你在发布管理页操作"):
-        assert manual not in studio
-        assert manual in ordinary
-    common = page.split("### Studio 上线范围正文", 1)[0]
-    assert "你说「可以上线」" not in common and "由你在发布管理页操作" not in common
+    assert "费用" in studio and "正式数据" in studio
+    assert "自动制作、检查、定版和发布" not in studio
+    assert "你说「可以上线」" in ordinary and "由你在发布管理页操作" in ordinary
 
 
 def _studio_contract_documents() -> dict[str, str]:
@@ -1172,11 +1171,11 @@ def test_studio_current_native_confirmation_precedes_engineering():
 @pytest.mark.parametrize("stage,relative", [
     ("G6", "flow/G6-预览验收.md"), ("G7", "flow/G7-上线交付.md"),
 ])
-def test_studio_has_one_delivery_writer(stage, relative):
+def test_studio_uses_existing_mcp_only_after_current_publication_reply(stage, relative):
     _assert_studio_delivery_contract(_read(relative), stage)
 
 
-def test_studio_proposal_body_matches_automatic_delivery():
+def test_studio_proposal_body_separates_making_from_publication():
     _assert_studio_proposal_body(_read("design/确认页.md"))
 
 
@@ -1197,10 +1196,10 @@ def test_studio_split_retains_ordinary_host_actions_and_authorization():
     ("reference/Studio自动交付.md", "当前 `version`、`digest` 与", "", "confirmation"),
     ("design/确认页.md", "精确原生 accepted receipt", "已提交卡片", "confirmation"),
     ("design/确认页.md", "新确认前不 scaffold:init", "改完不用再问一遍，直接做", "confirmation"),
-    ("design/确认页.md", "自动制作、检查、定版和发布", "你说「可以上线」再定版，由你在发布管理页操作", "body"),
+    ("design/确认页.md", "确认只授权制作，不授权上线", "确认后自动制作、检查、定版和发布", "body"),
+    ("design/确认页.md", "只有你明确同意本次范围", "已有历史授权即可", "body"),
     ("flow/G6-预览验收.md", "### Studio\n", '### Studio\n再调 `business_ui_bundle(action="ship")`。\n', "G6"),
-    ("flow/G7-上线交付.md", "### Studio\n", '### Studio\n调用 `business_ui_manage(action="finalize")`。\n', "G7"),
-    ("flow/G7-上线交付.md", "### Studio\n", "### Studio\nStudio 调用宿主公布的受限 publish 能力。\n", "G7"),
+    ("flow/G7-上线交付.md", "只有用户明确同意本次范围", "方案确认后", "G7"),
     ("flow/G7-上线交付.md", "### Studio\n", "### Studio\n再次调用 `studio_deliver({proposalVersion, proposalDigest})`。\n", "G7"),
     ("flow/G6-预览验收.md", "unknown 只查原记录", "unknown 重新 ship", "G6"),
 ])
@@ -1216,3 +1215,47 @@ def test_studio_known_contract_regressions_are_detected(relative, old, new, chec
             _assert_studio_proposal_body(documents[relative])
         else:
             _assert_studio_delivery_contract(documents[relative], check)
+
+
+def test_studio_revision_does_not_require_every_edit_to_publish():
+    skill = _read("SKILL.md")
+    revision = _read("tasks/修订.md")
+    native = _read("reference/Studio自动交付.md")
+    assert "不要求每次修改都上线" in skill
+    assert "不要求每次改动都上线" in revision
+    assert "旧 allowedActions/requested/phase 不重新获得上线效力" in native
+    assert "原样保留" in native and "未派发的旧自动步骤停止" in native
+    assert "V2 制作、批注、未答复、拒绝上线" in native
+    for relative in ("SKILL.md", "reference/Studio自动交付.md", "design/确认页.md",
+                     "flow/G1-需求确认.md", "flow/G6-预览验收.md", "flow/G7-上线交付.md",
+                     "reference/部署与版本.md", "tasks/修订.md"):
+        text = _read(relative)
+        assert "明确同意本次范围" in text, relative
+        for obsolete in ("已有自动交付授权有效", "不再逐版索要上线口令", "不再逐版追加人工上线口令",
+                         "自动制作、检查、定版和发布"):
+            assert obsolete not in text, (relative, obsolete)
+
+
+@pytest.mark.parametrize("relative,heading,obsolete", [
+    ("SKILL.md", "## 6. 工具速查", "本表的 ship/finalize 与单步部署兜底只供普通宿主执行"),
+    ("reference/部署与版本.md", "### 哪些用草稿就行，哪些要先上线", "Studio 仍由宿主推进原候选"),
+])
+def test_studio_tool_admission_requires_current_consent_and_existing_mcp(relative, heading, obsolete):
+    section = _section(_read(relative), heading)
+    assert obsolete not in section
+    assert "Agentic App Studio" in section
+    assert "原对话" in section and "明确同意本次范围" in section
+    assert "由 Agent 调用现有 MCP" in section
+
+
+def test_studio_revision_finalize_requires_current_need_and_existing_consent():
+    deploy = _read("reference/部署与版本.md")
+    revision = _section(deploy, "### 修订、回滚、作废")
+    assert "每次修订都走完 G6 再定版" not in revision
+    assert "按影响完成相称的 G6 检查" in revision
+    assert "只有本次确需上线" in revision and "原对话已明确同意本次范围" in revision
+    assert "才进入 G7/定版" in revision and "已有同意不重复询问" in revision
+    rollback = next(line for line in revision.splitlines() if line.startswith("| 回滚 |"))
+    assert "**必须**开发者确认" in rollback
+    deletion = _section(deploy, "### 下线与删除")
+    assert "**必须**开发者确认" in deletion and "**必须**开发者明确授权" in deletion
