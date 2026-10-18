@@ -1191,6 +1191,21 @@ def test_studio_split_retains_ordinary_host_actions_and_authorization():
     assert "发布管理页发布" in g7
 
 
+def test_ordinary_delivery_waits_only_for_required_publication():
+    text = _read("flow/G7-上线交付.md")
+    ordinary = _section(_section(text, "## 2. 做什么"), "### 普通宿主")
+    publication = next(line for line in ordinary.splitlines() if line.startswith("5. "))
+    assert "本次交付范围" in publication
+    assert "不在本次范围内且不是交付前置" in publication
+    assert "不额外等待" in publication
+    assert "本次明确要求目录发布或交付项依赖已发布正式入口" in publication
+    assert "不得结单或宣称该范围已完成" in publication
+    exit_rule = next(line for line in _section(text, "## 5. 出口").splitlines()
+                     if line.startswith("- 普通宿主："))
+    assert "本次必需的目录发布与正式验证已完成" in exit_rule
+    assert "不阻塞结单" in exit_rule
+
+
 @pytest.mark.parametrize("relative,old,new,check", [
     ("reference/Studio自动交付.md", "proposal.status=confirmed", "proposal.status=draft", "confirmation"),
     ("reference/Studio自动交付.md", "当前 `version`、`digest` 与", "", "confirmation"),
