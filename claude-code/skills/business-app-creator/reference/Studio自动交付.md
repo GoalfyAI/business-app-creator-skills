@@ -6,33 +6,37 @@
 
 ## 规则
 
-### 原生工具合同 v1
+### 原生工具与验收声明 v2
 
 只有原生工具清单实际提供以下三个工具时，使用本节；参数以当前工具 JSON Schema 为准。工具的会话、账号、目标、native turn/call 身份由受信宿主注入，不能在 arguments 中自行提交。工具不是外部 MCP 平台的新接口。
 
-1. `studio_write_proposal({version, files:[{name, content}]})`：提交 UTF-8 方案文件，必须包含 `index.html` 和下节定义的 `acceptance.json`，最多 64 个文件、合计 48 KiB（符合当前原生工具单次输入上限；宿主 artifact 存储的 8 MiB 限制不表示工具可一次提交同等大小）。`name` 仅为 artifact 内的相对资源名，禁止绝对路径、`..`、业务源码或命令。宿主分配真实目录、写入文件并计算摘要；原生同一次调用幂等，修改内容必须新版本、新调用。返回后在同一轮输出方案说明，宿主将下一条真实完成的 agentMessage 与这份方案关联并挂确认卡，不读取文字关键词造状态。
+1. `studio_write_proposal({version, files:[{name, content}]})`：提交 UTF-8 方案文件，必须包含 `index.html` 和下节定义的 `acceptance.json`，最多 64 个文件、合计 48 KiB（符合当前原生工具单次输入上限；宿主 artifact 存储的 8 MiB 限制不表示工具可一次提交同等大小）。`name` 仅为 artifact 内的相对资源名，禁止绝对路径、`..`、业务源码或命令。宿主分配真实目录、写入文件并计算摘要；原生同一次调用幂等，修改内容必须新版本、新调用。返回后在同一轮输出业务方案说明；宿主根据原轮次内真实完成消息的位置关联确认卡，不读取文字关键词造状态。写入回执只证明方案已保存，不证明确认卡已显示。
 2. `studio_read_creation({})`：读取当前方案、原生确认和自动交付结果，并核对已经请求的交付。只有 `proposal.status=confirmed`，当前 `version`、`digest` 与 `confirmationCommandId` 的精确原生 accepted receipt 匹配，才开始实际工程；draft、旧版确认、工具显示方案已生成或卡已提交均不算确认。业务工程继续在原会话沿本 Skill 的初始化、SDK、能力与测试规则完成。
 3. 工程准备好后调用 `studio_deliver({proposalVersion, proposalDigest})`，两项必须来自当前已确认方案。它只登记进入自动交付的意图，不采信模型自报工程成功。宿主冻结真实源文件，向同一原生会话派发固定 `verify:release` 检查命令，之后只按精确命令/工具/真实宿主证据推进；不要另行 ship、finalize 或发布。工具返回 `blocked` 时保留原因，`unknown` 时只核对原记录，不能通过新版本、新 draft 或新 operation 绕过。
 
+面向开发者只说明业务范围和当前实际状态，例如「方案已保存，等待确认」。尚未通过 `studio_read_creation` 读到当前方案的卡片时，不说「本条消息已挂确认卡」或让用户点击尚未核实的按钮。`version`、`digest`、`status`、`confirmationCommandId` 和验收声明 v2 用于内部核对，不逐条列入用户说明。确认入口缺失或读取失败时，保留原方案并说明具体受阻；不重复写入方案，不用普通「可以」、通用提问或模型总结替代原生确认。
+
 宿主的角色、CRUD、TPE 与权限检查来自受信检查器。模型不得提供“passed”字段、证据对象、Token、浏览器脚本或任意 URL 来替代。真实检查开始前保存意图，未知时只查询原检查回执。当前候选实际目录发布后 `delivery.status=published` 仅表示发布证据匹配；在线页 ready 与真实业务仍分别核实。没有额外发布按钮，也不要求开发者去目录页手动发布。
 
-缺少或无效的 `acceptance.json` 会在方案阶段拒绝保存和挂确认卡；旧方案缺声明时保留原文件，提交完整的新版本并等待新的原生确认，不在执行时补批准范围。工具失败若返回 `code/stage/retry:false`，按该固定诊断报告具体受阻；读取工具失败不再循环调用读取，写入结果未知不重发。不得绕过为直接写宿主状态文件。
+缺少或无效的 `acceptance.json` 会在方案阶段拒绝保存和挂确认卡；旧方案缺声明或仅有 v1 声明时保留原文件，提交完整的新版本并等待新的原生确认，不在执行时补批准范围。工具失败若返回 `code/stage/retry:false`，按该固定诊断报告具体受阻；读取工具失败不再循环调用读取，写入结果未知不重发。不得绕过为直接写宿主状态文件。
 
 ### 绑定可判定验收内容
 
 `acceptance.json` 随方案提交并纳入同一摘要，内容是业务要求，不是检查结果。方案页用业务语言展示相同的使用角色、保存/刷新回读与适用修改/还原、每条业务路线；不得用隐藏声明减少用户确认的范围。结构如下：
 
 ```json
-{"version":1,"roles":["owner"],"crud":[{"id":"record-save","description":"管理员登记测试记录，刷新后仍可读取相同内容；有修改流程时再修改并还原"}],"tpes":[{"id":"main-route","description":"运行已确认的主要业务路线并核对最终结果"}]}
+{"version":2,"roles":["owner"],"crud":[{"id":"record-save","description":"管理员登记测试记录，刷新后仍可读取相同内容","lifecycle":"create_read"}],"tpes":[{"id":"main-route","description":"运行已确认的主要业务路线并核对最终结果"}]}
 ```
+
+`crud` 每项必须在确认前明确 `lifecycle`：`create_read` 为保存及刷新回读（2 阶段），`update_read` 另含单向修改及刷新回读（4 阶段），`restore_read` 另含恢复原值及刷新回读（6 阶段）。逐项与可见业务方案一致；缺失、旧 v1 或含糊描述不能由工程自行推断，须提交 v2 新方案并重新确认。工程保留相同 ID 和 lifecycle，实际探针阶段必须精确对应，不能减少或增加批准范围。
 
 `roles` 仅列方案实际需要的宿主角色（`owner/edit/view` 的非空集合）。仅当前管理员使用时可以是 `owner`；需要协作者的方案必须保留相应角色。只用当前账号真实拥有的权限，不能假造用户或把 Passport 登录角色当应用角色。现有 owner 预览不能证明 edit/view；缺少实际身份时明确阻断，不缩减方案。业务自定义角色及其规则仍逐项列入验收要求，不能仅凭宿主角色通过就声称业务角色规则通过。
 
 工程完成后在实际应用根生成 `studio.acceptance.json`，随源码冻结。保留相同角色和全部 CRUD/TPE 项 ID，填入已确认 `proposalDigest`，不要修改原方案来写工程状态：
 
-- 固定顶层为 `version:1, proposalDigest, roles, steps, crud, tpes, network`；不加 `passed`、证据对象或任意脚本。单文件不超过 48 KiB。
+- 固定顶层为 `version:2, proposalDigest, roles, steps, crud, tpes, network`；不加 `passed`、证据对象或任意脚本。单文件不超过 48 KiB。
 - `steps` 最多 100 条，只接受 `fill(selector,value)`、`click(selector)`、`wait(selector,text?)`、`read(selector,expectedText)`、`reload`、`screenshot`。动作以 JSON 对象 `{action,...}` 表达。截图须有宿主现有许可。
-- `crud` 每项为 `{id,writeStep,reloadStep,readStep}`，零基序号，按 click → reload → read 的顺序绑定真实 UI。最多 32 项。
+- `crud` 每项为 `{id,lifecycle,writeStep,reloadStep,readStep}`，lifecycle 原样取自已确认声明；步骤为零基序号，按 click → reload → read 的顺序绑定真实 UI。最多 32 项。
 - `tpes` 每项为 `{id,scenarioPackageId,tpeId,submitData:{business_id,form_id,orchestration_id,formdata}}`，最多 64 项。物理 ID 从已创建的真实场景包/路线读取，formdata 只放有界 JSON 标量。必须覆盖候选实际挂载包的完整适用 TPE 集；不能用 null 隐去真实场景版本，也不自造成功记录。平台要求的场景包及编排型 TPE 仍须真实准备并回读版本，但依赖存在不代表有适用业务路线。已确认纯 CRUD 且 `tpes=[]` 时保持空集合，不为通过宿主检查增加用户路线，也不伪造 TPE 通过；已确认非空集合不能删项或缩成空集合。
 - `network` 定义真实后端回读谓词，格式见下。前端正常通过 `sdk.api.request` 发请求，宿主只观察实际 Max api-proxy 网络响应；不会替模型执行任意 URL/API，也不接受 DOM 文字作为持久证据。候选的 `frontend/schema/api/<operationId>.yaml` 必须先定义实际请求/响应合同；路径、字段和预期按它填写。
 
@@ -47,7 +51,7 @@
 
 每候选生成新的 `studio-test-` 加 16–80 位字母数字/下划线/短横线标记，只写隔离开发工作集内的授权测试记录。`body` 是待观察请求体的 JSON Pointer → 预期标量映射，不是由宿主发出的写请求；`values` 相对真实响应 `data` 中 `recordPath` 选出的记录检查字段，`keyPath` 指向其稳定主键。读请求仅 GET，`query` 可给 SDK 已编码的完整查询串；路径/查询只允许 `{{record}}` 引用 `recordFrom` 的真实主键，不支持表达式。列表接口可用真实记录位置，如 `/items/0`，但必须同主键和标记匹配，不能把首条任意记录算通过。
 
-每项最少 `create,read`。已确认单向修改（例如仅归还、不撤销归还）列 `create,read,update,read_updated`，不得为凑阶段增加撤销业务；方案有修改与还原时完整列 `create,read,update,read_updated,restore,read_restored`，不得降成四阶段。每次写用 click，每次后端回读绑定一次新的 reload。创建之后各项 `recordFrom` 都绑定该项原 create，步骤严格递增；更新/还原必须走实际 POST/PUT/PATCH 写接口。创建与首次回读的字段谓词一致；四/六阶段均检查同一组字段，修改后至少一项不同且测试标记在原字段保持不变，修改回读与修改响应一致；六阶段还原响应与最后回读都恢复创建时的原值。响应须有可判定记录键与字段；缺协议时说明具体缺口，不能改成空谓词、只看 HTTP200 或直接填回执。每次实际请求只能对应一个探针，原 request_id 不可跨探针或用例复用。登记、查询、归还等多项验收须安排各自实际请求步骤和测试记录，不让同一步同一请求命中多项。宿主保存原 request_id、候选及响应摘要；超时/未知不重放写入。
+每项严格按已确认 lifecycle 列探针：`create_read` 仅列 `create,read`。`update_read` 已确认单向修改（例如仅归还、不撤销归还）列 `create,read,update,read_updated`，不得为凑阶段增加撤销业务；`restore_read` 方案有修改与还原时完整列 `create,read,update,read_updated,restore,read_restored`，不得降成四阶段。每次写用 click，每次后端回读绑定一次新的 reload。创建之后各项 `recordFrom` 都绑定该项原 create，步骤严格递增；更新/还原必须走实际 POST/PUT/PATCH 写接口。创建与首次回读的字段谓词一致；四/六阶段均检查同一组字段，修改后至少一项不同且测试标记在原字段保持不变，修改回读与修改响应一致；六阶段还原响应与最后回读都恢复创建时的原值。响应须有可判定记录键与字段；缺协议时说明具体缺口，不能改成空谓词、只看 HTTP200 或直接填回执。每次实际请求只能对应一个探针，原 request_id 不可跨探针或用例复用。登记、查询、归还等多项验收须安排各自实际请求步骤和测试记录，不让同一步同一请求命中多项。宿主保存原 request_id、候选及响应摘要；超时/未知不重放写入。
 
 ### 方案先于工程
 

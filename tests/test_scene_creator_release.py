@@ -1118,6 +1118,19 @@ def _assert_studio_confirmation_contract(documents: dict[str, str]) -> None:
     assert "旧版确认" in gate and "draft" in gate
 
 
+def test_studio_acceptance_example_preserves_confirmed_lifecycle():
+    text = (SKILL_ROOT / "reference/Studio自动交付.md").read_text(encoding="utf-8")
+    declaration = json.loads(re.findall(r"```json\n(.*?)\n```", text, re.DOTALL)[0])
+    assert declaration["version"] == 2
+    assert declaration["crud"][0]["lifecycle"] == "create_read"
+    assert "version:2, proposalDigest" in text
+    assert "{id,lifecycle,writeStep,reloadStep,readStep}" in text
+    compilation = (SKILL_ROOT / "flow/G3-方案编译.md").read_text(encoding="utf-8")
+    for lifecycle in ("create_read", "update_read", "restore_read"):
+        assert lifecycle in compilation and lifecycle in text
+    assert "重新确认" in compilation and "旧 v1" in compilation
+
+
 def _assert_studio_delivery_contract(text: str, stage: str) -> None:
     steps = _section(text, "## 2. 做什么")
     studio = _section(steps, "### Studio")
