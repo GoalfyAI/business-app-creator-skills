@@ -104,3 +104,27 @@ def test_redact_removes_credentials_from_urls():
     text = "fatal: unable to access 'https://x-access-token:gh-secret@github.com/a.git'"
     assert "gh-secret" not in deploy_env.redact(text)
     assert "https://***@github.com/a.git" in deploy_env.redact(text)
+
+
+def test_git_retries_network_commands_and_redacts(monkeypatch, tmp_path):
+    calls = []
+
+    class Result:
+        def __init__(self, code):
+            self.returncode, self.stdout = code, ""
+            self.stderr = "fatal: unable to access 'https://x:tok@github.com/a.git': Empty reply from server"
+
+    def fake_run(args, **kwargs):
+        calls.append(args)
+        return Result(1)
+
+    monkeypatch.setattr(deploy_env.subprocess, "run", fake_run)
+    monkeypatch.setattr(deploy_env.time, "sleep", lambda seconds: None)
+    with pytest.raises(deploy_env.DeployError) as excinfo:
+        deploy_env.git("push", "https://x:tok@github.com/a.git", "HEAD:refs/heads/main", cwd=tmp_path)
+    assert len(calls) == 4
+    assert "tok" not in str(excinfo.value)
+    calls.clear()
+    with pytest.raises(deploy_env.DeployError):
+        deploy_env.git("rev-parse", "HEAD", cwd=tmp_path)
+    assert len(calls) == 1

@@ -26,6 +26,7 @@ import re
 import runpy
 import subprocess
 import tempfile
+import time
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -53,12 +54,18 @@ def redact(text: str) -> str:
     return CREDENTIAL_RE.sub("://***@", text)
 
 
-def git(*args: str, cwd: Path = REPO_ROOT, env: dict[str, str] | None = None) -> str:
-    result = subprocess.run(["git", *args], cwd=cwd, text=True, capture_output=True, env=env, check=False)
-    if result.returncode != 0:
-        command = redact(" ".join(args))
-        raise DeployError(f"git {command} 失败：{redact((result.stderr or result.stdout).strip())}")
-    return result.stdout.strip()
+def git(*args: str, cwd: Path = REPO_ROOT, env: dict[str, str] | None = None, attempts: int = 4) -> str:
+    """远程操作（fetch / push）遇到构建机的瞬时网络错误时递增间隔重试。"""
+    tries = attempts if args and args[0] in {"fetch", "push"} else 1
+    for attempt in range(1, tries + 1):
+        result = subprocess.run(["git", *args], cwd=cwd, text=True, capture_output=True, env=env, check=False)
+        if result.returncode == 0:
+            return result.stdout.strip()
+        detail = redact((result.stderr or result.stdout).strip())
+        if attempt < tries:
+            print(f"git {args[0]} 第 {attempt} 次失败，{attempt * 10} 秒后重试：{detail.splitlines()[-1] if detail else ''}")
+            time.sleep(attempt * 10)
+    raise DeployError(f"git {redact(' '.join(args))} 失败：{detail}")
 
 
 def required_env(name: str) -> str:
@@ -201,7 +208,7 @@ def main() -> int:
         parser.error("--build-number 必须是正整数（Flow 里用 BUILD_NUMBER）")
     try:
         summary = deploy(args.env.strip(), args.branch, args.build_number)
-    except (OSError, RuntimeError, TypeError, ValueError) as exc:
+    except (OSError, RuntimeError, TypeError, ValueError, subprocess.SubprocessError) as exc:
         # 登记与抬线的异常只带目标地址与状态，不含密钥；仍统一去掉地址里的凭据再输出
         print(f"部署失败：{type(exc).__name__}: {redact(str(exc))}")
         return 1

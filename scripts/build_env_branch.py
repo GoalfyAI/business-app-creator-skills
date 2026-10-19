@@ -37,9 +37,30 @@ TEXT_ROOTS = ("skills", "claude-code", "codex", "manus", "generic", "docs", ".cl
 TEXT_SUFFIXES = {".md", ".json", ".yaml", ".yml", ".txt"}
 
 
-def run(*args: str, cwd: Path | None = None, capture: bool = False) -> str:
-    result = subprocess.run(args, cwd=cwd, check=True, text=True, capture_output=capture)
-    return result.stdout.strip() if capture else ""
+CREDENTIAL_RE = re.compile(r"://[^/@\s]+@")
+# 构建机访问 GitHub 时常见的瞬时网络错误，只对这几类远程操作重试
+NETWORK_COMMANDS = {"ls-remote", "fetch", "push"}
+
+
+class GitCommandError(RuntimeError):
+    """git 命令失败；信息已去掉地址里的凭据。"""
+
+
+def redact(text: str) -> str:
+    return CREDENTIAL_RE.sub("://***@", text)
+
+
+def run(*args: str, cwd: Path | None = None, capture: bool = False, attempts: int = 4) -> str:
+    tries = attempts if len(args) > 1 and args[0] == "git" and args[1] in NETWORK_COMMANDS else 1
+    for attempt in range(1, tries + 1):
+        result = subprocess.run(args, cwd=cwd, check=False, text=True, capture_output=True)
+        if result.returncode == 0:
+            return result.stdout.strip() if capture else ""
+        detail = redact((result.stderr or result.stdout).strip())
+        if attempt < tries:
+            print(f"{redact(' '.join(args[:2]))} 第 {attempt} 次失败，{attempt * 10} 秒后重试：{detail.splitlines()[-1] if detail else ''}")
+            time.sleep(attempt * 10)
+    raise GitCommandError(f"{redact(' '.join(args))} 失败：{detail}")
 
 
 def export_source(ref: str, out: Path) -> str:
@@ -139,7 +160,7 @@ def push(out: Path, info: dict[str, str]) -> str:
         work = Path(tmp)
         run("git", "init", "-q", cwd=work)
         run("git", "remote", "add", "origin", push_url, cwd=work)
-        exists = subprocess.run(["git", "ls-remote", "--exit-code", "--heads", "origin", branch], cwd=work, capture_output=True, check=False).returncode == 0
+        exists = bool(run("git", "ls-remote", "--heads", "origin", branch, cwd=work, capture=True))
         if exists:
             run("git", "fetch", "-q", "--depth=1", "origin", branch, cwd=work)
             run("git", "checkout", "-q", "-b", branch, "FETCH_HEAD", cwd=work)
