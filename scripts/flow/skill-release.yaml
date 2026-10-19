@@ -3,7 +3,7 @@
 #   部署pre：PRE 部署这个提交（推 GitHub business-pre、登记 PRE Hub、设两线），回调 OA 生成待审批的发版审查
 #   PRE审批：人工卡点，由 OA 发车放行
 #   部署prod：同一提交推 GitHub main、登记 prod Hub、设两线，回调 OA 立即核验生产并对账
-# 只运行 main；其他分支在 QA / PRE 环境流水线（skill-env-deploy.yaml）里测。
+# 只运行 main；其他分支在 QA 环境流水线（skill-env-deploy.yaml）里测。
 #
 # 新建流水线时需要：
 # 1. 代码源：本仓库，分支 main；不开启代码提交触发（发版由人手动运行，或按需改为合入 main 触发）。
