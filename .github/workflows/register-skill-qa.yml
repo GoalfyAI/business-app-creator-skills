@@ -1,11 +1,10 @@
 name: Register Skill QA Candidate
 
-# business-qa 分支由 scripts/build_qa_branch.py 从 Codeup 的 qa/main 生成（云效流水线自动推送）。
-# 这里只做两件事：按 qa 渠道校验产物，登记到 QA Hub 并把 QA 建议线抬到这个版本。
+# business-qa 分支由 Codeup QA 流水线（scripts/deploy_env.py → build_env_branch.py）生成并推送，
+# 登记与抬线也在那条流水线里完成；这里不再随推送触发，只保留手动运行作为应急补登记。
+# 手动运行时：按 qa 渠道校验产物，登记到 QA Hub 并把 QA 建议线抬到这个版本。
 # 不向 PRE / prod 登记任何东西。 [任务:T-3784]
 on:
-  push:
-    branches: [business-qa]
   workflow_dispatch:
 
 permissions:

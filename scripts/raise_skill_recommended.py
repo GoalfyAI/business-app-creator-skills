@@ -1,4 +1,4 @@
-"""把 Hub 的 Skill 建议线抬到已登记版本，保留强制线与应急开关。 [任务:T-4466]
+"""把 Hub 的 Skill 版本线抬到已登记版本：默认只抬建议线；raise_lines(required=True) 连同强制线一起抬。 [任务:T-4466]
 
 QA 分支每出一个候选版就调用一次：旧版本仍能建工单，只会收到升级提示。
 策略接口是整体覆盖（PUT /api/internal/workflow/scene-skill-versions/policy），所以先读当前
@@ -125,6 +125,11 @@ def read_policy(data: dict) -> dict:
 
 def raise_recommended(version: str, hub: str, headers: dict[str, str]) -> None:
     """只提升建议线；结果未知时由下次运行先读取对账，不自动重发 PUT。"""
+    raise_lines(version, hub, headers, required=False)
+
+
+def raise_lines(version: str, hub: str, headers: dict[str, str], *, required: bool) -> None:
+    """把建议线（required=True 时连同强制线）提升到已登记版本；按登记 ID 只升不降，应急开关保持原值。"""
     payload = request("GET", hub + RELEASES_PATH, headers)
     data = payload.get("data", payload)
     if not isinstance(data, dict):
@@ -139,18 +144,26 @@ def raise_recommended(version: str, hub: str, headers: dict[str, str]) -> None:
             raise RuntimeError("Hub 发布记录缺少有效登记 ID")
         registered[row.get("version_string")] = release_id
     if version not in registered:
-        raise RuntimeError("目标版本尚未在 Hub 登记，不能设为建议线")
-    current = policy.get("min_recommended_version") or ""
-    if current and current not in registered:
-        raise RuntimeError("当前建议线指向未登记版本，停止写入")
-    if current and registered[current] >= registered[version]:
-        print(f"{hub} 建议线已是同版或更新登记版本，跳过")
-        return
+        raise RuntimeError("目标版本尚未在 Hub 登记，不能设为版本线")
+    fields = ("min_required_version", "min_recommended_version") if required else ("min_recommended_version",)
     body = {
         "min_required_version": policy.get("min_required_version") or "",
-        "min_recommended_version": version,
+        "min_recommended_version": policy.get("min_recommended_version") or "",
         "emergency_bypass": bool(policy.get("emergency_bypass")),
     }
+    changed = []
+    for field in fields:
+        current = body[field]
+        if current and current not in registered:
+            raise RuntimeError(f"当前 {field} 指向未登记版本，停止写入")
+        if current and registered[current] >= registered[version]:
+            continue
+        body[field] = version
+        changed.append(field)
+    label = "强制线与建议线" if required else "建议线"
+    if not changed:
+        print(f"{hub} {label}已是同版或更新登记版本，跳过")
+        return
     request("PUT", hub + POLICY_PATH, headers, body)
     after = request("GET", hub + RELEASES_PATH, headers)
     after_data = after.get("data", after)
@@ -159,7 +172,8 @@ def raise_recommended(version: str, hub: str, headers: dict[str, str]) -> None:
     after_policy = read_policy(after_data)
     if any(after_policy.get(field) != value for field, value in body.items()):
         raise RuntimeError("写入后读回策略不一致，停止并人工对账")
-    print(f"{hub} 建议线已抬到 {version}，强制线和应急开关保持不变")
+    kept = "应急开关保持不变" if required else "强制线和应急开关保持不变"
+    print(f"{hub} {label}已抬到 {version}（实际更新 {', '.join(changed)}），{kept}")
 
 
 def main() -> int:
