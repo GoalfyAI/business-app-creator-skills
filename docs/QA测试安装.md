@@ -1,7 +1,10 @@
 # 安装 QA 版业务应用助手
 
-QA 版装在 GitHub 的 `business-qa` 分支，连接 QA 环境的 MCP。它由 Codeup `qa/main` 自动生成：`qa/main` 有推送，
-几分钟后 `business-qa` 分支就是最新的 QA 候选版，并已登记到 QA 环境，不需要手工改任何文件。
+QA 版装在 GitHub 的 `business-qa` 分支，连接 QA 环境的 MCP。它由 Codeup 的 QA 部署流水线生成：在流水线里选分支
+运行后，`business-qa` 分支就是这次部署的版本，并已登记到 QA 环境，不需要手工改任何文件。
+
+PRE 版同理：分支是 `business-pre`，环境变量是 `BUSINESS_APP_CREATOR_PRE_API_KEY`，密钥在
+https://goalfymax.pre.goalfyai.cn/developer/api-keys 生成；下文命令把 `business-qa`、`QA` 换成 `business-pre`、`PRE` 即可。
 
 QA 版与正式版的插件同名，一台机器同一时间只能装一个。
 

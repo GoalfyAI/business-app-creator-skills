@@ -99,24 +99,38 @@ Skill 版本必须不可预测，插件版本必须可比大小，两个要求�
 
 ## 发版
 
-```bash
-./scripts/release-skill.sh "变更说明"
-git push --follow-tags origin main
-git push --follow-tags github main
-```
+发版跟随 Codeup 的环境部署：qa / pre / prod 各有一条云效流水线（模板见
+`scripts/flow/skill-env-deploy.yaml`），运行时选择分支，入口是 `scripts/deploy_env.py`。
+GitHub 只作为安装源，由流水线推送，不在 GitHub 上手工改分支。
 
-脚本会切一个新的随机 Skill 版本、提升所有插件版本、重建四个平台的 Skill 副本与压缩包、
-刷新发布清单，然后提交并打 `skill/<version>` tag。发版前工作区必须干净。
+| 环境 | GitHub 安装分支 | 部署 main | 部署其他分支 |
+|---|---|---|---|
+| qa | `business-qa` | 发版（或沿用）→ 推分支 → 登记 → 强制线与建议线设为该版本 | 生成新版本 → 推分支 → 登记，不动版本线 |
+| pre | `business-pre` | 同上 | 同上 |
+| prod | `main` | 同上 | 不允许 |
 
-推送后由 GitHub Actions 接手：
+部署 main 时，main 最新提交上已有 `skill/<version>` tag 就沿用该版本；否则流水线运行
+`release-skill.sh` 切新版本，把发布提交与 tag 推回 Codeup main。同一份 main 先后部署到三个
+环境用的是同一个版本。qa / pre 的安装物料由 `build_env_branch.py` 按环境渠道生成（MCP 地址、
+密钥变量名、升级链接都换成该环境），`package_version` 为源码版本加 `-<环境>.<构建号>`。
+版本线按登记 ID 只升不降，应急开关保持原值。
+
+每条流水线需要的变量见流水线模板注释：`SKILL_ENV`，以及加密的 `CODEUP_PUSH_URL`、
+`GITHUB_PUSH_URL`、`SKILL_REGISTRY_SECRET`、`HUB_API_KEY`、`HUB_OPERATOR_EMAIL`、`HUB_OPERATOR_ID`。
+任何一项缺失都在写入前失败。
+
+本地仍可用 `./scripts/release-skill.sh "变更说明"` 切版本并推送 main 与 tag；之后运行对应环境
+流水线时会沿用这个版本。
+
+GitHub Actions：
 
 | Workflow | 触发 | 作用 |
 |---|---|---|
-| `register-skill-release` | push main | 校验产物一致后，向各环境 Hub 登记版本 |
 | `publish-skill-release` | `skill/v*` tag | 从发布清单创建 GitHub Release |
 | `build-platform-zips` | Skill 内容变更 | 重新打包 Manus 与通用集成的压缩包 |
+| `register-skill-release` / `register-skill-qa` | 仅手动 | 应急补登记，日常不用 |
 
-校验只在 GitHub Actions 上跑，推送到 GitHub 后自动触发。
+三条流水线各自串行，跨环境不加锁；现有策略接口是整体 PUT，人工编辑策略须避开部署写窗口。
 
 ## 提交信息
 

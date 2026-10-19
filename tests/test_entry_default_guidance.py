@@ -36,9 +36,10 @@ def test_entry_mapping_forbids_direct_default(form_guidance):
     assert "入口映射里需要默认值的字段用映射的 `default` 声明" not in form_guidance
 
 
-def test_entry_defaults_are_materialized_before_submission(form_guidance):
-    """声明或保存不能替代真实填值，也不能承诺未经核验的入口 transform 能力。"""
-    assert "Schema 的 `default` 只是声明，不会自动填充实际输入" in form_guidance
-    assert "表单或调用方**必须**在提交前把默认值写入实际表单数据" in form_guidance
-    assert "首次路线冒泡用 `workflow_input` 传入已填值的入口数据" in form_guidance
-    assert "不要把 `transform` 当作入口运行时自动补默认值的保证" in form_guidance
+def test_entry_defaults_use_default_transform(form_guidance):
+    """入口默认值走运行时已支持的 default 变换，Schema default 不填值，定时自动化仍按 Schema 必填传值。"""
+    assert '"transform":{"kind":"default","value":…}' in form_guidance
+    assert "Schema 的 `default` 只是声明，不会自动填值" in form_guidance
+    assert "定时自动化发起时仍要传值" in form_guidance
+    assert "必须**在提交前把默认值写入实际表单数据" not in form_guidance
+    assert "不要把 `transform` 当作入口运行时自动补默认值的保证" not in form_guidance
