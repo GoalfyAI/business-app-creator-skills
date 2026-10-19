@@ -128,3 +128,68 @@ def test_main_then_prod_then_feature(tmp_path, hub, monkeypatch):
     assert state["policy"]["min_required_version"] == version
     assert json.loads(git("show", "business-qa:skill-release.json", cwd=github))["version"] == summary["version"]
     assert git("rev-parse", "refs/heads/main", cwd=codeup) == codeup_main
+
+
+def test_release_pipeline_pins_commit_through_pre_and_prod(tmp_path, hub, monkeypatch):
+    """发版流水线：准备发版记下 USER_COMMIT；PRE 审批期间 main 再合入提交，prod 仍上线 PRE 验过的那个提交。"""
+    hub_url, state = hub
+    codeup = tmp_path / "codeup.git"
+    github = tmp_path / "github.git"
+    git("clone", "-q", "--bare", str(ROOT), str(codeup), cwd=tmp_path)
+    git("update-ref", "refs/heads/main", git("rev-parse", "HEAD", cwd=ROOT), cwd=codeup)
+    base = tmp_path / "base"
+    git("clone", "-q", "-b", "main", str(codeup), str(base), cwd=tmp_path)
+    git("-c", "user.name=test", "-c", "user.email=test@example.com",
+        "commit", "-q", "--allow-empty", "-m", "test: 待发版提交", cwd=base)
+    git("push", "-q", "origin", "HEAD:refs/heads/main", cwd=base)
+    git("clone", "-q", "--bare", str(codeup), str(github), cwd=tmp_path)
+    monkeypatch.chdir(tmp_path)
+    flow_env = tmp_path / "flow.env"
+    for key, value in {**IDENTITY, "GITHUB_PUSH_URL": str(github), "CODEUP_PUSH_URL": str(codeup),
+                       "SKILL_REGISTRY_SECRET": "s2s", "HUB_API_KEY": "hub-key", "FLOW_ENV": str(flow_env),
+                       "HUB_OPERATOR_EMAIL": "ops@goalfyai.com", "HUB_OPERATOR_ID": "1"}.items():
+        monkeypatch.setenv(key, value)
+
+    prepare = checkout(tmp_path, codeup, "prepare", "main")
+    summary = load_deploy(prepare, hub_url).release_only("main")
+    pinned = summary["source_sha"]
+    assert summary["released"] == "True"
+    assert flow_env.read_text().splitlines()[0] == f"USER_COMMIT={pinned}"
+
+    # PRE 审批期间 main 又合入一个提交
+    git("pull", "-q", "origin", "main", cwd=base)
+    git("-c", "user.name=test", "-c", "user.email=test@example.com",
+        "commit", "-q", "--allow-empty", "-m", "test: 审批期间合入", cwd=base)
+    git("push", "-q", "origin", "HEAD:refs/heads/main", cwd=base)
+    later = git("rev-parse", "HEAD", cwd=base)
+    monkeypatch.setenv("USER_COMMIT", pinned)
+
+    pre = checkout(tmp_path, codeup, "pre-main", "main")
+    assert load_deploy(pre, hub_url).deploy("pre", "main", 7)["source_sha"] == pinned
+    assert json.loads(git("show", "business-pre:skill-release.json", cwd=github))["version"] == summary["version"]
+
+    prod = checkout(tmp_path, codeup, "prod-main", "main")
+    result = load_deploy(prod, hub_url).deploy("prod", "main", 8)
+    assert result["source_sha"] == pinned and result["released"] == "False"
+    assert git("rev-parse", "refs/heads/main", cwd=github) == pinned != later
+    assert state["policy"]["min_required_version"] == summary["version"]
+
+
+def test_pinned_commit_must_be_release_on_main(tmp_path, hub, monkeypatch):
+    hub_url, _ = hub
+    codeup = tmp_path / "codeup.git"
+    git("clone", "-q", "--bare", str(ROOT), str(codeup), cwd=tmp_path)
+    git("update-ref", "refs/heads/main", git("rev-parse", "HEAD", cwd=ROOT), cwd=codeup)
+    base = tmp_path / "base"
+    git("clone", "-q", "-b", "main", str(codeup), str(base), cwd=tmp_path)
+    git("-c", "user.name=test", "-c", "user.email=test@example.com",
+        "commit", "-q", "--allow-empty", "-m", "test: 非发布提交", cwd=base)
+    git("push", "-q", "origin", "HEAD:refs/heads/main", cwd=base)
+    plain = git("rev-parse", "HEAD", cwd=base)
+    work = checkout(tmp_path, codeup, "w", "main")
+    module = load_deploy(work, hub_url)
+    monkeypatch.chdir(tmp_path)
+    with pytest.raises(module.DeployError, match="不是发布提交"):
+        module.ensure_main_release(str(codeup), plain)
+    with pytest.raises(module.DeployError, match="完整提交号"):
+        module.ensure_main_release(str(codeup), plain[:9])
