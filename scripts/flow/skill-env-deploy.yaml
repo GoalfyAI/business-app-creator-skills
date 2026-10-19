@@ -32,8 +32,9 @@ stages:
     jobs:
       job_deploy:
         name: deploy_env
+        # 香港构建机：北京公共构建机访问 GitHub 常断（Empty reply from server）
         runsOn:
-          group: public/cn-beijing
+          group: public/cn-hongkong
           container: build-steps-public-registry.cn-beijing.cr.aliyuncs.com/build-steps/alinux3:latest
         steps:
           setup_python:
