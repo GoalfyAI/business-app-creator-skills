@@ -82,8 +82,15 @@ def test_main_then_prod_then_feature(tmp_path, hub, monkeypatch):
     codeup = tmp_path / "codeup.git"
     github = tmp_path / "github.git"
     git("clone", "-q", "--bare", str(ROOT), str(codeup), cwd=tmp_path)
-    head = git("rev-parse", "HEAD", cwd=ROOT)
-    git("update-ref", "refs/heads/main", head, cwd=codeup)
+    git("update-ref", "refs/heads/main", git("rev-parse", "HEAD", cwd=ROOT), cwd=codeup)
+    # 仓库 HEAD 可能正是发版提交（带 skill/<版本> tag），流程会沿用而不发版；
+    # 在其上补一个普通提交，让用例与仓库当前状态无关。
+    base = tmp_path / "base"
+    git("clone", "-q", "-b", "main", str(codeup), str(base), cwd=tmp_path)
+    git("-c", "user.name=test", "-c", "user.email=test@example.com",
+        "commit", "-q", "--allow-empty", "-m", "test: 发版前的普通提交", cwd=base)
+    git("push", "-q", "origin", "HEAD:refs/heads/main", cwd=base)
+    head = git("rev-parse", "HEAD", cwd=base)
     git("clone", "-q", "--bare", str(codeup), str(github), cwd=tmp_path)
     monkeypatch.chdir(tmp_path)
     for key, value in {**IDENTITY, "GITHUB_PUSH_URL": str(github), "CODEUP_PUSH_URL": str(codeup),
