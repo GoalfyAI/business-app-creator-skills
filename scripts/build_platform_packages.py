@@ -88,8 +88,8 @@ ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 # 文档里的 API 密钥页域名（goalfymax.goalfyai.cn ↔ goalfymax.goalfyai.cn），再发版。
 PROD_MCP_ENDPOINT = "https://business-app-creator-mcp.goalfyai.cn/mcp"
 # 渠道：同一份 Skill 源码按环境生成不同的安装物料。main 分支就是 prod 渠道（已安装用户都在这里），
-# qa 渠道由 scripts/build_qa_branch.py 从 qa/main 生成、推到 GitHub 的 qa 分支。环境相关的只有
-# MCP 地址、密钥环境变量名与 API 密钥页；源码一律保持 prod 写法。 [任务:T-3784]
+# qa / pre 渠道由 scripts/build_env_branch.py 生成、推到 GitHub 的 business-qa / business-pre 分支。
+# 环境相关的只有 MCP 地址、密钥环境变量名与 API 密钥页；源码一律保持 prod 写法。 [任务:T-3784]
 RELEASE_CHANNELS = {
     "prod": {
         "mcp_endpoint": PROD_MCP_ENDPOINT,
@@ -101,14 +101,19 @@ RELEASE_CHANNELS = {
         "api_key_env": "BUSINESS_APP_CREATOR_QA_API_KEY",
         "api_keys_page": "https://goalfymax.qa.goalfyai.cn/developer/api-keys",
     },
+    "pre": {
+        "mcp_endpoint": "https://business-app-creator-mcp.pre.goalfyai.cn/mcp",
+        "api_key_env": "BUSINESS_APP_CREATOR_PRE_API_KEY",
+        "api_keys_page": "https://goalfymax.pre.goalfyai.cn/developer/api-keys",
+    },
 }
 CHANNEL_ENV = "SKILL_RELEASE_CHANNEL"
-QA_PACKAGE_VERSION_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-qa\.(0|[1-9]\d*)$")
+ENV_PACKAGE_VERSION_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-(qa|pre)\.(0|[1-9]\d*)$")
 DATA_SKILL_VERSION_RE = re.compile(r"^v\d{8}-[0-9a-f]{6}$")
 LEGACY_SKILL_VERSION_RE = re.compile(r"^v\d+\.\d+\.\d+$")
 SKILL_VERSION_RE = re.compile(r"\[skill-version:(v(?:\d+\.\d+\.\d+|\d{8}-[0-9a-f]{6}))\]")
 SEMVER_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
-PACKAGE_VERSION_RE = re.compile(r'("version":\s*")(\d+\.\d+\.\d+(?:-qa\.\d+)?)(")')
+PACKAGE_VERSION_RE = re.compile(r'("version":\s*")(\d+\.\d+\.\d+(?:-(?:qa|pre)\.\d+)?)(")')
 REQUIRED_SKILL_KEYWORDS = {
     "scene package",
     "scenario package",
@@ -502,13 +507,14 @@ def _load_manifest(skill_root: Path) -> dict[str, Any]:
 
 
 def _validate_package_version(version: Any) -> tuple[int, int, int]:
-    """prod 渠道只接受 MAJOR.MINOR.PATCH；qa 渠道只接受 MAJOR.MINOR.PATCH-qa.N。"""
+    """prod 渠道只接受 MAJOR.MINOR.PATCH；qa / pre 渠道只接受 MAJOR.MINOR.PATCH-<渠道>.N。"""
     if not isinstance(version, str):
         raise ReleaseError("package version 必须是字符串")
-    if release_channel() == "qa":
-        matched = QA_PACKAGE_VERSION_RE.fullmatch(version)
-        if not matched:
-            raise ReleaseError("qa 渠道的 package version 必须是 MAJOR.MINOR.PATCH-qa.N")
+    channel = release_channel()
+    if channel != "prod":
+        matched = ENV_PACKAGE_VERSION_RE.fullmatch(version)
+        if not matched or matched.group(4) != channel:
+            raise ReleaseError(f"{channel} 渠道的 package version 必须是 MAJOR.MINOR.PATCH-{channel}.N")
         return tuple(int(part) for part in matched.groups()[:3])  # type: ignore[return-value]
     if not SEMVER_RE.fullmatch(version):
         raise ReleaseError("package version 必须是 MAJOR.MINOR.PATCH")
@@ -578,7 +584,7 @@ def _bump_package_version(skill_root: Path, version: str) -> None:
             raise ReleaseError(f"{relative} 的 version 字段替换失败")
         path.write_text(updated, encoding="utf-8")
 
-    # pyproject / uv.lock 只跟 prod 版本走：qa 的预发布后缀不是合法的 PEP 440 版本，且不影响插件分发
+    # pyproject / uv.lock 只跟 prod 版本走：qa / pre 的预发布后缀不是合法的 PEP 440 版本，且不影响插件分发
     if release_channel() != "prod":
         return
     pyproject = repository_root / "pyproject.toml"
@@ -939,7 +945,7 @@ def release(
         raise ReleaseError("update_reason 必须包含 1～1024 个字符")
 
     manifest_path = _manifest_path(skill_root)
-    # qa 渠道的版本号是「main 的 package version + -qa.N」，由 build_qa_branch.py 生成，不走 prod 的递增规则
+    # qa / pre 渠道的版本号是「main 的 package version + -<渠道>.N」，由 build_env_branch.py 生成，不走 prod 的递增规则
     if manifest_path.exists() and release_channel() == "prod":
         current = _load_manifest(skill_root)
         current_package_version = current.get("package_version")

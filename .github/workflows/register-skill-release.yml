@@ -1,21 +1,9 @@
 name: Register Skill Release
 
 # 校验产物并登记到各环境 Hub，成功后自动抬建议线；强制线保持不变。
+# 日常发版与抬线已由 Codeup 三条环境流水线（scripts/deploy_env.py）完成，GitHub 只跟随推送；
+# 这里不再随推送触发，只保留手动运行作为应急补登记。
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'skill-release.json'
-      - 'skills/**'
-      # 平台安装文档也参与校验：check 会核对其中的必备事实与 MCP 配置
-      - 'claude-code/**'
-      - 'codex/**'
-      - 'manus/**'
-      - 'generic/**'
-      - 'scripts/**'
-      - '.github/workflows/register-skill-release.yml'
-      # bot 提交的 zip 不必再触发一轮登记
-      - '!**/*.zip'
   workflow_dispatch:
 
 permissions:

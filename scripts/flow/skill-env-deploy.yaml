@@ -1,0 +1,54 @@
+# 云效 Flow 流水线模板：Skill 按环境部署，GitHub 完全跟随 Codeup。qa / pre / prod 各建一条，只改 SKILL_ENV。
+# 运行时选择要部署的分支：
+#   main          → 自动发版（main 最新提交已有发布 tag 就沿用），推 GitHub 对应分支，登记该环境 Hub，强制线与建议线设为该版本
+#   其他分支（仅 qa / pre）→ 生成带新版本的环境安装物料，推 GitHub 对应分支并登记，不动版本线
+# 详见 scripts/deploy_env.py。
+#
+# 新建流水线时需要：
+# 1. 代码源：本仓库，默认分支 main，运行时可选分支；不开启代码提交触发（部署由人手动运行）。
+# 2. 变量：顶层 variables 写 SKILL_ENV（qa / pre / prod）；以下加密变量放进通用变量组，用顶层 variableGroups 关联
+#    （共用组：CODEUP_PUSH_URL、GITHUB_PUSH_URL、HUB_OPERATOR_*；每个环境一组：SKILL_REGISTRY_SECRET、HUB_API_KEY）
+#    CODEUP_PUSH_URL        https://<账号>:<令牌>@codeup.aliyun.com/goalfyai/goalfyagent/scene-creator-skills.git（可推 main 与 tag）
+#    GITHUB_PUSH_URL        https://x-access-token:<令牌>@github.com/GoalfyAI/business-app-creator-skills.git（contents 写权限）
+#    SKILL_REGISTRY_SECRET  该环境 Nacos goalfymax/goalfyhub-backend 的 scene_skill_release.s2s_secret
+#    HUB_API_KEY            该环境 Nacos goalfyhub/scene-creator-mcp-server-external 的 hub_api_key
+#    HUB_OPERATOR_EMAIL / HUB_OPERATOR_ID  版本线操作人
+sources:
+  repo_0:
+    type: codeup
+    name: scene-creator-skills
+    endpoint: https://codeup.aliyun.com/goalfyai/goalfyagent/scene-creator-skills.git
+    branch: main
+    certificate:
+      type: serviceConnection
+      serviceConnection: <与其他流水线相同的 Codeup 服务连接>
+defaultWorkspace: repo_0
+concurrencyConfig:
+  maxRunningPipelineInstances: 1
+  pipelineMaxRunningBehavior: queue
+stages:
+  stage_deploy:
+    name: 部署 Skill
+    jobs:
+      job_deploy:
+        name: deploy_env
+        # 香港构建机：北京公共构建机访问 GitHub 常断（Empty reply from server）
+        runsOn:
+          group: public/cn-hongkong
+          container: build-steps-public-registry.cn-beijing.cr.aliyuncs.com/build-steps/alinux3:latest
+        steps:
+          setup_python:
+            step: SetupPython
+            with:
+              pythonVersion: '3.12'
+          deploy:
+            step: Command
+            with:
+              run: |
+                set -euo pipefail
+                set +x
+                cd "${PROJECT_DIR}"
+                # SetupPython 把解释器装在仓库目录的 Python/ 下，不忽略会让发版脚本判定工作区不干净
+                echo "/Python/" >> .git/info/exclude
+                python3 -m pip install --quiet pyyaml
+                python3 scripts/deploy_env.py --env "${SKILL_ENV}" --branch "${CI_COMMIT_REF_NAME}" --build-number "${BUILD_NUMBER}"
