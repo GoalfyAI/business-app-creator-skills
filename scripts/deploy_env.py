@@ -92,11 +92,17 @@ def release_notes(head: str) -> str:
     return notes if len(notes) <= 1000 else notes[:999] + "…"
 
 
-def ensure_main_release(codeup_url: str) -> tuple[str, str, bool]:
-    """返回（版本, 提交, 是否本次新发版）。只在 main 最新提交上发版，避免推回时覆盖他人提交。"""
+def ensure_main_release(codeup_url: str, pinned: str | None = None) -> tuple[str, str, bool]:
+    """返回（版本, 提交, 是否本次新发版）。只在 main 最新提交上发版，避免推回时覆盖他人提交。
+
+    pinned 是发版流水线「准备发版」记下的 USER_COMMIT：PRE 与 prod 都部署这一个发布提交，
+    期间 main 上新合入的提交不会被带进 prod。
+    """
     if git("rev-parse", "--is-shallow-repository") == "true":
         git("fetch", "-q", "--unshallow", codeup_url)
     git("fetch", "-q", "--tags", codeup_url, "+refs/heads/main:refs/remotes/codeup/main")
+    if pinned:
+        return _checkout_pinned_release(pinned)
     head = git("rev-parse", "HEAD")
     if head != git("rev-parse", "refs/remotes/codeup/main"):
         raise DeployError("本次检出的不是 Codeup main 最新提交，请重新运行流水线")
@@ -116,6 +122,34 @@ def ensure_main_release(codeup_url: str) -> tuple[str, str, bool]:
     git("push", "--atomic", codeup_url, "HEAD:refs/heads/main", f"refs/tags/skill/{version}")
     print(f"已发版 {version}（{sha[:9]}），发布提交与 tag 已推回 Codeup main")
     return version, sha, True
+
+
+def _checkout_pinned_release(pinned: str) -> tuple[str, str, bool]:
+    pinned = pinned.strip().lower()
+    if not re.fullmatch(r"[0-9a-f]{40}", pinned):
+        raise DeployError("USER_COMMIT 必须是完整提交号")
+    try:
+        git("merge-base", "--is-ancestor", pinned, "refs/remotes/codeup/main")
+    except DeployError:
+        raise DeployError(f"USER_COMMIT {pinned[:9]} 不在 Codeup main 上") from None
+    git("checkout", "-q", "--detach", pinned)
+    version = manifest_version(REPO_ROOT)
+    if f"skill/{version}" not in git("tag", "--points-at", pinned).splitlines():
+        raise DeployError(f"USER_COMMIT {pinned[:9]} 不是发布提交（缺少 tag skill/{version}）")
+    print(f"部署发版流水线锁定的发布提交 {pinned[:9]}（{version}）")
+    return version, pinned, False
+
+
+def release_only(branch: str) -> dict[str, str]:
+    """发版流水线「准备发版」：在 main 最新提交上发版或沿用，把发布提交写进 Flow 变量 USER_COMMIT。"""
+    if branch.removeprefix("refs/heads/").strip() != "main":
+        raise DeployError("发版流水线只运行 main")
+    version, sha, released = ensure_main_release(required_env("CODEUP_PUSH_URL"))
+    flow_env = os.environ.get("FLOW_ENV", "").strip()
+    if flow_env:
+        with open(flow_env, "a", encoding="utf-8") as handle:
+            handle.write(f"USER_COMMIT={sha}\nSKILL_VERSION={version}\n")
+    return {"version": version, "source_sha": sha, "released": str(released)}
 
 
 def push_github_main(github_url: str, sha: str, version: str) -> None:
@@ -182,7 +216,7 @@ def deploy(env: str, branch: str, build_number: int) -> dict[str, str]:
             headers = hub_headers()
         except (RuntimeError, TypeError, ValueError) as exc:
             raise DeployError(f"Hub 操作身份配置无效：{exc}") from None
-        version, sha, released = ensure_main_release(codeup_url)
+        version, sha, released = ensure_main_release(codeup_url, os.environ.get("USER_COMMIT", "").strip() or None)
         if env == "prod":
             push_github_main(github_url, sha, version)
             root = REPO_ROOT
@@ -203,7 +237,17 @@ def main() -> int:
     parser.add_argument("--env", default=os.environ.get("SKILL_ENV", ""), help="qa / pre / prod，默认读 SKILL_ENV")
     parser.add_argument("--branch", default=os.environ.get("CI_COMMIT_REF_NAME", ""), help="部署的 Codeup 分支")
     parser.add_argument("--build-number", type=int, default=int(os.environ.get("BUILD_NUMBER") or 0))
+    parser.add_argument("--release-only", action="store_true",
+                        help="只在 main 上发版或沿用版本，并把发布提交写进 Flow 变量 USER_COMMIT（发版流水线第一步）")
     args = parser.parse_args()
+    if args.release_only:
+        try:
+            summary = release_only(args.branch)
+        except (OSError, RuntimeError, TypeError, ValueError, subprocess.SubprocessError) as exc:
+            print(f"发版失败：{type(exc).__name__}: {redact(str(exc))}")
+            return 1
+        print("发版完成：" + json.dumps(summary, ensure_ascii=False))
+        return 0
     if args.build_number <= 0:
         parser.error("--build-number 必须是正整数（Flow 里用 BUILD_NUMBER）")
     try:
