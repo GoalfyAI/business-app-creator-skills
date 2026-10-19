@@ -4,7 +4,7 @@
   "version": "v20261019-bdb6be",
   "package_version": "2.0.28",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-19T14:19:36Z",
+  "released_at": "2026-10-19T15:15:39Z",
   "update_reason": "business-app-creator：各 flow 出口只写一条阶段记录 business_ui_stage，G1/G6/G7 阶段评分改写评分表 business_ui_stage_rating（发出写 no_reply、回复后追加），不再经 submit_dev_feedback 回传，写失败记错误原文继续（R-258/T-4588）",
   "source_files": [
     "SKILL.md",
@@ -42,7 +42,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "10fb58ae91890cd8ca188412eb5830e68b3f76869ab697bfa73a3e59c515e7b7",
+    "SKILL.md": "11bdbf48a8d052ae255f899f6e2c14f8947f994fe15eaadc2be72f9ae2efc38f",
     "agents/openai.yaml": "53f536bc0e7d54fb811ce78217b93f4cafcde48ca2a2be5ba23f04aff92b6f0b",
     "checklists/验收清单.md": "fe617b94aa47656d0b972c474a5a572569b0c0d780f984ace3df8ee54f75af3e",
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
