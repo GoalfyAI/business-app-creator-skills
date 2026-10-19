@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20261019-390859",
-  "package_version": "2.0.26",
+  "version": "v20261019-49970e",
+  "package_version": "2.0.27",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-19T07:54:55Z",
-  "update_reason": "fix(release): 部署流水线改用香港构建机访问 GitHub；fix(release): GitHub/Codeup 远程 git 操作遇瞬时网络错误重试，失败信息去掉凭据不打印堆栈；fix(release): 流水线忽略 SetupPython 装在仓库下的 Python/，说明密钥用变量组关联；feat(release): Skill 发版跟随 Codeup 三环境部署，GitHub 只作安装源；revert: 撤回 R-243 阶段记录 business_ui_stage（负责人判定查询逻辑无可靠主键，改为只写的 agent 记录本后重做） [任务:T-4562]；fix(skill): G6「可以上线」后严格按验收 checkpoint→阶段记录→G6 评分；list 见链异常仍调 create 并记错误原文；补记前缀与 G6/G7 合并评分模板就近写明 [任务:T-4562]；fix(skill): G6「可以上线」后单独写验收原话 checkpoint 再写阶段记录；补记以「补记：」开头且依次写入 [任务:T-4562]；fix(skill): 每个 flow 出口就近写明先 list 再 create、前面写失败也照做；补记后保留原错误原文 [任务:T-4562]；fix(skill): 阶段记录写失败只影响当次出口，之后每个出口照常先 list 再写并补记；阶段文档记返回的错误原文 [任务:T-4562]；refactor(skill): 阶段记录工具名改为 business_ui_stage [任务:T-4562]；fix(skill): G1–G7 出口写明 stage_record(action=\"create\") 工具名，满足验收第 22 条检查 [任务:T-4562]；feat(skill): 开工与每个 flow 出口写阶段记录 stage_record，接续与修订先 list，写失败不阻塞制作 [任务:T-4562]；feat(release): 正式发布自动抬 Skill 建议线 [任务:T-4466]",
+  "released_at": "2026-10-19T10:29:25Z",
+  "update_reason": "feat(release): Skill 发版流水线接入 OA 发车（部署pre → PRE审批 → 部署prod）；test(release): 部署端到端用例不再依赖仓库 HEAD 是否为发版提交 [任务:T-4466]",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -42,7 +42,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "b9cb5888f693f7d39ef43c677f9bb7127a12ade40710a3482dc78283d67ecb56",
+    "SKILL.md": "1aadb0f46ee3d2bee6684e6f2d9503609b7918ae3edfbf3921f3353353acede6",
     "agents/openai.yaml": "53f536bc0e7d54fb811ce78217b93f4cafcde48ca2a2be5ba23f04aff92b6f0b",
     "checklists/验收清单.md": "fe617b94aa47656d0b972c474a5a572569b0c0d780f984ace3df8ee54f75af3e",
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
