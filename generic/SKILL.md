@@ -106,10 +106,17 @@ G1–G7 是七个可选的工作步骤，每个解决一类问题。按这次需
 - 动手建资产或写代码前，开发者至少确认过一次要做什么：新建和较大的改动用确认页；只改文案、样式这类小改动，在对话里说清改什么、确认一句即可。
 - 顺序按依赖走：后一步要用前一步的产出（路线 ID、`business_ui_id`、数据模板）时，先把前一步做完；平台对象用到时再建，**禁止**提前建空容器；G2 只查不建（能力试用包除外）。
 - 上线前必须有开发者在「在线试用」里的确认（G6），上线本身要开发者明确说「可以上线」（G7），改动再小也一样。
-- 跳过或合并了哪些 flow、为什么，在方案页 `status` 或工单 checkpoint 里写一句，接续的人才知道做到了哪里。
+- 跳过或合并了哪些 flow、为什么，在方案页 `status` 或工单 checkpoint 里写一句，接续的人才知道做到了哪里；同时写进阶段记录的 `skipped`。
 - 确认页确认之后，一路做到开发者能在「在线试用」里验收，中间不设等开发者的环节：进度写进方案页，开发者想看随时看。只在缺开发者本人才能给的东西（授权、密钥、业务事实）、要做确认页没列的外部副作用、或你自己确实推进不下去时才停下来问。
 
 **阶段标记怎么写**：工作区里的 `workspace.json` 的 `targets[n].status`、对应 `docs/stages/` 文档 front matter 的 `status`、`WORKSPACE.md` 的 `current_stage` 是给后续 Agent 和开发观测看的记录，`doctor` 校验格式。只标实际做过的 flow：开始时 `in_progress`，出口满足 `passed`，失败 `failed`，跳过的保持 `not_started`；三处在同一动作里更新，`current_stage` 指向正在做的那个。阶段显示名以工作区里已有的为准（旧应用可能是旧名），只改状态，不改名。
+
+**阶段记录怎么写**：阶段记录是只写的记账，不是任何 flow 的进入条件，结单门也不检查它。
+- G1–G6 每个 flow 结束时（出口满足进下一段，或未通过退回前面的 flow），与阶段标记同一步调一次 `business_ui_stage`。
+- G7 例外：只在 G7 第 2 节第 7 步 `task_manager(action="complete")` 之前写一次（结单后写不进），G7 第 3 节标记 `passed` 时不再写。`complete` 被拒时按返回的出口处理，不补写；回到前面的 flow 时照常在那些出口写，再次到第 7 步时再写一条 G7 记录。
+- 填 `stage`、`result`、`completion`（做出了什么、出口条件是否满足）、`next_stage`、`reason`（为什么现在进下一段）、`next_plan`（`next_stage="closeout"` 时传空串）；跳过的 flow 写进 `skipped` 并给理由。G5 `setup` 之后带 `business_ui_id`。
+- 只调一次：失败把错误原文记进本段阶段文档，**禁止**重试、改参数再调或因此停下；下一个出口照常写。
+- 没有读取接口：接续、修订照旧按本地阶段文档和工单 checkpoint 定位。
 
 ## 6. 工具速查
 
@@ -129,6 +136,7 @@ G1–G7 是七个可选的工作步骤，每个解决一类问题。按这次需
 | 版本 | `list_asset_versions`、`ensure_editable_asset_draft`、`finalize_asset_version_online`、`compare_asset_versions`、`rollback_asset_version`、`get_asset_usage_impact` |
 | 工作区云端保存 | `workspace_remote_status / workspace_pull / workspace_push` |
 | 平台问题 | `submit_dev_feedback`、`query_dev_feedback` |
+| 阶段记录与评分 | `business_ui_stage`、`business_ui_stage_rating`（只写） |
 | 看页面效果 | 开发者看：开发者中心「演示预览」「在线试用」；你自己查：`npm --prefix frontend run check` 与脚手架本地布局回归（不开浏览器访问线上地址） |
 
 用某个工具前先确认它在你当前的工具列表里；找不到就如实说该能力当前不可用，**禁止**虚构平行工具。调用被拒时按返回的提示改，不猜、不自造兼容字段。
@@ -138,7 +146,7 @@ G1–G7 是七个可选的工作步骤，每个解决一类问题。按这次需
 - **不阻塞**（`worked_around` 已绕过、`request` 功能诉求）：不即时提交，记进开发记录，交付或本次会话结束时汇总成一条提交；
 - 新建前先 `query_dev_feedback` 查本人未关闭的反馈，同一问题带 `feedback_id` 追加，不重复新建。
 提交成功不等于问题已确认或已解决，不能据此放行验收。
-开发者的阶段评分（仅在 Codex 中）也用 `submit_dev_feedback` 回传，按 [design/阶段评分.md](design/阶段评分.md) 写，不受上面「不即时提交、汇总成一条」的限制。
+开发者的阶段评分（仅在 Codex 中）用 `business_ui_stage_rating` 写入，**不用** `submit_dev_feedback`，写法见 [design/阶段评分.md](design/阶段评分.md)。
 
 ## 7. 什么时候读 reference 与长契约
 
