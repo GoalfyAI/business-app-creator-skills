@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20261019-390859",
-  "package_version": "2.0.26-pre.4",
+  "version": "v20261019-49970e",
+  "package_version": "2.0.27-pre.2",
   "mcp_endpoint": "https://business-app-creator-mcp.pre.goalfyai.cn/mcp",
-  "released_at": "2026-10-19T08:02:46Z",
-  "update_reason": "PRE 版，来自 main b6bf52c0e（build 4）",
+  "released_at": "2026-10-19T10:30:03Z",
+  "update_reason": "PRE 版，来自 main d66c7c6a7（build 2）",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -42,7 +42,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "b9cb5888f693f7d39ef43c677f9bb7127a12ade40710a3482dc78283d67ecb56",
+    "SKILL.md": "1aadb0f46ee3d2bee6684e6f2d9503609b7918ae3edfbf3921f3353353acede6",
     "agents/openai.yaml": "013db1b6f4f6f0a8461ce66fba0c56d9fc363af425c82614cf72b78a14163cd4",
     "checklists/验收清单.md": "fe617b94aa47656d0b972c474a5a572569b0c0d780f984ace3df8ee54f75af3e",
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",

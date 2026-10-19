@@ -99,15 +99,20 @@ Skill 版本必须不可预测，插件版本必须可比大小，两个要求�
 
 ## 发版
 
-发版跟随 Codeup 的环境部署：qa / pre / prod 各有一条云效流水线（模板见
-`scripts/flow/skill-env-deploy.yaml`），运行时选择分支，入口是 `scripts/deploy_env.py`。
-GitHub 只作为安装源，由流水线推送，不在 GitHub 上手工改分支。
+发版跟随 Codeup 的环境部署，GitHub 只作为安装源，由流水线推送，不在 GitHub 上手工改分支。
+入口都是 `scripts/deploy_env.py`，有两类云效流水线：
+
+- **发版流水线**（模板 `scripts/flow/skill-release.yaml`，只跑 main，走 OA 发车）：
+  准备发版（发版或沿用，发布提交写进 `USER_COMMIT`）→ 部署pre（回调 OA 生成发版审查）→
+  PRE审批（OA 发车放行）→ 部署prod（回调 OA 核验生产并对账）。PRE 与 prod 部署的是同一个发布提交，
+  审批期间 main 上新合入的提交不会被带进 prod。OA 规范服务 scene-creator-skills 登记的就是这条流水线。
+- **环境流水线**（模板 `scripts/flow/skill-env-deploy.yaml`，qa / pre 各一条，运行时选分支）：用于测试。
 
 | 环境 | GitHub 安装分支 | 部署 main | 部署其他分支 |
 |---|---|---|---|
 | qa | `business-qa` | 发版（或沿用）→ 推分支 → 登记 → 强制线与建议线设为该版本 | 生成新版本 → 推分支 → 登记，不动版本线 |
-| pre | `business-pre` | 同上 | 同上 |
-| prod | `main` | 同上 | 不允许 |
+| pre | `business-pre` | 同上（发版流水线的部署pre 同样如此） | 同上 |
+| prod | `main` | 只经发版流水线，OA 发车放行后执行 | 不允许 |
 
 部署 main 时，main 最新提交上已有 `skill/<version>` tag 就沿用该版本；否则流水线运行
 `release-skill.sh` 切新版本，把发布提交与 tag 推回 Codeup main。同一份 main 先后部署到三个
@@ -115,7 +120,7 @@ GitHub 只作为安装源，由流水线推送，不在 GitHub 上手工改分�
 密钥变量名、升级链接都换成该环境），`package_version` 为源码版本加 `-<环境>.<构建号>`。
 版本线按登记 ID 只升不降，应急开关保持原值。
 
-每条流水线需要的变量见流水线模板注释：`SKILL_ENV`，以及加密的 `CODEUP_PUSH_URL`、
+每条流水线需要的变量见流水线模板注释（发版流水线另需 PRE 的 `SKILL_REGISTRY_SECRET_PRE`、`HUB_API_KEY_PRE`）：`SKILL_ENV`，以及加密的 `CODEUP_PUSH_URL`、
 `GITHUB_PUSH_URL`、`SKILL_REGISTRY_SECRET`、`HUB_API_KEY`、`HUB_OPERATOR_EMAIL`、`HUB_OPERATOR_ID`。
 任何一项缺失都在写入前失败。
 
