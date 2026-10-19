@@ -1,0 +1,15 @@
+schema_version: 1
+change_set_id: cs-T3998-87f7309571d0
+task_id: T-3998
+service: scene-creator-mcp-server
+scope: cross-service
+docs_impact: major
+reason: 统一场景包开发反馈写入九节点反馈真源并同步Skill路由口径
+permission_domain: open
+affected_doc_ids:
+    - goalfymax.oa.developer-feedback-nine-node-convergence
+canonical_uri: codeup://goalfy-spec/goalfy-knowledge/technical/oa/developer-feedback-nine-node-convergence.md
+base_revision: 6470b4ac7e5d9ae2cd258ec9c14e316e75aff11c
+document_revision: ebe1b465eb12c49e13bd0b34a3580a02514df28f
+status: doc_prepared
+created_at: "2026-09-29T08:58:39Z"
