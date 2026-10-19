@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20261019-49970e",
-  "package_version": "2.0.27",
+  "version": "v20261019-bdb6be",
+  "package_version": "2.0.28",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-19T12:16:39Z",
-  "update_reason": "T-4518：保留 main 当前版本，整合真实业务文案规则并重建平台产物",
+  "released_at": "2026-10-19T13:11:53Z",
+  "update_reason": "fix(skill): T-4518 按真实业务填写并接入界面文案",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -42,7 +42,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "1aadb0f46ee3d2bee6684e6f2d9503609b7918ae3edfbf3921f3353353acede6",
+    "SKILL.md": "8bf65e98534feb9e9064d866fd7df2b9fe27610ec5ad9dfcfc6d5aa53f99fd8c",
     "agents/openai.yaml": "53f536bc0e7d54fb811ce78217b93f4cafcde48ca2a2be5ba23f04aff92b6f0b",
     "checklists/验收清单.md": "fe617b94aa47656d0b972c474a5a572569b0c0d780f984ace3df8ee54f75af3e",
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
