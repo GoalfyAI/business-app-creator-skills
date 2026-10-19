@@ -4,7 +4,7 @@
   "version": "v20261019-390859",
   "package_version": "2.0.26",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-19T08:45:39Z",
+  "released_at": "2026-10-19T09:40:19Z",
   "update_reason": "business-app-creator：各 flow 出口只写一条阶段记录 business_ui_stage，G1/G6/G7 阶段评分改写评分表 business_ui_stage_rating（发出写 no_reply、回复后追加），不再经 submit_dev_feedback 回传，写失败记错误原文继续（R-258/T-4588）",
   "source_files": [
     "SKILL.md",
@@ -48,7 +48,7 @@
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
     "design/咨询模式.md": "2cdb8ffade6308edf080cafbd5e3d51098e0cc2a59d79f251f92850825181a8a",
     "design/确认页.md": "31d6a97d27bb132d3436857cc09e524278c8e08342b3db062a3d11d9b50ef2ec",
-    "design/阶段评分.md": "e9f718c0d147cfe1c3de645df8291e3eef8eae37fc22a0c120265ecf1c178624",
+    "design/阶段评分.md": "dec64fff67146c737f29d10693c77ee50849f71012948b686c1bdae3a9301785",
     "flow/G1-需求确认.md": "59070519b6d4f8ae6130f42d06a20a1909dc7ad833b26cc33ec8dd6ade12a575",
     "flow/G2-核实资产.md": "5d084801486729de53bc86da572fde54ce773b9cb0c57aaeddc715ec9fd5750f",
     "flow/G3-方案编译.md": "5fad6eec607510e9a15c75e44d4e4f2ffb0a85e655950d175ffccc2fcdf50e2c",
