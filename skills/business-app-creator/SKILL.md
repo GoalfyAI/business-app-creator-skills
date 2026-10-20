@@ -106,17 +106,27 @@ G1–G7 是七个可选的工作步骤，每个解决一类问题。按这次需
 - 动手建资产或写代码前，开发者至少确认过一次要做什么：新建和较大的改动用确认页；只改文案、样式这类小改动，在对话里说清改什么、确认一句即可。
 - 顺序按依赖走：后一步要用前一步的产出（路线 ID、`business_ui_id`、数据模板）时，先把前一步做完；平台对象用到时再建，**禁止**提前建空容器；G2 只查不建（能力试用包除外）。
 - 上线前必须有开发者在「在线试用」里的确认（G6），上线本身要开发者明确说「可以上线」（G7），改动再小也一样。
-- 跳过或合并了哪些 flow、为什么，在方案页 `status` 或工单 checkpoint 里写一句，接续的人才知道做到了哪里；同时写进阶段记录的 `skipped`。
+- 跳过或合并了哪些 flow、为什么，在方案页 `status` 或工单 checkpoint 里写一句，接续的人才知道做到了哪里。
 - 确认页确认之后，一路做到开发者能在「在线试用」里验收，中间不设等开发者的环节：进度写进方案页，开发者想看随时看。只在缺开发者本人才能给的东西（授权、密钥、业务事实）、要做确认页没列的外部副作用、或你自己确实推进不下去时才停下来问。
 
 **阶段标记怎么写**：工作区里的 `workspace.json` 的 `targets[n].status`、对应 `docs/stages/` 文档 front matter 的 `status`、`WORKSPACE.md` 的 `current_stage` 是给后续 Agent 和开发观测看的记录，`doctor` 校验格式。只标实际做过的 flow：开始时 `in_progress`，出口满足 `passed`，失败 `failed`，跳过的保持 `not_started`；三处在同一动作里更新，`current_stage` 指向正在做的那个。阶段显示名以工作区里已有的为准（旧应用可能是旧名），只改状态，不改名。
 
-**阶段记录怎么写**：阶段记录是只写的记账，不是任何 flow 的进入条件，结单门也不检查它。
-- G1–G6 每个 flow 结束时（出口满足进下一段，或未通过退回前面的 flow），与阶段标记同一步调一次 `business_ui_stage`。
-- G7 例外：只在 G7 第 2 节第 7 步 `task_manager(action="complete")` 之前写一次（结单后写不进），G7 第 3 节标记 `passed` 时不再写。`complete` 被拒时按返回的出口处理，不补写；回到前面的 flow 时照常在那些出口写，再次到第 7 步时再写一条 G7 记录。
-- 填 `stage`、`result`、`completion`（做出了什么、出口条件是否满足）、`next_stage`、`reason`（为什么现在进下一段）、`next_plan`（`next_stage="closeout"` 时传空串）；跳过的 flow 写进 `skipped` 并给理由。G5 `setup` 之后带 `business_ui_id`。
-- 只调一次：失败把错误原文记进本段阶段文档，**禁止**重试、改参数再调或因此停下；下一个出口照常写。
-- 没有读取接口：接续、修订照旧按本地阶段文档和工单 checkpoint 定位。
+**阶段记录怎么写**：每走完一个 flow，调一次只写的 `business_ui_stage`，把三件事写清楚：
+1. **现在到哪**：`stage` 填刚结束的 flow（G1–G7），`result` 填 `passed` / `failed` / `partial`。
+2. **这一段完成得怎样**：`completion` 写做出了什么、出口条件逐项是否满足；遗留问题写 `open_issues`，证据指针（部署编号、checkpoint、版本号等）放 `evidence`。
+3. **为什么进下一段**：`next_stage` 填下一段（G1–G7，结单填 `closeout`），`reason` 写为什么现在进它，`next_plan` 写下一段打算做什么（结单时传空串）；跳过的 flow 写进 `skipped`，每个都给理由。
+
+```text
+business_ui_stage(task_id="wft_xxx", stage="G1", result="passed",
+  completion="确认页已确认：1 张借用记录表、首页+登记页，开发者回复「可以」",
+  next_stage="G3", reason="不接外部系统、不用 AI 生成，无需核实资产，直接编译施工清单",
+  next_plan="编译 1 条路线、1 张表、2 个页面和客户验收条目",
+  skipped=[{"stage": "G2", "reason": "不接外部系统、不用 AI 生成"}])
+```
+
+- 什么时候写：每个 flow 出口和阶段标记同一步写，没通过、退回前面的 flow 也写；G7 在 `task_manager(action="complete")` 之前写（结单后写不进）。G5 建好应用后带上 `business_ui_id`。
+- 只调一次：失败就把错误原文记进本段阶段文档，接着往下做，**禁止**重试、改参数再调或因此停下。
+- 只写不读：接续、修订照旧按本地阶段文档和工单 checkpoint 定位。
 
 ## 6. 工具速查
 

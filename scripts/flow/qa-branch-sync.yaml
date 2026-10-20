@@ -1,0 +1,44 @@
+# 云效 Flow 流水线：Codeup scene-creator-skills 的 qa/main 有推送时，生成 QA 版插件并推到 GitHub 的 business-qa 分支。
+# GitHub 上 business-qa 分支的 workflow（.github/workflows/register-skill-qa.yml）接着登记到 QA Hub。 [任务:T-3784]
+#
+# 新建流水线时需要：
+# 1. 代码源：本仓库，分支 qa/main；在「触发设置」里开启「代码提交触发」，分支过滤 qa/main。
+# 2. 变量（加密）：GITHUB_QA_PUSH_TOKEN —— 对 GoalfyAI/business-app-creator-skills 有 contents 写权限的
+#    GitHub 令牌（细粒度 PAT 或 GitHub App 安装令牌），只用于推 business-qa 分支。
+sources:
+  repo_0:
+    type: codeup
+    name: scene-creator-skills
+    endpoint: https://codeup.aliyun.com/goalfyai/goalfyagent/scene-creator-skills.git
+    branch: qa/main
+    certificate:
+      type: serviceConnection
+      serviceConnection: <与其他流水线相同的 Codeup 服务连接>
+defaultWorkspace: repo_0
+concurrencyConfig:
+  maxRunningPipelineInstances: 1
+  pipelineMaxRunningBehavior: queue
+stages:
+  stage_sync:
+    name: 生成 QA 版并推到 GitHub business-qa 分支
+    jobs:
+      job_sync:
+        name: build_qa_branch
+        runsOn:
+          group: public/cn-beijing
+          container: build-steps-public-registry.cn-beijing.cr.aliyuncs.com/build-steps/alinux3:latest
+        steps:
+          setup_python:
+            step: SetupPython
+            with:
+              pythonVersion: '3.12'
+          sync:
+            step: Command
+            with:
+              run: |
+                set -euo pipefail
+                set +x
+                cd "${PROJECT_DIR}"
+                python3 -m pip install --quiet pyyaml
+                export QA_BRANCH_PUSH_URL="https://x-access-token:${GITHUB_QA_PUSH_TOKEN}@github.com/GoalfyAI/business-app-creator-skills.git"
+                python3 scripts/build_qa_branch.py --ref HEAD --build-number "${BUILD_NUMBER}" --push
