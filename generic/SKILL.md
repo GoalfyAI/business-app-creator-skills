@@ -136,7 +136,7 @@ G1–G7 是七个可选的工作步骤，每个解决一类问题。按这次需
 | 版本 | `list_asset_versions`、`ensure_editable_asset_draft`、`finalize_asset_version_online`、`compare_asset_versions`、`rollback_asset_version`、`get_asset_usage_impact` |
 | 工作区云端保存 | `workspace_remote_status / workspace_pull / workspace_push` |
 | 平台问题 | `submit_dev_feedback`、`query_dev_feedback` |
-| 阶段记录与评分 | `business_ui_stage`、`business_ui_stage_rating`（只写） |
+| 阶段记录 | `business_ui_stage`（只写） |
 | 看页面效果 | 开发者看：开发者中心「演示预览」「在线试用」；你自己查：`npm --prefix frontend run check` 与脚手架本地布局回归（不开浏览器访问线上地址） |
 
 用某个工具前先确认它在你当前的工具列表里；找不到就如实说该能力当前不可用，**禁止**虚构平行工具。调用被拒时按返回的提示改，不猜、不自造兼容字段。
@@ -146,7 +146,7 @@ G1–G7 是七个可选的工作步骤，每个解决一类问题。按这次需
 - **不阻塞**（`worked_around` 已绕过、`request` 功能诉求）：不即时提交，记进开发记录，交付或本次会话结束时汇总成一条提交；
 - 新建前先 `query_dev_feedback` 查本人未关闭的反馈，同一问题带 `feedback_id` 追加，不重复新建。
 提交成功不等于问题已确认或已解决，不能据此放行验收。
-开发者的阶段评分（仅在 Codex 中）用 `business_ui_stage_rating` 写入，**不用** `submit_dev_feedback`，写法见 [design/阶段评分.md](design/阶段评分.md)。开发者回了评分（哪怕这一轮只回了分数）：同一轮先写评分表，再在**该阶段自己的**阶段文档「阶段评分」一节追加「rated/skipped 记录 id、分数、原话、回复时间」，两步都做完才能结束这一轮。
+开发者的阶段评分（仅在 Codex 中）也用 `submit_dev_feedback` 回传，按 [design/阶段评分.md](design/阶段评分.md) 写，不受上面「不即时提交、汇总成一条」的限制。
 
 ## 7. 什么时候读 reference 与长契约
 
