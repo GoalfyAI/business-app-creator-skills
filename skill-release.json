@@ -4,8 +4,8 @@
   "version": "v20261019-bdb6be",
   "package_version": "2.0.28",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-19T13:11:53Z",
-  "update_reason": "fix(skill): T-4518 按真实业务填写并接入界面文案",
+  "released_at": "2026-10-21T06:31:53Z",
+  "update_reason": "FK-519 建 write 工单必须填写 skill_version；新增未填写版本号的报错处理",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -42,7 +42,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "8bf65e98534feb9e9064d866fd7df2b9fe27610ec5ad9dfcfc6d5aa53f99fd8c",
+    "SKILL.md": "82414960da865430f602a052243dbe204757ee470b649c3676a9c9fb1ebc29de",
     "agents/openai.yaml": "53f536bc0e7d54fb811ce78217b93f4cafcde48ca2a2be5ba23f04aff92b6f0b",
     "checklists/验收清单.md": "fe617b94aa47656d0b972c474a5a572569b0c0d780f984ace3df8ee54f75af3e",
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
@@ -61,7 +61,7 @@
     "reference/前端页面.md": "26c3bc1223dfd82558f49d488ce36da31ce0ce9b69d6e0236c78ecb615455782",
     "reference/平台对象速查.md": "587f988f2e58a81cdc4ea34599ae96bea39ad538be040fb743a768ce87a079fb",
     "reference/开发者中心与工作区.md": "b01a5b5fbaeffbe59851c8557837806c977fe933dddabbecedcd4e975749e4c5",
-    "reference/报错对照.md": "f676e6cd01e317fcbd5c7f4fa51fbdd4de084eb8c6eed64e599f4b17f7d6b5c9",
+    "reference/报错对照.md": "eaa9cab47528530283f52d93825928603f2d177428667380f597f8f396fcac6d",
     "reference/授权与充值.md": "a5f642a93d98c694e89ede7bd764bbe108ef1ada6389703c8d7c528fd7d235e8",
     "reference/数据模板.md": "51aa3d1154fc65105371998ab941279b2bbf3437b37c36b68a6e90f75f69ebc2",
     "reference/用户反馈.md": "d88eeae3f3b9f9e824546bb09cba22b23badc98b76de975c4aeee21ab0a68209",
@@ -72,7 +72,7 @@
     "scripts/feedback_report.py": "7cfd21e480629f8f7443413281f14d9b8334998f53f348a54f5d939abcaa8013",
     "tasks/仅讨论.md": "4a36e0261fcf939ac3926596ac25dc2f453350150f2961c31fc0796a72eab20d",
     "tasks/修订.md": "0352cac63b65733fe064de3334fad0f9aa3aee07c60815d5c4933800a38f6b87",
-    "tasks/接续.md": "aeb6a4b78877891080c8810e764563697475d6c0869466a708317777d719c45b",
+    "tasks/接续.md": "3352d4ab17355e0f86e4b868d0eb0ec2128393506a63c423fa0b9ab1f883e6e5",
     "tasks/能力试用.md": "7382d6ebbdd31b22b941335f0296eec6a2edd7483afa842d935f6e74a1b03ced",
     "tasks/诊断.md": "f99b6cd3bce005abd9235d0ce090db30040b94723e8f846a03c733d4c07bb19f"
   }
