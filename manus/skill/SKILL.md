@@ -1,6 +1,6 @@
 ---
 name: business-app-creator
-description: 制作和维护 GoalfyMax 智能应用（场景包 + 数据模板 + 前后端应用）时使用，涵盖新建、接续、修订、诊断、能力试用和方案讨论。负责需求确认、能力选择、制作与验收编排；平台操作引用 MCP 合同，工程实现引用脚手架合同。一次性业务执行或平台概念咨询不使用。[skill-version:v20261019-bdb6be]
+description: 制作和维护 GoalfyMax 智能应用（场景包 + 数据模板 + 前后端应用）时使用，涵盖新建、接续、修订、诊断、能力试用和方案讨论。负责需求确认、能力选择、制作与验收编排；平台操作引用 MCP 合同，工程实现引用脚手架合同。一次性业务执行或平台概念咨询不使用。[skill-version:v20261021-a1a163]
 keywords:
   - 智能应用
   - 智能应用开发
@@ -80,7 +80,7 @@ keywords:
 
 ## 4. 开工（每个应用只做一次，接续时核对）
 
-1. **建工单**：`task_manager(action="create", mode="write")`，标题写应用名；之后所有制作、部署、运行工具都带这个 `task_id`。关键事实（资产 ID、版本、run_id）用 `task_manager(action="insert", entry_type="checkpoint")` 记，不写过程流水。工单被拒按 [reference/报错对照.md](reference/报错对照.md) 的「工单闸门」处理。
+1. **建工单**：`task_manager(action="create", mode="write", skill_version=…)`，标题写应用名。`skill_version` **必须**填已安装 SKILL.md description 里 `[skill-version:...]` 的原值，每次建 write 工单前从文件读取；**禁止**留空、填 `dev` 或凭记忆填写。之后所有制作、部署、运行工具都带这个 `task_id`。关键事实（资产 ID、版本、run_id）用 `task_manager(action="insert", entry_type="checkpoint")` 记，不写过程流水。工单被拒按 [reference/报错对照.md](reference/报错对照.md) 的「工单闸门」处理。
 2. **定位应用工程并核脚手架版本**：在开发者中心分配的 `apps/<应用目录>/` 下工作；读应用根的 `scaffold-release.json`，调用 `business_ui_bundle(action="download_template")` 核版本。规则见 [reference/脚手架与预置件.md](reference/脚手架与预置件.md)。
 3. **初始化或接续工作区**：新建用 `npm run scaffold:init -- --environment <环境> --app-name "<应用名>"`，接续时补齐缺失文件用 `npm run scaffold:repair -- --app-name "<应用名>"`；然后 `npm run setup`、`npm run doctor`。三件套、方案页、阶段标记的规则见 [reference/开发者中心与工作区.md](reference/开发者中心与工作区.md)。
 4. **读一次开发者偏好**：`dev_preferences(action="pull")`，按需阅读；写过的照做，其余用可逆默认，当前指令优先。
@@ -138,7 +138,6 @@ G1–G7 是七个可选的工作步骤，每个解决一类问题。按这次需
 - **不阻塞**（`worked_around` 已绕过、`request` 功能诉求）：不即时提交，记进开发记录，交付或本次会话结束时汇总成一条提交；
 - 新建前先 `query_dev_feedback` 查本人未关闭的反馈，同一问题带 `feedback_id` 追加，不重复新建。
 提交成功不等于问题已确认或已解决，不能据此放行验收。
-开发者的阶段评分（仅在 Codex 中）也用 `submit_dev_feedback` 回传，按 [design/阶段评分.md](design/阶段评分.md) 写，不受上面「不即时提交、汇总成一条」的限制。
 
 ## 7. 什么时候读 reference 与长契约
 
