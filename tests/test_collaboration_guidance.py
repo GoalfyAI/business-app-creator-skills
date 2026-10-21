@@ -133,3 +133,39 @@ def test_setup_derivation_requires_change_note(read_skill):
     assert "应用建草稿（含 update、`setup`、`ship` 自动派生）必须带 `change_note`" in deploy
     errors = _section(read_skill("reference/多人协作.md"), "### 协作相关报错")
     assert "`update`、`setup`、`ship` 需要从上线版派生草稿时" in errors
+
+
+def test_template_extract_requires_baseline_for_every_route(read_skill):
+    """给已有模板抽新版本一律带 expected_base_version，属主路线与报错对照同样写明。"""
+    template = read_skill("reference/数据模板.md")
+    assert "给已有模板出新版本时传 `template_id`，并带 `expected_base_version`" in template
+    g5 = read_skill("flow/G5-数据与应用.md")
+    assert "带 `expected_base_version=<这个版本>`" in g5
+    errors = read_skill("reference/报错对照.md")
+    for code in ("TEMPLATE_BASELINE_REQUIRED", "TEMPLATE_BASELINE_CHANGED"):
+        rows = [line for line in errors.splitlines() if line.startswith(f"| `{code}`")]
+        assert len(rows) == 1
+    assert "用新的 `template_version` 作为 `expected_base_version` 重新 `extract`" in errors
+
+
+def test_collaborators_read_asset_versions_via_get_asset(read_skill):
+    """协作者不调 list_asset_versions 查属主名下资产；查询被拒不引导升档。"""
+    text = read_skill("reference/多人协作.md")
+    viewer = _section(text, "### 只读协作者：诊断路线")
+    assert "协作者看属主名下资产的版本一律用 `get_asset`" in viewer
+    assert "`WORKFLOW_TASK_MODE_MISMATCH`" in viewer
+    assert "**禁止**为此新开 write 工单" in viewer
+    editor = _section(text, "### 编辑协作者：修订路线")
+    assert "**禁止**用 `list_asset_versions` 查属主名下的资产" in editor
+    errors = _section(text, "### 协作相关报错")
+    query = [line for line in errors.splitlines() if line.startswith("| `PERSONAL_VERSION_NOT_OWNER`（查询时）")]
+    assert len(query) == 1 and "不要请属主升档" in query[0]
+    assert "下线（`offline`）、删除（`delete`）" in errors
+    revise = read_skill("tasks/修订.md")
+    assert "不调 `list_asset_versions`" in revise
+
+
+def test_owner_finalize_names_draft_when_family_has_several(read_skill):
+    """家族有多份草稿时属主定版必须显式指定 draft_asset_id。"""
+    g7 = read_skill("flow/G7-上线交付.md")
+    assert "这时**必须**显式传要定版的那份 `draft_asset_id`" in g7
