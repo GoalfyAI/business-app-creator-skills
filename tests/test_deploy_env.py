@@ -25,8 +25,10 @@ def steps(monkeypatch):
     for name, value in CREDS.items():
         monkeypatch.setenv(name, value)
     calls = []
+    monkeypatch.delenv("USER_COMMIT", raising=False)
     monkeypatch.setattr(deploy_env, "ensure_main_release",
-                        lambda url: calls.append(("release",)) or ("v20261019-aaaaaa", "a" * 40, True))
+                        lambda url, pinned=None: calls.append(("release", pinned) if pinned else ("release",))
+                        or ("v20261019-aaaaaa", "a" * 40, True))
     monkeypatch.setattr(deploy_env, "push_github_main",
                         lambda url, sha, version: calls.append(("github_main", sha, version)))
 
@@ -128,3 +130,15 @@ def test_git_retries_network_commands_and_redacts(monkeypatch, tmp_path):
     with pytest.raises(deploy_env.DeployError):
         deploy_env.git("rev-parse", "HEAD", cwd=tmp_path)
     assert len(calls) == 1
+
+
+def test_main_deploy_passes_pinned_user_commit(steps, monkeypatch):
+    """发版流水线的部署pre / 部署prod 带 USER_COMMIT：锁定部署准备阶段记下的发布提交。"""
+    monkeypatch.setenv("USER_COMMIT", "c" * 40)
+    deploy_env.deploy("prod", "main", 5)
+    assert steps[0] == ("release", "c" * 40)
+
+
+def test_release_only_refuses_non_main(steps):
+    with pytest.raises(deploy_env.DeployError, match="只运行 main"):
+        deploy_env.release_only("feat/x")
