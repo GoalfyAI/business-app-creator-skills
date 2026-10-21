@@ -4,7 +4,7 @@
   "version": "v20261019-bdb6be",
   "package_version": "2.0.28",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-21T09:47:11Z",
+  "released_at": "2026-10-21T09:50:41Z",
   "update_reason": "FK-519 建 write 工单必须填写 skill_version；新增未填写版本号的报错处理",
   "source_files": [
     "SKILL.md",
@@ -69,9 +69,9 @@
     "reference/部署与版本.md": "7f7374e7e319dd8f09eb4f15a1237ce63ba1edb07d2fec4001f678f9e2dee8e9",
     "scripts/feedback_report.py": "7cfd21e480629f8f7443413281f14d9b8334998f53f348a54f5d939abcaa8013",
     "tasks/仅讨论.md": "4a36e0261fcf939ac3926596ac25dc2f453350150f2961c31fc0796a72eab20d",
-    "tasks/修订.md": "0352cac63b65733fe064de3334fad0f9aa3aee07c60815d5c4933800a38f6b87",
+    "tasks/修订.md": "2c032450b990e0910d65c087f6c7390ef23665a7da424110ba42996c73cd6d40",
     "tasks/接续.md": "3352d4ab17355e0f86e4b868d0eb0ec2128393506a63c423fa0b9ab1f883e6e5",
-    "tasks/能力试用.md": "7382d6ebbdd31b22b941335f0296eec6a2edd7483afa842d935f6e74a1b03ced",
+    "tasks/能力试用.md": "de8e07d2eb262bc41779015cbfc47a7d491409990badffc8a5f1fa4704833178",
     "tasks/诊断.md": "4ac330afe070f06981268c764acb6146f5c2c7d3e2476ff92ff4365f1e6074c2"
   }
 }
