@@ -51,6 +51,9 @@ def test_viewer_route_stays_read_only(read_skill):
     route = _section(read_skill("reference/多人协作.md"), "### 只读协作者：诊断路线")
     assert "建 read 工单" in route
     assert "派生任何草稿" in route
+    assert '`dataset_template_workspace(action="connect", mode="reader")`' in route
+    assert "`connect` **必须**显式带 `mode=\"reader\"`" in route
+    assert "TEMPLATE_WORKSPACE_WRITER_FORBIDDEN" in route
     assert "`connect` 申请写连接" in route
     assert "执行写数据的 SQL 或 DDL" in route
     assert "`ship`、部署、冒泡、真跑这类写流程" in route
@@ -66,9 +69,13 @@ def test_editor_route_derives_own_drafts_and_requests_finalize(read_skill):
     assert "工具组 → 工具集或 FA → 场景包路线 → 应用挂载" in route
     assert "再自己定版" in route
     assert "共享工作集" in route
-    assert "记下当前模板版本，作为这次改动的基线" in route
+    assert "模板当前版本 `template_version`" in route
+    assert "带 `expected_base_version=<第 1 步记下的模板版本>`" in route
     assert "TEMPLATE_BASELINE_CHANGED" in route
     request = _section(text, "### 提请定版")
+    assert '`business_ui_manage(action="request_finalize", task_id, business_ui_id)`' in request
+    assert "`draft_asset_id` 可以省略" in request
+    assert "`note` 是给属主的补充说明" in request
     assert "「已提请，等属主定版」" in request
     g7 = read_skill("flow/G7-上线交付.md")
     assert "**协作者分支**（`role=editor`）" in g7
@@ -89,6 +96,9 @@ def test_resume_reads_pending_finalize_and_stale_baseline_first(read_skill):
 def test_owner_collaborator_changes_require_confirmation(read_skill):
     """属主加人改档移人前先确认，编辑档只给指定账号，未接受邀请时提示到分享兑换入口接受。"""
     owner = _section(read_skill("reference/多人协作.md"), "### 属主：加人、改档、移除")
+    assert "collaborator_action=…" in owner
+    for param in ("`visibility=\"specified\"`", "`recipient_accounts=", "`role=\"viewer\"`", "`collaborator_user_id`"):
+        assert param in owner
     assert "开发者明确同意后才带 `confirm_collaborator_change=true` 执行" in owner
     assert "编辑档只给指定账号" in owner
     assert "分享码模式只能发只读档" in owner
@@ -103,8 +113,23 @@ def test_borrowed_assets_and_preview_limits(read_skill):
     assert "`clone_asset` 克隆到自己名下再换引用" in borrowed
     assert "找分享方修改" in borrowed
     created = _section(text, "### 协作中新建或克隆的资产")
+    assert "**必须**显式带 `collaboration_business_ui_id=<应用家族 ID>`" in created
+    for tool in (
+        "`create_fast_agent`", "`create_toolset`", "`create_tpe`", "`otpe_manage` 的创建", "`clone_asset`",
+        "`register_and_refresh_tool_group` 的创建模式", "`upload_and_register_tool_group`", "`import_skill_package`",
+        "`create_derived_scene_package`", '`scene_package_manage(action="create")`',
+    ):
+        assert tool in created
     assert "资产落在属主名下" in created
     limits = _section(text, "### 预览、费用与限制")
     assert "BUSINESS_UI_RECHARGE_OWNER_ONLY" in limits
     assert "BUSINESS_UI_COLLAB_PREVIEW_SCAFFOLD_OUTDATED" in limits
     assert "**禁止**写成「协作者自付」或「属主承担」这类长期承诺" in limits
+
+
+def test_setup_derivation_requires_change_note(read_skill):
+    """setup 需要派生草稿时同样要带 change_note。"""
+    deploy = read_skill("reference/部署与版本.md")
+    assert "应用建草稿（含 update、`setup`、`ship` 自动派生）必须带 `change_note`" in deploy
+    errors = _section(read_skill("reference/多人协作.md"), "### 协作相关报错")
+    assert "`update`、`setup`、`ship` 需要从上线版派生草稿时" in errors
