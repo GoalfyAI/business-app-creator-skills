@@ -106,12 +106,12 @@ Skill 版本必须不可预测，插件版本必须可比大小，两个要求�
   准备发版（发版或沿用，发布提交写进 `USER_COMMIT`）→ 部署pre（回调 OA 生成发版审查）→
   PRE审批（OA 发车放行）→ 部署prod（回调 OA 核验生产并对账）。PRE 与 prod 部署的是同一个发布提交，
   审批期间 main 上新合入的提交不会被带进 prod。OA 规范服务 scene-creator-skills 登记的就是这条流水线。
-- **环境流水线**（模板 `scripts/flow/skill-env-deploy.yaml`，qa / pre 各一条，运行时选分支）：用于测试。
+- **QA 环境流水线**（模板 `scripts/flow/skill-env-deploy.yaml`，运行时选分支）：功能分支与 main 在 QA 测试用。PRE 只由发版流水线部署 main。
 
 | 环境 | GitHub 安装分支 | 部署 main | 部署其他分支 |
 |---|---|---|---|
 | qa | `business-qa` | 发版（或沿用）→ 推分支 → 登记 → 强制线与建议线设为该版本 | 生成新版本 → 推分支 → 登记，不动版本线 |
-| pre | `business-pre` | 同上（发版流水线的部署pre 同样如此） | 同上 |
+| pre | `business-pre` | 只经发版流水线的部署pre | 不部署 |
 | prod | `main` | 只经发版流水线，OA 发车放行后执行 | 不允许 |
 
 部署 main 时，main 最新提交上已有 `skill/<version>` tag 就沿用该版本；否则流水线运行
@@ -135,7 +135,7 @@ GitHub Actions：
 | `build-platform-zips` | Skill 内容变更 | 重新打包 Manus 与通用集成的压缩包 |
 | `register-skill-release` / `register-skill-qa` | 仅手动 | 应急补登记，日常不用 |
 
-三条流水线各自串行，跨环境不加锁；现有策略接口是整体 PUT，人工编辑策略须避开部署写窗口。
+两条流水线各自串行，跨环境不加锁；现有策略接口是整体 PUT，人工编辑策略须避开部署写窗口。
 
 ## 提交信息
 
