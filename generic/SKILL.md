@@ -1,6 +1,6 @@
 ---
 name: business-app-creator
-description: 制作和维护 GoalfyMax 智能应用（场景包 + 数据模板 + 前后端应用）时使用，涵盖新建、接续、修订、诊断、能力试用和方案讨论。负责需求确认、能力选择、制作与验收编排；平台操作引用 MCP 合同，工程实现引用脚手架合同。一次性业务执行或平台概念咨询不使用。[skill-version:v20261021-a1a163]
+description: 制作和维护 GoalfyMax 智能应用（场景包 + 数据模板 + 前后端应用）时使用，涵盖新建、接续、修订、诊断、能力试用和方案讨论。负责需求确认、能力选择、制作与验收编排；平台操作引用 MCP 合同，工程实现引用脚手架合同。一次性业务执行或平台概念咨询不使用。[skill-version:v20261022-1f91ec]
 keywords:
   - 智能应用
   - 智能应用开发
@@ -111,6 +111,23 @@ G1–G7 是七个可选的工作步骤，每个解决一类问题。按这次需
 
 **阶段标记怎么写**：工作区里的 `workspace.json` 的 `targets[n].status`、对应 `docs/stages/` 文档 front matter 的 `status`、`WORKSPACE.md` 的 `current_stage` 是给后续 Agent 和开发观测看的记录，`doctor` 校验格式。只标实际做过的 flow：开始时 `in_progress`，出口满足 `passed`，失败 `failed`，跳过的保持 `not_started`；三处在同一动作里更新，`current_stage` 指向正在做的那个。阶段显示名以工作区里已有的为准（旧应用可能是旧名），只改状态，不改名。
 
+**阶段记录怎么写**：每走完一个 flow，调一次只写的 `business_ui_stage`，把三件事写清楚：
+1. **现在到哪**：`stage` 填刚结束的 flow（G1–G7），`result` 填 `passed` / `failed` / `partial`。
+2. **这一段完成得怎样**：`completion` 写做出了什么、出口条件逐项是否满足；遗留问题写 `open_issues`，证据指针（部署编号、checkpoint、版本号等）放 `evidence`。
+3. **为什么进下一段**：`next_stage` 填下一段（G1–G7，结单填 `closeout`），`reason` 写为什么现在进它，`next_plan` 写下一段打算做什么（结单时传空串）；跳过的 flow 写进 `skipped`，每个都给理由。
+
+```text
+business_ui_stage(task_id="wft_xxx", stage="G1", result="passed",
+  completion="确认页已确认：1 张借用记录表、首页+登记页，开发者回复「可以」",
+  next_stage="G3", reason="不接外部系统、不用 AI 生成，无需核实资产，直接编译施工清单",
+  next_plan="编译 1 条路线、1 张表、2 个页面和客户验收条目",
+  skipped=[{"stage": "G2", "reason": "不接外部系统、不用 AI 生成"}])
+```
+
+- 什么时候写：每个 flow 出口和阶段标记同一步写，没通过、退回前面的 flow 也写；G7 在 `task_manager(action="complete")` 之前写（结单后写不进）。G5 建好应用后带上 `business_ui_id`。
+- 只调一次：失败就把错误原文记进本段阶段文档，接着往下做，**禁止**重试、改参数再调或因此停下。
+- 只写不读：接续、修订照旧按本地阶段文档和工单 checkpoint 定位。
+
 ## 6. 工具速查
 
 | 要做的事 | 工具与动作 |
@@ -129,6 +146,7 @@ G1–G7 是七个可选的工作步骤，每个解决一类问题。按这次需
 | 版本 | `list_asset_versions`、`ensure_editable_asset_draft`、`finalize_asset_version_online`、`compare_asset_versions`、`rollback_asset_version`、`get_asset_usage_impact` |
 | 工作区云端保存 | `workspace_remote_status / workspace_pull / workspace_push` |
 | 平台问题 | `submit_dev_feedback`、`query_dev_feedback` |
+| 阶段记录 | `business_ui_stage`（只写） |
 | 看页面效果 | 开发者看：开发者中心「演示预览」「在线试用」；你自己查：`npm --prefix frontend run check` 与脚手架本地布局回归（不开浏览器访问线上地址） |
 
 用某个工具前先确认它在你当前的工具列表里；找不到就如实说该能力当前不可用，**禁止**虚构平行工具。调用被拒时按返回的提示改，不猜、不自造兼容字段。
