@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20261019-bdb6be",
-  "package_version": "2.0.28",
+  "version": "v20261021-a1a163",
+  "package_version": "2.0.29",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-22T10:09:57Z",
-  "update_reason": "FK-519 建 write 工单必须填写 skill_version；新增未填写版本号的报错处理",
+  "released_at": "2026-10-22T10:10:20Z",
+  "update_reason": "fix(skill): 修订与能力试用新建 write 工单同样必填 skill_version [反馈:FK-519]；fix(skill): 诊断转修复与模式不匹配新建 write 工单同样必填 skill_version，部署与版本门禁区分未填写与过期 [反馈:FK-519]；fix(skill): 建 write 工单必须填写 skill_version，新增未填写版本号的报错处理 [反馈:FK-519]；feat(skill): T-4636 取消 G1/G6/G7 阶段评分；docs(release): 精简为 QA 环境流水线 + 发版流水线，PRE 只经发版流水线部署 main；fix(release): 发版流水线回调 OA 的 curl 去掉构建机不支持的 --retry-all-errors",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -42,7 +42,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "7c26e050e3a5da24916e329946a57de29f0d67eba48a2ed2596ab06d3f6fe677",
+    "SKILL.md": "0cdb9dd27d7fd7c71eb6bc1d46a08c1e072c4d2f8f59a6bfa2ae2cfc24a70ed3",
     "agents/openai.yaml": "53f536bc0e7d54fb811ce78217b93f4cafcde48ca2a2be5ba23f04aff92b6f0b",
     "checklists/验收清单.md": "fe617b94aa47656d0b972c474a5a572569b0c0d780f984ace3df8ee54f75af3e",
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
