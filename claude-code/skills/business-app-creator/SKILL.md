@@ -1,6 +1,6 @@
 ---
 name: business-app-creator
-description: 制作和维护 GoalfyMax 智能应用（场景包 + 数据模板 + 前后端应用）时使用，涵盖新建、接续、修订、诊断、能力试用和方案讨论。负责需求确认、能力选择、制作与验收编排；平台操作引用 MCP 合同，工程实现引用脚手架合同。一次性业务执行或平台概念咨询不使用。[skill-version:v20261023-691474]
+description: 制作和维护 GoalfyMax 智能应用（场景包 + 数据模板 + 前后端应用）时使用，涵盖新建、接续、修订、诊断、能力试用和方案讨论。负责需求确认、能力选择、制作与验收编排；平台操作引用 MCP 合同，工程实现引用脚手架合同。一次性业务执行或平台概念咨询不使用。[skill-version:v20261023-d3b5cc]
 keywords:
   - 智能应用
   - 智能应用开发
@@ -31,7 +31,6 @@ keywords:
 > 平台参数读 MCP 当前 Schema，长合同按需用 `get_diagnosis_doc(topic)`；工程实现读当前应用采用模板的 README 与 package.json。版本与工程入口见 [脚手架与预置件](reference/脚手架与预置件.md)，交付边界见 [部署与版本](reference/部署与版本.md)。
 
 ## 0. 红线（不可豁免）
-
 - **禁止**开发反华、涉政违规、违法或敏感内容的需求，识别即停止。
 - **禁止**把凭据（数据库连接串、密钥、token、Cookie、密码）写进工单、聊天、代码、提示词或 Skill 文件。
 - 花钱、发信、写正式数据、上线、下线、删除、回滚这类外部副作用，**必须**先说清范围，开发者明确同意后执行。确认页「费用与副作用」列出的动作（含制作中的冒泡 `full_run`、真跑、自动化试跑），开发者说「可以」即视为同意，制作过程中照做、跑完报实际花费，不再逐次询问；没列的、明显超出估算的另行确认。
@@ -51,7 +50,6 @@ keywords:
 - 可调用宿主实际提供的受限检查能力，但不放开通用浏览器禁令。
 
 ## 1. 智能应用是什么
-
 智能应用交给一类明确的最终用户持续使用：在约定范围内稳定完成一类反复发生的工作，并在下一次使用时复用已确认的信息。它由四样东西组成，交付物就是这四样的版本加验收记录：
 
 | 组成 | 是什么 | 最终用户感受到的 |
@@ -64,7 +62,6 @@ keywords:
 发布单位是 `business_ui`：它挂一个场景包和**必须一份**数据模板（至少一张业务表，平台维护的系统表如 `app_write_requests` 不算）。平台要求每个应用挂的场景包至少有一条路线。对象之间的关系查 [reference/平台对象速查.md](reference/平台对象速查.md)。
 
 ## 2. 角色与称谓
-
 | 角色 | 是谁 | 做什么 |
 |---|---|---|
 | 开发者 | 用本 Skill 制作、维护应用的人，代表客户回答业务事实 | 决定产品形态、业务规则和授权 |
@@ -75,7 +72,6 @@ keywords:
 开发期的确认、授权主语写「开发者」；运行期每一步谁做，主语写「最终用户」或「运行 Agent」。单独出现的「用户」指最终用户。给开发者看的内容用业务语言，不出现 FA、TPE、工具集、Runtime。
 
 ## 3. 先识别任务
-
 | 开发者要做什么 | 任务 | 先读 |
 |---|---|---|
 | 把一项业务做成智能应用，或为当前工作台里的具体应用出方案 | 新建 | 按第 5 节选 flow，一般从 [flow/G1-需求确认.md](flow/G1-需求确认.md) 开始 |
@@ -86,17 +82,11 @@ keywords:
 | 纯概念咨询、没指向具体应用、或明确只在聊天里回答 | 仅讨论 | [tasks/仅讨论.md](tasks/仅讨论.md) |
 | 查用户反馈、整理反馈报告、按报告改应用 | 用户反馈 | [reference/用户反馈.md](reference/用户反馈.md) |
 
-**再认协作身份**：开发者指向已有应用时，用 `business_ui_manage(action="list")` 或 `business_ui_manage(action="get")` 返回的 `role` 分流，规则见 [reference/多人协作.md](reference/多人协作.md)：
-
-- `viewer`（只读协作者）：不管开发者要做什么，只走诊断路线，不派生草稿、不申请写连接、不写 SQL、不跑写流程；
-- `editor`（编辑协作者）：改动走修订路线，只改自己的草稿，G7 改为提请定版；
-- `owner`（属主）：照本表；有协作者提请的待定版清单时先处理；
-- `list` 里有待接受的协作邀请时，告诉开发者用站内信里的分享码到 GoalfyMax 分享兑换入口接受。
+**再认协作身份**：开发者指向已有应用时，用 `business_ui_manage(action="list")` 或 `business_ui_manage(action="get")` 返回的 `role` 分流，规则见 [reference/多人协作.md](reference/多人协作.md)。`viewer`（只读协作者）：不管开发者要做什么，只走诊断路线，不派生草稿、不申请写连接、不写 SQL、不跑写流程；`editor`（编辑协作者）：改动走修订路线，只改自己的草稿，G7 改为提请定版；`owner`（属主）：照本表，有协作者提请的待定版清单时先处理。`list` 里有待接受的协作邀请时，告诉开发者用站内信里的分享码到 GoalfyMax 分享兑换入口接受。
 
 意图或关键参数缺失时先问；工程上的小取舍按可逆默认做，写进开发记录。
 
 ## 4. 开工（每个应用只做一次，接续时核对）
-
 1. **建工单**：`task_manager(action="create", mode="write", skill_version=…)`，标题写应用名。`skill_version` **必须**填已安装 SKILL.md description 里 `[skill-version:...]` 的原值，每次建 write 工单前从文件读取；**禁止**留空、填 `dev` 或凭记忆填写。之后所有制作、部署、运行工具都带这个 `task_id`。关键事实（资产 ID、版本、run_id）用 `task_manager(action="insert", entry_type="checkpoint")` 记，不写过程流水。工单被拒按 [reference/报错对照.md](reference/报错对照.md) 的「工单闸门」处理。
 2. **定位应用工程并核脚手架版本**：在开发者中心分配的 `apps/<应用目录>/` 下工作；读应用根的 `scaffold-release.json`，调用 `business_ui_bundle(action="download_template")` 核版本。规则见 [reference/脚手架与预置件.md](reference/脚手架与预置件.md)。
 3. **初始化或接续工作区**：新建用 `npm run scaffold:init -- --environment <环境> --app-name "<应用名>"`，接续时补齐缺失文件用 `npm run scaffold:repair -- --app-name "<应用名>"`；然后 `npm run setup`、`npm run doctor`。三件套、方案页、阶段标记的规则见 [reference/开发者中心与工作区.md](reference/开发者中心与工作区.md)。
@@ -106,7 +96,6 @@ keywords:
 开工后在第一次实质答复结束前，把已知的业务目标、范围和待明确事项写进 `docs/proposal/index.html`，未知的标「未知」。
 
 ## 5. 七个 flow 怎么选
-
 G1–G7 是七个可选的工作步骤，每个解决一类问题。按这次需求的规模和改动范围自己决定做哪些、合并哪些；决定用哪个 flow 时先完整读它的文件，做完满足它的出口。从 `tasks/` 进来时按入口文件的建议接上，**禁止**机械从 G1 重做。
 
 | flow | 解决什么 | 什么时候需要 | 读 |
@@ -129,8 +118,24 @@ G1–G7 是七个可选的工作步骤，每个解决一类问题。按这次需
 
 **阶段标记怎么写**：工作区里的 `workspace.json` 的 `targets[n].status`、对应 `docs/stages/` 文档 front matter 的 `status`、`WORKSPACE.md` 的 `current_stage` 是给后续 Agent 和开发观测看的记录，`doctor` 校验格式。只标实际做过的 flow：开始时 `in_progress`，出口满足 `passed`，失败 `failed`，跳过的保持 `not_started`；三处在同一动作里更新，`current_stage` 指向正在做的那个。阶段显示名以工作区里已有的为准（旧应用可能是旧名），只改状态，不改名。
 
-## 6. 工具速查
+**阶段记录怎么写**：每走完一个 flow，调一次只写的 `business_ui_stage`，把三件事写清楚：
+1. **现在到哪**：`stage` 填刚结束的 flow（G1–G7），`result` 填 `passed` / `failed` / `partial`。
+2. **这一段完成得怎样**：`completion` 写做出了什么、出口条件逐项是否满足；遗留问题写 `open_issues`，证据指针（部署编号、checkpoint、版本号等）放 `evidence`。
+3. **为什么进下一段**：`next_stage` 填下一段（G1–G7，结单填 `closeout`），`reason` 写为什么现在进它，`next_plan` 写下一段打算做什么（结单时传空串）；跳过的 flow 写进 `skipped`，每个都给理由。
 
+```text
+business_ui_stage(task_id="wft_xxx", stage="G1", result="passed",
+  completion="确认页已确认：1 张借用记录表、首页+登记页，开发者回复「可以」",
+  next_stage="G3", reason="不接外部系统、不用 AI 生成，无需核实资产，直接编译施工清单",
+  next_plan="编译 1 条路线、1 张表、2 个页面和客户验收条目",
+  skipped=[{"stage": "G2", "reason": "不接外部系统、不用 AI 生成"}])
+```
+
+- 什么时候写：每个 flow 出口和阶段标记同一步写，没通过、退回前面的 flow 也写；G7 在 `task_manager(action="complete")` 之前写（结单后写不进）。G5 建好应用后带上 `business_ui_id`。
+- 只调一次：失败就把错误原文记进本段阶段文档，接着往下做，**禁止**重试、改参数再调或因此停下。
+- 只写不读：接续、修订照旧按本地阶段文档和工单 checkpoint 定位。
+
+## 6. 工具速查
 | 要做的事 | 工具与动作 |
 |---|---|
 | 工单 | `task_manager(action=create / get / insert / complete)` |
@@ -148,6 +153,7 @@ G1–G7 是七个可选的工作步骤，每个解决一类问题。按这次需
 | 版本 | `list_asset_versions`、`ensure_editable_asset_draft`、`finalize_asset_version_online`、`compare_asset_versions`、`rollback_asset_version`、`get_asset_usage_impact` |
 | 工作区云端保存 | `workspace_remote_status / workspace_pull / workspace_push` |
 | 平台问题 | `submit_dev_feedback`、`query_dev_feedback` |
+| 阶段记录 | `business_ui_stage`（只写） |
 | 看页面效果 | 开发者看：开发者中心「演示预览」「在线试用」；你自己查：`npm --prefix frontend run check` 与脚手架本地布局回归（不开浏览器访问线上地址） |
 
 用某个工具前先确认它在你当前的工具列表里；找不到就如实说该能力当前不可用，**禁止**虚构平行工具。调用被拒时按返回的提示改，不猜、不自造兼容字段。
@@ -159,7 +165,6 @@ G1–G7 是七个可选的工作步骤，每个解决一类问题。按这次需
 提交成功不等于问题已确认或已解决，不能据此放行验收。
 
 ## 7. 什么时候读 reference 与长契约
-
 `reference/` 是按需查阅的正本，每份开头写了适用场景：
 
 | 情况 | 读 |
@@ -191,5 +196,4 @@ G1–G7 是七个可选的工作步骤，每个解决一类问题。按这次需
 | 写第一条脚本、拆 FA、设计数据前看错例 | `counter_examples` |
 
 ## 8. 汇报
-
 每完成一步给开发者一句话：做了什么、结果怎样、下一步、需要他决定什么。verify 报告直接贴 `verdict` 与 `failed` 项。上线后给交付报告，格式见 [flow/G7-上线交付.md](flow/G7-上线交付.md)。
