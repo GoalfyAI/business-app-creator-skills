@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20261023-c81155",
-  "package_version": "2.0.28-qa.13",
+  "version": "v20261023-691474",
+  "package_version": "2.0.28-qa.14",
   "mcp_endpoint": "https://business-app-creator-mcp.qa.goalfyai.cn/mcp",
-  "released_at": "2026-10-23T02:56:57Z",
-  "update_reason": "QA 版，来自 qa/main d61a93c15（build 13）",
+  "released_at": "2026-10-23T10:13:05Z",
+  "update_reason": "QA 版，来自 qa/main ed506f792（build 14）",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -42,7 +42,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "dc16707a985db84e2ac078eb866eefa34ff8a6505933ed4eddccab679ff6a507",
+    "SKILL.md": "4082dea9edfa9be6a0303517a8d6e10da0b5528cf12a9fb56f53cf69f683ddc1",
     "agents/openai.yaml": "93452877f9c9914cb55b16ad2b65d9526d79cc5b0367482ec149c658e34bae76",
     "checklists/验收清单.md": "fe617b94aa47656d0b972c474a5a572569b0c0d780f984ace3df8ee54f75af3e",
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
@@ -58,7 +58,7 @@
     "reference/业务路线.md": "96874f08938d9bd6e8054396790728b9b1fba4a3f32353490ef53e73acbf3c74",
     "reference/依赖与MCP接入.md": "816aa6f7f2e5e3b15960a8e8459325514a6f4d1090518a389356bf526b200bed",
     "reference/前端页面.md": "26c3bc1223dfd82558f49d488ce36da31ce0ce9b69d6e0236c78ecb615455782",
-    "reference/多人协作.md": "f0e64195eb35bc1c881083ffd54d4c3a7ea63903d450ec43c2a6b83b68ea795e",
+    "reference/多人协作.md": "e3dd0402635e9d77fe6cd8efa19bda344cdaa3bb14ed71851fa0e8617f2d6dfb",
     "reference/平台对象速查.md": "587f988f2e58a81cdc4ea34599ae96bea39ad538be040fb743a768ce87a079fb",
     "reference/开发者中心与工作区.md": "6fa7d22c8a1fe3cf39d031f5de50cbe704845b3c822ce995672cdc17cf56b085",
     "reference/报错对照.md": "b8843fa00b572be4be66cfb6613e891f38e4c6235e9ed7eaf97971bd5bdcf566",
