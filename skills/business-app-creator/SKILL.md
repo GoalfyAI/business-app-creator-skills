@@ -126,7 +126,7 @@ keywords:
 - **中间不设多余的等待**：② 的判断题答完后，一路做到 ④ 交出验收报告，进度写进方案页和交接消息，开发者想看随时看。只在这些时候停下来问开发者：③ 写明的三种拍板情况；缺开发者本人才能给的东西（授权、密钥、业务事实）；要做 PRD 没列的外部副作用；你自己确实推进不下去。
 - **上线要开发者开口**：上线前必须有 ④ 的验收报告，每条验收条目都有结论，开发者看过报告明确说「可以上线」，改动再小也一样。验收由你做，开发者不逐条试；你验不了的列为「我试不了的」，上线后请开发者在正式版里试。到点或有新记录时自动开始的那一步，④ 先用冒泡验结果，真的自动开始在 ⑤ 上线后验（见 [stages/4-试用验收.md](stages/4-试用验收.md)）。
 
-**阶段标记怎么写**：工作区的 `workspace.json` 仍是 G1–G7 七项，`doctor` 按它校验。五段和七项的对应见上表：进入一段时把它包含的第一项标 `in_progress`；段内每完成一项标 `passed`，失败标 `failed`；交棒时这一段包含的各项都应是 `passed`，没做的保持 `not_started` 并在阶段文档写一句原因。`workspace.json` 的 `status`、`docs/stages/` 对应文档 front matter 的 `status`、`WORKSPACE.md` 的 `current_stage` 在同一动作里更新，`current_stage` 指向正在做的那一项。阶段显示名以工作区里已有的为准，只改状态，不改名。
+**阶段标记怎么写**：工作区的 `workspace.json` 仍是 G1–G7 七项，`doctor` 按它校验。五段和七项的对应见上表：进入一段时把它包含的第一项标 `in_progress`；段内每完成一项标 `passed`，失败标 `failed`；交棒时这一段包含的各项都应是 `passed`，没做的保持 `not_started` 并在阶段文档写一句原因。`workspace.json` 的 `status`、`docs/stages/` 对应文档 front matter 的 `status`、`WORKSPACE.md` 的 `current_stage` 在同一动作里更新，`current_stage` 指向正在做的那一项。阶段显示名以工作区里已有的为准，只改状态，不改名。路线验证的豁免（`route_verification_waived`）只记下这条路线没验证及原因，不算 `passed`：G6、G7 缺真跑或正式版真跑证据时保持 `failed`，不能凭豁免结单，除非开发者明确接受并在上线结果里写明没验证。
 
 ## 7. 工具速查
 
