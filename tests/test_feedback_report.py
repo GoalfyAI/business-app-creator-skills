@@ -249,6 +249,14 @@ class FeedbackReportTests(unittest.TestCase):
         self.assertEqual(len(m.validate(legacy, raw, issues)["decisions"]), 3)
         self.assertEqual(len(m.validate(m.render(raw, issues, legacy), raw, issues)["decisions"]), 3)
 
+    def test_application_id_boundaries(self):
+        for good, expected in (("18446744073709551615", "18446744073709551615"), (2**64 - 1, str(2**64 - 1)),
+                               (2**53 + 1, str(2**53 + 1)), ("k3m9x2ab", "k3m9x2ab"), (37, "37")):
+            self.assertEqual(m.app_id(good), expected)
+        for bad in ("01234567", "18446744073709551616", "k3m9x2a", "k3m9x2abc", " 37", 1.5, None):
+            with self.assertRaisesRegex(ValueError, "invalid business_ui_id"):
+                m.app_id(bad)
+
     def test_invalid_application_ids_rejected(self):
         for bad in ("K3M9X2AB", "k3m9", "037", "", 0, -1, True, 2**64):
             raw = copy.deepcopy(self.raw)
