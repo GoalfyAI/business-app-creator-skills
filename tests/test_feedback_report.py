@@ -219,6 +219,52 @@ class FeedbackReportTests(unittest.TestCase):
                 m.download(meta, "101", "image-1", tmp)
             self.assertEqual(target.read_bytes(), b"local evidence changed")
 
+    # 应用 ID 改为 public_id 字符串后，新旧两种形态都要能渲染与校验。 [需求:T-4735]
+    def test_string_and_short_code_application_ids(self):
+        raw = copy.deepcopy(self.raw)
+        raw["scope"]["business_ui_ids"] = ["37", "k3m9x2ab"]
+        raw["items"][0]["business_ui_id"] = "37"
+        raw["items"][1]["business_ui_id"] = "k3m9x2ab"
+        issues = [
+            {"issue_id": "BUI-37-I001", "business_ui_id": "37", "feedback_ids": ["101"], "title": "价格"},
+            {"issue_id": "BUI-k3m9x2ab-I001", "business_ui_id": "k3m9x2ab", "feedback_ids": ["102"], "title": "速度"},
+        ]
+        report = m.render(raw, issues)
+        self.assertIn('business_ui_id: "37"', report)
+        self.assertIn('business_ui_id: "k3m9x2ab"', report)
+        self.assertIn("## 应用 k3m9x2ab", report)
+        decisions = m.validate(report, raw, issues)["decisions"]
+        self.assertEqual([d["business_ui_id"] for d in decisions], ["37", "k3m9x2ab"])
+
+    def test_legacy_numeric_decision_matches_new_string_issue(self):
+        report = m.render(self.raw, self.issues)
+        legacy = report.replace('business_ui_id: "37"', "business_ui_id: 37").replace(
+            'business_ui_id: "38"', "business_ui_id: 38"
+        )
+        self.assertIn("business_ui_id: 37\n", legacy)
+        raw = copy.deepcopy(self.raw)
+        issues = copy.deepcopy(self.issues)
+        for issue in issues:
+            issue["business_ui_id"] = str(issue["business_ui_id"])
+        self.assertEqual(len(m.validate(legacy, raw, issues)["decisions"]), 3)
+        self.assertEqual(len(m.validate(m.render(raw, issues, legacy), raw, issues)["decisions"]), 3)
+
+    def test_invalid_application_ids_rejected(self):
+        for bad in ("K3M9X2AB", "k3m9", "037", "", 0, -1, True, 2**64):
+            raw = copy.deepcopy(self.raw)
+            raw["items"][0]["business_ui_id"] = bad
+            with self.assertRaisesRegex(ValueError, "invalid business_ui_id"):
+                m.render(raw, self.issues)
+        issues = copy.deepcopy(self.issues)
+        issues[0].update(issue_id="BUI-k3m9-I001", business_ui_id="k3m9")
+        with self.assertRaises(ValueError):
+            m.render(self.raw, issues)
+        report = m.render(self.raw, self.issues).replace(
+            'business_ui_id: "37"', "business_ui_id: k3m9x2ab", 1
+        )
+        with self.assertRaisesRegex(ValueError, "JSON number or quoted string"):
+            m.validate(report, self.raw, self.issues)
+
 
 if __name__ == "__main__":
     unittest.main()

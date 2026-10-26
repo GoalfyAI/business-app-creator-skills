@@ -24,7 +24,20 @@ FIELDS = {
 }
 STATES = {"not_started", "in_progress", "review_ready", "blocked"}
 ID = re.compile(r"[1-9][0-9]{0,19}")
-ISSUE = re.compile(r"BUI-([1-9][0-9]*)-I[0-9]{3,}")
+# 应用 ID（public_id）：存量为十进制数字串，新应用为含至少一个字母的 8 位小写字母数字短码。 [需求:T-4735]
+APP_ID = re.compile(r"[1-9][0-9]{0,19}|(?=[0-9]*[a-z])[a-z0-9]{8}")
+ISSUE = re.compile(r"BUI-(" + APP_ID.pattern + r")-I[0-9]{3,}")
+
+
+def app_id(value):
+    """规范化应用 ID：旧报告与旧接口的整数转十进制串，字符串须符合 public_id 规则。"""
+    if type(value) is int and 0 < value <= 2**64 - 1:
+        return str(value)
+    if isinstance(value, str) and APP_ID.fullmatch(value) and (
+        not value.isdigit() or int(value) <= 2**64 - 1
+    ):
+        return value
+    raise ValueError("invalid business_ui_id")
 
 
 def load(path):
@@ -61,9 +74,7 @@ def records(raw):
             or key in result
         ):
             raise ValueError("invalid/duplicate feedback_id")
-        app = row.get("business_ui_id")
-        if type(app) is not int or not 0 < app <= 2**53 - 1:
-            raise ValueError("invalid business_ui_id")
+        app_id(row.get("business_ui_id"))
         if not isinstance(row.get("content"), str) or not isinstance(
             row.get("images"), list
         ):
@@ -76,8 +87,11 @@ def check_decision(d, source):
     if set(d) != FIELDS or not isinstance(d["issue_id"], str):
         raise ValueError("unknown decision format")
     m = ISSUE.fullmatch(d["issue_id"])
-    app = d["business_ui_id"]
-    if not m or type(app) is not int or int(m[1]) != app:
+    try:
+        app = app_id(d["business_ui_id"])
+    except ValueError:
+        app = None
+    if not m or app is None or m[1] != app:
         raise ValueError("issue/application mismatch")
     ids = d["feedback_ids"]
     if (
@@ -87,7 +101,7 @@ def check_decision(d, source):
         or len(set(ids)) != len(ids)
     ):
         raise ValueError("invalid feedback_ids")
-    if any(x not in source or source[x]["business_ui_id"] != app for x in ids):
+    if any(x not in source or app_id(source[x]["business_ui_id"]) != app for x in ids):
         raise ValueError("feedback/application mismatch")
     if (
         d["decision"] not in ("pending", "accepted", "rejected")
@@ -120,7 +134,7 @@ def parse_decisions(text, source):
         raise ValueError("unknown content in decision section")
     result = {}
     for block in blocks:
-        # 有意只支持模板的单层 YAML 子集：JSON 数组/引号字符串、整数与未加引号枚举。
+        # 有意只支持模板的单层 YAML 子集：JSON 数组/引号字符串、整数（旧报告的 business_ui_id）与未加引号枚举。
         d = {}
         for line in block.splitlines():
             key, sep, value = line.partition(":")
@@ -129,7 +143,14 @@ def parse_decisions(text, source):
             value = value.strip()
             if not value:
                 raise ValueError("use quoted empty string")
-            if value[0] in '["' or key == "business_ui_id":
+            if key == "business_ui_id":
+                try:
+                    d[key] = json.loads(value)
+                except json.JSONDecodeError:
+                    raise ValueError(
+                        "business_ui_id must be a JSON number or quoted string"
+                    ) from None
+            elif value[0] in '["':
                 d[key] = json.loads(value)
             elif re.fullmatch(r"[A-Za-z0-9_-]+", value):
                 d[key] = value
@@ -161,7 +182,7 @@ def validate(report, raw, issues):
     for key, d in decisions.items():
         issue = expected[key]
         if (
-            d["business_ui_id"] != issue["business_ui_id"]
+            app_id(d["business_ui_id"]) != app_id(issue["business_ui_id"])
             or d["feedback_ids"] != issue["feedback_ids"]
         ):
             raise ValueError("decision associations changed")
@@ -212,9 +233,9 @@ def render(raw, issues, previous=None, image_dir=None):
     group = None
     for issue in sorted(
         issues,
-        key=lambda i: (i["business_ui_id"], i.get("category", "待分类"), i["issue_id"]),
+        key=lambda i: (app_id(i["business_ui_id"]), i.get("category", "待分类"), i["issue_id"]),
     ):
-        current = (issue["business_ui_id"], issue.get("category", "待分类"))
+        current = (app_id(issue["business_ui_id"]), issue.get("category", "待分类"))
         if current != group:
             lines += [
                 "",
@@ -230,7 +251,7 @@ def render(raw, issues, previous=None, image_dir=None):
             key,
             dict(
                 issue_id=key,
-                business_ui_id=issue["business_ui_id"],
+                business_ui_id=app_id(issue["business_ui_id"]),
                 feedback_ids=issue["feedback_ids"],
                 decision="pending",
                 rejection_reason="",
@@ -239,7 +260,7 @@ def render(raw, issues, previous=None, image_dir=None):
             ),
         )
         if (
-            decision["business_ui_id"] != issue["business_ui_id"]
+            app_id(decision["business_ui_id"]) != app_id(issue["business_ui_id"])
             or decision["feedback_ids"] != issue["feedback_ids"]
         ):
             raise ValueError(
