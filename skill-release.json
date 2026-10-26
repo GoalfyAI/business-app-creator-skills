@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20261022-1f91ec",
-  "package_version": "2.0.30",
+  "version": "v20261026-335e8b",
+  "package_version": "2.0.31",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-26T06:34:22Z",
-  "update_reason": "D-3636: downgrade-to-viewer redeploy hint",
+  "released_at": "2026-10-26T11:22:55Z",
+  "update_reason": "fix(skill): mention the redeploy hint when downgrading a collaborator to viewer；fix(skill): document collaborator deploy credentials and the redeploy hint on removal；fix(skill): document preview access sync failure on collaborator remove；fix(skill): collaborators write change_note themselves and re-home own-name mounts；fix(skill): require template baseline and route collaborator version reads；fix(skill): align collaboration guidance with MCP parameters；feat(skill): route business-app-creator by collaboration role",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -42,7 +42,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "6be7a669d15c76273af790afdc3d513c800dd00ca52f351422ea7216545df034",
+    "SKILL.md": "358b9d83f62772dadf7830655745bb4959e7dc9748ebc938102b0c3e661d2816",
     "agents/openai.yaml": "53f536bc0e7d54fb811ce78217b93f4cafcde48ca2a2be5ba23f04aff92b6f0b",
     "checklists/验收清单.md": "fe617b94aa47656d0b972c474a5a572569b0c0d780f984ace3df8ee54f75af3e",
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
