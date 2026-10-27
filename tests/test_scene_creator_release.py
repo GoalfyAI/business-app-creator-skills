@@ -125,13 +125,7 @@ def test_every_install_surface_ships_production_endpoint():
         if path.is_file() and path.suffix in {".md", ".json", ".yaml"}
     )
     assert release_module.PROD_MCP_ENDPOINT in combined
-    # 2026-09-04 起安装物料统一指向生产；不得残留 QA 域名与旧端点。
-    # 唯一例外是 ④ 用浏览器验收的环境地址表（R-367 options D 第 3 步）：它按环境列出 GoalfyMax 站点根地址，
-    # 让 Agent 打开当前环境的站点，不是安装物料要连的地址。
-    environment_roots = ("| QA | `https://goalfymax.qa.goalfyai.cn` |",)
-    for row in environment_roots:
-        assert row in combined
-        combined = combined.replace(row, "")
+    # 2026-09-04 起安装物料统一指向生产；不得残留 QA 域名与旧端点
     assert ".qa.goalfyai.cn" not in combined
     assert "workflow-mcp." not in combined
     assert "https://goalfymax.goalfyai.cn/developer/api-keys" in combined
@@ -1009,7 +1003,7 @@ def test_browser_red_lines_are_four_rules_with_one_detailed_source():
     for fact in (
         "`launch(headless=False)` 加 `new_context`", "`--isolated`、不带 `--headless`",
         "**禁止**用 `launch_persistent_context`、`--user-data-dir`、`--storage-state`、`--save-session`",
-        "`https://goalfymax.goalfyai.cn`", "`https://goalfymax.pre.goalfyai.cn`", "`https://goalfymax.qa.goalfyai.cn`",
+        "`https://goalfymax.goalfyai.cn`", "`https://goalfymax.pre.goalfyai.cn`",
         "应用 ID 原样取工作区 `app.json` 的 `id`", "`resource_group_id`", "地址上不加 `asset_version_id`",
         "**必须**先在当前草稿 `ship` 到 `success` 再打开", "去掉 `?` 与 `#` 之后的部分",
         "开发者的原话用 `task_manager(action=\"insert\", entry_type=\"checkpoint\")` 记下",
