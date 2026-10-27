@@ -366,5 +366,38 @@ def test_workflows_share_policy_lock_and_pin_event_commit():
     prod_step = workflows[0]["jobs"]["register"]["steps"][-1]
     assert "--register-and-recommend" in prod_step["run"]
     assert "SCENE_SKILL_RELEASE_RECOMMENDED_TARGETS" in prod_step["env"]
-    trigger = workflows[0].get("on", workflows[0].get(True))
-    assert ".github/workflows/register-skill-release.yml" in trigger["push"]["paths"]
+    # 日常登记与抬线由 Codeup 环境流水线完成；GitHub 推送不再触发，避免重复登记或跨环境抬线
+    for workflow in workflows:
+        assert workflow.get("on", workflow.get(True)) == {"workflow_dispatch": None}
+
+
+# ------------------------------------------------ 部署 main 同时设强制线与建议线
+
+
+def test_raise_lines_required_sets_both_floors_and_keeps_bypass(policy_state):
+    state, calls = policy_state
+    recommend.raise_lines(NEW, "https://hub.invalid", {}, required=True)
+    assert state["policy"] == {
+        "min_required_version": NEW,
+        "min_recommended_version": NEW,
+        "emergency_bypass": True,
+    }
+    assert [method for method, _ in calls] == ["GET", "PUT", "GET"]
+
+
+def test_raise_lines_required_only_raises_lower_floor(policy_state):
+    """强制线已是更新登记版本时只抬建议线，任何一条线都不回退。"""
+    state, _ = policy_state
+    state["releases"].append({"id": 40, "version_string": "v20000102-111111"})
+    state["policy"]["min_required_version"] = "v20000102-111111"
+    recommend.raise_lines(NEW, "https://hub.invalid", {}, required=True)
+    assert state["policy"]["min_required_version"] == "v20000102-111111"
+    assert state["policy"]["min_recommended_version"] == NEW
+
+
+def test_raise_lines_required_skips_when_both_current(policy_state):
+    state, calls = policy_state
+    state["policy"].update({"min_required_version": NEW, "min_recommended_version": NEW})
+    recommend.raise_lines(OLD, "https://hub.invalid", {}, required=True)
+    assert calls == [("GET", None)]
+    assert state["policy"]["min_required_version"] == NEW

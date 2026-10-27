@@ -99,49 +99,43 @@ Skill 版本必须不可预测，插件版本必须可比大小，两个要求�
 
 ## 发版
 
-```bash
-./scripts/release-skill.sh "变更说明"
-git push --follow-tags origin main
-git push --follow-tags github main
-```
+发版跟随 Codeup 的环境部署，GitHub 只作为安装源，由流水线推送，不在 GitHub 上手工改分支。
+入口都是 `scripts/deploy_env.py`，有两类云效流水线：
 
-脚本会切一个新的随机 Skill 版本、提升所有插件版本、重建四个平台的 Skill 副本与压缩包、
-刷新发布清单，然后提交并打 `skill/<version>` tag。发版前工作区必须干净。
+- **发版流水线**（模板 `scripts/flow/skill-release.yaml`，只跑 main，走 OA 发车）：
+  准备发版（发版或沿用，发布提交写进 `USER_COMMIT`）→ 部署pre（回调 OA 生成发版审查）→
+  PRE审批（OA 发车放行）→ 部署prod（回调 OA 核验生产并对账）。PRE 与 prod 部署的是同一个发布提交，
+  审批期间 main 上新合入的提交不会被带进 prod。OA 规范服务 scene-creator-skills 登记的就是这条流水线。
+- **QA 环境流水线**（模板 `scripts/flow/skill-env-deploy.yaml`，运行时选分支）：功能分支与 main 在 QA 测试用。PRE 只由发版流水线部署 main。
 
-推送后由 GitHub Actions 接手：
+| 环境 | GitHub 安装分支 | 部署 main | 部署其他分支 |
+|---|---|---|---|
+| qa | `business-qa` | 发版（或沿用）→ 推分支 → 登记 → 强制线与建议线设为该版本 | 生成新版本 → 推分支 → 登记，不动版本线 |
+| pre | `business-pre` | 只经发版流水线的部署pre | 不部署 |
+| prod | `main` | 只经发版流水线，OA 发车放行后执行 | 不允许 |
+
+部署 main 时，main 最新提交上已有 `skill/<version>` tag 就沿用该版本；否则流水线运行
+`release-skill.sh` 切新版本，把发布提交与 tag 推回 Codeup main。同一份 main 先后部署到三个
+环境用的是同一个版本。qa / pre 的安装物料由 `build_env_branch.py` 按环境渠道生成（MCP 地址、
+密钥变量名、升级链接都换成该环境），`package_version` 为源码版本加 `-<环境>.<构建号>`。
+版本线按登记 ID 只升不降，应急开关保持原值。
+
+每条流水线需要的变量见流水线模板注释（发版流水线另需 PRE 的 `SKILL_REGISTRY_SECRET_PRE`、`HUB_API_KEY_PRE`）：`SKILL_ENV`，以及加密的 `CODEUP_PUSH_URL`、
+`GITHUB_PUSH_URL`、`SKILL_REGISTRY_SECRET`、`HUB_API_KEY`、`HUB_OPERATOR_EMAIL`、`HUB_OPERATOR_ID`。
+任何一项缺失都在写入前失败。
+
+本地仍可用 `./scripts/release-skill.sh "变更说明"` 切版本并推送 main 与 tag；之后运行对应环境
+流水线时会沿用这个版本。
+
+GitHub Actions：
 
 | Workflow | 触发 | 作用 |
 |---|---|---|
-| `register-skill-release` | push main | 校验产物一致后，向各环境 Hub 登记版本并抬建议线 |
 | `publish-skill-release` | `skill/v*` tag | 从发布清单创建 GitHub Release |
 | `build-platform-zips` | Skill 内容变更 | 重新打包 Manus 与通用集成的压缩包 |
+| `register-skill-release` / `register-skill-qa` | 仅手动 | 应急补登记，日常不用 |
 
-校验只在 GitHub Actions 上跑，推送到 GitHub 后自动触发。
-
-正式发布需配置两个 GitHub Actions Secret。`SCENE_SKILL_RELEASE_REGISTRY_TARGETS`
-沿用每行 `<登记 URL>|<S2S 密钥>`；新增 `SCENE_SKILL_RELEASE_RECOMMENDED_TARGETS`
-为 JSON 数组，每项提供对应 Hub 的根地址与受限操作身份：
-
-```json
-[
-  {
-    "hub_url": "https://<对应环境的 Hub 域名>",
-    "api_key": "<该环境的 Internal API Key>",
-    "operator_email": "<操作人邮箱>",
-    "operator_id": "<操作人正整数 ID>",
-    "app_id": "goalfymax"
-  }
-]
-```
-
-`app_id` 可省略，默认 `goalfymax`。两份配置的 Hub 必须一一对应且不能重复；缺配置或
-错配会在写入前失败。全部登记成功后才逐环境抬建议线，保留强制线和应急开关；同版或
-较旧登记版本重跑不会回退建议线。部分抬线失败时汇总报错，重跑会先读取当前状态对账。
-
-正式与 QA 发布共用串行组。现有策略接口是整体 PUT，人工编辑策略须避开发布写窗口；
-脚本不提供跨外部写者的原子保护，也不自动回滚整份策略。新增 Secret 配好并完成授权的
-环境验证后才启用正式发布；启用前同步 QA 产物分支的 workflow，确认串行组一致且旧版
-发布运行已经结束。不把代码合入当成环境策略已经更新。
+两条流水线各自串行，跨环境不加锁；现有策略接口是整体 PUT，人工编辑策略须避开部署写窗口。
 
 ## 提交信息
 

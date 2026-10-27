@@ -789,7 +789,7 @@ def test_code_block_headings_do_not_count_as_sections(tmp_path: Path):
 # ---------------------------------------------------------------- QA 渠道 [任务:T-3784]
 
 
-QA_BUILD_SPEC = importlib.util.spec_from_file_location("build_qa_branch", ROOT / "scripts" / "build_qa_branch.py")
+QA_BUILD_SPEC = importlib.util.spec_from_file_location("build_env_branch", ROOT / "scripts" / "build_env_branch.py")
 assert QA_BUILD_SPEC and QA_BUILD_SPEC.loader
 qa_build_module = importlib.util.module_from_spec(QA_BUILD_SPEC)
 QA_BUILD_SPEC.loader.exec_module(qa_build_module)
@@ -841,6 +841,32 @@ def test_qa_build_switches_every_environment_value(tmp_path: Path, monkeypatch):
     claude_readme = (out / "claude-code" / "README.md").read_text(encoding="utf-8")
     assert '.git#business-qa"' in claude_readme
     assert "--ref business-qa" in (out / "codex" / "README.md").read_text(encoding="utf-8")
+
+
+def test_pre_build_uses_pre_channel_and_reuses_given_version(tmp_path: Path, monkeypatch):
+    """部署 main 到 PRE：沿用 main 的发布版本，安装物料全部指向 PRE，升级链接指向 business-pre。"""
+    out = tmp_path / "pre"
+    out.mkdir()
+    info = qa_build_module.build(out, "HEAD", 9, env="pre", skill_version="v20261019-abcdef", source_label="main")
+    monkeypatch.setenv(release_module.CHANNEL_ENV, "pre")
+
+    assert info["branch"] == "business-pre"
+    assert info["skill_version"] == "v20261019-abcdef"
+    assert info["package_version"].endswith("-pre.9")
+    manifest = json.loads((out / "skill-release.json").read_text(encoding="utf-8"))
+    assert manifest["version"] == "v20261019-abcdef"
+    assert manifest["mcp_endpoint"] == release_module.RELEASE_CHANNELS["pre"]["mcp_endpoint"]
+    for other in ("prod", "qa"):
+        for value in release_module.RELEASE_CHANNELS[other].values():
+            assert value not in (out / "claude-code" / "README.md").read_text(encoding="utf-8")
+    assert '.git#business-pre"' in (out / "claude-code" / "README.md").read_text(encoding="utf-8")
+
+
+def test_env_channel_package_suffix_must_match_channel(monkeypatch):
+    monkeypatch.setenv(release_module.CHANNEL_ENV, "pre")
+    assert release_module._validate_package_version("2.0.12-pre.3") == (2, 0, 12)
+    with pytest.raises(release_module.ReleaseError, match="-pre.N"):
+        release_module._validate_package_version("2.0.12-qa.3")
 
 
 def test_retired_lite_copies_are_removed_and_rejected(tmp_path: Path):
