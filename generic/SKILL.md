@@ -1,6 +1,6 @@
 ---
 name: business-app-creator
-description: 制作和维护 GoalfyMax 智能应用（场景包 + 数据模板 + 前后端应用）时使用，涵盖新建、接续、修订、诊断、能力试用和方案讨论。按五段推进：需求确认、方案、制作、试用验收、上线；每段交给开发者一份看得懂的交付物，开发者只确认自己的业务、看得见的东西、取舍和自己手上的事。平台操作引用 MCP 合同，工程实现引用脚手架合同。一次性业务执行或平台概念咨询不使用。[skill-version:v20261022-1f91ec]
+description: 制作和维护 GoalfyMax 智能应用（场景包 + 数据模板 + 前后端应用）时使用，涵盖新建、接续、修订、诊断、能力试用和方案讨论。按五段推进：需求确认、方案、制作、试用验收、上线；每段交给开发者一份看得懂的交付物，开发者只确认自己的业务、看得见的东西、取舍和自己手上的事。平台操作引用 MCP 合同，工程实现引用脚手架合同。一次性业务执行或平台概念咨询不使用。[skill-version:v20261027-c308ee]
 keywords:
   - 智能应用
   - 智能应用开发
@@ -37,7 +37,8 @@ keywords:
 - 花钱、发信、写正式数据、上线、下线、删除、回滚这类外部副作用，**必须**先说清范围，开发者明确同意后执行。PRD「花多少」和「费用与副作用」里列出的动作（含制作中的冒泡 `full_run`、真跑、自动化试跑），开发者确认 PRD 即视为同意，制作过程中照做、在交接消息里报实际花费，不再逐次询问；没列的、累计花费将超过 PRD 写的上限时另行确认。
 - **禁止**伪造平台身份：`workflow_runtime_id` 只由服务端生成；`orchestration_id` 只取自场景包里已定义的路线；`business_id` 由调用方在发起时生成、同一实例内不变。
 - 零捏造：没读过的契约不猜参数，没跑过的结果不说通过，证据不足就写「未验证」。交给开发者的数字逐条对照原始证据，对不上的删掉或标为「预期」「估算」。
-- 共享资产（官方或他人的场景包、FA、工具集）先 `clone_asset` 再改；他人名下的资产不擅自上线、下线或删除。
+- 共享资产（官方或他人的场景包、FA、工具集）先 `clone_asset` 再改；他人名下的资产不擅自上线、下线或删除（编辑协作者按 [reference/多人协作.md](reference/多人协作.md) 定版协作应用里的各层资产除外）。
+- 协作者**禁止**定版、发布、下线、删除应用，也**禁止**再把应用分享给别人；这些由属主操作，编辑协作者改完用 `business_ui_manage(action="request_finalize")` 提请属主定版。
 - **禁止**用 Codex 内置浏览器、Playwright 或任何浏览器打开 GoalfyMax 正式入口、`passport` 登录页、「在线试用」地址或容器地址，也不借用开发者的登录会话。在应用根用 `npm run dev:restart` 起的本机版（只访问本机地址）可以用无头浏览器照验收条目操作；线上页面一律请开发者在开发者中心看，规则见 [reference/开发者中心与工作区.md](reference/开发者中心与工作区.md)「看页面只用开发者中心」。
 
 ## 1. 智能应用是什么
@@ -95,14 +96,17 @@ keywords:
 | 纯概念咨询、没指向具体应用、或明确只在聊天里回答 | 仅讨论 | [tasks/仅讨论.md](tasks/仅讨论.md) |
 | 查用户反馈、整理反馈报告、按报告改应用 | 用户反馈 | [reference/用户反馈.md](reference/用户反馈.md) |
 
+**再认协作身份**：开发者指向已有应用时，用 `business_ui_manage(action="list")` 或 `business_ui_manage(action="get")` 返回的 `role` 分流，规则见 [reference/多人协作.md](reference/多人协作.md)。`viewer`（只读协作者）：不管开发者要做什么，只走诊断路线，不派生草稿、不申请写连接、不写 SQL、不跑写流程；`editor`（编辑协作者）：改动走修订路线，只改自己的草稿，⑤ 改为提请定版；`owner`（属主）：照本表，有协作者提请的待定版清单时先处理。`list` 里有待接受的协作邀请时，告诉开发者用站内信里的分享码到 GoalfyMax 分享兑换入口接受。
+
 意图或关键参数缺失时先问；工程上的小取舍按可逆默认做，写进开发记录。
 
 ## 5. 开工（每个应用只做一次，接续时核对）
 
-1. **建工单**：`task_manager(action="create", mode="write")`，标题写应用名；之后所有制作、部署、运行工具都带这个 `task_id`。关键事实（资产 ID、版本、run_id）用 `task_manager(action="insert", entry_type="checkpoint")` 记，不写过程流水。工单被拒按 [reference/报错对照.md](reference/报错对照.md) 的「工单闸门」处理。
+1. **建工单**：`task_manager(action="create", mode="write", skill_version=…)`，标题写应用名。`skill_version` **必须**填已安装 SKILL.md description 里 `[skill-version:...]` 的原值，每次建 write 工单前从文件读取；**禁止**留空、填 `dev` 或凭记忆填写。之后所有制作、部署、运行工具都带这个 `task_id`。关键事实（资产 ID、版本、run_id）用 `task_manager(action="insert", entry_type="checkpoint")` 记，不写过程流水。工单被拒按 [reference/报错对照.md](reference/报错对照.md) 的「工单闸门」处理。
 2. **定位应用工程并核脚手架版本**：在开发者中心分配的 `apps/<应用目录>/` 下工作；读应用根的 `scaffold-release.json`，调用 `business_ui_bundle(action="download_template")` 核版本。规则见 [reference/脚手架与预置件.md](reference/脚手架与预置件.md)。
 3. **初始化或接续工作区**：新建用 `npm run scaffold:init -- --environment <环境> --app-name "<应用名>"`，接续时补齐缺失文件用 `npm run scaffold:repair -- --app-name "<应用名>"`；然后 `npm run setup`、`npm run doctor`。三件套、方案页、阶段标记的规则见 [reference/开发者中心与工作区.md](reference/开发者中心与工作区.md)。
 4. **读一次开发者偏好**：`dev_preferences(action="pull")`，按需阅读；写过的照做，其余用可逆默认，当前指令优先。
+5. **读协作状态**（已有应用）：`business_ui_manage(action="get")` 看 `role`、待定版清单和自己草稿的基线是否过期；属主先处理待定版，协作者草稿基线过期先合并，做法见 [reference/多人协作.md](reference/多人协作.md)「开工和接续先读协作状态」。
 
 开工后在第一次实质答复结束前，把已知的业务目标、范围和待明确事项写进 `docs/proposal/index.html`，未知的标「未知」。开发者只给了一句话、方向还不清楚（[design/按轮问.md](design/按轮问.md)「从开发者给的东西开始」第三行）时，先不开工：直接发方向那一轮，这一轮不调制作工具、不算实质答复。方向定了，用选定方向起一个暂定应用名（例如「小红书商家诊断报告」），做开工四步，再发下一轮；应用名以后可以改，在 PRD 里定稿。
 
@@ -116,8 +120,6 @@ keywords:
 | ④ 试用验收 | 验收报告：你自己逐条验（业务结果用 `workspace` 真跑和查库，页面在本机版上操作），每条「通过」附 `project_id`、查到的行或本机截图；「好不好你说了算」的几条附实际结果；「我试不了」只用于线上页面和真实身份才看得到的、到点触发、正式版真跑，页面交互和数据行只能是「通过」或「没通过」。**禁止**用「请你去演示预览 / 在线试用看一下」代替验收报告；报告过不了 ④ 的「报告的硬门」，G6 判 `failed`，不许请开发者说「可以上线」 | 看报告，说「可以上线」或哪一条还要改 | G6 | [stages/4-试用验收.md](stages/4-试用验收.md) |
 | ⑤ 上线 | 上线结果：定版后先请开发者发布（正式实例真跑要求已发布），他回「发布了」后你必须在正式版里真跑一次（`manage_goalfymax_project` 不传 `business_ui_data_space`），附它的 `project_id` 和结果；没有就不许结单，也不能拿 `workspace` 的真跑顶替。再写实际花费、开发者要做的 | 试「我试不了的」几条、发布、分享 | G7 | [stages/5-上线.md](stages/5-上线.md) |
 
-守住这几条：
-
 - **按段推进，交棒有条件**：进入每一段的第一件事，是用命令把这一段的 `stages/` 文件从头读到尾（只读过 `SKILL.md` 或上一段的文件不算），读完再调这一段的工具；每段的交棒条件写在段文件末尾，满足了才进下一段（① 开发者回「确认这一版」，② 判断题都答「对」，③ 能部署，④ 报告过了硬门、开发者看后说「可以上线」）；退回时回到写明的那一段，只改受影响的部分：② 要的东西变了、③ 发现做不到、④ 要的东西本身不对回 ①，③ 结果始终达不到预期回 ②，④ 结果不对回 ③。新建和改已上线的应用都走五段；改已上线的应用时每段只做和改动有关的部分，④ 和 ⑤ 每次都做（见 [tasks/修订.md](tasks/修订.md)）。
 - **顺序按依赖走**：后一步要用前一步的产出（路线 ID、`business_ui_id`、数据模板）时，先把前一步做完；平台对象用到时再建，**禁止**提前建空容器；① ② 只查不建（能力试用包除外）。
 - **只靠交付物接力**：每段的交付物写进方案页和阶段文档，内容要完整到另一个 Agent 只读这些交付物就能接着做下一段，不依赖聊天记录。阶段文档只用 `docs/stages/` 里已生成的七份，一个工作区阶段一份，不另建文件：② 的施工单、业务说明、判断题和回答、验收条目、费用复核都写进 G3 那一份。PRD 的正本在方案页；确认版全文只在 G1 阶段文档存一次，之后各段写「依据 PRD 第 N 版」并只记和 PRD 不一样的地方，不再复制全文。
@@ -125,8 +127,7 @@ keywords:
 - **每次交接说四件事**：刚做完、下一步、要你做的、花了多少；花费固定写「本段 N；累计 N；上限 N」，三个数缺一不发，上限在 ① 定成具体积分数。每段结束和 ③ 的每次进度更新都发一条，写法见 [design/交接消息.md](design/交接消息.md)。
 - **中间不设多余的等待**：② 的判断题答完后，一路做到 ④ 交出验收报告，进度写进方案页和交接消息，开发者想看随时看。只在这些时候停下来问开发者：③ 写明的三种拍板情况；缺开发者本人才能给的东西（授权、密钥、业务事实）；要做 PRD 没列的外部副作用；你自己确实推进不下去。
 - **上线要开发者开口**：上线前必须有 ④ 的验收报告，每条验收条目都有结论，开发者看过报告明确说「可以上线」，改动再小也一样。验收由你做，开发者不逐条试；只有 ④ 写明的几类（线上页面和真实身份才看得到的、到点触发、正式版真跑）列为「我试不了的」，上线后请开发者在正式版里试。到点或有新记录时自动开始的那一步，④ 先用冒泡验结果，真的自动开始在 ⑤ 上线后验（见 [stages/4-试用验收.md](stages/4-试用验收.md)）。
-
-**阶段标记怎么写**：工作区的 `workspace.json` 仍是 G1–G7 七项，`doctor` 按它校验。五段和七项的对应见上表：进入一段时把它包含的第一项标 `in_progress`；段内每完成一项标 `passed`，失败标 `failed`；交棒时这一段包含的各项都应是 `passed`，没做的保持 `not_started` 并在阶段文档写一句原因。`workspace.json` 的 `status`、`docs/stages/` 对应文档 front matter 的 `status`、`WORKSPACE.md` 的 `current_stage` 在同一动作里更新，`current_stage` 指向正在做的那一项。阶段显示名以工作区里已有的为准，只改状态，不改名。路线验证的豁免（`route_verification_waived`）只记下这条路线没验证及原因，不算 `passed`：G6、G7 缺真跑或正式版真跑证据时保持 `failed`，不能凭豁免结单，除非开发者明确接受并在上线结果里写明没验证。
+- **阶段标记**：工作区仍是 G1–G7 七项，五段对应见上表，写法见 [reference/开发者中心与工作区.md](reference/开发者中心与工作区.md)「三件套与阶段标记」。
 
 ## 7. 工具速查
 
@@ -140,7 +141,7 @@ keywords:
 | 编排型 TPE | `otpe_manage(action=preview / create / update / attach / online / bubble / verify)` |
 | 场景包与路线 | `scene_package_manage(action=create / get / ensure_draft / update / assemble / bubble / finalize / online)` |
 | 数据模板 | `dataset_template_workspace(action=open / connect / bind / create_table / set_relations / inspect / extract / close)` |
-| 应用身份与部署 | `business_ui_manage`、`business_ui_manage(action=setup)`、`business_ui_bundle(action=download_template / ship)`；单步兜底 `prepare_upload / complete_upload / deploy / status` |
+| 应用身份与部署 | `business_ui_manage`、`business_ui_manage(action=setup)`、`business_ui_bundle(action=download_template / ship)`；单步兜底 `prepare_upload / complete_upload / deploy / status`；多人协作 `business_ui_manage(action=collaborators / request_finalize)`，源码包下载 `business_ui_bundle(action="download")` |
 | 自动化、用户反馈 | `business_ui_automation`、`business_ui_feedback` |
 | 真跑与日志 | `manage_goalfymax_project(action=run / wait / status / reply / stop)`，`get_project_execution_logs` |
 | 版本 | `list_asset_versions`、`ensure_editable_asset_draft`、`finalize_asset_version_online`、`compare_asset_versions`、`rollback_asset_version`、`get_asset_usage_impact` |
@@ -165,8 +166,6 @@ keywords:
 4. 开发者选了以后照做，记进阶段文档。
 
 **禁止**为了解开卡点请开发者授权你改生产库、平台库，或改别人（包括使用者）的安装记录和数据；这类修复只能由平台方做。
-开发者的阶段评分（仅在 Codex 中）也用 `submit_dev_feedback` 回传，按 [design/阶段评分.md](design/阶段评分.md) 写，不受上面「不即时提交、汇总成一条」的限制。
-
 ## 8. 什么时候读 reference 与长契约
 
 `reference/` 是按需查阅的正本，每份开头写了适用场景。reference 里的「G1」…「G7」指工作区阶段，对应关系见第 6 节的表；「确认页」指 ① 的 PRD，「分工表」指 PRD 的「每一步谁来做」：
@@ -185,6 +184,7 @@ keywords:
 | 到点或数据变化自动发起路线 | [reference/自动化.md](reference/自动化.md) |
 | 接入新 MCP、私有包、Skill 包、授权卡、工具集上线 | [reference/依赖与MCP接入.md](reference/依赖与MCP接入.md) |
 | 报错码怎么处置 | [reference/报错对照.md](reference/报错对照.md) |
+| 协作者分流、加人改档移人、提请定版、基线过期合并、借来的资产 | [reference/多人协作.md](reference/多人协作.md) |
 
 长契约只在报错或要做不常见的事时读，按 topic 用 `get_diagnosis_doc(topic=…)`，同一主题一个任务只通读一次：
 
