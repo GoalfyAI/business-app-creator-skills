@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20261027-531fb2",
-  "package_version": "2.0.33",
+  "version": "v20261027-2271fd",
+  "package_version": "2.0.34",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-27T08:40:13Z",
-  "update_reason": "fix(feedback): merge current Studio main and preserve OA feedback identity [D-3749]",
+  "released_at": "2026-10-27T09:32:05Z",
+  "update_reason": "fix(skill): prefer OA feedback code in creator handoffs",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -42,7 +42,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "73abb685dcf7b4d29d4c311111a73fcfcf1c5cf896bef447aab9b5f6da680804",
+    "SKILL.md": "d4c1692528631f17e9acb83bd19d9129d1ed7d32c3adfadbda5fc4dd47383f69",
     "agents/openai.yaml": "53f536bc0e7d54fb811ce78217b93f4cafcde48ca2a2be5ba23f04aff92b6f0b",
     "checklists/验收清单.md": "fe617b94aa47656d0b972c474a5a572569b0c0d780f984ace3df8ee54f75af3e",
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
