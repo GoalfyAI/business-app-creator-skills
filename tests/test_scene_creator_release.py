@@ -272,10 +272,11 @@ def test_business_ui_identity_is_bound_before_g5_transition():
     assert "进 G5 前用 `npm run scaffold:bind" in workspace
 
 
-def test_online_preview_is_where_acceptance_happens():
-    """④ 部署后在在线预览里验收；挂本人场景包草稿也能部署，定版应用时草稿随应用一起上线。 [任务:T-3976]"""
+def test_acceptance_deploys_draft_for_workspace_runs():
+    """④ 部署草稿供 workspace 真跑，页面条目在本机版上验；挂本人场景包草稿也能部署，定版应用时草稿随应用一起上线。 [任务:T-3976]"""
     acceptance = _read("stages/4-试用验收.md")
-    assert "在线预览" in acceptance and "deployed_scaffold_version" in acceptance
+    assert "deployed_scaffold_version" in acceptance and 'business_ui_data_space="workspace"' in acceptance
+    assert "页面条目由你在应用的本机版上用无头浏览器照条目操作" in acceptance
     assert 'finalize_asset_version_online(asset_type="scenario_pack"' not in acceptance
     assert "场景包不必先上线" in acceptance
     assert "一起定版上线" in _read("stages/5-上线.md")
@@ -977,82 +978,115 @@ def test_draft_resolve_is_not_platform_blocked():
     assert "不记 platform_blocked，也不为拿入口去 finalize" in acceptance
 
 
-def test_browser_red_lines_are_four_rules_with_one_detailed_source():
-    """R-367 options F：SKILL.md 第 0 节写四条浏览器红线，启动参数、地址与五步只在「④ 用浏览器验收」一处。"""
+def test_browser_red_line_points_to_one_local_acceptance_section():
+    """需求责任人 10-27：SKILL.md 第 0 节一条浏览器红线，只许本机版；本机版做法只写在「④ 本机版页面验收」一处，Skill 不写站点地址、不判断环境。"""
     skill = _read("SKILL.md")
     red_lines = skill.split("## 0. 红线", 1)[1].split("## 1.", 1)[0]
     for fact in (
-        "开发者在本次 ④ 同意后你才启动浏览器打开 GoalfyMax",
-        "只用你自己启动的有界面 Chromium，浏览器资料只在内存",
-        "**禁止**用开发者日常浏览器、它已有的资料或登录会话",
-        "**禁止**连接开发者已打开的浏览器",
-        "**禁止**用 Codex 内置浏览器或无界面窗口",
-        "登录由开发者本人在这个窗口里完成",
-        "**禁止**在登录页输入",
-        "**禁止**读取或复制口令、Cookie、token、页面存储",
-        "**禁止**保存登录状态",
-        "登录后只打开本应用的在线预览 `/business-ui/<应用 ID>/preview`",
-        "**禁止**打开发布管理页、正式入口、我的资产、其他应用、容器地址",
-        "**禁止**真实付款和授权，**禁止**发布",
-        "页面条目做完、开发者收回同意或出错停止时关闭浏览器",
-        "「④ 用浏览器验收」",
+        "**禁止**用 Codex 内置浏览器、Playwright 或任何浏览器打开 GoalfyMax 正式入口、`passport` 登录页、在线预览地址或容器地址，也不借用开发者的登录会话",
+        "在应用根用 `npm run dev:restart` 起的本机版（只访问本机地址）可以用无头浏览器照验收条目操作",
+        "「④ 本机版页面验收」",
     ):
         assert fact in red_lines, fact
     workspace = _read("reference/开发者中心与工作区.md")
-    browser = workspace.split("### ④ 用浏览器验收", 1)[1].split("\n### ", 1)[0]
+    local = workspace.split("### ④ 本机版页面验收", 1)[1].split("\n### ", 1)[0]
     for fact in (
-        "`launch(headless=False)` 加 `new_context`", "`--isolated`、不带 `--headless`",
-        "**禁止**用 `launch_persistent_context`、`--user-data-dir`、`--storage-state`、`--save-session`",
-        "`https://goalfymax.goalfyai.cn`", "`https://goalfymax.pre.goalfyai.cn`",
-        "应用 ID 原样取工作区 `app.json` 的 `id`", "`resource_group_id`", "地址上不加 `asset_version_id`",
-        "**必须**先在当前草稿 `ship` 到 `success` 再打开", "去掉 `?` 与 `#` 之后的部分",
-        "开发者的原话用 `task_manager(action=\"insert\", entry_type=\"checkpoint\")` 记下",
+        "**禁止**用 Codex 内置浏览器（含隐藏窗口）、Playwright 或任何浏览器打开 GoalfyMax 正式入口、`passport` 登录页、在线预览或演示预览的地址、容器地址",
+        "Skill 不记 GoalfyMax 站点地址", "访问被工具审批拒绝时不重试", "`npm run dev:restart` 后台起本机版",
+        "`npm run dev:status`", "`frontend/docs/dev-host-testing.md`", "`Bridge ready`", "内容区空白的截图不作证据",
+        "本机版里的结果是 Mock，不作真实授权或付款的证据", "打开过的本机路由", "`test:e2e:layout`", "`npm run dev:stop`",
     ):
-        assert fact in browser, fact
-    # 启动参数只写在这一处
+        assert fact in local, fact
+    # 本机版的启动与浏览器做法只写在这一节，Skill 正文不写 GoalfyMax 站点地址
     for path in SKILL_ROOT.rglob("*.md"):
-        if path.name == "开发者中心与工作区.md":
-            continue
         text = path.read_text(encoding="utf-8")
-        assert "launch_persistent_context" not in text and "--isolated" not in text, path
-    assert "#### 看页面只用开发者中心" not in workspace
+        assert "goalfyai.cn" not in text, path
+        if path.name != "开发者中心与工作区.md":
+            assert "Bridge ready" not in text and "dev:stop" not in text, path
+    for retired in ("### ④ 用浏览器验收", "#### 五步", "#### 登录后无权访问或会话失效", "#### 测不了时", "#### 预览打不开时",
+                    "launch(headless=False)", "--isolated", "登录好了", "preview-session", "| 环境 | GoalfyMax 地址 |"):
+        assert retired not in _skill_markdown(), retired
     assert "test:e2e:layout" in workspace
 
 
-def test_preview_failures_are_read_from_preview_session_code():
-    """R-367 options D：预览打不开按 preview-session 的 code 判读，3024 先重新 ship，不定版、不下线、不先提反馈。"""
-    browser = _read("reference/开发者中心与工作区.md").split("### ④ 用浏览器验收", 1)[1].split("\n### ", 1)[0]
-    failure = browser.split("#### 预览打不开时", 1)[1].split("\n#### ", 1)[0]
+def test_online_preview_failure_reported_by_developer_rechecks_deployment():
+    """开发者说在线预览打不开：你不打开它，先核对部署、需要时重新 ship；3024 不表示下线，不定版、不下线、不先提反馈。"""
+    workspace = _read("reference/开发者中心与工作区.md")
+    section = workspace.split("### 演示预览与在线预览", 1)[1].split("#### 演示预览为空", 1)[0]
     for fact in (
-        "「Agentic APP 不存在或加载失败」", "HTTP 状态仍是 200", "`POST /business-uis/<应用 ID>/preview-session`",
-        "`browser_network_requests`", "`browser_network_request` 只取 response-body",
-        "**禁止**读取或保存成功的 `preview-session` 响应",
-        "3027「预览部署尚未就绪」", "3024「智能应用已下线，预览容器不在线」", "3028「暂无可预览的提交版本」",
-        "3024 不表示应用被下线", "**禁止**定版、下线或先提反馈", "在当前草稿行重新 `ship` 到 `success`",
-        "`ship` 成功后重开仍是这几种结果，才 `submit_dev_feedback`", "3023「预览会话不存在或已过期」", "3040", "3041",
+        "开发者说在线预览只显示「Agentic APP 不存在或加载失败」", '`business_ui_manage(action="get")` 核对当前草稿有没有部署成功',
+        "在当前草稿行重新 `ship` 到 `success` 再请他重开", "`code` 3024 不表示应用被下线",
+        "**禁止**为此定版、下线或先提反馈", "`ship` 已成功仍打不开，才按平台问题 `submit_dev_feedback`",
+        "真实链路；开发者自己想看时用，你不打开",
     ):
-        assert fact in failure, fact
+        assert fact in section, fact
+    assert "「演示预览与在线预览」先核对部署" in _read("reference/报错对照.md")
 
 
-def test_untestable_page_items_are_recovered_then_marked_untested():
-    """R-367 O2：页面条目一律由 AI 测；测不了先按恢复办法处理，仍不行标「未测」写原因，开发者照样可以上线。"""
-    browser = _read("reference/开发者中心与工作区.md").split("### ④ 用浏览器验收", 1)[1].split("\n### ", 1)[0]
-    untestable = browser.split("#### 测不了时", 1)[1]
+def test_untestable_page_items_are_fixed_or_marked_untested():
+    """需求责任人 10-27：页面条目一律由 AI 在本机版上测；本机版起不来先自己修，只有线上才能验证的标「未测」写原因，不请开发者代测，开发者照样可以上线。"""
+    local = _read("reference/开发者中心与工作区.md").split("### ④ 本机版页面验收", 1)[1].split("\n### ", 1)[0]
+    online_only = local.split("#### 只有线上才能验证的", 1)[1].split("\n#### ", 1)[0]
     for fact in (
-        "页面条目一律由你在浏览器里测", "**禁止**请开发者在在线预览或其他地方代测", "开发者的口头回报不作「通过」的证据",
-        "开发者不同意启动浏览器", "不启动、不追问", "浏览器起不来", "`npx playwright install chromium`",
-        "问是否同意由你运行", "**禁止**改用其他浏览器或已登录的会话", "身份方式不可用或预览打不开",
+        "| 平台登录身份 |", "| 真实宿主桥接 |", "| 到点真触发、从目录或分享打开 |", "本机版能看的部分照常测并写证据",
+        "原因写「只有线上才能验证：<依赖哪一项>」", "**禁止**请开发者在在线预览、演示预览或正式入口代测",
+        "他的口头回报不作「通过」的证据", "⑤ 上线结果单列这些条目，告诉开发者上线后可以自己看",
+    ):
+        assert fact in online_only, fact
+    broken = local.split("#### 本机版起不来时", 1)[1]
+    for fact in (
+        "你自己修", "`npx playwright install chromium`", "工程本身的问题回 ③ 修", "原因写「本机版起不来」及错误原文",
         "结论写「未测」、证据写「无」", "开发者照常可以说「可以上线」进入 ⑤，你不追问、不因此拒绝定版",
     ):
-        assert fact in untestable, fact
+        assert fact in broken, fact
+    assert "问是否同意由你运行" not in broken
     acceptance = _read("stages/4-试用验收.md")
     for fact in (
-        "先问开发者是否同意你启动浏览器", "测不了的先恢复再标「未测」",
-        "**禁止**请开发者在在线预览、演示预览或其他页面代测", "开发者的口头回报不算证据",
+        "在本机版上用无头浏览器照条目操作", "「④ 本机版页面验收」", "测不了的先修再标「未测」",
+        "原因写「只有线上才能验证：<依赖哪一项>」", "**禁止**请开发者在在线预览、演示预览或其他页面代测",
+        "开发者的口头回报不算证据", "`project_id`（页面条目写「本机版」）", "本机版能测的页面条目没测就标了「未测」",
         "| 未测的 |", "有「未测」条目为 `partial`", "「未测」的条目不用出这道题",
     ):
         assert fact in acceptance, fact
-    assert "我试不了" not in acceptance and "本机版" not in acceptance
+    for retired in ("我试不了", "启动浏览器", "登录好了", "身份方式不可用", "浏览器已关闭"):
+        assert retired not in acceptance, retired
+    report = _read("design/开发文档/验收报告.md")
+    assert "页面条目的 `project_id` 写「本机版」" in report and "启动浏览器" not in report
+    assert "启动浏览器" not in _read("design/开发文档/样例.md")
+
+
+def test_deploying_to_online_preview_needs_explicit_authorization():
+    """陈羽杰 10-27 对 4518 的口径：部署到开发者在线预览要明确授权，PRD 同意不能推定；暂不同意时依赖已部署版本的条目记「未测」；所有宿主一致。"""
+    acceptance = _read("stages/4-试用验收.md")
+    deploy = acceptance.split("### 2.1 先问部署，再部署", 1)[1].split("### 2.2", 1)[0]
+    for fact in (
+        "本机版能做的检查（2.3 的页面条目、前端检查、本地布局回归）不用部署，先做",
+        "部署到开发者在线预览不能从 PRD 的同意推定，「先试用再决定上线」也不算",
+        "在原对话问一次，照抄「是否将当前应用部署到开发者在线预览，用于试用验收？这不包含目录正式发布。」",
+        "文字或语音的明确同意都算", "不加必点按钮或表单", "之前已明确同意过的直接沿用，不重复问",
+        "部署只 `ship` 到开发者预览，不自动定版、不发布",
+        "依赖已部署版本的条目（`workspace` 真跑、开发工作集里查到的行）结论写「未测」，原因写「你暂不同意部署到在线预览」，不能记成通过",
+        "所有宿主都这样做",
+    ):
+        assert fact in deploy, fact
+    assert "开发者对是否部署到在线预览的原话" in acceptance
+    assert "开发者同意部署的，最近一次部署 `status=success`；暂不同意的，依赖已部署版本的条目都记了「未测」" in acceptance
+    skill = _read("SKILL.md")
+    assert "把应用部署到开发者在线预览不能从 PRD 的同意推定" in skill.split("## 0. 红线", 1)[1].split("## 1.", 1)[0]
+    assert "④ 要部署而之前没有明确的部署授权" in skill
+    assert "部署前的授权和部署照 ④ 2.1" in _studio_row("④")
+    assert "问是否部署到开发者在线预览" in _read("design/交接消息.md")
+    assert "开发者说「可以上线」即同意上线所需的部署" in _read("stages/5-上线.md")
+
+
+def test_stages_advance_one_by_one_without_local_only_exit():
+    """需求责任人 10-27：五段一段一段推进，交棒靠开发者确认；没有 Studio 专有的「只做本地演示、不进 ④ ⑤」路径。"""
+    skill = _read("SKILL.md")
+    assert "开发者没确认就停在当前段等，没有跳段的路径" in skill
+    body = _skill_markdown()
+    for retired in ("只做本地演示", "只要本地演示", "只要本地修改", "不进 ④ ⑤", "做到 ③ 本地检查和桌面演示为止",
+                    "未部署、未验收、未上线"):
+        assert retired not in body, retired
 
 
 def test_launch_finalizes_without_requesting_release():
@@ -1311,34 +1345,37 @@ def test_studio_launch_finalizes_without_catalog_publication():
         assert retired not in body, retired
 
 
-def test_studio_acceptance_uses_deployed_online_preview():
-    """决定 3：Studio 下 ④ 用部署后的在线预览和开发工作集验收，本地演示和已发布版本都不作证据。"""
+def test_studio_acceptance_uses_local_version_and_workspace():
+    """需求责任人 10-27：Studio 下 ④ 和其他宿主一样，页面条目在本机版上用无头浏览器验，业务结果在开发工作集里验；开发者看过的本地演示和已发布版本都不作证据。"""
     row = _studio_row("④")
-    assert "`/business-ui/<应用 ID>/preview`（打开登录者本人最新部署成功的草稿）" in row
-    assert "开发工作集里验收，不用已发布的版本" in row
-    assert "Studio 的本地演示开发者可以自愿看，不作验收证据" in row
+    assert "页面条目同样由你在本机版上用无头浏览器验" in row
+    assert "桌面入口已在跑当前工程的开发服务时直接用它，不另起、不停掉" in row
+    assert "业务结果在开发工作集里验，不用已发布的版本" in row
+    assert "开发者在 Studio 本地演示里看的，不作验收证据" in row
+    assert "/preview" not in row
     acceptance = _read("stages/4-试用验收.md")
-    assert "**Studio 宿主同样在在线预览和开发工作集里验收**" in acceptance
-    assert "Studio 的本地演示、已发布的版本都不作验收证据" in acceptance
+    assert "**Studio 宿主同样在本机版和开发工作集里验收**" in acceptance
+    assert "开发者看过的 Studio 本地演示、已发布的版本都不作验收证据" in acceptance
+    assert "④ 的部署授权和本机版页面验收与其他宿主相同" in _read("SKILL.md")
     body = _skill_markdown()
     for retired in ("在线预览展示已发布正式版本", "只展示已发布版本", "本地验收"):
         assert retired not in body, retired
 
 
-def test_studio_restricted_checks_only_supplement_browser_acceptance():
-    """决定 4：浏览器规则只在「④ 用浏览器验收」；宿主受限检查是补充，机器结果与 AI 浏览器操作分开记录。"""
+def test_studio_restricted_checks_only_supplement_local_acceptance():
+    """决定 4：浏览器规则只在「④ 本机版页面验收」；宿主受限检查是补充，机器结果与 AI 在本机版上的操作分开记录。"""
     row = _studio_row("④")
     assert "宿主提供的受限检查能力可以作为补充" in row
-    assert "机器结果和你在浏览器里的操作分开记录" in row
-    assert "不能代替上面「④ 用浏览器验收」" in row
-    assert "机器结果和你在浏览器里的操作分开记录，不能代替页面条目的浏览器操作" in _read("stages/4-试用验收.md")
+    assert "机器结果和你在本机版上的操作分开记录" in row
+    assert "不能代替上面「④ 本机版页面验收」" in row
+    assert "机器结果和你在本机版上的操作分开记录，不能代替页面条目的本机版操作" in _read("stages/4-试用验收.md")
     body = _skill_markdown()
     for retired in ("不放开通用浏览器禁令", "开发者亲自操作"):
         assert retired not in body, retired
 
 
-def test_studio_desktop_demo_scope_and_local_only_delivery():
-    """与五段不冲突的 Studio 规则：桌面演示、验收范围一致、不虚构流程、只做本地演示时不进 ④ ⑤。"""
+def test_studio_desktop_demo_scope_without_local_only_exit():
+    """与五段不冲突的 Studio 规则：桌面演示、验收范围一致、不虚构流程；不再有「只做本地演示、不进 ④ ⑤」的出口，④ ⑤ 每次都做。"""
     making = _studio_row("③")
     assert "演示由桌面入口管理当前工程的开发服务" in making
     assert "不另起后台服务、不生成完成版" in making
@@ -1346,12 +1383,13 @@ def test_studio_desktop_demo_scope_and_local_only_delivery():
     assert "不为纯数据管理应用虚构额外业务流程" in _read("stages/2-方案.md")
     assert "Studio 宿主不起后台服务、不生成完成版" in _read("stages/3-制作.md")
     section = _studio_section()
-    assert "不部署、不进 ④ ⑤" in section and "「本地演示，未部署、未验收、未上线」" in section
+    assert "不部署、不进 ④ ⑤" not in section and "只做本地演示" not in section
     assert "不回写已确认的 PRD 和方案" in section
     assert "写入结果未知" in section and "只查询原操作的结果，不重新发起写入" in section
     revision = _read("tasks/修订.md")
-    assert "做到 ③ 本地检查和桌面演示为止，不进 ④ ⑤" in revision
-    assert "要上线的修订，④ 和 ⑤ 每次都要做" in revision and "要上线时 ④ ⑤ 照上面每次都做" in revision
+    assert "不进 ④ ⑤" not in revision and "只要本地修改" not in revision
+    assert "要上线的修订，④ 和 ⑤ 每次都要做" in revision and "④ ⑤ 照上面每次都做" in revision
+    assert "开发者这次只要本地演示" not in _read("stages/4-试用验收.md")
 
 
 def test_publish_dependent_items_are_untested_with_reason():

@@ -64,7 +64,7 @@ def test_viewer_route_stays_read_only(read_skill):
 
 
 def test_editor_route_derives_own_drafts_and_requests_finalize(read_skill):
-    """编辑协作者只改自己的草稿、change_note 必填、各层自己定版后往上更新引用，④ 用自己的账号预览自己的草稿，⑤ 提请定版。"""
+    """编辑协作者只改自己的草稿、change_note 必填、各层自己定版后往上更新引用，④ 部署自己的草稿、页面在本机版上验，⑤ 提请定版。"""
     text = read_skill("reference/多人协作.md")
     route = _section(text, "### 编辑协作者：修订路线")
     assert "`change_note` 必填" in route
@@ -75,9 +75,11 @@ def test_editor_route_derives_own_drafts_and_requests_finalize(read_skill):
     assert "模板当前版本 `template_version`" in route
     assert "带 `expected_base_version=<第 1 步记下的模板版本>`" in route
     assert "TEMPLATE_BASELINE_CHANGED" in route
-    assert "[开发者中心与工作区.md](开发者中心与工作区.md)「④ 用浏览器验收」" in route
-    assert "编辑协作者在你打开的窗口里用自己的账号登录" in route
-    assert "同一个预览地址打开的是他自己最新部署成功的草稿" in route
+    assert "[开发者中心与工作区.md](开发者中心与工作区.md)「④ 本机版页面验收」在本机版上做" in route
+    assert "部署前的授权照 ④ 2.1" in route
+    assert "先把自己的草稿 `ship` 到 `success`" in route
+    assert "协作者身份下才看得到的表现只有线上才能验证，记「未测」" in route
+    assert "登录" not in route
     request = _section(text, "### 提请定版")
     assert '`business_ui_manage(action="request_finalize", task_id, business_ui_id)`' in request
     assert "`draft_asset_id` 可以省略" in request
@@ -90,23 +92,31 @@ def test_editor_route_derives_own_drafts_and_requests_finalize(read_skill):
     assert "**禁止**调 `finalize`、`resolve` 冒充上线" in launch
 
 
-def test_preview_access_denied_closes_browser(read_skill):
-    """④ 登录后预览报无权访问或会话失效：不换账号、不开别的页面，关浏览器说明情况，开发者确认后重开重登；仍不行标「未测」，不请开发者代测。"""
+def test_page_items_use_local_headless_browser_not_online_addresses(read_skill):
+    """需求责任人 10-27：普通宿主和 Studio 下 AI 都不用浏览器访问线上地址，页面条目在本机版上用无头浏览器验，线上才能验证的标「未测」，不请开发者代测。"""
+    red_lines = read_skill("SKILL.md").split("## 0. 红线", 1)[1].split("## 1.", 1)[0]
+    assert "**禁止**用 Codex 内置浏览器、Playwright 或任何浏览器打开 GoalfyMax 正式入口、`passport` 登录页、在线预览地址或容器地址" in red_lines
+    assert "在应用根用 `npm run dev:restart` 起的本机版（只访问本机地址）可以用无头浏览器照验收条目操作" in red_lines
     workspace = read_skill("reference/开发者中心与工作区.md")
-    browser = _section(workspace, "### ④ 用浏览器验收")
-    denied = browser.split("#### 登录后无权访问或会话失效", 1)[1].split("\n#### ", 1)[0]
-    assert "登录后预览页报无权访问、会话失效" in denied
-    assert "你不换账号、不打开其他页面，先关闭浏览器" in denied
-    assert "把看到的情况和 `code` 告诉开发者" in denied
-    assert "请他确认这个账号有权访问这个应用" in denied
-    assert "你重新启动浏览器，由开发者在新窗口里重新登录，再做同一条目" in denied
-    assert "这几条标「未测」，原因写「身份方式不可用」及 `code`" in denied
-    assert "**禁止**请开发者代测" in denied
-    assert "按「登录后无权访问或会话失效」处理" in browser
-    assert "**禁止**请开发者在在线预览或其他地方代测" in browser
-    for name in ("SKILL.md", "stages/4-试用验收.md", "stages/5-上线.md", "reference/开发者中心与工作区.md", "reference/多人协作.md"):
+    local = _section(workspace, "### ④ 本机版页面验收")
+    assert "浏览器只打开本机版输出里的本机地址（`127.0.0.1` 或 `localhost`）" in local
+    assert "你也不判断应用部署在哪个环境" in local
+    assert "用 Playwright 无头 Chromium 打开 Dev Host 地址" in local
+    online_only = local.split("#### 只有线上才能验证的", 1)[1].split("\n#### ", 1)[0]
+    for fact in ("| 平台登录身份 |", "| 真实宿主桥接 |", "结论写「未测」、证据写「无」，原因写「只有线上才能验证：<依赖哪一项>」",
+                 "**禁止**请开发者在在线预览、演示预览或正式入口代测", "⑤ 上线结果单列这些条目，告诉开发者上线后可以自己看"):
+        assert fact in online_only, fact
+    studio = next(line for line in _section(workspace, "### Studio 宿主").splitlines() if line.startswith("| ④ |"))
+    assert "页面条目同样由你在本机版上用无头浏览器验" in studio
+    assert "不能代替上面「④ 本机版页面验收」" in studio
+    assert "/preview" not in studio
+    for name in ("SKILL.md", "stages/4-试用验收.md", "stages/5-上线.md", "reference/开发者中心与工作区.md", "reference/多人协作.md",
+                 "checklists/验收清单.md", "design/交接消息.md", "design/开发文档/样例.md", "design/开发文档/验收报告.md"):
         text = read_skill(name)
         assert "需要你在在线预览里试" not in text and "开发者未试" not in text, name
+        for retired in ("登录好了", "launch(headless=False)", "--isolated", "启动浏览器", "用浏览器验收", "goalfymax.goalfyai.cn",
+                        "goalfymax.pre.goalfyai.cn", "/business-ui/<应用 ID>/preview`（打开登录者本人"):
+            assert retired not in text, (name, retired)
 
 
 def test_resume_reads_pending_finalize_and_stale_baseline_first(read_skill):
