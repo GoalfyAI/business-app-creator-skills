@@ -34,7 +34,7 @@ def _section(text: str, heading: str) -> str:
 
 
 def test_entry_routes_by_collaboration_role(read_skill):
-    """先识别任务时按 business_ui_manage 返回的 role 分流，红线写明协作者不定版、不发布。"""
+    """先识别任务时按 business_ui_manage 返回的 role 分流，红线写明协作者不上线、不发布。"""
     skill = read_skill("SKILL.md")
     routing = skill.split("## 4. 先识别任务", 1)[1].split("## 5.", 1)[0]
     assert "`role` 分流" in routing
@@ -42,7 +42,8 @@ def test_entry_routes_by_collaboration_role(read_skill):
     assert "`editor`（编辑协作者）：改动走修订路线" in routing
     assert "分享兑换入口接受" in routing
     red_lines = skill.split("## 0. 红线", 1)[1].split("## 1.", 1)[0]
-    assert "协作者**禁止**定版、发布、下线、删除应用" in red_lines
+    assert "协作者**禁止**上线、发布、下线、删除应用" in red_lines
+    assert "提请属主上线" in red_lines
     assert "request_finalize" in red_lines
 
 
@@ -64,13 +65,13 @@ def test_viewer_route_stays_read_only(read_skill):
 
 
 def test_editor_route_derives_own_drafts_and_requests_finalize(read_skill):
-    """编辑协作者只改自己的草稿、change_note 必填、各层自己定版后往上更新引用，④ 部署自己的草稿、页面在本机版上验，⑤ 提请定版。"""
+    """编辑协作者只改自己的草稿、change_note 必填、各层自己上线后往上更新引用，④ 部署自己的草稿、页面在本机版上验，⑤ 提请属主上线。"""
     text = read_skill("reference/多人协作.md")
     route = _section(text, "### 编辑协作者：修订路线")
     assert "`change_note` 必填" in route
     assert "别人创建的草稿**禁止**改" in route
     assert "工具组 → 工具集或 FA → 场景包路线 → 应用挂载" in route
-    assert "再自己定版" in route
+    assert "再自己上线（`finalize_asset_version_online`" in route
     assert "共享工作集" in route
     assert "模板当前版本 `template_version`" in route
     assert "带 `expected_base_version=<第 1 步记下的模板版本>`" in route
@@ -80,15 +81,16 @@ def test_editor_route_derives_own_drafts_and_requests_finalize(read_skill):
     assert "先把自己的草稿 `ship` 到 `success`" in route
     assert "协作者身份下才看得到的表现只有线上才能验证，记「未测」" in route
     assert "登录" not in route
-    request = _section(text, "### 提请定版")
+    request = _section(text, "### 提请属主上线")
     assert '`business_ui_manage(action="request_finalize", task_id, business_ui_id)`' in request
     assert "`draft_asset_id` 可以省略" in request
     assert "`note` 是给属主的补充说明" in request
-    assert "「已提请，等属主定版」" in request
+    assert "「已提请，等属主上线」" in request
     launch = read_skill("stages/5-上线.md")
     assert "`editor` 走第 2 节末尾「协作者分支」" in launch
     assert "**协作者分支**（`role=editor`）" in launch
-    assert '换成 `business_ui_manage(action="request_finalize")` 提请属主定版' in launch
+    assert '换成 `business_ui_manage(action="request_finalize")` 提请属主上线' in launch
+    assert "「已提请，等属主上线。属主上线后这一版成为属主的正式版，发不发布由属主决定；" in launch
     assert "**禁止**调 `finalize`、`resolve` 冒充上线" in launch
 
 
@@ -120,12 +122,12 @@ def test_page_items_use_local_headless_browser_not_online_addresses(read_skill):
 
 
 def test_resume_reads_pending_finalize_and_stale_baseline_first(read_skill):
-    """接续先读待定版清单与基线过期状态，过期时按下载、合并、重新派生、部署、再提请的顺序处理。"""
+    """接续先读待上线清单与基线过期状态，过期时按下载、合并、重新派生、部署、再提请的顺序处理。"""
     resume = read_skill("tasks/接续.md")
-    assert "待定版清单和自己草稿的基线是否过期" in resume
+    assert "待上线清单和自己草稿的基线是否过期" in resume
     assert "下载新版源码、本地 git 合并、重新派生草稿、上传部署、再提请" in resume
     merge = _section(read_skill("reference/多人协作.md"), "### 基线过期的合并")
-    steps = ["`business_ui_bundle(action=\"download\")`", "用 git 合并", "重新派生自己的应用草稿", "`ship` 到新草稿", "再次提请定版"]
+    steps = ["`business_ui_bundle(action=\"download\")`", "用 git 合并", "重新派生自己的应用草稿", "`ship` 到新草稿", "再次提请属主上线"]
     positions = [merge.index(step) for step in steps]
     assert positions == sorted(positions)
 
@@ -203,6 +205,6 @@ def test_collaborators_read_asset_versions_via_get_asset(read_skill):
 
 
 def test_owner_finalize_names_draft_when_family_has_several(read_skill):
-    """家族有多份草稿时属主定版必须显式指定 draft_asset_id。"""
+    """家族有多份草稿时属主上线必须显式指定 draft_asset_id。"""
     launch = read_skill("stages/5-上线.md")
-    assert "这时**必须**显式传要定版的那份 `draft_asset_id`" in launch
+    assert "这时**必须**显式传要上线的那份 `draft_asset_id`" in launch

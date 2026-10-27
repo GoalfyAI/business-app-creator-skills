@@ -273,13 +273,13 @@ def test_business_ui_identity_is_bound_before_g5_transition():
 
 
 def test_acceptance_deploys_draft_for_workspace_runs():
-    """④ 部署草稿供 workspace 真跑，页面条目在本机版上验；挂本人场景包草稿也能部署，定版应用时草稿随应用一起上线。 [任务:T-3976]"""
+    """④ 部署草稿供 workspace 真跑，页面条目在本机版上验；挂本人场景包草稿也能部署，上线应用时草稿随应用一起上线。 [任务:T-3976]"""
     acceptance = _read("stages/4-试用验收.md")
     assert "deployed_scaffold_version" in acceptance and 'business_ui_data_space="workspace"' in acceptance
     assert "页面条目由你在应用的本机版上用无头浏览器照条目操作" in acceptance
     assert 'finalize_asset_version_online(asset_type="scenario_pack"' not in acceptance
     assert "场景包不必先上线" in acceptance
-    assert "一起定版上线" in _read("stages/5-上线.md")
+    assert "再把挂着的本人场景包草稿一起上线" in _read("stages/5-上线.md")
 
 
 def test_task_closing_gate_and_waiver_are_documented():
@@ -957,7 +957,7 @@ def test_retired_structure_directories_are_rejected_in_platform_copies(tmp_path:
 def test_delivery_separates_deploy_status_from_real_entry():
     """T-4130：entry_url 是开发者容器地址，交付只写部署状态与真实入口，不把它当用户入口。"""
     deploy = _read("reference/部署与版本.md")
-    # 上线不等于发布：正式入口（开发者本人也一样）要发布后才能打开；部署后、定版前用在线预览。
+    # 上线不等于发布：正式入口（开发者本人也一样）要发布后才能打开；部署后、上线前用在线预览。
     for fact in ("### 部署状态与入口", "生产构建直开返回 `HOST_REQUIRED`", "只有本地开发构建直开才进入 Mock",
                  "GoalfyMax → 我的资产 → 智能应用 → 打开", "开发者中心右侧「在线预览」", "正式入口还打不开，开发者本人也一样"):
         assert fact in deploy, fact
@@ -971,10 +971,10 @@ def test_delivery_separates_deploy_status_from_real_entry():
 
 
 def test_draft_resolve_is_not_platform_blocked():
-    """T-4130（并入 T-4062）：定版前 resolve 报只有草稿是正常结果，草稿验收走在线预览，不记平台阻塞。"""
+    """T-4130（并入 T-4062）：上线前 resolve 报只有草稿是正常结果，草稿验收走在线预览，不记平台阻塞。"""
     assert "`resolve` 只认上线版本" in _read("reference/部署与版本.md")
     acceptance = _read("stages/4-试用验收.md")
-    assert "定版前 `resolve` 报「还没有上线版本」" in acceptance
+    assert "上线前 `resolve` 报「还没有上线版本」" in acceptance
     assert "不记 platform_blocked，也不为拿入口去 finalize" in acceptance
 
 
@@ -1010,13 +1010,13 @@ def test_browser_red_line_points_to_one_local_acceptance_section():
 
 
 def test_online_preview_failure_reported_by_developer_rechecks_deployment():
-    """开发者说在线预览打不开：你不打开它，先核对部署、需要时重新 ship；3024 不表示下线，不定版、不下线、不先提反馈。"""
+    """开发者说在线预览打不开：你不打开它，先核对部署、需要时重新 ship；3024 不表示下线，不上线、不下线、不先提反馈。"""
     workspace = _read("reference/开发者中心与工作区.md")
     section = workspace.split("### 演示预览与在线预览", 1)[1].split("#### 演示预览为空", 1)[0]
     for fact in (
         "开发者说在线预览只显示「Agentic APP 不存在或加载失败」", '`business_ui_manage(action="get")` 核对当前草稿有没有部署成功',
         "在当前草稿行重新 `ship` 到 `success` 再请他重开", "`code` 3024 不表示应用被下线",
-        "**禁止**为此定版、下线或先提反馈", "`ship` 已成功仍打不开，才按平台问题 `submit_dev_feedback`",
+        "**禁止**为此上线、下线或先提反馈", "`ship` 已成功仍打不开，才按平台问题 `submit_dev_feedback`",
         "真实链路；开发者自己想看时用，你不打开",
     ):
         assert fact in section, fact
@@ -1036,7 +1036,7 @@ def test_untestable_page_items_are_fixed_or_marked_untested():
     broken = local.split("#### 本机版起不来时", 1)[1]
     for fact in (
         "你自己修", "`npx playwright install chromium`", "工程本身的问题回 ③ 修", "原因写「本机版起不来」及错误原文",
-        "结论写「未测」、证据写「无」", "开发者照常可以说「可以上线」进入 ⑤，你不追问、不因此拒绝定版",
+        "结论写「未测」、证据写「无」", "开发者照常可以说「可以上线」进入 ⑤，你不追问、不因此拒绝上线",
     ):
         assert fact in broken, fact
     assert "问是否同意由你运行" not in broken
@@ -1064,7 +1064,8 @@ def test_deploying_to_online_preview_needs_explicit_authorization():
         "部署到开发者在线预览不能从 PRD 的同意推定，「先试用再决定上线」也不算",
         "在原对话问一次，照抄「是否将当前应用部署到开发者在线预览，用于试用验收？这不包含目录正式发布。」",
         "文字或语音的明确同意都算", "不加必点按钮或表单", "之前已明确同意过的直接沿用，不重复问",
-        "部署只 `ship` 到开发者预览，不自动定版、不发布",
+        "部署只 `ship` 到开发者预览，不自动上线、不发布",
+        "⑤ 只上线已部署成功的草稿，没部署过就上不了线",
         "依赖已部署版本的条目（`workspace` 真跑、开发工作集里查到的行）结论写「未测」，原因写「你暂不同意部署到在线预览」，不能记成通过",
         "所有宿主都这样做",
     ):
@@ -1076,7 +1077,47 @@ def test_deploying_to_online_preview_needs_explicit_authorization():
     assert "④ 要部署而之前没有明确的部署授权" in skill
     assert "部署前的授权和部署照 ④ 2.1" in _studio_row("④")
     assert "问是否部署到开发者在线预览" in _read("design/交接消息.md")
-    assert "开发者说「可以上线」即同意上线所需的部署" in _read("stages/5-上线.md")
+    assert "还没部署到在线预览的应用上不了线，你回『可以上线』时我会再问一次是否部署" in acceptance
+
+
+def test_launch_only_finalizes_a_deployed_draft():
+    """O11（需求责任人 10-27）：⑤ 只上线 ④ 已部署成功的草稿；没部署过的如实说上不了线，按 ④ 2.1 原句再问一次，同意后部署、补测再上线，不同意就停。"""
+    launch = _read("stages/5-上线.md")
+    step = launch.split("1. **只上线已部署的草稿**", 1)[1].split("\n2. ", 1)[0]
+    for fact in (
+        "⑤ 只上线 ④ 已部署成功的那份草稿",
+        "如实说「还没部署到在线预览，上不了线」，再照抄 ④ 2.1 的原句问一次是否部署",
+        "同意后按 ④ 2.1 部署到 `success`，按 ④ 2.2、2.3 补测依赖已部署版本的条目",
+        "都有结论后再上线",
+        "不同意就停在这里，告诉开发者这一版还没部署、所以没有上线，不调 `finalize`",
+    ):
+        assert fact in step, fact
+    assert "| ④ 没部署过，开发者说「可以上线」 |" in launch
+    for retired in ("即同意上线所需的部署", "同意上线所需的部署"):
+        assert retired not in _skill_markdown(), retired
+    skill = _read("SKILL.md")
+    assert "⑤ 只上线 ④ 已部署成功的那份草稿；④ 没部署过的，先如实说还没部署到在线预览、上不了线" in skill
+    assert "没部署成功过的草稿上不了线" in _read("reference/部署与版本.md")
+
+
+def test_skill_uses_deploy_finalize_release_terms_only():
+    """需求责任人 10-27：部署 = ship 到开发者在线预览；上线 = finalize，成为开发者自己的正式版；发布 = 开发者在发布管理页发给使用者。正本不出现「定版」等混用说法。"""
+    for path in sorted(SKILL_ROOT.rglob("*.md")):
+        text = path.read_text(encoding="utf-8")
+        for retired in ("定版", "上线部署", "部署上线"):
+            assert retired not in text, (path.relative_to(SKILL_ROOT).as_posix(), retired)
+    skill = _read("SKILL.md")
+    terms = next(line for line in skill.splitlines() if line.startswith("- **部署、上线、发布各指一件事**"))
+    for fact in (
+        '部署是 `business_ui_bundle(action="ship")`，把草稿放到开发者自己的在线预览，在 ④ 做，先按 ④ 2.1 问开发者同意',
+        '上线是开发者说「可以上线」后你 `business_ui_manage(action="finalize")`，在 ⑤ 做，这一版成为开发者自己的正式版，使用者仍看不到',
+        "发布是开发者在发布管理页把应用发给使用者，你不做、不请求、不等待",
+        "「这一版成为你自己的正式版，发不发布由你决定」",
+    ):
+        assert fact in terms, fact
+    launch = _read("stages/5-上线.md")
+    assert launch.count("这一版成为你自己的正式版，发不发布由你决定") >= 2
+    assert "`business_ui_manage(action=\"finalize\")`）在开发者说「可以上线」后由你做" in _read("reference/部署与版本.md")
 
 
 def test_stages_advance_one_by_one_without_local_only_exit():
@@ -1090,7 +1131,7 @@ def test_stages_advance_one_by_one_without_local_only_exit():
 
 
 def test_launch_finalizes_without_requesting_release():
-    """R-367 options E：⑤ AI 定版，报告结果与实际花费，说明发布影响；不请开发者发布、不在发布的版本上验证。"""
+    """R-367 options E：⑤ AI 上线，报告结果与实际花费，说明发布影响；不请开发者发布、不在发布的版本上验证。"""
     launch = _read("stages/5-上线.md")
     for fact in (
         "`finalize` 的时间必须晚于「可以上线」的 checkpoint",
@@ -1251,12 +1292,12 @@ def test_app_db_routes_prove_with_workspace_real_run():
     assert "先 `business_ui_manage(action=\"finalize\")` 上线再跑" not in acceptance
     assert "不要为真跑去 finalize" in acceptance and "读写应用库的路线不能用冒泡或结单门豁免代替这一步" in acceptance
     assert "BUSINESS_UI_NOT_DEPLOYED" in acceptance and "BUSINESS_UI_NOT_DEPLOYED" in _read("reference/报错对照.md")
-    # 出口要接上 ③「passed 由 ④ 真跑补上」；残留的「核对上线版本 / 先定版自测」会把 Agent 引去定版
+    # 出口要接上 ③「passed 由 ④ 真跑补上」；残留的「核对上线版本 / 先上线自测」会把 Agent 引去 finalize
     assert "每条 TPE 最近一次 `verify(tpe_id, project_id)` 为 `passed`" in acceptance
     assert "按第 3 步核对上线版本" not in acceptance
     deploy = _read("reference/部署与版本.md")
     assert "按 G6 第 3 步先定版自测" not in deploy and "首版先 finalize" not in deploy
-    assert "`run_once` 要先定版，读写正式实例的真跑要先定版并发布，制作和验收都不用它们" in deploy
+    assert "`run_once` 要先上线，读写正式实例的真跑要先上线并发布，制作和验收都不用它们" in deploy
 
 
 def test_dev_feedback_reports_by_blocking():
@@ -1332,14 +1373,14 @@ def test_studio_confirms_prd_in_stage_one_and_plan_in_stage_two():
 
 
 def test_studio_launch_finalizes_without_catalog_publication():
-    """决定 2：Studio 下 ⑤ 也只定版并报告，发布由开发者在发布管理页决定。"""
+    """决定 2：Studio 下 ⑤ 也只上线并报告，发布由开发者在发布管理页决定。"""
     launch = _read("stages/5-上线.md")
     assert "**Studio 宿主**同样照第 1–10 步" in launch
     assert "**不**调用目录发布、不请求发布、不在发布的版本上真跑，发布由开发者在发布管理页决定" in launch
     assert "写入结果未知时只查询原操作，不重新发起写入" in launch
     assert "你不发布、不请求发布、不在发布的版本上真跑" in _studio_row("⑤")
     assert "Studio 宿主也一样，不做目录发布" in _read("reference/部署与版本.md")
-    assert "⑤ 你只定版，不做目录发布" in _read("SKILL.md")
+    assert "⑤ 你只上线，不做目录发布" in _read("SKILL.md")
     body = _skill_markdown()
     for retired in ("目录发布使用", "当前实际提供的 MCP 能力", "分别报告定版、目录发布和正式运行"):
         assert retired not in body, retired
