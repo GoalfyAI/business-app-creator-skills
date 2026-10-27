@@ -36,7 +36,7 @@ def _section(text: str, heading: str) -> str:
 def test_entry_routes_by_collaboration_role(read_skill):
     """先识别任务时按 business_ui_manage 返回的 role 分流，红线写明协作者不定版、不发布。"""
     skill = read_skill("SKILL.md")
-    routing = skill.split("## 3. 先识别任务", 1)[1].split("## 4.", 1)[0]
+    routing = skill.split("## 4. 先识别任务", 1)[1].split("## 5.", 1)[0]
     assert "`role` 分流" in routing
     assert "`viewer`（只读协作者）：不管开发者要做什么，只走诊断路线" in routing
     assert "`editor`（编辑协作者）：改动走修订路线" in routing
@@ -57,11 +57,14 @@ def test_viewer_route_stays_read_only(read_skill):
     assert "`connect` 申请写连接" in route
     assert "执行写数据的 SQL 或 DDL" in route
     assert "`ship`、部署、冒泡、真跑这类写流程" in route
+    assert "调 `finalize` 或 `request_finalize`" in route
     assert "用 `dataset_read` 读应用开发库" in route
+    assert "告诉他自己能查看哪些内容" in route
+    assert "改动要请属主或编辑协作者做" in route
 
 
 def test_editor_route_derives_own_drafts_and_requests_finalize(read_skill):
-    """编辑协作者只改自己的草稿、change_note 必填、各层自己定版后往上更新引用，G7 提请定版。"""
+    """编辑协作者只改自己的草稿、change_note 必填、各层自己定版后往上更新引用，④ 用自己的账号预览自己的草稿，⑤ 提请定版。"""
     text = read_skill("reference/多人协作.md")
     route = _section(text, "### 编辑协作者：修订路线")
     assert "`change_note` 必填" in route
@@ -72,14 +75,38 @@ def test_editor_route_derives_own_drafts_and_requests_finalize(read_skill):
     assert "模板当前版本 `template_version`" in route
     assert "带 `expected_base_version=<第 1 步记下的模板版本>`" in route
     assert "TEMPLATE_BASELINE_CHANGED" in route
+    assert "[开发者中心与工作区.md](开发者中心与工作区.md)「④ 用浏览器验收」" in route
+    assert "编辑协作者在你打开的窗口里用自己的账号登录" in route
+    assert "同一个预览地址打开的是他自己最新部署成功的草稿" in route
     request = _section(text, "### 提请定版")
     assert '`business_ui_manage(action="request_finalize", task_id, business_ui_id)`' in request
     assert "`draft_asset_id` 可以省略" in request
     assert "`note` 是给属主的补充说明" in request
     assert "「已提请，等属主定版」" in request
-    g7 = read_skill("flow/G7-上线交付.md")
-    assert "**协作者分支**（`role=editor`）" in g7
-    assert "**禁止**调 `finalize`、`resolve` 冒充上线" in g7
+    launch = read_skill("stages/5-上线.md")
+    assert "`editor` 走第 2 节末尾「协作者分支」" in launch
+    assert "**协作者分支**（`role=editor`）" in launch
+    assert '换成 `business_ui_manage(action="request_finalize")` 提请属主定版' in launch
+    assert "**禁止**调 `finalize`、`resolve` 冒充上线" in launch
+
+
+def test_preview_access_denied_closes_browser(read_skill):
+    """④ 登录后预览报无权访问或会话失效：不换账号、不开别的页面，关浏览器说明情况，开发者确认后重开重登；仍不行标「未测」，不请开发者代测。"""
+    workspace = read_skill("reference/开发者中心与工作区.md")
+    browser = _section(workspace, "### ④ 用浏览器验收")
+    denied = browser.split("#### 登录后无权访问或会话失效", 1)[1].split("\n#### ", 1)[0]
+    assert "登录后预览页报无权访问、会话失效" in denied
+    assert "你不换账号、不打开其他页面，先关闭浏览器" in denied
+    assert "把看到的情况和 `code` 告诉开发者" in denied
+    assert "请他确认这个账号有权访问这个应用" in denied
+    assert "你重新启动浏览器，由开发者在新窗口里重新登录，再做同一条目" in denied
+    assert "这几条标「未测」，原因写「身份方式不可用」及 `code`" in denied
+    assert "**禁止**请开发者代测" in denied
+    assert "按「登录后无权访问或会话失效」处理" in browser
+    assert "**禁止**请开发者在在线预览或其他地方代测" in browser
+    for name in ("SKILL.md", "stages/4-试用验收.md", "stages/5-上线.md", "reference/开发者中心与工作区.md", "reference/多人协作.md"):
+        text = read_skill(name)
+        assert "需要你在在线预览里试" not in text and "开发者未试" not in text, name
 
 
 def test_resume_reads_pending_finalize_and_stale_baseline_first(read_skill):
@@ -139,8 +166,8 @@ def test_template_extract_requires_baseline_for_every_route(read_skill):
     """给已有模板抽新版本一律带 expected_base_version，属主路线与报错对照同样写明。"""
     template = read_skill("reference/数据模板.md")
     assert "给已有模板出新版本时传 `template_id`，并带 `expected_base_version`" in template
-    g5 = read_skill("flow/G5-数据与应用.md")
-    assert "带 `expected_base_version=<这个版本>`" in g5
+    making = read_skill("stages/3-制作.md")
+    assert "带 `expected_base_version=<这个版本>`" in making
     errors = read_skill("reference/报错对照.md")
     for code in ("TEMPLATE_BASELINE_REQUIRED", "TEMPLATE_BASELINE_CHANGED"):
         rows = [line for line in errors.splitlines() if line.startswith(f"| `{code}`")]
@@ -167,5 +194,5 @@ def test_collaborators_read_asset_versions_via_get_asset(read_skill):
 
 def test_owner_finalize_names_draft_when_family_has_several(read_skill):
     """家族有多份草稿时属主定版必须显式指定 draft_asset_id。"""
-    g7 = read_skill("flow/G7-上线交付.md")
-    assert "这时**必须**显式传要定版的那份 `draft_asset_id`" in g7
+    launch = read_skill("stages/5-上线.md")
+    assert "这时**必须**显式传要定版的那份 `draft_asset_id`" in launch
