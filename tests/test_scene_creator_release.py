@@ -1244,3 +1244,125 @@ def test_shell_success_is_judged_by_exit_code_of_whole_pipeline():
     for fact in ("### shell 步骤的成败", "退出码只看**最后一条命令**", "( set -o pipefail;", "|| true"):
         assert fact in script, fact
     assert "共用一个会话" in script and "只写在子 shell 的括号里" in script
+
+
+# Studio 只管文档的保存、显示与确认，五段规则不变（需求责任人 10-27 定）；这些是文档回归检查，不是 Agent 行为评测。
+def _studio_section() -> str:
+    workspace = _read("reference/开发者中心与工作区.md")
+    return workspace.split("### Studio 宿主", 1)[1].split("\n## ", 1)[0]
+
+
+def _studio_row(stage: str) -> str:
+    return next(line for line in _studio_section().splitlines() if line.startswith(f"| {stage} |"))
+
+
+def _skill_markdown() -> str:
+    return "\n".join(path.read_text(encoding="utf-8") for path in sorted(SKILL_ROOT.rglob("*.md")))
+
+
+def test_studio_only_governs_saving_display_and_confirmation():
+    section = _studio_section()
+    assert "Studio 只管文档怎么保存、显示和确认" in section
+    assert "都按 `SKILL.md` 和 `stages/` 执行，和其他宿主相同" in section
+    assert "`studio_write_proposal`" in section and "`studio_read_creation`" in section
+    skill = _read("SKILL.md")
+    assert "**Studio 宿主只管保存与显示**" in skill and "「Studio 宿主」" in skill
+    assert "## Studio 适用方式" not in skill
+    # 正文没有 flow/ 的 Studio 旁注，规则只写成五段的最终写法
+    assert not any(line.startswith("> **Studio**") for line in _skill_markdown().splitlines())
+
+
+def test_studio_confirms_prd_in_stage_one_and_plan_in_stage_two():
+    """决定 1：① 的确认对象是 PRD、② 的确认对象是方案，Studio 只提供保存与原生确认。"""
+    prd_row, plan_row = _studio_row("①"), _studio_row("②")
+    assert "确认对象是 PRD" in prd_row and "确认这一版 PRD" in prd_row
+    assert "不建业务资产、不写业务代码（开工时初始化工程不算）" in prd_row
+    assert "确认对象是方案" in plan_row and "判断题都答「对」后" in plan_row and "`acceptance.json`" in plan_row
+    assert "方案" not in prd_row.replace("方案确认卡", "")
+    section = _studio_section()
+    assert "**禁止**用历史确认或聊天里的回复代替原生确认" in section
+    assert "以宿主返回的当前授权状态为准，不自行增加确认步骤" in section
+    assert "不展示内部核对字段" in section
+    assert "PRD 和方案的确认都不是上线授权" in section
+    stage_one = _read("stages/1-需求确认.md")
+    assert "Studio 宿主：这一段的确认对象是 PRD" in stage_one
+    assert "读到确认之前不建业务资产、不写业务代码" in stage_one
+    assert "Studio 宿主读到了当前这一版 PRD 的原生确认" in stage_one.split("## 6. 交棒条件", 1)[1]
+    stage_two = _read("stages/2-方案.md")
+    assert "Studio 宿主：这一段的确认对象是方案" in stage_two
+    assert "Studio 宿主读到了当前这一版方案的原生确认" in stage_two.split("## 6. 交棒条件", 1)[1]
+    assert "确认前不初始化业务工程" not in _skill_markdown()
+
+
+def test_studio_launch_finalizes_without_catalog_publication():
+    """决定 2：Studio 下 ⑤ 也只定版并报告，发布由开发者在发布管理页决定。"""
+    launch = _read("stages/5-上线.md")
+    assert "**Studio 宿主**同样照第 1–10 步" in launch
+    assert "**不**调用目录发布、不请求发布、不在发布的版本上真跑，发布由开发者在发布管理页决定" in launch
+    assert "写入结果未知时只查询原操作，不重新发起写入" in launch
+    assert "你不发布、不请求发布、不在发布的版本上真跑" in _studio_row("⑤")
+    assert "Studio 宿主也一样，不做目录发布" in _read("reference/部署与版本.md")
+    assert "⑤ 你只定版，不做目录发布" in _read("SKILL.md")
+    body = _skill_markdown()
+    for retired in ("目录发布使用", "当前实际提供的 MCP 能力", "分别报告定版、目录发布和正式运行"):
+        assert retired not in body, retired
+
+
+def test_studio_acceptance_uses_deployed_online_preview():
+    """决定 3：Studio 下 ④ 用部署后的在线预览和开发工作集验收，本地演示和已发布版本都不作证据。"""
+    row = _studio_row("④")
+    assert "`/business-ui/<应用 ID>/preview`（打开登录者本人最新部署成功的草稿）" in row
+    assert "开发工作集里验收，不用已发布的版本" in row
+    assert "Studio 的本地演示开发者可以自愿看，不作验收证据" in row
+    acceptance = _read("stages/4-试用验收.md")
+    assert "**Studio 宿主同样在在线预览和开发工作集里验收**" in acceptance
+    assert "Studio 的本地演示、已发布的版本都不作验收证据" in acceptance
+    body = _skill_markdown()
+    for retired in ("在线预览展示已发布正式版本", "只展示已发布版本", "本地验收"):
+        assert retired not in body, retired
+
+
+def test_studio_restricted_checks_only_supplement_browser_acceptance():
+    """决定 4：浏览器规则只在「④ 用浏览器验收」；宿主受限检查是补充，机器结果与 AI 浏览器操作分开记录。"""
+    row = _studio_row("④")
+    assert "宿主提供的受限检查能力可以作为补充" in row
+    assert "机器结果和你在浏览器里的操作分开记录" in row
+    assert "不能代替上面「④ 用浏览器验收」" in row
+    assert "机器结果和你在浏览器里的操作分开记录，不能代替页面条目的浏览器操作" in _read("stages/4-试用验收.md")
+    body = _skill_markdown()
+    for retired in ("不放开通用浏览器禁令", "开发者亲自操作"):
+        assert retired not in body, retired
+
+
+def test_studio_desktop_demo_scope_and_local_only_delivery():
+    """与五段不冲突的 Studio 规则：桌面演示、验收范围一致、不虚构流程、只做本地演示时不进 ④ ⑤。"""
+    making = _studio_row("③")
+    assert "演示由桌面入口管理当前工程的开发服务" in making
+    assert "不另起后台服务、不生成完成版" in making
+    assert "`studio.acceptance.json` 与方案 `acceptance.json` 的验收范围一致" in making and "不自行增减条目" in making
+    assert "不为纯数据管理应用虚构额外业务流程" in _read("stages/2-方案.md")
+    assert "Studio 宿主不起后台服务、不生成完成版" in _read("stages/3-制作.md")
+    section = _studio_section()
+    assert "不部署、不进 ④ ⑤" in section and "「本地演示，未部署、未验收、未上线」" in section
+    assert "不回写已确认的 PRD 和方案" in section
+    assert "写入结果未知" in section and "只查询原操作的结果，不重新发起写入" in section
+    revision = _read("tasks/修订.md")
+    assert "做到 ③ 本地检查和桌面演示为止，不进 ④ ⑤" in revision
+    assert "要上线的修订，④ 和 ⑤ 每次都要做" in revision and "要上线时 ④ ⑤ 照上面每次都做" in revision
+
+
+def test_publish_dependent_items_are_untested_with_reason():
+    """需求责任人 10-27：取消「发布后才能看到」，到点真触发、从目录或分享打开记「未测」并写原因，⑤ 单列。"""
+    assert "发布后才能看到" not in _skill_markdown()
+    acceptance = _read("stages/4-试用验收.md")
+    assert "`business_ui_automation(bubble)`" in acceptance and "冒泡只验处理逻辑" in acceptance
+    assert "「到点真触发」另列一条记「未测」，原因写「到点触发要等真实时间，且要发布后在正式入口开规则」" in acceptance
+    assert "| 使用者从目录或分享打开 | 不测，记「未测」，原因写「从目录或分享打开要先发布」 |" in acceptance
+    assert "一共几条：通过几条、未测几条；" in acceptance
+    assert "结论（通过 / 没通过 / 好不好你说了算 / 未测）" in acceptance
+    assert "以「要先发布」为由标了「未测」" in acceptance
+    launch = _read("stages/5-上线.md")
+    assert "因为要先发布才看得到而未测的（到点真触发、从目录或分享打开），告诉开发者发布后可以自己看、怎么看" in launch
+    assert "到点真触发记「未测」" in _read("checklists/验收清单.md")
+    assert "④ 记「未测」并写原因，⑤ 单列并告诉开发者发布后自己怎么看" in _read("SKILL.md")
+    assert "④ 把「到点真触发」记「未测」" in _read("reference/自动化.md")
