@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20261027-c308ee",
-  "package_version": "2.0.32",
+  "version": "v20261027-531fb2",
+  "package_version": "2.0.33",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-27T08:21:46Z",
-  "update_reason": "Integrate D-3582 Studio delivery rules with current main collaboration behavior",
+  "released_at": "2026-10-27T08:30:38Z",
+  "update_reason": "refactor(skill): 精简 Studio 差异并恢复普通宿主流程；docs(studio): use desktop managed demo host；fix(studio): scope catalog publication to current delivery；fix(studio): require current consent before publishing；fix(skill): align Studio lifecycle and confirmation status；feat: align Studio CRUD acceptance routes；feat(T4583): adapt Skill to native Studio automatic delivery",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -42,7 +42,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "839d6dd9b29173eed481f71466ce3ec5be90f9367d3bb0a3ec51273ea61a31a6",
+    "SKILL.md": "44f844dd76cb4104d7a6bba9896a85e95ecd9d431f3b26db9e48f59f7ecf0580",
     "agents/openai.yaml": "53f536bc0e7d54fb811ce78217b93f4cafcde48ca2a2be5ba23f04aff92b6f0b",
     "checklists/验收清单.md": "fe617b94aa47656d0b972c474a5a572569b0c0d780f984ace3df8ee54f75af3e",
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
