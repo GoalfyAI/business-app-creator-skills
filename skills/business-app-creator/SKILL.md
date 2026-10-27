@@ -159,7 +159,7 @@ business_ui_stage(task_id="wft_xxx", stage="G1", result="passed",
 **平台问题按阻塞程度报**：先按 [reference/报错对照.md](reference/报错对照.md) 处理；应用自己的脚本、页面、数据格式、提示词问题自己改，不提交。`submit_dev_feedback` 新建时必填 `blocking` 与 `attribution`：
 - **阻塞**（`blocking="blocked"`）：按指引处理后仍走不下去、没有可行绕法，立即提交，附报错原文和 `project_id` / `run_id`；
 - **不阻塞**（`worked_around` 已绕过、`request` 功能诉求）：不即时提交，记进开发记录，交付或本次会话结束时汇总成一条提交；
-- 新建前先 `query_dev_feedback` 查本人未关闭的反馈，同一问题带 `feedback_id` 追加，不重复新建。
+- 新建前先 `query_dev_feedback` 查本人未关闭的反馈，同一问题优先用返回的 OA 主号 `code` 作为 `feedback_code` 查询或追加，不重复新建。`source_code` 是稳定来源别名，旧 `feedback_id` 仍等于它；三个选择器至多传一个，禁止猜编号互换。交付优先写 `code`，来源另注。身份缺失、回包矛盾或写入结果 `unknown` 时，按报错对照先核对，禁止补建。
 提交成功不等于问题已确认或已解决，不能据此放行验收。
 
 ## 7. 什么时候读 reference 与长契约

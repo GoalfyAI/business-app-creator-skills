@@ -4,8 +4,8 @@
   "version": "v20261027-c308ee",
   "package_version": "2.0.32",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-27T07:20:42Z",
-  "update_reason": "docs(skill): warn that app-owned OAuth callbacks bound to one container break collaborator preview [D-3636]",
+  "released_at": "2026-10-27T07:41:16Z",
+  "update_reason": "fix(feedback): distinguish OA feedback code and stable source alias [D-3749]",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -42,7 +42,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "4c4916201633e7535a70e43c5dcc9a013006b761f71da128149a4025e698ca96",
+    "SKILL.md": "98788fcb96998665475275358a5f1f97e8e458af56ae37494c653cbb92db83e5",
     "agents/openai.yaml": "53f536bc0e7d54fb811ce78217b93f4cafcde48ca2a2be5ba23f04aff92b6f0b",
     "checklists/验收清单.md": "fe617b94aa47656d0b972c474a5a572569b0c0d780f984ace3df8ee54f75af3e",
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
@@ -53,15 +53,15 @@
     "flow/G3-方案编译.md": "fbc2333f5e0cf15641086530276729df45814b82c45f7bbf28b8e52e9a026211",
     "flow/G4-能力制作.md": "444af19403d3b94a2abcd7dddea99a5b430b6da6b52da8098ed69bf223a1f98a",
     "flow/G5-数据与应用.md": "b324f08659ee77a2a7b414fd37aac003cf5a1aecbf938fa964811d40478153b8",
-    "flow/G6-预览验收.md": "0ee6ce0ba827c739b187e31aadb2e643530f6e3281dba5bbba884ad065ba6270",
-    "flow/G7-上线交付.md": "8aeaebfb7147ff70572bd7f017edaefd9b6110d678b000ed4fa34d25073500ca",
+    "flow/G6-预览验收.md": "53117eb88e56f6d47351a1de072ba95ecb24513b9d138117244769ca00d02d7d",
+    "flow/G7-上线交付.md": "af2611936ce2e148ca79eb449f8fd630355d1814065b4d288816f4ef4764951d",
     "reference/业务路线.md": "96874f08938d9bd6e8054396790728b9b1fba4a3f32353490ef53e73acbf3c74",
     "reference/依赖与MCP接入.md": "816aa6f7f2e5e3b15960a8e8459325514a6f4d1090518a389356bf526b200bed",
     "reference/前端页面.md": "26c3bc1223dfd82558f49d488ce36da31ce0ce9b69d6e0236c78ecb615455782",
     "reference/多人协作.md": "f57753d2df0db7adba5286968baf0ecee78e4935dfccc09e822e52f55b05eae9",
     "reference/平台对象速查.md": "587f988f2e58a81cdc4ea34599ae96bea39ad538be040fb743a768ce87a079fb",
     "reference/开发者中心与工作区.md": "b01a5b5fbaeffbe59851c8557837806c977fe933dddabbecedcd4e975749e4c5",
-    "reference/报错对照.md": "4e02b8a06282896e49f1b037cb9d64f9cfcfd5c8f708ae1b9fd46493200a9287",
+    "reference/报错对照.md": "efb579080d59ef8c4101fc53630bf41830d7ce8ff55d7c8d77ce80fbc516c5ad",
     "reference/授权与充值.md": "44bb9cc8567a7cd7e6d0058dc6313d5dd461da476f6fa66b538800429a29c2cc",
     "reference/数据模板.md": "086ccfd87b58d0ace19281b42534c5f2e49dacc8d6c57c96ce9885a1e76e5b94",
     "reference/用户反馈.md": "23a469b08e65be5de7562d5749923c5db32259599940621d2ec17be570cb8085",
@@ -74,6 +74,6 @@
     "tasks/修订.md": "7f062f9fa0f31dc4c9fd4887ee3c6c32a677e473d0c622e97e80c430a564f9b6",
     "tasks/接续.md": "cdaec054c7daa9fbe0d612379b4f69cf676f91e31a8a6b803f8daf93a139b2fb",
     "tasks/能力试用.md": "de8e07d2eb262bc41779015cbfc47a7d491409990badffc8a5f1fa4704833178",
-    "tasks/诊断.md": "93e76495ef07cec55fcb51dec4025e18323f756b41e63ee560ade7fe738066e6"
+    "tasks/诊断.md": "6d56f86eb7baf69ce6d31515193611137a4b299faeaa1cea080c9a421ec86cbd"
   }
 }
