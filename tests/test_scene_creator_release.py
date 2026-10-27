@@ -1273,24 +1273,27 @@ def test_studio_only_governs_saving_display_and_confirmation():
 
 
 def test_studio_confirms_prd_in_stage_one_and_plan_in_stage_two():
-    """决定 1：① 的确认对象是 PRD、② 的确认对象是方案，Studio 只提供保存与原生确认。"""
+    """决定 1：① 的确认对象是 PRD、② 的确认对象是方案；Studio 四份文档按 documentType 保存，聊天里的明确同意经登记后算确认。"""
     prd_row, plan_row = _studio_row("①"), _studio_row("②")
-    assert "确认对象是 PRD" in prd_row and "确认这一版 PRD" in prd_row
+    assert "确认对象是 PRD" in prd_row and 'documentType="prd"' in prd_row
+    assert "`studio_confirm_proposal`" in prd_row and "才算「确认这一版」" in prd_row
     assert "不建业务资产、不写业务代码（开工时初始化工程不算）" in prd_row
     assert "确认对象是方案" in plan_row and "判断题都答「对」后" in plan_row and "`acceptance.json`" in plan_row
-    assert "方案" not in prd_row.replace("方案确认卡", "")
+    assert 'documentType="proposal"' in plan_row
+    assert "方案" not in prd_row
     section = _studio_section()
-    assert "**禁止**用历史确认或聊天里的回复代替原生确认" in section
-    assert "以宿主返回的当前授权状态为准，不自行增加确认步骤" in section
+    assert "开发者对当前这一版的明确同意才算" in section and "新版不继承旧版的确认" in section
+    assert "以宿主返回的当前确认状态为准，不自行增加确认步骤" in section
     assert "不展示内部核对字段" in section
     assert "PRD 和方案的确认都不是上线授权" in section
+    assert "**禁止**提前写后面段的文档" in section
     stage_one = _read("stages/1-需求确认.md")
-    assert "Studio 宿主：这一段的确认对象是 PRD" in stage_one
+    assert "Studio 宿主：这一段只写 PRD 一份开发文档" in stage_one
     assert "读到确认之前不建业务资产、不写业务代码" in stage_one
-    assert "Studio 宿主读到了当前这一版 PRD 的原生确认" in stage_one.split("## 6. 交棒条件", 1)[1]
+    assert "Studio 宿主读到了当前这一版 PRD 的确认" in stage_one.split("## 6. 交棒条件", 1)[1]
     stage_two = _read("stages/2-方案.md")
-    assert "Studio 宿主：这一段的确认对象是方案" in stage_two
-    assert "Studio 宿主读到了当前这一版方案的原生确认" in stage_two.split("## 6. 交棒条件", 1)[1]
+    assert "Studio 宿主：这一段写方案一份开发文档" in stage_two
+    assert "Studio 宿主读到了当前这一版方案的确认" in stage_two.split("## 6. 交棒条件", 1)[1]
     assert "确认前不初始化业务工程" not in _skill_markdown()
 
 
