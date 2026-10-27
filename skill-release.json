@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20261026-335e8b",
-  "package_version": "2.0.31-pre.10",
+  "version": "v20261027-c308ee",
+  "package_version": "2.0.32-pre.11",
   "mcp_endpoint": "https://business-app-creator-mcp.pre.goalfyai.cn/mcp",
-  "released_at": "2026-10-26T11:33:59Z",
-  "update_reason": "PRE 版，来自 main 35b72d60c（build 10）",
+  "released_at": "2026-10-27T07:21:18Z",
+  "update_reason": "PRE 版，来自 main 48b3225bf（build 11）",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -42,7 +42,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "358b9d83f62772dadf7830655745bb4959e7dc9748ebc938102b0c3e661d2816",
+    "SKILL.md": "4c4916201633e7535a70e43c5dcc9a013006b761f71da128149a4025e698ca96",
     "agents/openai.yaml": "013db1b6f4f6f0a8461ce66fba0c56d9fc363af425c82614cf72b78a14163cd4",
     "checklists/验收清单.md": "fe617b94aa47656d0b972c474a5a572569b0c0d780f984ace3df8ee54f75af3e",
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
@@ -58,11 +58,11 @@
     "reference/业务路线.md": "96874f08938d9bd6e8054396790728b9b1fba4a3f32353490ef53e73acbf3c74",
     "reference/依赖与MCP接入.md": "816aa6f7f2e5e3b15960a8e8459325514a6f4d1090518a389356bf526b200bed",
     "reference/前端页面.md": "26c3bc1223dfd82558f49d488ce36da31ce0ce9b69d6e0236c78ecb615455782",
-    "reference/多人协作.md": "c5fe8f5f57a942c7c146db2435a3ad6cca8c76158abd9433d35c15d783835d68",
+    "reference/多人协作.md": "f57753d2df0db7adba5286968baf0ecee78e4935dfccc09e822e52f55b05eae9",
     "reference/平台对象速查.md": "587f988f2e58a81cdc4ea34599ae96bea39ad538be040fb743a768ce87a079fb",
     "reference/开发者中心与工作区.md": "b01a5b5fbaeffbe59851c8557837806c977fe933dddabbecedcd4e975749e4c5",
     "reference/报错对照.md": "4e02b8a06282896e49f1b037cb9d64f9cfcfd5c8f708ae1b9fd46493200a9287",
-    "reference/授权与充值.md": "abd9ef5913c2b2bb86bd1b1420ea36c32af4c62b32536a29bb012a3f65f30663",
+    "reference/授权与充值.md": "44bb9cc8567a7cd7e6d0058dc6313d5dd461da476f6fa66b538800429a29c2cc",
     "reference/数据模板.md": "086ccfd87b58d0ace19281b42534c5f2e49dacc8d6c57c96ce9885a1e76e5b94",
     "reference/用户反馈.md": "23a469b08e65be5de7562d5749923c5db32259599940621d2ec17be570cb8085",
     "reference/编排脚本.md": "1cd143c572f9c5f6546bc416988869914797d570dff48b66601b1308226dc0a9",
