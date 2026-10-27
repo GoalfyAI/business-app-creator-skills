@@ -1045,13 +1045,18 @@ def test_delivery_review_reply_only_action_key():
     assert "DELIVERY_REVIEW_REPLY_INVALID" in _read("reference/报错对照.md")
 
 
-def test_online_tab_named_zaixian_shiyong():
-    """开发者中心右栏分页名是「在线试用」，Skill 不再出现「在线预览」「在线使用」等叫法。"""
-    root = Path(__file__).resolve().parents[1] / "skills" / "business-app-creator"
-    for path in root.rglob("*"):
+def test_online_tab_names_follow_the_host_contract():
+    """Studio 使用在线预览；普通宿主仍使用在线试用。"""
+    studio_files = {"reference/开发者中心与工作区.md", "flow/G7-上线交付.md"}
+    for path in SKILL_ROOT.rglob("*"):
         if path.suffix in (".md", ".yaml") and path.is_file():
             text = path.read_text(encoding="utf-8")
-            assert "在线预览" not in text and "在线使用" not in text, path
+            assert "在线使用" not in text, path
+            for line in text.splitlines():
+                if "在线预览" in line:
+                    assert path.relative_to(SKILL_ROOT).as_posix() in studio_files, path
+                    assert "Studio" in line, path
+    assert "在线试用" in _read("flow/G6-预览验收.md")
 
 
 def test_app_db_routes_prove_with_workspace_real_run():
@@ -1092,3 +1097,58 @@ def test_shell_success_is_judged_by_exit_code_of_whole_pipeline():
     for fact in ("### shell 步骤的成败", "退出码只看**最后一条命令**", "( set -o pipefail;", "|| true"):
         assert fact in script, fact
     assert "共用一个会话" in script and "只写在子 shell 的括号里" in script
+
+
+# Studio 只保留必要行为边界；这些是文档回归检查，不是 Agent 行为评测。
+def _studio_note(relative: str) -> str:
+    return "\n".join(line for line in _read(relative).splitlines() if line.startswith(">"))
+
+
+def test_studio_current_confirmation_precedes_engineering():
+    note = _studio_note("flow/G1-需求确认.md")
+    assert "studio_write_proposal" in note and "acceptance.json" in note
+    assert "确认前不初始化业务工程或创建业务资产" in note
+    assert "studio_read_creation" in note and "当前方案已获原生确认" in note
+    assert "方案内容变化后重新确认" in note
+    assert "不用历史确认或普通聊天回复替代" in note
+    assert "不自行增加确认步骤" in note
+
+
+def test_studio_local_acceptance_does_not_require_remote_deployment():
+    note = _studio_note("flow/G6-预览验收.md")
+    assert "仅本地演示" in note and "无需上传或部署" in note
+    assert "出口仅适用于远端验收" in note
+    assert "本地验收不能写成线上验收通过" in note
+    assert "机器结果与开发者亲自操作分开记录" in note
+    assert not re.search(r"\b(?:business_ui_bundle|business_ui_manage)\s*\(", note)
+    revision = _studio_note("tasks/修订.md")
+    assert "仅交付本地修改时不进入 G7" in revision
+
+
+def test_studio_publication_uses_current_consent_and_existing_tools():
+    entry = _read("SKILL.md")
+    assert "制作确认不等于上线授权" in entry
+    assert "开发者对本次范围的明确同意" in entry and "已有同意不重复询问" in entry
+    note = _studio_note("flow/G7-上线交付.md")
+    assert "当前实际提供的 MCP 能力" in note and "不编造接口" in note
+    assert "写入结果未知时只查询原操作，不重新发起写入" in note
+    assert "不宣称该项交付完成" in note
+    assert 'business_ui_manage(action="finalize"' in _read("flow/G7-上线交付.md")
+
+
+def test_ordinary_host_keeps_author_self_test_and_manual_publication():
+    assert "作者不需要发布" in _read("reference/开发者中心与工作区.md")
+    assert "不必发布到目录" in _read("checklists/验收清单.md")
+    assert "只把这一版变成开发者自己的正式自测版" in _read("reference/部署与版本.md")
+    assert "目录发布由开发者自己在发布管理页操作" in _read("flow/G7-上线交付.md")
+    assert "改完不用再问一遍，直接做" in _read("design/确认页.md")
+    assert 'business_ui_data_space="workspace"' in _read("flow/G6-预览验收.md")
+
+
+def test_studio_uses_desktop_preview_and_preserves_business_scope():
+    workspace = _read("reference/开发者中心与工作区.md")
+    assert "演示预览由桌面入口管理" in workspace
+    assert "不另起后台服务或生成旧完成版" in workspace
+    compilation = _studio_note("flow/G3-方案编译.md")
+    assert "不为纯数据管理应用虚构额外业务流程" in compilation
+    assert "不自行增减验收范围" in compilation
