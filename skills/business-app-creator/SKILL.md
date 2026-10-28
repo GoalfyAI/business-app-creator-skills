@@ -23,7 +23,7 @@ keywords:
   - MCP
 ---
 # 智能应用制作
-<!-- scaffold-min-required-version:v20260916-8941ec -->
+<!-- scaffold-min-required-version:v20261028-fb251c -->
 > 本 Skill 组织需求确认、能力选择、制作与验收。制作步骤在 `flow/`，做哪些由你按需求选；其他任务入口在 `tasks/`，沟通模板在 `design/`，细则在 `reference/`。
 >
 > 平台参数读 MCP 当前 Schema，长合同按需用 `get_diagnosis_doc(topic)`；工程实现读当前应用采用模板的 README 与 package.json。版本与工程入口见 [脚手架与预置件](reference/脚手架与预置件.md)，交付边界见 [部署与版本](reference/部署与版本.md)。

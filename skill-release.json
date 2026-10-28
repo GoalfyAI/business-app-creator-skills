@@ -1,11 +1,11 @@
 {
-  "scaffold_min_required_version": "v20260916-8941ec",
+  "scaffold_min_required_version": "v20261028-fb251c",
   "skill_name": "business-app-creator",
   "version": "v20261027-2271fd",
   "package_version": "2.0.34",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-27T11:22:59Z",
-  "update_reason": "R-334 兼容版：feedback_report 同时接受数字与 public_id 短码；文档按制作 MCP 改造同步应用 ID、版本行与报错写法",
+  "released_at": "2026-10-28T14:57:41Z",
+  "update_reason": "R-334 short-code scaffold v20261028-fb251c",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -42,7 +42,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "d4c1692528631f17e9acb83bd19d9129d1ed7d32c3adfadbda5fc4dd47383f69",
+    "SKILL.md": "2871e7bcccff5283b9d3bcbfba2224a1d453d68566cda8ac65ca59417215feba",
     "agents/openai.yaml": "53f536bc0e7d54fb811ce78217b93f4cafcde48ca2a2be5ba23f04aff92b6f0b",
     "checklists/验收清单.md": "fe617b94aa47656d0b972c474a5a572569b0c0d780f984ace3df8ee54f75af3e",
     "design/分工表.md": "80da0e16ca777ffe6f3873da7eb32540a417aacae4d171c46372c93de22faa2f",
