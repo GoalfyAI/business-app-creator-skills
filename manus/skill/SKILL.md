@@ -132,8 +132,8 @@ keywords:
 每个应用只做一次，接续时逐步核对：
 
 1. **建工单**：`task_manager(action="create", mode="write", skill_version=…)`，标题写应用名。`skill_version` **必须**填已安装 SKILL.md description 里 `[skill-version:...]` 的原值，每次建 write 工单前从文件读，不留空、不填 `dev`、不凭记忆。之后制作、部署、运行工具都带这个 `task_id`；关键事实（资产 ID、版本、run_id）用 `task_manager(action="insert", entry_type="checkpoint")` 记，不写过程流水。被拒按 [reference/报错对照.md](reference/报错对照.md)「工单闸门」。
-2. **定位应用工程并核脚手架版本**：在开发者中心分配的 `apps/<应用目录>/` 下工作；读应用根的 `scaffold-release.json`，调 `business_ui_bundle(action="download_template")` 核版本，低于必须线先升级（[reference/脚手架与预置件.md](reference/脚手架与预置件.md)「版本闸门与升级」）。
-3. **初始化或接续工作区**：宿主给了初始化命令就原样执行。没有现成命令时，新建用 `npm run scaffold:init -- --environment <站点> --app-name "<应用名>"`：`<站点>` 问开发者在哪个 GoalfyMax 站点开发（只有他知道的事实，不给推荐），答案原样填进参数；接续时缺失文件用 `npm run scaffold:repair -- --app-name "<应用名>"` 补。然后 `npm run setup`、`npm run doctor`。三件套见 [reference/开发者中心与工作区.md](reference/开发者中心与工作区.md)「三件套与阶段标记」；Studio 宿主不另传文档模式参数（同文件「Studio 宿主」）。
+2. **定位应用工程并核脚手架版本**：在开发者中心分配的 `apps/<应用目录>/` 下工作（没有开发者中心的命令行宿主见 [reference/开发者中心与工作区.md](reference/开发者中心与工作区.md)「命令行宿主」）；读应用根的 `scaffold-release.json`，调 `business_ui_bundle(action="download_template")` 核版本，低于必须线先升级（[reference/脚手架与预置件.md](reference/脚手架与预置件.md)「版本闸门与升级」）。
+3. **初始化或接续工作区**：宿主给了初始化命令就原样执行。没有现成命令时，新建用 `npm run scaffold:init -- --environment <站点> --app-name "<应用名>"`：`<站点>` 问开发者在哪个 GoalfyMax 站点开发（只有他知道的事实，不给推荐；和 ① 第一轮的题一起发，编作 Q1），答案原样填进参数，初始化在收到答案后做；接续时缺失文件用 `npm run scaffold:repair -- --app-name "<应用名>"` 补。然后 `npm run setup`、`npm run doctor`。三件套见 [reference/开发者中心与工作区.md](reference/开发者中心与工作区.md)「三件套与阶段标记」；Studio 宿主不另传文档模式参数（同文件「Studio 宿主」）。
 4. **读一次开发者偏好**：`dev_preferences(action="pull")`；写过的照做，其余用可逆默认，当前指令优先。
 5. **读协作状态**（已有应用）：`business_ui_manage(action="get")` 看 `role`、待上线的提请、自己草稿的基线是否过期；属主有提请先按 [tasks/接续.md](tasks/接续.md) 处理，协作者草稿基线过期先按 [tasks/修订.md](tasks/修订.md) 合并。
 
@@ -165,7 +165,7 @@ keywords:
 
 ## 9. 交接
 
-- 每段结束、① ② 每一轮问题、③ 的每次进度更新、退回到前一段时，各发一条交接消息，只说四件事：刚做完、下一步、要你做的、花了多少。
+- 每段结束、① ② 每一轮问题、③ 的每次进度更新、④ 问部署（「要你做的」就是那句原句）、退回到前一段时，各发一条交接消息，只说四件事：刚做完、下一步、要你做的、花了多少。
 - 花费固定写「本段 N；累计 N；上限 N」，三个数缺一不发；累计是整张工单从 ① 起之和，上限是 ① 定的积分数。
 - 平台问题挡住进度时写卡在哪、谁在处理、对开发者的影响，不请开发者去修。格式、各数口径与示例见 [design/交接消息.md](design/交接消息.md)。
 

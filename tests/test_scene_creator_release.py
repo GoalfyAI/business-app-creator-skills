@@ -1037,7 +1037,7 @@ def test_browser_red_line_points_to_one_local_acceptance_section():
     ):
         assert fact in red_lines, fact
     # 裁决 D35：Skill 不记站点地址，开工时问开发者在哪个站点开发、原样填参数（站点地址由下面 goalfyai.cn 全文检查拦）
-    assert "问开发者在哪个 GoalfyMax 站点开发（只有他知道的事实，不给推荐），答案原样填进参数" in skill
+    assert "问开发者在哪个 GoalfyMax 站点开发（只有他知道的事实，不给推荐；和 ① 第一轮的题一起发，编作 Q1），答案原样填进参数" in skill
     workspace = _read("reference/开发者中心与工作区.md")
     local = workspace.split("### 本机版页面验收", 1)[1].split("\n### ", 1)[0]
     for fact in (
