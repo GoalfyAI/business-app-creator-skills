@@ -17,7 +17,7 @@
 
 | 目录 | 说明 |
 |---|---|
-| `skills/business-app-creator/` | Skill 的唯一源：`SKILL.md`（红线、角色、任务识别、开工、五段表与交棒条件、工具速查）、`stages/`（五段：需求确认、方案、制作、试用验收、上线，每段交给开发者什么、开发者做什么、什么时候交棒）、`tasks/`（接续、修订、诊断、能力试用、仅讨论的入口）、`design/`（PRD、按轮问、谁来做、选择题与判断题、交接消息等沟通模板）、`reference/`（按需查阅的平台细则正本）、`checklists/`、`scripts/`、`agents/openai.yaml` |
+| `skills/business-app-creator/` | Skill 的唯一源：`SKILL.md`（入口与路由）、`flow/`（七个按需选用的 flow）、`tasks/`（非新建任务入口）、`design/`（沟通模板）、`reference/`（按需查阅的正本）、`checklists/`、`scripts/`、`agents/openai.yaml` |
 | `scripts/` | 构建与发布工具 |
 | `tests/` | 测试 |
 | `claude-code/`、`codex/` | 插件安装文档手工维护；`skills/` 子目录由发布流程复制，**不要手工编辑** |
@@ -57,20 +57,18 @@ uv run python scripts/build_platform_packages.py check
 
 `skills/business-app-creator/` 是给 Agent 读的执行指引，不是给人读的说明书。每类文件有固定写法，发布检查会校验：
 
-- `stages/` 正好五份：`1-需求确认.md`、`2-方案.md`、`3-制作.md`、`4-试用验收.md`、`5-上线.md`；每份必须按顺序包含「进入条件」「段里怎么做」「产出与落盘」「出问题怎么办」四节，中间可以有「开发者要看、要做的」「不给开发者的」「交棒条件」等小节
-- 五段与工作区阶段的对应固定为 ① = G1、G2，② = G3，③ = G4、G5，④ = G6，⑤ = G7；工作区 `workspace.json` 仍是 G1–G7 七项
+- `flow/` 正好七段文件，每份依次六节：进入条件、做什么、产出与落盘、给开发者看什么、出口、出问题怎么办
 - `reference/` 每份依次四节：适用场景、规则、常见错误、相关工具与契约主题
 - `tasks/` 每份依次三节：识别信号、先读什么、从哪一段进
-- 行数预算：`SKILL.md` ≤ 200 行，`stages/` 单文件 ≤ 160 行，`reference/` 单文件 ≤ 400 行；超了先把 AI 内部做法的细表移到已链接的 `reference/` 或 `design/`，红线、四类确认、五段表与交棒条件留在原处，不调高预算
+- 行数预算：`SKILL.md` ≤ 200 行，`flow/` 单文件 ≤ 150 行，`reference/` 单文件 ≤ 400 行；超了就拆进 `reference/`
 - 正文里指向 Skill 自身文件的链接必须存在
 
 写作时注意：
 
 - 用**必须** / **禁止**这类明确的强调词，不要写模棱两可的建议
-- 写最终规则，不写「原来怎样、现在改为怎样」这类新旧对照
 - 不要出现平台内部实现细节、代码或组件名
-- 同事补内容主要往 `reference/` 和 `tasks/` 里加；`SKILL.md` 只做入口和路由，`stages/` 写每段交给开发者什么、开发者做什么、交棒和退回条件
-- 一个事实只放一处，别处用相对路径引用；平台参数、错误码全文、契约字段不抄，写工具 Schema 或 `get_diagnosis_doc` 的 topic 名。例如阶段记录 `business_ui_stage` 的参数写法和 ④ 的浏览器做法只写在 `reference/开发者中心与工作区.md`，段文件只写本段出口写哪几项
+- 同事补内容主要往 `reference/` 和 `tasks/` 里加；`SKILL.md` 只做入口和路由，`flow/` 只写每段做什么
+- 一个事实只放一处，别处用相对路径引用；平台参数、错误码全文、契约字段不抄，写工具 Schema 或 `get_diagnosis_doc` 的 topic 名
 - 对外文案（description、keywords）是唯一源，会被注入到各平台安装文件
 
 ## 环境约定
