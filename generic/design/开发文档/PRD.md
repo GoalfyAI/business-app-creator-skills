@@ -1,25 +1,23 @@
 # PRD 版式
 
-① 交给开发者的 PRD，在 Studio 里写成这一份 HTML。内容按 [../PRD.md](../PRD.md) 写，这里只规定每一节放在哪、用什么组件。页面开头用 [样式.md](样式.md)，写完按 [检查清单.md](检查清单.md) 自查。
+① 交给开发者的 PRD 写成这一份 HTML。内容按 [../PRD.md](../PRD.md) 写，这里只规定每一节放在哪、用什么组件；通用写法见 [README.md](README.md)「怎么写一份」。
 
 ## 四个版块放什么
 
 | 版块 | 放 PRD 的哪几节 | 组件 |
 |---|---|---|
 | 01 要做什么 | 你要的是什么（现在怎么做 → 做成后）、谁来用、要做的功能清单、这次不做的 | `.beforeafter`、`.roles`、`.scope`、一段「这次不做：」 |
-| 02 怎么用 | 每一步谁来做（人 = `person`，模型 = `ai`，脚本 = `auto`，按使用顺序排）、做不成的时候 | `.legend`、`.journey`（`.step`、`.branches`）、`<details>` + `.facts` |
-| 03 会得到什么 | 每个刚需一张功能卡：标题带核实结论；中间写在第一段；拿出来放 `.sample`；怎样算做成放 `.standard`；放进去、这样不行、会停下的情况、验收预期放折叠的 `.facts`。非刚需放 `.otherfeatures`；界面放最后一个 `<details>` | `.feature`、`.badge`、`.sample`、`.standard`、`.otherfeatures`、`.rulesbody` |
+| 02 怎么用 | 每一步谁来做（人 `human`、模型 `model`、脚本 `rule`，按使用顺序排）、做不成的时候 | `.legend`、`.journey`（`.step`、`.branches`）、`<details>` + `.facts` |
+| 03 会得到什么 | 每个刚需一张功能卡：标题带核实结论；中间写在第一段；拿出来放 `.sample`；怎样算做成放 `.standard`；放进去、这样不行、会停下的情况、核实依据、验收预期放折叠的 `.facts`。非刚需放 `.otherfeatures`；界面放最后一个 `<details>` | `.feature`、`.badge`、`.sample`、`.standard`、`.otherfeatures`、`.rulesbody` |
 | 04 确认与约定 | 要先对齐的事、花多少（预计、上限、停下确认的线）、费用与副作用和要从外面拿的数据、做不到的和替代、自动发生的事、上线范围、会记下来的东西、要你提供的、按默认补上的 | `.notice`、`.budget`、`.budgetbar`、`.rulegrid`、`<table>`、`.decision` |
 
 - 核实结论的 `.badge` 只用四种：「已试过，能做」「能做」「要新做，没试过」（加 `pending`）、「做不到，见替代」（加 `pending`）。
 - `.sample` 放真实拿到的东西；还没做出来的内容在 `.samplelabel` 第二个 `<span>` 写「预期」，不写成已有结果。
 - 预算条：`--estimate` 写「预计最高 ÷ 上限」，`--stop` 写「停下确认的线 ÷ 上限」，都用百分数，四舍五入到一位小数。
-- 选择题不放进页面：在聊天里用表单问（见 [../../reference/Studio表单与卡片.md](../../reference/Studio表单与卡片.md)），答过的写进对应位置，并在「按默认补上的」里列出按推荐定下的。
-- 页面只用来读：**禁止**放按钮、输入框、表单和「确认这一版」之类的入口。确认在聊天里做，登记见 [README.md](README.md)。
+- 选择题答过的写进对应位置；按推荐定下的在「按默认补上的」里列出。
+- 「每一步谁来做」的人只写使用者：步骤主语写「使用者」，图例写「使用者」。
 
 ## 骨架
-
-照抄下面的结构，把每个【填：…】换成真实内容。标着「重复」的块按实际数量复制，多余的删掉；`<!-- -->` 注释写完后全部删掉。
 
 ```html
 <article class="sheet prd">
@@ -36,11 +34,11 @@
 </section>
 
 <section id="prd-flow"><div class="sectionhead"><em>02</em><h2>怎么用</h2></div>
-<div class="legend"><span><i></i>你来操作</span><span><i class="ai"></i>AI 判断或生成</span><span><i class="auto"></i>应用自动处理</span></div>
+<div class="legend"><span><i class="human"></i>使用者</span><span><i class="model"></i>AI 判断或生成</span><span><i class="rule"></i>应用自动处理</span></div>
 <div class="journey" role="group" aria-label="【填：一句话复述整条流程】">
-<div class="step person">【填：步骤】<small>【填：补充说明，可省略这个 small】</small></div>
+<div class="step human">【填：步骤】<small>【填：补充说明，可省略这个 small】</small></div>
 <span class="connector" aria-hidden="true">↓</span>
-<!-- 重复：每一步一个 .step，类名按谁来做选 person / ai / auto，步骤之间放上面那个 connector -->
+<!-- 重复：每一步一个 .step，类名按谁来做选 human / model / rule，步骤之间放上面那个 connector -->
 <!-- 有分支时：<div class="branches"><div class="branch">【填：情况】<b>【填：这时怎么做】</b><span class="connector" aria-hidden="true">↓</span></div>（每种情况一个 .branch）</div> -->
 <p class="flowcaption">【填：流程之外要知道的一句话，比如能不能接着上次做】</p>
 </div>
@@ -112,4 +110,19 @@
 
 ## 完整样例
 
-见 [样例.md](样例.md) 的「PRD」：四个版块齐全，三张功能卡，四个非刚需。写之前先对照它的密度：每张功能卡一段话加一个样例，规则都收在折叠里，正文不铺长段落。
+「小红书商家分析报告」确认过的第 2 版（节选 02–04 的一部分：一条流程、一张功能卡、预算与费用依据；其余版块照骨架同样写法）。对照它的密度：每张功能卡一段话加一个样例，规则收在折叠里；预算条按预计最高 9,800、停下确认 12,000、上限 15,000 算出 `--estimate:65.3%;--stop:80%`。门店和数字只用来示意。
+
+```html
+<article class="sheet prd">
+<div class="kicker">需求文档 / 小红书商家分析</div><h1>从一个店名，<br>到一份可用的商家报告。</h1><p class="intro">给做商家建联和探店视频的人用，串起查店、分析与内容创作。<br>先确认做什么，再一起确定具体方案。</p>
+<section id="prd-flow"><div class="sectionhead"><em>02</em><h2>怎么用</h2></div><div class="legend"><span><i class="human"></i>使用者</span><span><i class="model"></i>AI 判断或生成</span><span><i class="rule"></i>应用自动处理</span></div>
+<div class="journey" role="group" aria-label="填写店名、搜索核实、选择或补充门店、确认后生成报告，再按需创作内容"><div class="step human">填写店名<small>城市、官网可选填</small></div><span class="connector" aria-hidden="true">↓</span><div class="step rule">搜索门店和账号</div><span class="connector" aria-hidden="true">↓</span><div class="step model">核实是否为这家门店</div><span class="connector" aria-hidden="true">↓</span><div class="branches"><div class="branch">找到合适候选<b>使用者选一家门店</b><span class="connector" aria-hidden="true">↓</span></div><div class="branch">没找到 / 候选不对<b>使用者手动补资料</b><span class="connector" aria-hidden="true">↓</span></div></div><span class="connector" aria-hidden="true">↓</span><div class="step human">确认门店和官方账号<small>由使用者决定，不自动选第一条</small></div><p class="flowcaption">项目自动保存，下次回来可以接着做。</p></div></section>
+<section id="prd-results"><div class="sectionhead"><em>03</em><h2>会得到什么</h2></div><p>先看结果是不是你要的，再展开检查具体规则。</p>
+<div class="feature"><div class="featurehead"><h3>1. 找准门店与官方账号</h3><span class="badge">已试过，能做</span></div><p>输入店名和可选的城市，得到可以核对、修改和确认的候选门店。</p><div class="sample"><div class="samplelabel"><span>海底捞火锅 · 北京</span><span>真实结果</span></div><div class="store-row"><strong>◉ 王府井丹耀店</strong><small>东城区王府井大街 176 号</small></div><div class="store-row"><strong>○ 崇文门新世界百货店</strong><small>新世界百货 1 期 5 层</small></div></div><div class="standard">做好标准：候选是真实门店；选填留空也能提交；找错或找不到时能手填。</div><details><summary>查看规则与核实依据</summary><dl class="facts"><div><dt>放进去</dt><dd>店名必填；城市、官网选填。</dd></div><div><dt>不能出现</dt><dd>把帖子标题、景点或无关网站当成门店；替使用者默认确认。</dd></div><div><dt>会停下的情况</dt><dd>一个可靠候选都没有时，停在手填这一步等使用者补资料。</dd></div><div><dt>核实依据</dt><dd>试跑「海底捞火锅 · 北京」返回 3 家门店；「清水缘和服租 · 京都」核实后没有候选，转手填。</dd></div><div><dt>验收预期</dt><dd>7 家测试店都能进入选候选或手填。</dd></div></dl></details></div>
+</section>
+<section id="prd-agreement"><div class="sectionhead"><em>04</em><h2>确认与约定</h2></div><div class="notice"><strong>有一处需要先对齐</strong>报告目标是 25 分钟内，试跑最长用了 29.5 分钟。要保留完整内容，就需要你定：优化到 25 分钟，还是把目标放宽到 30 分钟。</div>
+<div class="budget"><div><small>制作与测试预计 · 积分</small><strong>9,050–9,800</strong></div><div><small>以后每份报告约 · 积分</small><strong>750</strong></div></div><div class="budgetbar" style="--estimate:65.3%;--stop:80%" role="img" aria-label="预计最高 9,800 积分，12,000 积分停下确认，上限 15,000 积分"></div><div class="budgetlabels"><span>预计最高 9,800</span><span>12,000 停下确认</span><span>上限 15,000</span></div><p>按每周 6 份报告、12 篇内容算，上线后每周约 5,000 积分。</p>
+<details><summary>费用依据与不能直接承诺的能力</summary><dl class="facts"><div><dt>估算来源</dt><dd>你在第 2 轮同意试跑一份后的实测：一份报告 730–782 积分、20–29.5 分钟；页面和存数据按功能数估算。</dd></div><div><dt>外部调用</dt><dd>小红书数据每次 10 积分，每份最多 35 次。不会向外发送任何东西。</dd></div></dl></details>
+<div class="prdfoot"><strong>这份需求，和你想的一致吗？</strong><p>在聊天里回「确认这一版」，或直接说哪一块、哪里要改。</p></div>
+<div class="source">第 2 版 · 改了报告时间目标和预算</div></section></article>
+```
