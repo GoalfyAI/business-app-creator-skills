@@ -30,7 +30,7 @@
 
 <section id="prd-goal"><div class="sectionhead"><em>01</em><h2>要做什么</h2></div>
 <div class="beforeafter"><div><strong>现在</strong>【填：现在人工怎么做】</div><i aria-hidden="true">→</i><div class="after"><strong>做成后</strong>【填：做成后使用者怎么做】</div></div>
-<div class="roles">【填：给谁用，几种人】<small>【填：各看到什么、能做什么】</small></div>
+<div class="roles">【填：给谁用、多久用一次】<small>【填：在应用里做什么、看到什么】</small></div>
 <div class="scope"><span>【填：功能名】</span><!-- 重复：每个要做的功能一个 span --></div>
 <p>这次不做：【填：明确排除的东西，以及放到哪一期】</p>
 </section>
