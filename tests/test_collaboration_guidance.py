@@ -116,7 +116,7 @@ def test_page_items_use_local_headless_browser_not_online_addresses(read_skill):
     local = _section(workspace, "### 本机版页面验收")
     assert "只打开本机版输出里的本机地址（`127.0.0.1` 或 `localhost`）" in local
     # 裁决 D35/总原则 4：不判断环境改为「开工时问开发者在哪个站点开发，答案原样填进参数」，其余文件不写环境判断
-    assert "问开发者在哪个 GoalfyMax 站点开发（只有他知道的事实，不给推荐；和 ① 第一轮的题一起发，编作 Q1），答案原样填进参数" in skill
+    assert "不传 `--environment`：宿主（Studio）提供了环境，脚手架自己读。只有它报「缺少环境」时，才问开发者在哪个 GoalfyMax 站点开发" in skill
     assert "用 Playwright 无头 Chromium 打开 Dev Host 地址" in local
     judging = read_skill("stages/4-试用验收.md").split("### 2.4 逐条判定", 1)[1].split("\n### ", 1)[0]
     online_only = judging.split("**「未测」只用于下面几类**", 1)[1]

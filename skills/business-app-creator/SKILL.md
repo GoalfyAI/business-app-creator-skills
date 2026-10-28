@@ -133,7 +133,7 @@ keywords:
 
 1. **建工单**：`task_manager(action="create", mode="write", skill_version=…)`，标题写应用名。`skill_version` **必须**填已安装 SKILL.md description 里 `[skill-version:...]` 的原值，每次建 write 工单前从文件读，不留空、不填 `dev`、不凭记忆。之后制作、部署、运行工具都带这个 `task_id`；关键事实（资产 ID、版本、run_id）用 `task_manager(action="insert", entry_type="checkpoint")` 记，不写过程流水。被拒按 [reference/报错对照.md](reference/报错对照.md)「工单闸门」。
 2. **定位应用工程并核脚手架版本**：在开发者中心分配的 `apps/<应用目录>/` 下工作（没有开发者中心的命令行宿主见 [reference/开发者中心与工作区.md](reference/开发者中心与工作区.md)「命令行宿主」）；读应用根的 `scaffold-release.json`，调 `business_ui_bundle(action="download_template")` 核版本，低于必须线先升级（[reference/脚手架与预置件.md](reference/脚手架与预置件.md)「版本闸门与升级」）。
-3. **初始化或接续工作区**：宿主给了初始化命令就原样执行。没有现成命令时，新建用 `npm run scaffold:init -- --environment <站点> --app-name "<应用名>"`：`<站点>` 问开发者在哪个 GoalfyMax 站点开发（只有他知道的事实，不给推荐；和 ① 第一轮的题一起发，编作 Q1），答案原样填进参数，初始化在收到答案后做；接续时缺失文件用 `npm run scaffold:repair -- --app-name "<应用名>"` 补。然后 `npm run setup`、`npm run doctor`。三件套见 [reference/开发者中心与工作区.md](reference/开发者中心与工作区.md)「三件套与阶段标记」；Studio 宿主不另传文档模式参数（同文件「Studio 宿主」）。
+3. **初始化或接续工作区**：宿主给了初始化命令就原样执行。没有现成命令时，新建用 `npm run scaffold:init -- --app-name "<应用名>"`，不传 `--environment`：宿主（Studio）提供了环境，脚手架自己读。只有它报「缺少环境」时，才问开发者在哪个 GoalfyMax 站点开发（只有他知道的事实，不给推荐；和 ① 第一轮的题一起发，编作 Q1），答案原样填进 `--environment` 再初始化；接续时缺失文件用 `npm run scaffold:repair -- --app-name "<应用名>"` 补。然后 `npm run setup`、`npm run doctor`。三件套见 [reference/开发者中心与工作区.md](reference/开发者中心与工作区.md)「三件套与阶段标记」；Studio 宿主不另传文档模式参数（同文件「Studio 宿主」）。
 4. **读一次开发者偏好**：`dev_preferences(action="pull")`；写过的照做，其余用可逆默认，当前指令优先。
 5. **读协作状态**（已有应用）：`business_ui_manage(action="get")` 看 `role`、待上线的提请、自己草稿的基线是否过期；属主有提请先按 [tasks/接续.md](tasks/接续.md) 处理，协作者草稿基线过期先按 [tasks/修订.md](tasks/修订.md) 合并。
 

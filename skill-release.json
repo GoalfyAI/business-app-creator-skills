@@ -4,8 +4,8 @@
   "version": "v20261027-531fb2",
   "package_version": "2.0.33",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-28T09:42:42Z",
-  "update_reason": "交接消息从 ① 第一条回复起就写全四件事和花费三个数",
+  "released_at": "2026-10-28T12:52:33Z",
+  "update_reason": "Studio 下脚手架自己读环境，开工不再问站点，缺少环境时才问",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -55,7 +55,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "94c885b6a8fe6054b6659f3af16ca18aa83df38a99c2ab101e10cda002117d4f",
+    "SKILL.md": "86184909114893183a39087e0566549aa83f215171dada6ce74679ef24feb252",
     "agents/openai.yaml": "d04a3798927cbc33720df4c8692870a0ad987bcb7cbc79f0d0a0a24832eb46b2",
     "checklists/验收清单.md": "3698b515d98d4fcb8afc97f973d686be97b798c663608760be157f89e73604d6",
     "design/PRD.md": "1ab2457de73b2323d64f18b5a69671553e36f0c74557fdd38e969e6bd7df596e",
@@ -90,7 +90,7 @@
     "reference/部署与版本.md": "038de5ed1d9fb9c3e5f4fa03864a34c32e9ef08e923970287ab5d8fa5fdda9ad",
     "scripts/feedback_report.py": "7cfd21e480629f8f7443413281f14d9b8334998f53f348a54f5d939abcaa8013",
     "scripts/studio_card.py": "a3dd30cd3dc62e56b9436c223b944e7b52b6432ee45733bde6b07f93c82ba646",
-    "stages/1-需求确认.md": "08efc90f8184bae58c37e1396f35dd91362106ca03cc3dd4c03b27763e9167c8",
+    "stages/1-需求确认.md": "38ab07b59f4bba07fe6d4d37c3aed2253db42f55b7ab9bb78d709df49f56cfbc",
     "stages/2-方案.md": "dc93d50b2fdd8f1b4ee426834f6670d80670f8dc66b424e8ed508f8313bf15f9",
     "stages/3-制作.md": "97281474949ccd38f1daaa78ec93bb6158daff6cb0a53934840709884d1d2157",
     "stages/4-试用验收.md": "5db7ed8e42537c35d6e8c6b218a374dfb4c4df6efa83a98b7934c67939174c70",
