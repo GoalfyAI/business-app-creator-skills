@@ -4,8 +4,8 @@
   "version": "v20261027-531fb2",
   "package_version": "2.0.33",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-28T09:33:18Z",
-  "update_reason": "按七节点遗留反馈 FK-367/384/385/387 补齐修改逐项回、页面状态、完整链路验收、部署即测过的包、退回改标记",
+  "released_at": "2026-10-28T09:42:42Z",
+  "update_reason": "交接消息从 ① 第一条回复起就写全四件事和花费三个数",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -55,7 +55,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "819a93177344d93990b06ed195da6f0965222d28a3f40168079bef54519db14e",
+    "SKILL.md": "94c885b6a8fe6054b6659f3af16ca18aa83df38a99c2ab101e10cda002117d4f",
     "agents/openai.yaml": "d04a3798927cbc33720df4c8692870a0ad987bcb7cbc79f0d0a0a24832eb46b2",
     "checklists/验收清单.md": "3698b515d98d4fcb8afc97f973d686be97b798c663608760be157f89e73604d6",
     "design/PRD.md": "1ab2457de73b2323d64f18b5a69671553e36f0c74557fdd38e969e6bd7df596e",
