@@ -1056,7 +1056,8 @@ def test_untestable_page_items_are_fixed_or_marked_untested():
 
 
 def test_deploying_to_online_preview_needs_explicit_authorization():
-    """陈羽杰 10-27 对 4518 的口径：部署到开发者在线预览要明确授权，PRD 同意不能推定；暂不同意时依赖已部署版本的条目记「未测」；所有宿主一致。"""
+    """陈羽杰 10-27 对 4518 的口径：部署到开发者在线预览要明确授权，PRD 同意不能推定；还没同意时依赖已部署版本的条目记「未测」；所有宿主一致。
+    需求责任人 10-28：④ ⑤ 对未部署原因统一说「还没同意部署」。"""
     acceptance = _read("stages/4-试用验收.md")
     deploy = acceptance.split("### 2.1 先问部署，再部署", 1)[1].split("### 2.2", 1)[0]
     for fact in (
@@ -1066,12 +1067,17 @@ def test_deploying_to_online_preview_needs_explicit_authorization():
         "文字或语音的明确同意都算", "不加必点按钮或表单", "之前已明确同意过的直接沿用，不重复问",
         "部署只 `ship` 到开发者预览，不自动上线、不发布",
         "⑤ 只上线已部署成功的草稿，没部署过就上不了线",
-        "依赖已部署版本的条目（`workspace` 真跑、开发工作集里查到的行）结论写「未测」，原因写「你暂不同意部署到在线预览」，不能记成通过",
+        "依赖已部署版本的条目（`workspace` 真跑、开发工作集里查到的行）结论写「未测」，原因写「你还没同意部署到在线预览」，不能记成通过",
         "所有宿主都这样做",
     ):
         assert fact in deploy, fact
     assert "开发者对是否部署到在线预览的原话" in acceptance
-    assert "开发者同意部署的，最近一次部署 `status=success`；暂不同意的，依赖已部署版本的条目都记了「未测」" in acceptance
+    assert "开发者同意部署的，最近一次部署 `status=success`；还没同意的，依赖已部署版本的条目都记了「未测」" in acceptance
+    assert "开发者还没同意部署的写「你还没同意部署到在线预览」" in acceptance
+    assert "④ 因开发者还没同意部署而没有部署过的" in _read("stages/5-上线.md")
+    assert "还没同意部署而依赖已部署版本的" in _read("checklists/验收清单.md")
+    for retired in ("暂不同意", "因开发者不同意而没有部署过的"):
+        assert retired not in _skill_markdown(), retired
     skill = _read("SKILL.md")
     assert "把应用部署到开发者在线预览不能从 PRD 的同意推定" in skill.split("## 0. 红线", 1)[1].split("## 1.", 1)[0]
     assert "④ 要部署而之前没有明确的部署授权" in skill
@@ -1081,18 +1087,25 @@ def test_deploying_to_online_preview_needs_explicit_authorization():
 
 
 def test_launch_only_finalizes_a_deployed_draft():
-    """O11（需求责任人 10-27）：⑤ 只上线 ④ 已部署成功的草稿；没部署过的如实说上不了线，按 ④ 2.1 原句再问一次，同意后部署、补测再上线，不同意就停。"""
+    """O11（需求责任人 10-27）：⑤ 只上线 ④ 已部署成功的草稿；没部署过的如实说上不了线，按 ④ 2.1 原句再问一次，同意后部署、补测再上线，不同意就停。
+    需求责任人 10-28：补测有「没通过」的回 ④ 修好再测；有「好不好你说了算」的给开发者看结果、请他再说一次「可以上线」；全部通过才上线。"""
     launch = _read("stages/5-上线.md")
     step = launch.split("1. **只上线已部署的草稿**", 1)[1].split("\n2. ", 1)[0]
     for fact in (
         "⑤ 只上线 ④ 已部署成功的那份草稿",
         "如实说「还没部署到在线预览，上不了线」，再照抄 ④ 2.1 的原句问一次是否部署",
         "同意后按 ④ 2.1 部署到 `success`，按 ④ 2.2、2.3 补测依赖已部署版本的条目",
-        "都有结论后再上线",
+        "补测有「没通过」的，回 ④ 按 2.5 修好再测",
+        "有「好不好你说了算」的，把实际结果给开发者看，请他看过后再说一次「可以上线」",
+        "补测的条目全部通过（「好不好你说了算」的以开发者再说的这一次为准）才上线",
         "不同意就停在这里，告诉开发者这一版还没部署、所以没有上线，不调 `finalize`",
     ):
         assert fact in step, fact
+    assert "都有结论后再上线" not in step
+    assert "补测后请开发者再说过一次的，晚于再说的那一次" in launch
     assert "| ④ 没部署过，开发者说「可以上线」 |" in launch
+    assert "| 部署后补测有「没通过」或「好不好你说了算」 |" in launch
+    assert "补测有没通过的我修好再测，有要你判断的我把结果给你看，请你再说一次『可以上线』" in _read("stages/4-试用验收.md")
     for retired in ("即同意上线所需的部署", "同意上线所需的部署"):
         assert retired not in _skill_markdown(), retired
     skill = _read("SKILL.md")
@@ -1101,13 +1114,23 @@ def test_launch_only_finalizes_a_deployed_draft():
 
 
 def test_skill_uses_deploy_finalize_release_terms_only():
-    """需求责任人 10-27：部署 = ship 到开发者在线预览；上线 = finalize，成为开发者自己的正式版；发布 = 开发者在发布管理页发给使用者。正本不出现「定版」等混用说法。"""
+    """需求责任人 10-27：部署 = ship 到开发者在线预览；上线 = finalize，成为开发者自己的正式版；发布 = 开发者在发布管理页发给使用者。正本不出现「定版」等混用说法。
+    需求责任人 10-28：MCP 文字里的「定版」转述时说成「上线」；只允许 SKILL.md 三词说明里唯一一句点名这个旧称。"""
+    old_name_rule = (
+        "MCP 工具说明和返回里的「定版」「提请属主定版」「等属主定版」是上线的旧称，"
+        "转述时一律说成「上线」「提请属主上线」「等属主上线」。"
+    )
     for path in sorted(SKILL_ROOT.rglob("*.md")):
         text = path.read_text(encoding="utf-8")
+        if path == SKILL_ROOT / "SKILL.md":
+            assert text.count(old_name_rule) == 1
+            text = text.replace(old_name_rule, "")
         for retired in ("定版", "上线部署", "部署上线"):
             assert retired not in text, (path.relative_to(SKILL_ROOT).as_posix(), retired)
     skill = _read("SKILL.md")
     terms = next(line for line in skill.splitlines() if line.startswith("- **部署、上线、发布各指一件事**"))
+    assert old_name_rule in terms
+    assert "交接消息一律改说「上线」「提请属主上线」「等属主上线」，不出现旧称" in _read("design/交接消息.md")
     for fact in (
         '部署是 `business_ui_bundle(action="ship")`，把草稿放到开发者自己的在线预览，在 ④ 做，先按 ④ 2.1 问开发者同意',
         '上线是开发者说「可以上线」后你 `business_ui_manage(action="finalize")`，在 ⑤ 做，这一版成为开发者自己的正式版，使用者仍看不到',
@@ -1118,6 +1141,81 @@ def test_skill_uses_deploy_finalize_release_terms_only():
     launch = _read("stages/5-上线.md")
     assert launch.count("这一版成为你自己的正式版，发不发布由你决定") >= 2
     assert "`business_ui_manage(action=\"finalize\")`）在开发者说「可以上线」后由你做" in _read("reference/部署与版本.md")
+
+
+def test_studio_host_launch_wording_means_deploy():
+    """需求责任人 10-28：Studio 宿主下部署照 ④ 2.1 原句单独问，「可以上线」不当作同意部署。
+    工作台 530dc4ff 起宿主指令的部署、上线、发布与 Skill 同义；较早版本把部署叫上线，按部署处理。
+    脚手架 986238a：Studio 会话环境自动带文档模式，Skill 不另传 --document-mode。"""
+    skill = _read("SKILL.md")
+    terms = next(line for line in skill.splitlines() if line.startswith("- **部署、上线、发布各指一件事**"))
+    assert (
+        "Studio 宿主指令里的部署、上线、发布和这里是同一回事，部署和上线分开授权：需要部署时照 ④ 2.1 的原句单独问一次，"
+        "开发者说「可以上线」不当作同意部署。"
+    ) in terms
+    assert "Studio 宿主指令里说的「上线」指这里的部署" not in skill
+    section = _studio_section()
+    for fact in (
+        "Studio 宿主指令里的部署（把草稿放到开发者在线预览）、上线（`finalize`，成为开发者自己的正式版）、发布（开发者自己决定和操作）和 `SKILL.md` 说的是同一回事",
+        "较早版本的宿主指令把「部署到开发者在线环境」叫作上线，遇到时按部署处理",
+        "需要部署时照 ④ 2.1 的原句单独问一次（之前已明确同意过的沿用）；开发者说「可以上线」不当作同意部署",
+        "`GOALFY_SCAFFOLD_DOCUMENT_MODE=studio`",
+        "不另传 `--document-mode`",
+        "`document_mode: studio` 写进 `WORKSPACE.md`，不生成 `docs/proposal/`",
+    ):
+        assert fact in section, fact
+    start = skill.split("## 5. 开工", 1)[1].split("## 6.", 1)[0]
+    assert "Studio 宿主不另传文档模式参数（见「Studio 宿主」）" in start
+
+
+def test_page_items_pass_only_with_local_steps_and_screenshot_or_assertion():
+    """需求责任人 10-28：页面条目「通过」必须附本机版操作步骤和截图文件路径（或断言原文），报告硬门写明；判定表写清冒泡、真跑、未测、没通过。"""
+    acceptance = _read("stages/4-试用验收.md")
+    for fact in (
+        "页面条目附本机版上的操作步骤、截图文件路径（或断言原文）和打开过的本机路由，缺操作步骤、或截图文件路径和断言原文都没有的，不算通过",
+        "「④ 本机版页面验收」的「怎么判结论」",
+        "| 操作步骤、截图文件路径（或断言原文）、打开过的本机路由；",
+        "自查记录里写「冒泡无法验证真实读写」，不写「通过」",
+    ):
+        assert fact in acceptance, fact
+    gate = acceptance.split("**报告的硬门**", 1)[1].split("\n", 1)[0]
+    for fact in (
+        "页面条目结论是「通过」，却没有本机版操作步骤，或截图文件路径和断言原文都没有",
+        "有「冒泡无法验证真实读写」的行",
+    ):
+        assert fact in gate, fact
+    assert "未验证：只冒泡过" not in acceptance
+    workspace = _read("reference/开发者中心与工作区.md")
+    local = workspace.split("### ④ 本机版页面验收", 1)[1].split("\n### ", 1)[0]
+    assert "页面条目的「通过」必须附本机版操作步骤，和截图文件路径或断言原文，没有就不算通过" in local
+    table = local.split("#### 怎么判结论", 1)[1].split("\n#### ", 1)[0]
+    for fact in (
+        "| 冒泡里读库返回 `not_a_business_app_project`，或写库被 `ctx.dry_run` 跳过 | 记「冒泡无法验证真实读写」，不算通过",
+        "| `workspace` 真跑，并在开发工作集里查到了写入的行 | 通过",
+        "| 依赖真实宿主、平台登录身份，或要到点真触发 | 「未测」，写原因 | 不挡 |",
+        "| 其余业务失败：结果不对、报错、该写的行没写 | 「没通过」，按 ④ 2.5 改 | 挡",
+    ):
+        assert fact in table, fact
+    checklist = _read("checklists/验收清单.md")
+    for fact in (
+        "页面条目的「通过」附本机版操作步骤和截图文件路径（或断言原文），没有就不算通过",
+        "读写应用库的条目只有冒泡证据的记「冒泡无法验证真实读写」，`workspace` 真跑并在开发工作集查到写入的行才算通过",
+        "「④ 本机版页面验收」的「怎么判结论」",
+    ):
+        assert fact in checklist, fact
+
+
+def test_every_write_task_entry_carries_skill_version():
+    """需求责任人 10-28：main 上各处建 write 工单带 `skill_version` 的要求在五段版里补回。"""
+    same = "同样按 SKILL.md「开工」第 1 步带 `skill_version`"
+    assert f"1. 建 write 工单，{same}。" in _read("tasks/能力试用.md")
+    assert f"1. 建 read 工单；转修复时新建 write 工单并传 `continued_from_task_id`，{same}。" in _read("tasks/诊断.md")
+    assert f"1. 建 write 工单，{same}；" in _read("tasks/修订.md")
+    assert f"新建 write 工单并传 `continued_from_task_id`，{same}。" in _read("tasks/接续.md")
+    errors = _read("reference/报错对照.md")
+    assert f"新建 `mode=\"write\"` 工单并传 `continued_from_task_id`，{same}。" in errors
+    assert "**`SCENE_SKILL_VERSION_MISSING`** — 本次 create 没有填 `skill_version`（或填了 `dev`），工单**未创建**。" in errors
+    assert "建 write 工单同样带 `skill_version`" in _read("reference/多人协作.md")
 
 
 def test_stages_advance_one_by_one_without_local_only_exit():
