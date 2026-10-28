@@ -322,12 +322,12 @@ def test_stage_names_follow_workspace_not_skill():
 
 
 def test_stages_hand_over_on_explicit_conditions():
-    """五段按序推进，每段交棒条件写在段文件里；确认 PRD、判断题、「可以上线」不能跳过。"""
+    """五段按序推进，每段交棒条件写在段文件里；确认 PRD、整版方案、「可以上线」不能跳过。"""
     skill = _read("SKILL.md")
     assert "左栏" not in skill
     for rule in (
         "每段出口写在段文件「交棒条件」，满足了才进下一段",
-        "要开发者确认的（① 回「确认这一版」，② 判断题都答「对」，④ 看过报告说「可以上线」）没确认就停在当前段等，没有跳段",
+        "要开发者确认的（① 回「确认这一版」，② 当前整版方案已确认，④ 看过报告说「可以上线」）没确认就停在当前段等，没有跳段",
         "**修订也走五段**：每段只做和改动有关的部分，④ ⑤ 每次都做",
     ):
         assert rule in skill, rule
@@ -1362,9 +1362,9 @@ def test_long_text_tool_output_declares_single_string_field():
 
 
 def test_no_waiting_on_developer_after_confirmation():
-    """判断题答完后一路做到 ④ 交报告；制作中的测试费用已在 PRD 同意，不再逐次等开发者。"""
+    """整版方案确认后一路做到 ④ 交报告；制作中的测试费用已在 PRD 同意，不再逐次等开发者。"""
     skill = _read("SKILL.md")
-    assert "② 判断题答完后一路做到 ④ 交出验收报告" in skill
+    assert "② 整版方案确认后一路做到 ④ 交出验收报告" in skill
     assert "**确认 PRD 即同意 PRD 列出的费用与副作用**" in skill
     assert "之后照做，跑完在交付物「费用与副作用」补实际花费、在交接消息里报，不逐次问" in skill
     assert "先向开发者说明费用并取得同意" not in _read("stages/3-制作.md")
@@ -1573,7 +1573,7 @@ def test_studio_confirms_prd_in_stage_one_and_plan_in_stage_two():
     prd_row = next(line for line in docs.splitlines() if line.startswith("| PRD |"))
     plan_row = next(line for line in docs.splitlines() if line.startswith("| 方案 |"))
     assert "| `prd` | 要，确认这一版 |" in prd_row
-    assert "| `proposal` | 要，判断题都答「对」并确认这一版 |" in plan_row
+    assert "| `proposal` | 要，只确认一次整版 |" in plan_row
     assert "方案" not in prd_row
     confirm = docs.split("## 确认怎么登记", 1)[1]
     assert "调 `studio_confirm_proposal`，传 `documentType`（`prd` 或 `proposal`）" in confirm
