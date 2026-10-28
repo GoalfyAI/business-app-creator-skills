@@ -162,13 +162,13 @@ def _assert_fa_orchestration_guardrails(skill_root: Path) -> None:
         "连续两轮出现时，停止加字段",
     ):
         assert fact in script, fact
-    # 控制面收窄不能让用户可见内容只落文件：短内容照常返回，中间文件放 process_dir。 [任务:T-3941]
+    # 控制面收窄不能让用户可见内容只落文件：短内容照常返回，批量明细写回应用库，中间文件放 process_dir。 [任务:T-3941]
     assert "`ctx.process_dir` 文件等稳定载体" in script
     assert "给用户看的列表、正文、结论仍以业务字段出现" in script
-    assert '"findings": result["findings"]' in script
+    assert '"flagged": flagged, "summary": f"{flagged} 个计划需要关注"' in script
     assert '"draft_body": draft["draft_body"]' in script
     # 模板二的 blocked 出口会发 stage_failed，契约说明不能让它删掉这条声明；partial 要把 note 带给用户。 [任务:T-3941]
-    assert 'event_key="diagnosis_failed"' in script
+    assert 'event_key="inspection_failed"' in script
     assert "模板二、三用到了 `stage_failed`，用模板一时删掉第三条契约" in script
     assert '"status": result["status"], "note": result["note"]' in script
     for exit_contract in (
@@ -183,34 +183,36 @@ def _assert_fa_orchestration_guardrails(skill_root: Path) -> None:
     assert "编排脚本只做确定性准备、分发、汇合和固定收口" in platform
     assert "编排脚本.md#fa-与脚本的职责边界" in platform
 
-    g4 = (skill_root / "flow/G4-能力制作.md").read_text(encoding="utf-8")
-    assert "内容走稳定载体引用" in g4
-    assert "同类错误连续两轮就停止扩 Schema" in g4
+    making = (skill_root / "stages/3-制作.md").read_text(encoding="utf-8")
+    assert "内容走稳定载体引用" in making
+    assert "同类错误连续两轮就停止扩 Schema" in making
 
 
-def test_single_skill_follows_the_lite_framework():
-    """lite 并入后只剩一个 Skill：入口路由、七段主流程、任务入口、沟通模板与按需参考。 [任务:T-3724]"""
+def test_single_skill_follows_the_five_stage_framework():
+    """只有一个 Skill：入口路由、五段主流程、任务入口、沟通模板与按需参考。"""
     for directory in release_module.SKILL_CONTENT_MD_DIRS:
         assert (SKILL_ROOT / directory).is_dir(), directory
     for retired in release_module.RETIRED_SKILL_DIRS:
         assert not (SKILL_ROOT / retired).exists(), retired
     assert not (ROOT / "skills" / "business-app-creator-lite").exists()
+    for removed in ("design/确认页.md", "design/分工表.md", "design/阶段评分.md"):
+        assert not (SKILL_ROOT / removed).exists(), removed
     router = _read("SKILL.md")
-    for name in release_module.FLOW_STAGE_FILES:
-        assert f"flow/{name}" in router, name
+    for name in release_module.STAGE_FILES:
+        assert f"stages/{name}" in router, name
     for task in ("接续", "修订", "诊断", "能力试用", "仅讨论"):
         assert f"tasks/{task}.md" in router, task
     assert "business-app-creator-lite" not in router
     release_module.validate_skill_layout(SKILL_ROOT)
 
 
-def test_confirmation_page_is_the_only_design_gate():
-    """所有应用都走一页确认页；有模型或人工参与的步骤时才附分工表。"""
-    g1 = _read("flow/G1-需求确认.md")
-    assert "design/分工表.md" in g1 and "design/确认页.md" in g1
-    assert "平台要求至少一条路线" in g1
-    page = _read("design/确认页.md")
-    assert "费用与副作用" in page and "可以上线" in page
+def test_prd_is_the_only_design_gate():
+    """所有应用都在 ① 交一份 PRD；每一步谁来做写在 PRD 里，平台要求至少一条路线。"""
+    requirement = _read("stages/1-需求确认.md")
+    assert "design/PRD.md" in requirement and "design/谁来做.md" in requirement
+    assert "平台要求每个应用至少一条路线" in requirement
+    prd = _read("design/PRD.md")
+    assert "费用与副作用" in prd and "可以上线" in prd
 
 
 def test_identity_rules_forbid_forging_runtime_ids():
@@ -220,9 +222,9 @@ def test_identity_rules_forbid_forging_runtime_ids():
 
 
 def test_bubble_verify_and_full_run_boundaries_are_documented():
-    g4 = _read("flow/G4-能力制作.md")
+    making = _read("stages/3-制作.md")
     for fact in ('otpe_manage(action="verify"', "`needs_bubble`", 'action="assemble"', "full_run=true", "ctx.dry_run"):
-        assert fact in g4, fact
+        assert fact in making, fact
     script = _read("reference/编排脚本.md")
     assert "`partial`" in script and "`blocked`" in script and "`recoverable`" in script
 
@@ -244,8 +246,8 @@ def test_fa_orchestration_guardrails_are_documented():
         ("reference/编排脚本.md", "`partial`（做了一部分，未做的不补不编）", "`completed`（全部做完）"),
         ("reference/编排脚本.md", "`blocked`（一条没做成，数据字段留空）", "`completed`（全部做完）"),
         ("reference/平台对象速查.md", "一个 FA 只承担一个语义责任", "一个 FA 可承担多个语义责任"),
-        ("flow/G4-能力制作.md", "同类错误连续两轮就停止扩 Schema", "同类错误后继续扩 Schema"),
-        ("reference/编排脚本.md", '"findings": result["findings"]', '"report_path": result["report_path"]'),
+        ("stages/3-制作.md", "同类错误连续两轮就停止扩 Schema", "同类错误后继续扩 Schema"),
+        ("reference/编排脚本.md", '"flagged": flagged, "summary": f"{flagged} 个计划需要关注"', '"flagged": flagged'),
         ("reference/编排脚本.md", "模板二、三用到了 `stage_failed`，用模板一时删掉第三条契约", "模板三里用到了 `stage_failed`，用模板一、二时删掉第三条契约"),
         ("reference/编排脚本.md", '"status": result["status"], "note": result["note"]', '"status": result["status"]'),
     ],
@@ -263,42 +265,94 @@ def test_fa_orchestration_guardrail_regressions_are_rejected(tmp_path, relative,
 
 
 def test_business_ui_identity_is_bound_before_g5_transition():
-    g5 = _read("flow/G5-数据与应用.md")
-    assert "npm run scaffold:bind -- --business-ui-id" in g5
-    assert "先于把 `current_stage` 改成 G5" in g5
+    making = _read("stages/3-制作.md")
+    assert "scaffold_bind_command" in making
+    assert "先于把 `current_stage` 改成 G5" in making
     workspace = _read("reference/开发者中心与工作区.md")
     assert "进 G5 前用 `npm run scaffold:bind" in workspace
 
 
-def test_online_preview_is_the_developer_acceptance_entry():
-    g6 = _read("flow/G6-预览验收.md")
-    assert "「在线试用」" in g6 and "deployed_scaffold_version" in g6
-    # 部署预览可挂本人场景包草稿，G6 不再单独上线场景包；定版应用时草稿随应用一起上线。 [任务:T-3976]
-    assert 'finalize_asset_version_online(asset_type="scenario_pack"' not in g6
-    assert "场景包不必先上线" in g6
-    assert "一起定版上线" in _read("flow/G7-上线交付.md")
+def test_acceptance_deploys_draft_for_workspace_runs():
+    """④ 部署草稿供 workspace 真跑，页面条目在本机版上验；挂本人场景包草稿也能部署，上线应用时草稿随应用一起上线。 [任务:T-3976]"""
+    acceptance = _read("stages/4-试用验收.md")
+    assert "deployed_scaffold_version" in acceptance and 'business_ui_data_space="workspace"' in acceptance
+    assert "页面条目由你在应用的本机版上用无头浏览器照条目操作" in acceptance
+    assert 'finalize_asset_version_online(asset_type="scenario_pack"' not in acceptance
+    assert "场景包不必先上线" in acceptance
+    assert "再把挂着的本人场景包草稿一起上线" in _read("stages/5-上线.md")
 
 
 def test_task_closing_gate_and_waiver_are_documented():
-    g7 = _read("flow/G7-上线交付.md")
-    assert "route_verification_waived" in g7
-    assert "WORKFLOW_TASK_ROUTE_BUBBLE_EVIDENCE_REQUIRED" in g7
-    assert 'business_ui_manage(action="resolve")' in g7
+    launch = _read("stages/5-上线.md")
+    assert "route_verification_waived" in launch
+    assert "WORKFLOW_TASK_ROUTE_BUBBLE_EVIDENCE_REQUIRED" in launch
+    assert 'business_ui_manage(action="resolve")' in launch
 
 
 def test_stage_names_follow_workspace_not_skill():
     """旧应用的阶段名可能是旧名：Skill 只按 G 键更新状态，不改名。"""
-    assert "只改状态，不改名" in _read("SKILL.md")
-    assert "旧应用的七项可能是旧名" in _read("reference/开发者中心与工作区.md")
+    workspace = _read("reference/开发者中心与工作区.md")
+    assert "只改状态不改名" in workspace
+    assert "旧应用的七项可能是旧名" in workspace
 
 
-def test_flows_are_chosen_by_agent_with_hard_rules_kept():
-    """flow 按需选用，但开发者确认、上线前预览验收两条不能跳过。"""
+def test_stages_hand_over_on_explicit_conditions():
+    """五段按序推进，每段交棒条件写在段文件里；确认 PRD、判断题、「可以上线」不能跳过。"""
     skill = _read("SKILL.md")
-    assert "做哪些由你按需求选" in skill
     assert "左栏" not in skill
-    for rule in ("开发者至少确认过一次要做什么", "上线前必须有开发者在「在线试用」里的确认", "跳过的保持 `not_started`"):
+    for rule in (
+        "每段的交棒条件写在段文件末尾，满足了才进下一段",
+        "① 开发者回「确认这一版」，② 判断题都答「对」，③ 能部署，④ 报告过了硬门、开发者看后说「可以上线」",
+        "④ 和 ⑤ 每次都做",
+    ):
         assert rule in skill, rule
+    for name in release_module.STAGE_FILES[:4]:
+        assert "## 6. 交棒条件" in _read(f"stages/{name}") or "## 5. 交棒条件" in _read(f"stages/{name}"), name
+    assert "跳过的项写进 `skipped`" in _read("reference/开发者中心与工作区.md")
+
+
+def test_stage_exits_write_stage_records_in_one_place():
+    """R-367：每段出口按段内做过的项写 business_ui_stage；参数写法只在《开发者中心与工作区》一处。"""
+    exits = {
+        "1-需求确认.md": "写 G1、G2 各一条",
+        "2-方案.md": "写 G3 一条",
+        "3-制作.md": "写 G4、G5 各一条",
+        "4-试用验收.md": "在「可以上线」checkpoint 之后用 `business_ui_stage` 写 G6",
+        "5-上线.md": "用 `business_ui_stage` 写 G7，`next_stage` 填 `closeout`，必须在下一步 `complete` 之前",
+    }
+    for name, fact in exits.items():
+        text = _read(f"stages/{name}")
+        assert "business_ui_stage" in text, name
+        assert fact in text, name
+    assert "business_ui_stage" in _read("SKILL.md")
+    workspace = _read("reference/开发者中心与工作区.md")
+    for fact in ("**阶段记录**", "`completion`", "`next_plan`", "`skipped`", "**只调一次**", "**只写不读**",
+                 "有「未测」条目时 `result` 填 `partial`"):
+        assert fact in workspace, fact
+    for path in SKILL_ROOT.rglob("*.md"):
+        text = path.read_text(encoding="utf-8")
+        if path.name == "开发者中心与工作区.md":
+            continue
+        assert "completion=" not in text and "next_plan=" not in text, path
+
+
+def test_write_task_reads_skill_version_from_installed_skill():
+    """FK-519：建 write 工单必须从已安装 SKILL.md 读 skill_version，被拒处理链到工单闸门。"""
+    skill = _read("SKILL.md")
+    start = skill.split("## 5. 开工", 1)[1].split("## 6.", 1)[0]
+    assert 'task_manager(action="create", mode="write", skill_version=…)' in start
+    assert "`skill_version` **必须**填已安装 SKILL.md description 里 `[skill-version:...]` 的原值" in start
+    assert "「工单闸门」" in start
+
+
+def test_skill_body_has_no_retired_structure_or_proxy_testing_wording():
+    """R-367：正文不链 flow/G、不提阶段评分，不写请开发者代测页面条目的话。"""
+    for path in SKILL_ROOT.rglob("*"):
+        if path.suffix not in (".md", ".yaml") or not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8")
+        for retired in ("flow/G", "阶段评分", "business_ui_stage_rating", "需要你在在线预览里试", "开发者未试"):
+            assert retired not in text, (path, retired)
 
 
 def test_empty_demo_preview_follows_completed_copy_gate():
@@ -311,8 +365,8 @@ def test_empty_demo_preview_follows_completed_copy_gate():
         assert fact in workspace, fact
     assert "工作台读应用目录 `.workbench/dev-host.json`" not in workspace
     assert "成功后工作台自动显示" not in workspace
-    assert "完成版命令" in _read("flow/G6-预览验收.md")
-    assert "在开发者中心的「演示预览」里看" not in _read("flow/G5-数据与应用.md")
+    assert "完成版命令" in _read("stages/4-试用验收.md")
+    assert "在开发者中心的「演示预览」里看" not in _read("stages/3-制作.md")
 
 
 def test_data_writes_follow_row_ownership():
@@ -396,7 +450,8 @@ def test_skill_body_references_resolve_to_shipped_files():
     """正文里指向 Skill 自身文件的路径必须在发布包里（FB-38：改名后引用未同步）。"""
     assert release_module.find_broken_references(SKILL_ROOT) == []
     shipped = _manifest()["source_files"]
-    assert "flow/G1-需求确认.md" in shipped
+    assert "stages/1-需求确认.md" in shipped
+    assert not any(item.startswith("flow/") for item in shipped)
     assert "scripts/feedback_report.py" in shipped
     assert not any(item.startswith("references/") for item in shipped)
 
@@ -749,7 +804,8 @@ def test_current_skill_layout_passes():
 @pytest.mark.parametrize(
     ("relative", "mutate", "message"),
     [
-        ("flow/G4-能力制作.md", lambda text: text.replace("## 5. 出口", "## 5. 完成标准"), "二级标题必须依次为"),
+        ("stages/3-制作.md", lambda text: text.replace("## 4. 产出与落盘", "## 4. 产出"), "二级标题必须按顺序包含"),
+        ("stages/2-方案.md", lambda text: text + "\n" * 20, "行预算"),
         ("reference/数据模板.md", lambda text: text.replace("## 常见错误\n", ""), "二级标题必须依次为"),
         ("tasks/诊断.md", lambda text: text + "\n## 补充\n", "二级标题必须依次为"),
         ("SKILL.md", lambda text: text + "\n" * 60, "行预算"),
@@ -769,11 +825,16 @@ def test_skeleton_drift_is_rejected(tmp_path: Path, relative: str, mutate, messa
         assert relative in str(error.value)
 
 
-def test_missing_flow_stage_is_rejected(tmp_path: Path):
+def test_missing_stage_file_is_rejected(tmp_path: Path):
     copied = _copy_repo(tmp_path)
-    (copied / "flow" / "G7-上线交付.md").unlink()
-    with pytest.raises(release_module.ReleaseError, match="flow/ 必须正好是七段文件"):
+    (copied / "stages" / "5-上线.md").unlink()
+    with pytest.raises(release_module.ReleaseError, match="stages/ 必须正好是五段文件"):
         release_module.validate_skill_layout(copied)
+
+
+def test_line_budgets_are_not_raised():
+    """R-367：行数预算保持 SKILL.md 200、stages 160、reference 400。"""
+    assert release_module.LINE_BUDGETS == {"SKILL.md": 200, "stages": 160, "reference": 400}
 
 
 def test_code_block_headings_do_not_count_as_sections(tmp_path: Path):
@@ -886,9 +947,9 @@ def test_retired_lite_copies_are_removed_and_rejected(tmp_path: Path):
 
 def test_retired_structure_directories_are_rejected_in_platform_copies(tmp_path: Path):
     copied = _copy_repo(tmp_path)
-    leftover = tmp_path / "claude-code/skills/business-app-creator/stages"
+    leftover = tmp_path / "claude-code/skills/business-app-creator/flow"
     leftover.mkdir()
-    (leftover / "G1-业务目标与范围.md").write_text("old\n", encoding="utf-8")
+    (leftover / "G1-需求确认.md").write_text("old\n", encoding="utf-8")
     with pytest.raises(release_module.ReleaseError, match="旧结构目录"):
         release_module.check_release(copied)
 
@@ -896,33 +957,292 @@ def test_retired_structure_directories_are_rejected_in_platform_copies(tmp_path:
 def test_delivery_separates_deploy_status_from_real_entry():
     """T-4130：entry_url 是开发者容器地址，交付只写部署状态与真实入口，不把它当用户入口。"""
     deploy = _read("reference/部署与版本.md")
-    # T-4181：上线后自测走正式入口（作者自己的应用库、原生定时任务），不再指向走开发工作集的「预览」。
-    for fact in ("### 部署状态与入口", "生产构建直开返回 `HOST_REQUIRED`", "只有本地开发构建直开才进入 Mock", "GoalfyMax → 我的资产 → 智能应用 → 打开", "开发者中心右侧「在线试用」"):
+    # 上线不等于发布：正式入口（开发者本人也一样）要发布后才能打开；部署后、上线前用在线预览。
+    for fact in ("### 部署状态与入口", "生产构建直开返回 `HOST_REQUIRED`", "只有本地开发构建直开才进入 Mock",
+                 "GoalfyMax → 我的资产 → 智能应用 → 打开", "开发者中心右侧「在线预览」", "正式入口还打不开，开发者本人也一样"):
         assert fact in deploy, fact
     assert "直接打开只会进入 mock 模式" not in deploy
     assert "GoalfyMax → 智能应用 → 预览" not in deploy
-    delivery = _read("flow/G7-上线交付.md")
-    assert "消费者视角的 `entry_url`" not in delivery
-    assert "| 应用 | 名称、上线版本、`entry_url`" not in delivery
-    assert "不写容器地址" in delivery
-    assert "读预览入口" not in _read("flow/G6-预览验收.md")
+    launch = _read("stages/5-上线.md")
+    assert "消费者视角的 `entry_url`" not in launch
+    assert "| 应用 | 名称、上线版本、`entry_url`" not in launch
+    assert "不写容器地址" in launch
+    assert "读预览入口" not in _read("stages/4-试用验收.md")
 
 
 def test_draft_resolve_is_not_platform_blocked():
-    """T-4130（并入 T-4062）：定版前 resolve 报只有草稿是正常结果，草稿验收走在线试用，不记平台阻塞。"""
+    """T-4130（并入 T-4062）：上线前 resolve 报只有草稿是正常结果，草稿验收走在线预览，不记平台阻塞。"""
     assert "`resolve` 只认上线版本" in _read("reference/部署与版本.md")
-    g6 = _read("flow/G6-预览验收.md")
-    assert "定版前 `resolve` 报「还没有上线版本（只有草稿）」" in g6
-    assert "不记 platform_blocked，也不为拿入口去 finalize" in g6
+    acceptance = _read("stages/4-试用验收.md")
+    assert "上线前 `resolve` 报「还没有上线版本」" in acceptance
+    assert "不记 platform_blocked，也不为拿入口去 finalize" in acceptance
 
 
-def test_page_checks_go_through_developer_center_not_agent_browser():
-    """Agent 不用内置浏览器访问正式入口或登录页；看页面走开发者中心，审批拒绝不绕过。"""
-    assert "**禁止**用 Codex 内置浏览器" in _read("SKILL.md")
+def test_browser_red_line_points_to_one_local_acceptance_section():
+    """需求责任人 10-27：SKILL.md 第 0 节一条浏览器红线，只许本机版；本机版做法只写在「④ 本机版页面验收」一处，Skill 不写站点地址、不判断环境。"""
+    skill = _read("SKILL.md")
+    red_lines = skill.split("## 0. 红线", 1)[1].split("## 1.", 1)[0]
+    for fact in (
+        "**禁止**用 Codex 内置浏览器、Playwright 或任何浏览器打开 GoalfyMax 正式入口、`passport` 登录页、在线预览地址或容器地址，也不借用开发者的登录会话",
+        "在应用根用 `npm run dev:restart` 起的本机版（只访问本机地址）可以用无头浏览器照验收条目操作",
+        "「④ 本机版页面验收」",
+    ):
+        assert fact in red_lines, fact
     workspace = _read("reference/开发者中心与工作区.md")
-    for fact in ("#### 看页面只用开发者中心", "`passport` 登录页", "不借用开发者已登录的会话", "访问被工具审批拒绝时不重试", "test:e2e:layout"):
-        assert fact in workspace, fact
-    assert "在开发者中心「演示预览」里看真实渲染，桌面与移动各过一遍" not in _read("reference/前端页面.md")
+    local = workspace.split("### ④ 本机版页面验收", 1)[1].split("\n### ", 1)[0]
+    for fact in (
+        "**禁止**用 Codex 内置浏览器（含隐藏窗口）、Playwright 或任何浏览器打开 GoalfyMax 正式入口、`passport` 登录页、在线预览或演示预览的地址、容器地址",
+        "Skill 不记 GoalfyMax 站点地址", "访问被工具审批拒绝时不重试", "`npm run dev:restart` 后台起本机版",
+        "`npm run dev:status`", "`frontend/docs/dev-host-testing.md`", "`Bridge ready`", "内容区空白的截图不作证据",
+        "本机版里的结果是 Mock，不作真实授权或付款的证据", "打开过的本机路由", "`test:e2e:layout`", "`npm run dev:stop`",
+    ):
+        assert fact in local, fact
+    # 本机版的启动与浏览器做法只写在这一节，Skill 正文不写 GoalfyMax 站点地址
+    for path in SKILL_ROOT.rglob("*.md"):
+        text = path.read_text(encoding="utf-8")
+        assert "goalfyai.cn" not in text, path
+        if path.name != "开发者中心与工作区.md":
+            assert "Bridge ready" not in text and "dev:stop" not in text, path
+    for retired in ("### ④ 用浏览器验收", "#### 五步", "#### 登录后无权访问或会话失效", "#### 测不了时", "#### 预览打不开时",
+                    "launch(headless=False)", "--isolated", "登录好了", "preview-session", "| 环境 | GoalfyMax 地址 |"):
+        assert retired not in _skill_markdown(), retired
+    assert "test:e2e:layout" in workspace
+
+
+def test_online_preview_failure_reported_by_developer_rechecks_deployment():
+    """开发者说在线预览打不开：你不打开它，先核对部署、需要时重新 ship；3024 不表示下线，不上线、不下线、不先提反馈。"""
+    workspace = _read("reference/开发者中心与工作区.md")
+    section = workspace.split("### 演示预览与在线预览", 1)[1].split("#### 演示预览为空", 1)[0]
+    for fact in (
+        "开发者说在线预览只显示「Agentic APP 不存在或加载失败」", '`business_ui_manage(action="get")` 核对当前草稿有没有部署成功',
+        "在当前草稿行重新 `ship` 到 `success` 再请他重开", "`code` 3024 不表示应用被下线",
+        "**禁止**为此上线、下线或先提反馈", "`ship` 已成功仍打不开，才按平台问题 `submit_dev_feedback`",
+        "真实链路；开发者自己想看时用，你不打开",
+    ):
+        assert fact in section, fact
+    assert "「演示预览与在线预览」先核对部署" in _read("reference/报错对照.md")
+
+
+def test_untestable_page_items_are_fixed_or_marked_untested():
+    """需求责任人 10-27：页面条目一律由 AI 在本机版上测；本机版起不来先自己修，只有线上才能验证的标「未测」写原因，不请开发者代测，开发者照样可以上线。"""
+    local = _read("reference/开发者中心与工作区.md").split("### ④ 本机版页面验收", 1)[1].split("\n### ", 1)[0]
+    online_only = local.split("#### 只有线上才能验证的", 1)[1].split("\n#### ", 1)[0]
+    for fact in (
+        "| 平台登录身份 |", "| 真实宿主桥接 |", "| 到点真触发、从目录或分享打开 |", "本机版能看的部分照常测并写证据",
+        "原因写「只有线上才能验证：<依赖哪一项>」", "**禁止**请开发者在在线预览、演示预览或正式入口代测",
+        "他的口头回报不作「通过」的证据", "⑤ 上线结果单列这些条目，告诉开发者上线后可以自己看",
+    ):
+        assert fact in online_only, fact
+    broken = local.split("#### 本机版起不来时", 1)[1]
+    for fact in (
+        "你自己修", "`npx playwright install chromium`", "工程本身的问题回 ③ 修", "原因写「本机版起不来」及错误原文",
+        "结论写「未测」、证据写「无」", "开发者照常可以说「可以上线」进入 ⑤，你不追问、不因此拒绝上线",
+    ):
+        assert fact in broken, fact
+    assert "问是否同意由你运行" not in broken
+    acceptance = _read("stages/4-试用验收.md")
+    for fact in (
+        "在本机版上用无头浏览器照条目操作", "「④ 本机版页面验收」", "测不了的先修再标「未测」",
+        "原因写「只有线上才能验证：<依赖哪一项>」", "**禁止**请开发者在在线预览、演示预览或其他页面代测",
+        "开发者的口头回报不算证据", "`project_id`（页面条目写「本机版」）", "本机版能测的页面条目没测就标了「未测」",
+        "| 未测的 |", "有「未测」条目为 `partial`", "「未测」的条目不用出这道题",
+    ):
+        assert fact in acceptance, fact
+    for retired in ("我试不了", "启动浏览器", "登录好了", "身份方式不可用", "浏览器已关闭"):
+        assert retired not in acceptance, retired
+    report = _read("design/开发文档/验收报告.md")
+    assert "页面条目的 `project_id` 写「本机版」" in report and "启动浏览器" not in report
+    assert "启动浏览器" not in _read("design/开发文档/样例.md")
+
+
+def test_deploying_to_online_preview_needs_explicit_authorization():
+    """陈羽杰 10-27 对 4518 的口径：部署到开发者在线预览要明确授权，PRD 同意不能推定；还没同意时依赖已部署版本的条目记「未测」；所有宿主一致。
+    需求责任人 10-28：④ ⑤ 对未部署原因统一说「还没同意部署」。"""
+    acceptance = _read("stages/4-试用验收.md")
+    deploy = acceptance.split("### 2.1 先问部署，再部署", 1)[1].split("### 2.2", 1)[0]
+    for fact in (
+        "本机版能做的检查（2.3 的页面条目、前端检查、本地布局回归）不用部署，先做",
+        "部署到开发者在线预览不能从 PRD 的同意推定，「先试用再决定上线」也不算",
+        "在原对话问一次，照抄「是否将当前应用部署到开发者在线预览，用于试用验收？这不包含目录正式发布。」",
+        "文字或语音的明确同意都算", "不加必点按钮或表单", "之前已明确同意过的直接沿用，不重复问",
+        "部署只 `ship` 到开发者预览，不自动上线、不发布",
+        "⑤ 只上线已部署成功的草稿，没部署过就上不了线",
+        "依赖已部署版本的条目（`workspace` 真跑、开发工作集里查到的行）结论写「未测」，原因写「你还没同意部署到在线预览」，不能记成通过",
+        "所有宿主都这样做",
+    ):
+        assert fact in deploy, fact
+    assert "开发者对是否部署到在线预览的原话" in acceptance
+    assert "开发者同意部署的，最近一次部署 `status=success`；还没同意的，依赖已部署版本的条目都记了「未测」" in acceptance
+    assert "开发者还没同意部署的写「你还没同意部署到在线预览」" in acceptance
+    assert "④ 因开发者还没同意部署而没有部署过的" in _read("stages/5-上线.md")
+    assert "还没同意部署而依赖已部署版本的" in _read("checklists/验收清单.md")
+    for retired in ("暂不同意", "因开发者不同意而没有部署过的"):
+        assert retired not in _skill_markdown(), retired
+    skill = _read("SKILL.md")
+    assert "把应用部署到开发者在线预览不能从 PRD 的同意推定" in skill.split("## 0. 红线", 1)[1].split("## 1.", 1)[0]
+    assert "④ 要部署而之前没有明确的部署授权" in skill
+    assert "部署前的授权和部署照 ④ 2.1" in _studio_row("④")
+    assert "问是否部署到开发者在线预览" in _read("design/交接消息.md")
+    assert "还没部署到在线预览的应用上不了线，你回『可以上线』时我会再问一次是否部署" in acceptance
+
+
+def test_launch_only_finalizes_a_deployed_draft():
+    """O11（需求责任人 10-27）：⑤ 只上线 ④ 已部署成功的草稿；没部署过的如实说上不了线，按 ④ 2.1 原句再问一次，同意后部署、补测再上线，不同意就停。
+    需求责任人 10-28：补测有「没通过」的回 ④ 修好再测；有「好不好你说了算」的给开发者看结果、请他再说一次「可以上线」；全部通过才上线。"""
+    launch = _read("stages/5-上线.md")
+    step = launch.split("1. **只上线已部署的草稿**", 1)[1].split("\n2. ", 1)[0]
+    for fact in (
+        "⑤ 只上线 ④ 已部署成功的那份草稿",
+        "如实说「还没部署到在线预览，上不了线」，再照抄 ④ 2.1 的原句问一次是否部署",
+        "同意后按 ④ 2.1 部署到 `success`，按 ④ 2.2、2.3 补测依赖已部署版本的条目",
+        "补测有「没通过」的，回 ④ 按 2.5 修好再测",
+        "有「好不好你说了算」的，把实际结果给开发者看，请他看过后再说一次「可以上线」",
+        "补测的条目全部通过（「好不好你说了算」的以开发者再说的这一次为准）才上线",
+        "不同意就停在这里，告诉开发者这一版还没部署、所以没有上线，不调 `finalize`",
+    ):
+        assert fact in step, fact
+    assert "都有结论后再上线" not in step
+    assert "补测后请开发者再说过一次的，晚于再说的那一次" in launch
+    assert "| ④ 没部署过，开发者说「可以上线」 |" in launch
+    assert "| 部署后补测有「没通过」或「好不好你说了算」 |" in launch
+    assert "补测有没通过的我修好再测，有要你判断的我把结果给你看，请你再说一次『可以上线』" in _read("stages/4-试用验收.md")
+    for retired in ("即同意上线所需的部署", "同意上线所需的部署"):
+        assert retired not in _skill_markdown(), retired
+    skill = _read("SKILL.md")
+    assert "⑤ 只上线 ④ 已部署成功的那份草稿；④ 没部署过的，先如实说还没部署到在线预览、上不了线" in skill
+    assert "没部署成功过的草稿上不了线" in _read("reference/部署与版本.md")
+
+
+def test_skill_uses_deploy_finalize_release_terms_only():
+    """需求责任人 10-27：部署 = ship 到开发者在线预览；上线 = finalize，成为开发者自己的正式版；发布 = 开发者在发布管理页发给使用者。正本不出现「定版」等混用说法。
+    需求责任人 10-28：MCP 文字里的「定版」转述时说成「上线」；只允许 SKILL.md 三词说明里唯一一句点名这个旧称。"""
+    old_name_rule = (
+        "MCP 工具说明和返回里的「定版」「提请属主定版」「等属主定版」是上线的旧称，"
+        "转述时一律说成「上线」「提请属主上线」「等属主上线」。"
+    )
+    for path in sorted(SKILL_ROOT.rglob("*.md")):
+        text = path.read_text(encoding="utf-8")
+        if path == SKILL_ROOT / "SKILL.md":
+            assert text.count(old_name_rule) == 1
+            text = text.replace(old_name_rule, "")
+        for retired in ("定版", "上线部署", "部署上线"):
+            assert retired not in text, (path.relative_to(SKILL_ROOT).as_posix(), retired)
+    skill = _read("SKILL.md")
+    terms = next(line for line in skill.splitlines() if line.startswith("- **部署、上线、发布各指一件事**"))
+    assert old_name_rule in terms
+    assert "交接消息一律改说「上线」「提请属主上线」「等属主上线」，不出现旧称" in _read("design/交接消息.md")
+    for fact in (
+        '部署是 `business_ui_bundle(action="ship")`，把草稿放到开发者自己的在线预览，在 ④ 做，先按 ④ 2.1 问开发者同意',
+        '上线是开发者说「可以上线」后你 `business_ui_manage(action="finalize")`，在 ⑤ 做，这一版成为开发者自己的正式版，使用者仍看不到',
+        "发布是开发者在发布管理页把应用发给使用者，你不做、不请求、不等待",
+        "「这一版成为你自己的正式版，发不发布由你决定」",
+    ):
+        assert fact in terms, fact
+    launch = _read("stages/5-上线.md")
+    assert launch.count("这一版成为你自己的正式版，发不发布由你决定") >= 2
+    assert "`business_ui_manage(action=\"finalize\")`）在开发者说「可以上线」后由你做" in _read("reference/部署与版本.md")
+
+
+def test_studio_host_launch_wording_means_deploy():
+    """需求责任人 10-28：Studio 宿主下部署照 ④ 2.1 原句单独问，「可以上线」不当作同意部署。
+    工作台 530dc4ff 起宿主指令的部署、上线、发布与 Skill 同义；较早版本把部署叫上线，按部署处理。
+    脚手架 986238a：Studio 会话环境自动带文档模式，Skill 不另传 --document-mode。"""
+    skill = _read("SKILL.md")
+    terms = next(line for line in skill.splitlines() if line.startswith("- **部署、上线、发布各指一件事**"))
+    assert (
+        "Studio 宿主指令里的部署、上线、发布和这里是同一回事，部署和上线分开授权：需要部署时照 ④ 2.1 的原句单独问一次，"
+        "开发者说「可以上线」不当作同意部署。"
+    ) in terms
+    assert "Studio 宿主指令里说的「上线」指这里的部署" not in skill
+    section = _studio_section()
+    for fact in (
+        "Studio 宿主指令里的部署（把草稿放到开发者在线预览）、上线（`finalize`，成为开发者自己的正式版）、发布（开发者自己决定和操作）和 `SKILL.md` 说的是同一回事",
+        "较早版本的宿主指令把「部署到开发者在线环境」叫作上线，遇到时按部署处理",
+        "需要部署时照 ④ 2.1 的原句单独问一次（之前已明确同意过的沿用）；开发者说「可以上线」不当作同意部署",
+        "`GOALFY_SCAFFOLD_DOCUMENT_MODE=studio`",
+        "不另传 `--document-mode`",
+        "`document_mode: studio` 写进 `WORKSPACE.md`，不生成 `docs/proposal/`",
+    ):
+        assert fact in section, fact
+    start = skill.split("## 5. 开工", 1)[1].split("## 6.", 1)[0]
+    assert "Studio 宿主不另传文档模式参数（见「Studio 宿主」）" in start
+
+
+def test_page_items_pass_only_with_local_steps_and_screenshot_or_assertion():
+    """需求责任人 10-28：页面条目「通过」必须附本机版操作步骤和截图文件路径（或断言原文），报告硬门写明；判定表写清冒泡、真跑、未测、没通过。"""
+    acceptance = _read("stages/4-试用验收.md")
+    for fact in (
+        "页面条目附本机版上的操作步骤、截图文件路径（或断言原文）和打开过的本机路由，缺操作步骤、或截图文件路径和断言原文都没有的，不算通过",
+        "「④ 本机版页面验收」的「怎么判结论」",
+        "| 操作步骤、截图文件路径（或断言原文）、打开过的本机路由；",
+        "自查记录里写「冒泡无法验证真实读写」，不写「通过」",
+    ):
+        assert fact in acceptance, fact
+    gate = acceptance.split("**报告的硬门**", 1)[1].split("\n", 1)[0]
+    for fact in (
+        "页面条目结论是「通过」，却没有本机版操作步骤，或截图文件路径和断言原文都没有",
+        "有「冒泡无法验证真实读写」的行",
+    ):
+        assert fact in gate, fact
+    assert "未验证：只冒泡过" not in acceptance
+    workspace = _read("reference/开发者中心与工作区.md")
+    local = workspace.split("### ④ 本机版页面验收", 1)[1].split("\n### ", 1)[0]
+    assert "页面条目的「通过」必须附本机版操作步骤，和截图文件路径或断言原文，没有就不算通过" in local
+    table = local.split("#### 怎么判结论", 1)[1].split("\n#### ", 1)[0]
+    for fact in (
+        "| 冒泡里读库返回 `not_a_business_app_project`，或写库被 `ctx.dry_run` 跳过 | 记「冒泡无法验证真实读写」，不算通过",
+        "| `workspace` 真跑，并在开发工作集里查到了写入的行 | 通过",
+        "| 依赖真实宿主、平台登录身份，或要到点真触发 | 「未测」，写原因 | 不挡 |",
+        "| 其余业务失败：结果不对、报错、该写的行没写 | 「没通过」，按 ④ 2.5 改 | 挡",
+    ):
+        assert fact in table, fact
+    checklist = _read("checklists/验收清单.md")
+    for fact in (
+        "页面条目的「通过」附本机版操作步骤和截图文件路径（或断言原文），没有就不算通过",
+        "读写应用库的条目只有冒泡证据的记「冒泡无法验证真实读写」，`workspace` 真跑并在开发工作集查到写入的行才算通过",
+        "「④ 本机版页面验收」的「怎么判结论」",
+    ):
+        assert fact in checklist, fact
+
+
+def test_every_write_task_entry_carries_skill_version():
+    """需求责任人 10-28：main 上各处建 write 工单带 `skill_version` 的要求在五段版里补回。"""
+    same = "同样按 SKILL.md「开工」第 1 步带 `skill_version`"
+    assert f"1. 建 write 工单，{same}。" in _read("tasks/能力试用.md")
+    assert f"1. 建 read 工单；转修复时新建 write 工单并传 `continued_from_task_id`，{same}。" in _read("tasks/诊断.md")
+    assert f"1. 建 write 工单，{same}；" in _read("tasks/修订.md")
+    assert f"新建 write 工单并传 `continued_from_task_id`，{same}。" in _read("tasks/接续.md")
+    errors = _read("reference/报错对照.md")
+    assert f"新建 `mode=\"write\"` 工单并传 `continued_from_task_id`，{same}。" in errors
+    assert "**`SCENE_SKILL_VERSION_MISSING`** — 本次 create 没有填 `skill_version`（或填了 `dev`），工单**未创建**。" in errors
+    assert "建 write 工单同样带 `skill_version`" in _read("reference/多人协作.md")
+
+
+def test_stages_advance_one_by_one_without_local_only_exit():
+    """需求责任人 10-27：五段一段一段推进，交棒靠开发者确认；没有 Studio 专有的「只做本地演示、不进 ④ ⑤」路径。"""
+    skill = _read("SKILL.md")
+    assert "开发者没确认就停在当前段等，没有跳段的路径" in skill
+    body = _skill_markdown()
+    for retired in ("只做本地演示", "只要本地演示", "只要本地修改", "不进 ④ ⑤", "做到 ③ 本地检查和桌面演示为止",
+                    "未部署、未验收、未上线"):
+        assert retired not in body, retired
+
+
+def test_launch_finalizes_without_requesting_release():
+    """R-367 options E：⑤ AI 上线，报告结果与实际花费，说明发布影响；不请开发者发布、不在发布的版本上验证。"""
+    launch = _read("stages/5-上线.md")
+    for fact in (
+        "`finalize` 的时间必须晚于「可以上线」的 checkpoint",
+        "你不调用发布、不等发布，也不在发布的版本或正式实例上做验证",
+        "「发布后已安装的使用者会更新到这一版；正式入口和到点自动化在发布后才能用；发不发、发给谁由你定」",
+        "本段 N；累计 N；上限 N", "| 未测的 |", "| ④ 验过什么 |",
+        "**禁止**写「请你发布」或等开发者回「发布了」", "工单正常结单，不因为还没发布而停住",
+    ):
+        assert fact in launch, fact
+    for retired in ("在正式版里真跑一次", "**不传** `business_ui_data_space`", "run_once", "我试不了"):
+        assert retired not in launch, retired
+    skill = _read("SKILL.md")
+    assert "**禁止**请开发者发布、等发布或在发布的版本上做验证" in skill
 
 
 def test_stage_name_describes_concrete_business_step():
@@ -938,11 +1258,12 @@ def test_stage_name_describes_concrete_business_step():
 
 
 def test_online_preview_needs_deployed_draft_not_finalize():
-    """在线试用只要草稿部署成功；需要上线的操作列在同一张表里，上线不是发布。"""
+    """在线预览只要草稿部署成功；需要上线、发布的操作列在同一张表里，上线不是发布。"""
     deploy = _read("reference/部署与版本.md")
     assert "### 哪些用草稿就行，哪些要先上线" in deploy
     assert "不为打开它去 finalize" in deploy
-    for path in ("reference/开发者中心与工作区.md", "flow/G6-预览验收.md"):
+    assert "| 开发者本人从「我的资产」进正式入口、在自动化面板开真实到点规则 | | ✓ | ✓ |" in deploy
+    for path in ("reference/开发者中心与工作区.md", "stages/4-试用验收.md"):
         text = _read(path)
         assert "`PREVIEW_NOT_READY` 记为阻塞" not in text, path
         assert "记为阻塞处理" not in text, path
@@ -957,13 +1278,12 @@ def test_long_text_tool_output_declares_single_string_field():
 
 
 def test_no_waiting_on_developer_after_confirmation():
-    """确认页确认后一路做到在线试用可用；制作中的测试费用已在确认页同意，不再逐次等开发者。"""
+    """判断题答完后一路做到 ④ 交报告；制作中的测试费用已在 PRD 同意，不再逐次等开发者。"""
     skill = _read("SKILL.md")
-    assert "中间不设等开发者的环节" in skill
-    assert "先向开发者说明费用并取得同意" not in _read("flow/G4-能力制作.md")
-    confirm = _read("design/确认页.md")
-    assert "制作中的测试：冒泡与真跑约" in confirm
-    assert "部署预览前要先把场景包上线" not in confirm
+    assert "② 的判断题答完后，一路做到 ④ 交出验收报告" in skill
+    assert "开发者确认 PRD 即视为同意" in skill
+    assert "先向开发者说明费用并取得同意" not in _read("stages/3-制作.md")
+    assert "部署预览前要先把场景包上线" not in _read("design/PRD.md")
 
 
 def test_confirmed_interface_beats_preset_look():
@@ -981,14 +1301,14 @@ def test_confirmed_interface_beats_preset_look():
         "**禁止**保留对参考站接口、脚本或 CDN 的引用",
     ):
         assert fact in pages, fact
-    g1 = _read("flow/G1-需求确认.md")
-    assert "**主动问界面**" in g1 and "**必须**在写确认页前主动问一次" in g1
-    confirm = _read("design/确认页.md")
-    assert "**界面**（必填；来自 G1 第 2 步主动问的回答）" in confirm
-    assert "开发者不指定，按《前端页面》界面风格自定" in confirm
-    assert "页面的**最高依据**，高于脚手架预置件和默认外观" in confirm
-    assert "按确认过的界面写业务页" in _read("flow/G5-数据与应用.md")
-    assert "14. 页面样子与确认页「界面」一致" in _read("checklists/验收清单.md")
+    requirement = _read("stages/1-需求确认.md")
+    assert "界面三问（参考、第一眼看到什么、整体感觉）" in requirement
+    assert "发之前核对界面三问都有答案" in requirement
+    prd = _read("design/PRD.md")
+    assert "开发者不指定，按《前端页面》界面风格自定" in prd
+    assert "页面的**最高依据**，高于脚手架" in prd
+    assert "**按 PRD「界面」写业务页**" in _read("stages/3-制作.md")
+    assert "16. 页面样子与 PRD「界面」一致" in _read("checklists/验收清单.md")
 
 def test_route_reads_and_writes_app_db_through_the_dataset_tool():
     """应用库读写走数据集工具：db() 唯一定义在《编排脚本》，读失败按空、写失败 blocked；业务 FA 建时挂工具只读；数据集 FA 只留存量。"""
@@ -1008,7 +1328,8 @@ def test_route_reads_and_writes_app_db_through_the_dataset_tool():
     assert "except Exception as exc" in db_block and 'body.get("results") or []' in db_block
     assert "not_a_business_app_project" in script and "冒泡无法验证真实读写" not in script
     assert "写库包在 `if not ctx.dry_run:` 里" in script and "**跳过不是删除**" in script
-    assert script.count("if not ctx.dry_run:  # 冒泡跳过写库，真跑照常写") == 2
+    # 三种模板（拉数落库、查库判读写回、生成写库）都写应用库，各有一处写库包在 dry_run 判断里
+    assert script.count("if not ctx.dry_run:  # 冒泡跳过写库，真跑照常写") == 3
     template = _read("reference/数据模板.md")
     for fact in (
         "GOALFYAI_TOOL_query_business_app_dataset",
@@ -1020,15 +1341,19 @@ def test_route_reads_and_writes_app_db_through_the_dataset_tool():
     ):
         assert fact in template, fact
     assert "async def db(" not in template
-    assert "开发者本人的正式实例" in template and "写库语句包在 `if not ctx.dry_run:` 里" in _read("flow/G4-能力制作.md")
-    assert "现在就读 [../reference/数据模板.md]" in _read("flow/G3-方案编译.md")
-    g4 = _read("flow/G4-能力制作.md")
-    assert "建 FA 时就按" in g4 and "把工具组「query_business_app_dataset」也装进来" in g4
-    assert "不管施工单怎么写" in g4 and "任一项不满足先改，禁止 preview / create" in g4
+    making = _read("stages/3-制作.md")
+    assert "开发者本人的正式实例" in template and "写库包在 `if not ctx.dry_run:` 里" in making
+    plan = _read("stages/2-方案.md")
+    assert "现在就读 [../reference/数据模板.md]" in plan
+    assert "建 FA 时就按" in making and "把工具组「query_business_app_dataset」也装进来" in making
+    assert "不管施工单怎么写" in making and "任一项不满足先改，禁止 preview / create" in making
     for field in ("`materials_text`", "`records`", "`customer_profile`", "`query_db`", "`sql_literal`"):
-        assert field in g4, field
+        assert field in making, field
     assert "**禁止**自写 `sql_literal()`" in template and "读出来交给 FA 总结、判断是允许的" in template
-    assert "禁止**改成入口传全部素材或规则预填" in _read("flow/G3-方案编译.md")
+    assert "禁止**改成入口传全部素材或规则预填" in plan
+    # R-367 options H：② 的「入口字段放哪」细表移到《数据模板》，段文件只链接
+    assert "### 入口字段放哪" in template and "**禁止**同一个值既放入口又读库" in template
+    assert "「入口字段放哪」" in plan and "| 这个值 | 放哪 |" not in plan
     assert "json 是脚本环境内置的" in script and "**禁止**补 `import json`" in script
     assert "冒泡时跳过、不报「未入库」" in script and "冒泡时跳过（见" in template
     assert "### 读长期数据集（不是智能应用的应用库）" in script
@@ -1045,37 +1370,32 @@ def test_delivery_review_reply_only_action_key():
     assert "DELIVERY_REVIEW_REPLY_INVALID" in _read("reference/报错对照.md")
 
 
-def test_online_tab_names_follow_the_host_contract():
-    """Studio 使用在线预览；普通宿主仍使用在线试用。"""
-    studio_files = {"reference/开发者中心与工作区.md", "flow/G7-上线交付.md"}
-    for path in SKILL_ROOT.rglob("*"):
+def test_online_tab_named_zaixian_yulan():
+    """工作台右栏分页名是「在线预览」，Skill 不再出现「在线试用」「在线使用」等叫法。"""
+    root = Path(__file__).resolve().parents[1] / "skills" / "business-app-creator"
+    for path in root.rglob("*"):
         if path.suffix in (".md", ".yaml") and path.is_file():
             text = path.read_text(encoding="utf-8")
-            assert "在线使用" not in text, path
-            for line in text.splitlines():
-                if "在线预览" in line:
-                    assert path.relative_to(SKILL_ROOT).as_posix() in studio_files, path
-                    assert "Studio" in line, path
-    assert "在线试用" in _read("flow/G6-预览验收.md")
+            assert "在线试用" not in text and "在线使用" not in text, path
 
 
 def test_app_db_routes_prove_with_workspace_real_run():
-    """读写应用库的路线：G4 不为冒泡改脚本，G6 带 workspace 真跑并用 verify(project_id) 作证据，不为真跑 finalize。"""
-    g4 = _read("flow/G4-能力制作.md")
-    assert "G4 不要求路线冒泡作证据" in g4 and "`verify(tpe_id, project_id)` 补" in g4
-    assert "**不要**为了让冒泡通过把读库包进 `dry_run`" in g4 and "`fallback_*`" in g4
-    g6 = _read("flow/G6-预览验收.md")
-    assert 'business_ui_data_space="workspace"' in g6
-    assert 'otpe_manage(action="verify", task_id, tpe_id, project_id)' in g6
-    assert "先 `business_ui_manage(action=\"finalize\")` 上线再跑" not in g6
-    assert "不要为真跑去 finalize" in g6 and "不能用在线试用人工验收、冒泡或结单门豁免代替" in g6
-    assert "BUSINESS_UI_NOT_DEPLOYED" in g6 and "BUSINESS_UI_NOT_DEPLOYED" in _read("reference/报错对照.md")
-    # 出口要接上 G4「passed 由 G6 真跑补上」；残留的「核对上线版本 / 先定版自测」会把 Agent 引去定版
-    assert "每条 TPE 最近一次 `verify(tpe_id, project_id)` 为 `passed`" in g6
-    assert "按第 3 步核对上线版本" not in g6
+    """读写应用库的路线：③ 不为冒泡改脚本，④ 带 workspace 真跑并用 verify(project_id) 作证据，不为真跑 finalize。"""
+    making = _read("stages/3-制作.md")
+    assert "`passed` 由 ④ 真跑补上" in making
+    assert "**不要**为了让冒泡通过把读库包进 `dry_run`" in making and "`fallback_*`" in making
+    acceptance = _read("stages/4-试用验收.md")
+    assert 'business_ui_data_space="workspace"' in acceptance
+    assert 'otpe_manage(action="verify", task_id, tpe_id, project_id)' in acceptance
+    assert "先 `business_ui_manage(action=\"finalize\")` 上线再跑" not in acceptance
+    assert "不要为真跑去 finalize" in acceptance and "读写应用库的路线不能用冒泡或结单门豁免代替这一步" in acceptance
+    assert "BUSINESS_UI_NOT_DEPLOYED" in acceptance and "BUSINESS_UI_NOT_DEPLOYED" in _read("reference/报错对照.md")
+    # 出口要接上 ③「passed 由 ④ 真跑补上」；残留的「核对上线版本 / 先上线自测」会把 Agent 引去 finalize
+    assert "每条 TPE 最近一次 `verify(tpe_id, project_id)` 为 `passed`" in acceptance
+    assert "按第 3 步核对上线版本" not in acceptance
     deploy = _read("reference/部署与版本.md")
     assert "按 G6 第 3 步先定版自测" not in deploy and "首版先 finalize" not in deploy
-    assert "读写正式实例的真跑和 `run_once` 要先定版" in deploy
+    assert "`run_once` 要先上线，读写正式实例的真跑要先上线并发布，制作和验收都不用它们" in deploy
 
 
 def test_dev_feedback_reports_by_blocking():
@@ -1083,12 +1403,12 @@ def test_dev_feedback_reports_by_blocking():
     skill = _read("SKILL.md")
     assert "平台问题按阻塞程度报" in skill and "已经绕过去的也照提" not in skill
     assert 'blocking="blocked"' in skill and "`attribution`" in skill
-    assert "交付或本次会话结束时汇总成一条" in skill and "先 `query_dev_feedback` 查本人未关闭的反馈" in skill
+    assert "⑤ 上线或本次会话结束时汇总成一条提交" in skill and "先 `query_dev_feedback` 查本人未关闭的反馈" in skill
     assert "应用自己的脚本、页面、数据格式、提示词问题自己改，不提交" in skill
     errors = _read("reference/报错对照.md")
     assert "`platform_defect`" in errors and "`skill_mismatch`" in errors and "`environment`" in errors
-    assert "汇总成一条 `submit_dev_feedback`" in _read("flow/G7-上线交付.md")
-    assert "绕过后继续" not in _read("flow/G6-预览验收.md")
+    assert "汇总成一条 `submit_dev_feedback`" in _read("stages/5-上线.md")
+    assert "绕过后继续" not in _read("stages/4-试用验收.md")
 
 
 def test_shell_success_is_judged_by_exit_code_of_whole_pipeline():
@@ -1099,56 +1419,130 @@ def test_shell_success_is_judged_by_exit_code_of_whole_pipeline():
     assert "共用一个会话" in script and "只写在子 shell 的括号里" in script
 
 
-# Studio 只保留必要行为边界；这些是文档回归检查，不是 Agent 行为评测。
-def _studio_note(relative: str) -> str:
-    return "\n".join(line for line in _read(relative).splitlines() if line.startswith(">"))
-
-
-def test_studio_current_confirmation_precedes_engineering():
-    note = _studio_note("flow/G1-需求确认.md")
-    assert "studio_write_proposal" in note and "acceptance.json" in note
-    assert "确认前不初始化业务工程或创建业务资产" in note
-    assert "studio_read_creation" in note and "当前方案已获原生确认" in note
-    assert "方案内容变化后重新确认" in note
-    assert "不用历史确认或普通聊天回复替代" in note
-    assert "不自行增加确认步骤" in note
-
-
-def test_studio_local_acceptance_does_not_require_remote_deployment():
-    note = _studio_note("flow/G6-预览验收.md")
-    assert "仅本地演示" in note and "无需上传或部署" in note
-    assert "出口仅适用于远端验收" in note
-    assert "本地验收不能写成线上验收通过" in note
-    assert "机器结果与开发者亲自操作分开记录" in note
-    assert not re.search(r"\b(?:business_ui_bundle|business_ui_manage)\s*\(", note)
-    revision = _studio_note("tasks/修订.md")
-    assert "仅交付本地修改时不进入 G7" in revision
-
-
-def test_studio_publication_uses_current_consent_and_existing_tools():
-    entry = _read("SKILL.md")
-    assert "制作确认不等于上线授权" in entry
-    assert "开发者对本次范围的明确同意" in entry and "已有同意不重复询问" in entry
-    note = _studio_note("flow/G7-上线交付.md")
-    assert "当前实际提供的 MCP 能力" in note and "不编造接口" in note
-    assert "写入结果未知时只查询原操作，不重新发起写入" in note
-    assert "不宣称该项交付完成" in note
-    assert 'business_ui_manage(action="finalize"' in _read("flow/G7-上线交付.md")
-
-
-def test_ordinary_host_keeps_author_self_test_and_manual_publication():
-    assert "作者不需要发布" in _read("reference/开发者中心与工作区.md")
-    assert "不必发布到目录" in _read("checklists/验收清单.md")
-    assert "只把这一版变成开发者自己的正式自测版" in _read("reference/部署与版本.md")
-    assert "目录发布由开发者自己在发布管理页操作" in _read("flow/G7-上线交付.md")
-    assert "改完不用再问一遍，直接做" in _read("design/确认页.md")
-    assert 'business_ui_data_space="workspace"' in _read("flow/G6-预览验收.md")
-
-
-def test_studio_uses_desktop_preview_and_preserves_business_scope():
+# Studio 只管文档的保存、显示与确认，五段规则不变（需求责任人 10-27 定）；这些是文档回归检查，不是 Agent 行为评测。
+def _studio_section() -> str:
     workspace = _read("reference/开发者中心与工作区.md")
-    assert "演示预览由桌面入口管理" in workspace
-    assert "不另起后台服务或生成旧完成版" in workspace
-    compilation = _studio_note("flow/G3-方案编译.md")
-    assert "不为纯数据管理应用虚构额外业务流程" in compilation
-    assert "不自行增减验收范围" in compilation
+    return workspace.split("### Studio 宿主", 1)[1].split("\n## ", 1)[0]
+
+
+def _studio_row(stage: str) -> str:
+    return next(line for line in _studio_section().splitlines() if line.startswith(f"| {stage} |"))
+
+
+def _skill_markdown() -> str:
+    return "\n".join(path.read_text(encoding="utf-8") for path in sorted(SKILL_ROOT.rglob("*.md")))
+
+
+def test_studio_only_governs_saving_display_and_confirmation():
+    section = _studio_section()
+    assert "Studio 只管文档怎么保存、显示和确认" in section
+    assert "都按 `SKILL.md` 和 `stages/` 执行，和其他宿主相同" in section
+    assert "`studio_write_proposal`" in section and "`studio_read_creation`" in section
+    skill = _read("SKILL.md")
+    assert "**Studio 宿主只管保存与显示**" in skill and "「Studio 宿主」" in skill
+    assert "## Studio 适用方式" not in skill
+    # 正文没有 flow/ 的 Studio 旁注，规则只写成五段的最终写法
+    assert not any(line.startswith("> **Studio**") for line in _skill_markdown().splitlines())
+
+
+def test_studio_confirms_prd_in_stage_one_and_plan_in_stage_two():
+    """决定 1：① 的确认对象是 PRD、② 的确认对象是方案；Studio 四份文档按 documentType 保存，聊天里的明确同意经登记后算确认。"""
+    prd_row, plan_row = _studio_row("①"), _studio_row("②")
+    assert "确认对象是 PRD" in prd_row and 'documentType="prd"' in prd_row
+    assert "`studio_confirm_proposal`" in prd_row and "才算「确认这一版」" in prd_row
+    assert "不建业务资产、不写业务代码（开工时初始化工程不算）" in prd_row
+    assert "确认对象是方案" in plan_row and "判断题都答「对」后" in plan_row and "`acceptance.json`" in plan_row
+    assert 'documentType="proposal"' in plan_row
+    assert "方案" not in prd_row
+    section = _studio_section()
+    assert "开发者对当前这一版的明确同意才算" in section and "新版不继承旧版的确认" in section
+    assert "以宿主返回的当前确认状态为准，不自行增加确认步骤" in section
+    assert "不展示内部核对字段" in section
+    assert "PRD 和方案的确认都不是上线授权" in section
+    assert "**禁止**提前写后面段的文档" in section
+    stage_one = _read("stages/1-需求确认.md")
+    assert "Studio 宿主：这一段只写 PRD 一份开发文档" in stage_one
+    assert "读到确认之前不建业务资产、不写业务代码" in stage_one
+    assert "Studio 宿主读到了当前这一版 PRD 的确认" in stage_one.split("## 6. 交棒条件", 1)[1]
+    stage_two = _read("stages/2-方案.md")
+    assert "Studio 宿主：这一段写方案一份开发文档" in stage_two
+    assert "Studio 宿主读到了当前这一版方案的确认" in stage_two.split("## 6. 交棒条件", 1)[1]
+    assert "确认前不初始化业务工程" not in _skill_markdown()
+
+
+def test_studio_launch_finalizes_without_catalog_publication():
+    """决定 2：Studio 下 ⑤ 也只上线并报告，发布由开发者在发布管理页决定。"""
+    launch = _read("stages/5-上线.md")
+    assert "**Studio 宿主**同样照第 1–10 步" in launch
+    assert "**不**调用目录发布、不请求发布、不在发布的版本上真跑，发布由开发者在发布管理页决定" in launch
+    assert "写入结果未知时只查询原操作，不重新发起写入" in launch
+    assert "你不发布、不请求发布、不在发布的版本上真跑" in _studio_row("⑤")
+    assert "Studio 宿主也一样，不做目录发布" in _read("reference/部署与版本.md")
+    assert "⑤ 你只上线，不做目录发布" in _read("SKILL.md")
+    body = _skill_markdown()
+    for retired in ("目录发布使用", "当前实际提供的 MCP 能力", "分别报告定版、目录发布和正式运行"):
+        assert retired not in body, retired
+
+
+def test_studio_acceptance_uses_local_version_and_workspace():
+    """需求责任人 10-27：Studio 下 ④ 和其他宿主一样，页面条目在本机版上用无头浏览器验，业务结果在开发工作集里验；开发者看过的本地演示和已发布版本都不作证据。"""
+    row = _studio_row("④")
+    assert "页面条目同样由你在本机版上用无头浏览器验" in row
+    assert "桌面入口已在跑当前工程的开发服务时直接用它，不另起、不停掉" in row
+    assert "业务结果在开发工作集里验，不用已发布的版本" in row
+    assert "开发者在 Studio 本地演示里看的，不作验收证据" in row
+    assert "/preview" not in row
+    acceptance = _read("stages/4-试用验收.md")
+    assert "**Studio 宿主同样在本机版和开发工作集里验收**" in acceptance
+    assert "开发者看过的 Studio 本地演示、已发布的版本都不作验收证据" in acceptance
+    assert "④ 的部署授权和本机版页面验收与其他宿主相同" in _read("SKILL.md")
+    body = _skill_markdown()
+    for retired in ("在线预览展示已发布正式版本", "只展示已发布版本", "本地验收"):
+        assert retired not in body, retired
+
+
+def test_studio_restricted_checks_only_supplement_local_acceptance():
+    """决定 4：浏览器规则只在「④ 本机版页面验收」；宿主受限检查是补充，机器结果与 AI 在本机版上的操作分开记录。"""
+    row = _studio_row("④")
+    assert "宿主提供的受限检查能力可以作为补充" in row
+    assert "机器结果和你在本机版上的操作分开记录" in row
+    assert "不能代替上面「④ 本机版页面验收」" in row
+    assert "机器结果和你在本机版上的操作分开记录，不能代替页面条目的本机版操作" in _read("stages/4-试用验收.md")
+    body = _skill_markdown()
+    for retired in ("不放开通用浏览器禁令", "开发者亲自操作"):
+        assert retired not in body, retired
+
+
+def test_studio_desktop_demo_scope_without_local_only_exit():
+    """与五段不冲突的 Studio 规则：桌面演示、验收范围一致、不虚构流程；不再有「只做本地演示、不进 ④ ⑤」的出口，④ ⑤ 每次都做。"""
+    making = _studio_row("③")
+    assert "演示由桌面入口管理当前工程的开发服务" in making
+    assert "不另起后台服务、不生成完成版" in making
+    assert "`studio.acceptance.json` 与方案 `acceptance.json` 的验收范围一致" in making and "不自行增减条目" in making
+    assert "不为纯数据管理应用虚构额外业务流程" in _read("stages/2-方案.md")
+    assert "Studio 宿主不起后台服务、不生成完成版" in _read("stages/3-制作.md")
+    section = _studio_section()
+    assert "不部署、不进 ④ ⑤" not in section and "只做本地演示" not in section
+    assert "不回写已确认的 PRD 和方案" in section
+    assert "写入结果未知" in section and "只查询原操作的结果，不重新发起写入" in section
+    revision = _read("tasks/修订.md")
+    assert "不进 ④ ⑤" not in revision and "只要本地修改" not in revision
+    assert "要上线的修订，④ 和 ⑤ 每次都要做" in revision and "④ ⑤ 照上面每次都做" in revision
+    assert "开发者这次只要本地演示" not in _read("stages/4-试用验收.md")
+
+
+def test_publish_dependent_items_are_untested_with_reason():
+    """需求责任人 10-27：取消「发布后才能看到」，到点真触发、从目录或分享打开记「未测」并写原因，⑤ 单列。"""
+    assert "发布后才能看到" not in _skill_markdown()
+    acceptance = _read("stages/4-试用验收.md")
+    assert "`business_ui_automation(bubble)`" in acceptance and "冒泡只验处理逻辑" in acceptance
+    assert "「到点真触发」另列一条记「未测」，原因写「到点触发要等真实时间，且要发布后在正式入口开规则」" in acceptance
+    assert "| 使用者从目录或分享打开 | 不测，记「未测」，原因写「从目录或分享打开要先发布」 |" in acceptance
+    assert "一共几条：通过几条、未测几条；" in acceptance
+    assert "结论（通过 / 没通过 / 好不好你说了算 / 未测）" in acceptance
+    assert "以「要先发布」为由标了「未测」" in acceptance
+    launch = _read("stages/5-上线.md")
+    assert "因为要先发布才看得到而未测的（到点真触发、从目录或分享打开），告诉开发者发布后可以自己看、怎么看" in launch
+    assert "到点真触发记「未测」" in _read("checklists/验收清单.md")
+    assert "④ 记「未测」并写原因，⑤ 单列并告诉开发者发布后自己怎么看" in _read("SKILL.md")
+    assert "④ 把「到点真触发」记「未测」" in _read("reference/自动化.md")
