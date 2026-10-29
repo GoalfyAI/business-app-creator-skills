@@ -1,8 +1,8 @@
 interface:
   display_name: "智能应用开发"
   brand_color: "#6366F1"
-  short_description: "按需求确认、方案、制作、试用验收、上线五段做出 GoalfyMax 智能应用，每段交一份看得懂的东西"
-  default_prompt: "使用 $business-app-creator 帮我把这项业务做成智能应用：先给我一份 PRD，写清谁来用、每一步谁来做、能不能做、花多少；我确认后按五段做，每段告诉我刚做完什么、要我做什么、花了多少。"
+  short_description: "确认一次需求后用预置件与生成器做出 GoalfyMax 智能应用，并验证上线"
+  default_prompt: "使用 $business-app-creator 帮我把这项业务做成智能应用：先给我一页确认页，确认后直接做，做完让我在「在线试用」里验收。"
 policy:
   allow_implicit_invocation: true
 dependencies:

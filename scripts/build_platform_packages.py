@@ -34,11 +34,11 @@ MANIFEST_RELATIVE_PATH = Path("skill-release.json")
 OPENAI_METADATA_RELATIVE_PATH = Path("agents/openai.yaml")
 # 各平台的安装形态不同：插件市场平台把 Skill 放进 skills/ 子目录，
 # Manus 上传 skill 包，通用集成直接摊在目录根。Skill 内容本身四份完全一致。
-# Skill 内容目录（只放 .md）：stages 五段主流程、tasks 非新建任务入口、design 沟通模板、
-# reference 按需查阅的正本、checklists 人判验收项。发布包按这个清单收文件。
-SKILL_CONTENT_MD_DIRS = ("stages", "tasks", "design", "reference", "checklists")
-# 旧结构的目录（含七节点版的 flow），同步平台副本时一并清掉，避免已删除的旧文件残留在安装包里。
-RETIRED_SKILL_DIRS = ("references", "flow", "modules", "protocols")
+# Skill 内容目录（只放 .md）：flow 七个按需选用的流程、tasks 非新建任务入口、design 沟通模板、
+# reference 按需查阅的正本、checklists 人判验收项。发布包按这个清单收文件。 [任务:T-3724]
+SKILL_CONTENT_MD_DIRS = ("flow", "tasks", "design", "reference", "checklists")
+# 旧七阶段结构的目录，同步平台副本时一并清掉，避免已删除的旧文件残留在安装包里。
+RETIRED_SKILL_DIRS = ("references", "stages", "modules", "protocols")
 PLATFORM_LAYOUTS = {
     "claude-code": {
         "skill_subdir": "skills/business-app-creator",
@@ -429,31 +429,31 @@ def validate_platform_install_files(skill_root: Path) -> None:
 # 各类文件的固定骨架：同事往框架里补内容时照这个填，发布检查逐文件核对二级标题的名称与顺序。
 # 标题写成「## 1. 进入条件」或「## 适用场景」都可以，编号不参与比较。 [任务:T-3724]
 FILE_SKELETONS: dict[str, tuple[str, ...]] = {
+    "flow": ("进入条件", "做什么", "产出与落盘", "给开发者看什么", "出口", "出问题怎么办"),
     "reference": ("适用场景", "规则", "常见错误", "相关工具与契约主题"),
     "tasks": ("识别信号", "先读什么", "从哪一段进"),
 }
-# 五段文件各段要交给开发者的东西不同，中间的小节可以不一样；这几节必须有，且按这个顺序出现。
-STAGE_REQUIRED_HEADINGS = ("进入条件", "段里怎么做", "产出与落盘", "出问题怎么办")
 # 体积预算（行数）：超了就把细节拆进 reference，不往入口和主流程里塞。
-# 一段可能合了原来两个节点（① = G1+G2，③ = G4+G5），预算比原来单个节点的 150 行略宽。
-LINE_BUDGETS: dict[str, int] = {"SKILL.md": 200, "stages": 160, "reference": 400}
-STAGE_FILES = (
-    "1-需求确认.md",
-    "2-方案.md",
-    "3-制作.md",
-    "4-试用验收.md",
-    "5-上线.md",
+LINE_BUDGETS: dict[str, int] = {"SKILL.md": 200, "flow": 150, "reference": 400}
+FLOW_STAGE_FILES = (
+    "G1-需求确认.md",
+    "G2-核实资产.md",
+    "G3-方案编译.md",
+    "G4-能力制作.md",
+    "G5-数据与应用.md",
+    "G6-预览验收.md",
+    "G7-上线交付.md",
 )
 _SECTION_HEADING_RE = re.compile(r"^##\s+(?:\d+\.\s*)?(.+?)\s*$")
 
 
 def validate_skill_layout(skill_root: Path) -> None:
-    """校验框架骨架：五段主流程文件齐全、各类文件二级标题符合固定写法、行数不超预算。"""
+    """校验框架骨架：七段主流程文件齐全、各类文件二级标题符合固定写法、行数不超预算。"""
     skill_root = skill_root.resolve()
     errors = []
-    stage_files = sorted(path.name for path in (skill_root / "stages").glob("*.md"))
-    if stage_files != sorted(STAGE_FILES):
-        errors.append(f"stages/ 必须正好是五段文件 {list(STAGE_FILES)}，当前 {stage_files}")
+    flow_files = sorted(path.name for path in (skill_root / "flow").glob("*.md"))
+    if flow_files != sorted(FLOW_STAGE_FILES):
+        errors.append(f"flow/ 必须正好是七段文件 {list(FLOW_STAGE_FILES)}，当前 {flow_files}")
     for path in discover_source_files(skill_root):
         relative = PurePosixPath(_relative(path, skill_root))
         if relative.suffix != ".md":
@@ -463,9 +463,8 @@ def validate_skill_layout(skill_root: Path) -> None:
         budget = LINE_BUDGETS.get(budget_key)
         if budget is not None and len(lines) > budget:
             errors.append(f"{relative} 有 {len(lines)} 行，超过 {budget} 行预算")
-        is_stage = len(relative.parts) > 1 and relative.parts[0] == "stages"
         skeleton = FILE_SKELETONS.get(relative.parts[0]) if len(relative.parts) > 1 else None
-        if skeleton is None and not is_stage:
+        if skeleton is None:
             continue
         in_code = False
         headings = []
@@ -476,11 +475,6 @@ def validate_skill_layout(skill_root: Path) -> None:
             match = None if in_code else _SECTION_HEADING_RE.match(line)
             if match:
                 headings.append(match.group(1))
-        if is_stage:
-            required = [heading for heading in headings if heading in STAGE_REQUIRED_HEADINGS]
-            if tuple(required) != STAGE_REQUIRED_HEADINGS:
-                errors.append(f"{relative} 的二级标题必须按顺序包含 {list(STAGE_REQUIRED_HEADINGS)}，当前 {headings}")
-            continue
         if tuple(headings) != skeleton:
             errors.append(f"{relative} 的二级标题必须依次为 {list(skeleton)}，当前 {headings}")
     if errors:

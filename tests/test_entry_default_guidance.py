@@ -32,7 +32,7 @@ def test_entry_mapping_forbids_direct_default(form_guidance):
     """入口映射遵循当前字段合同，不再指导提交未知的 default 字段。"""
     assert "`source/node_id/path/transform`" in form_guidance
     assert "来源只能是 `formdata`" in form_guidance
-    assert "默认值不直接写成 `default` 字段，按下一条用变换声明" in form_guidance
+    assert "**禁止**在映射规则里直接写 `default` 字段" in form_guidance
     assert "入口映射里需要默认值的字段用映射的 `default` 声明" not in form_guidance
 
 

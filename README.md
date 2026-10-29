@@ -41,7 +41,7 @@ Agent 会创建只读工单，逐层检查提示词、工具契约、编排配�
 ## 这个仓库包含什么
 
 ```
-skills/         business-app-creator/ 是唯一源：入口、五段制作流程、任务路由与按需参考
+skills/         business-app-creator/ 是唯一源：入口、七个制作 flow、任务路由与按需参考
 claude-code/    Claude Code 插件目录：安装文档 + Skill 副本
 codex/          Codex 插件目录：安装文档 + Skill 副本
 manus/          Manus 集成说明 + 可上传的 Skill 压缩包
