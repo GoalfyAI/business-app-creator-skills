@@ -158,5 +158,12 @@ def test_start_environment_and_push_before_closing(read_skill):
     assert "`workspace_push` 成功" in launch.split("## 5. 交棒条件", 1)[1]
     workspace = read_skill("reference/开发者中心与工作区.md")
     line = next(l for l in workspace.splitlines() if l.startswith("- `workspace_push` 是整份覆盖"))
-    for name in ("`app.json`", "`WORKSPACE.md`", "`workspace.json`", "`docs/`", ".md", ".html", ".css", ".js", ".svg"):
+    # 评测 10-29：全量内联太大会写坏参数，清单收窄到换机要用的文件；失败重试一次，仍失败不结单
+    for name in ("`app.json`", "`WORKSPACE.md`", "`workspace.json`", "`docs/stages/`", "`docs/proposal/index.html`", "`docs/proposal/history/`"):
         assert name in line, name
+    failed = next(l for l in workspace.splitlines() if l.startswith("- 保存失败"))
+    for fact in ("改好后再传一次", "第二次还失败的，不写 G7、不结单", "不能因为文件多或内容长而跳过这一步"):
+        assert fact in failed, fact
+    assert "没拿到成功回执不往下写 G7、不结单" in closing
+    assert "只在本地标记不算" in read_skill("stages/2-方案.md").split("## 5. 交棒条件", 1)[1]
+    assert "不用单独上线场景包、上线应用或发布来排查" in read_skill("stages/4-试用验收.md")
