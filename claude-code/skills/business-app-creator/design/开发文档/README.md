@@ -21,7 +21,7 @@
 3. 页面只用来读：不放按钮、输入框、表单和「确认这一版」之类的入口，也不写请开发者去在线预览、演示预览或正式入口里点、试、查的话（不请开发者代测见 [../../SKILL.md](../../SKILL.md)「红线」）。
 4. 写文档前的澄清题不放进页面：在聊天里用表单问（[../../reference/Studio表单与卡片.md](../../reference/Studio表单与卡片.md)），答过的写进文档对应位置。
 5. 按检查清单逐条自查，P0 全部满足才交；自查结果写进当段阶段文档，不发给开发者。
-6. 调 `studio_write_proposal`：`documentType` 按上表，`version` 写 `<documentType>-<版本号>`（例如 `prd-2`、`progress-7`），`files` 放 `index.html`，方案加 `acceptance.json`。保存成功只代表存好了，不代表开发者已确认。
+6. 调 `studio_write_proposal`：`documentType` 按上表，`version` 写 `<documentType>-<版本号>`（例如 `prd-2`、`progress-7`），`files` 放 `index.html`，方案加 `acceptance.json`，验收报告加引用的截图（[验收报告.md](验收报告.md)「截图证据」）。保存成功只代表存好了，不代表开发者已确认。
 7. 同时发交接消息（[../交接消息.md](../交接消息.md)）：说文档在「开发文档」里、这一版改了什么，不把文档全文贴进聊天。
 
 更新时用 `studio_read_creation` 按 `documentType` 读上一版，在它的 `index.html` 上只改变化的部分，`version` 的版本号加一；只更新当段这一份，不顺带重写另外三份，也不回写已确认的 PRD 和方案。

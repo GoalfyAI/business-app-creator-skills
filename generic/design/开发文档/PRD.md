@@ -87,7 +87,7 @@
 </tbody></table></details>
 <div class="decision"><span>○</span><div><strong>【填：要你提供的东西】</strong>【填：用在哪一步、缺了影响什么】</div></div><!-- 重复；没有就删掉 -->
 <details><summary>按默认补上的选择</summary><p>【填：哪些按推荐定下；没有写「没有，都由你答过」】</p></details>
-<div class="prdfoot"><strong>这份需求，和你想的一致吗？</strong><p>在聊天里回「确认这一版」，或直接说哪一块、哪里要改。</p></div>
+<div class="prdfoot"><strong>怎么确认这份需求</strong><p>在聊天里回「确认这一版」，或直接说哪一块、哪里要改。确认之后这一页不再改动，是否已确认以 Studio 显示的确认状态为准。</p></div>
 <div class="source">第【填：版本号】版 · 【填：这一版改了什么；第 1 版写「首版」】</div>
 </section>
 </article>
@@ -123,6 +123,6 @@
 <section id="prd-agreement"><div class="sectionhead"><em>04</em><h2>确认与约定</h2></div><div class="notice"><strong>有一处需要先对齐</strong>报告目标是 25 分钟内，试跑最长用了 29.5 分钟。要保留完整内容，就需要你定：优化到 25 分钟，还是把目标放宽到 30 分钟。</div>
 <div class="budget"><div><small>制作与测试预计 · 积分</small><strong>9,050–9,800</strong></div><div><small>以后每份报告约 · 积分</small><strong>750</strong></div></div><div class="budgetbar" style="--estimate:65.3%;--stop:80%" role="img" aria-label="预计最高 9,800 积分，12,000 积分停下确认，上限 15,000 积分"></div><div class="budgetlabels"><span>预计最高 9,800</span><span>12,000 停下确认</span><span>上限 15,000</span></div><p>按每周 6 份报告、12 篇内容算，上线后每周约 5,000 积分。</p>
 <details><summary>费用依据与不能直接承诺的能力</summary><dl class="facts"><div><dt>估算来源</dt><dd>你在第 2 轮同意试跑一份后的实测：一份报告 730–782 积分、20–29.5 分钟；页面和存数据按功能数估算。</dd></div><div><dt>外部调用</dt><dd>小红书数据每次 10 积分，每份最多 35 次。不会向外发送任何东西。</dd></div></dl></details>
-<div class="prdfoot"><strong>这份需求，和你想的一致吗？</strong><p>在聊天里回「确认这一版」，或直接说哪一块、哪里要改。</p></div>
+<div class="prdfoot"><strong>怎么确认这份需求</strong><p>在聊天里回「确认这一版」，或直接说哪一块、哪里要改。确认之后这一页不再改动，是否已确认以 Studio 显示的确认状态为准。</p></div>
 <div class="source">第 2 版 · 改了报告时间目标和预算</div></section></article>
 ```

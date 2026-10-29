@@ -73,7 +73,9 @@ def test_development_documents(surface, read_skill):
     assert "写更新时间" in progress and "不写「第几次更新」" in progress
     report = read_skill(DOCS + "验收报告.md")
     assert "没通过、通过、要你判断（好不好你说了算）、未测" in report
-    assert "页面条目写「本机版」" in report
+    assert "「本机版：」或「真跑：」开头" in report
+    assert "格做好了" in progress and "不代表验收通过" in progress and "项完成" not in progress
+    assert "受影响的格子改回「在做」" in progress
     assert "⑤ 上线后补在最后" in report
     stage_docs = {
         "stages/1-需求确认.md": "开发文档 PRD",

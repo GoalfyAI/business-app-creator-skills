@@ -1116,9 +1116,12 @@ def test_untestable_page_items_are_fixed_or_marked_untested():
         assert fact in acceptance, fact
     for retired in ("我试不了", "启动浏览器", "登录好了", "身份方式不可用", "浏览器已关闭"):
         assert retired not in acceptance, retired
-    assert "页面条目的 `project_id` 写「本机版」" in result
+    # 走查 10-29：报告用业务列，页面条目写「本机版：」开头，技术字段只进 G6
+    assert "页面条目写「本机版：」加操作步骤" in result
+    assert "这类核对字段写进阶段文档 G6，不放进报告" in result
     report = _read("design/开发文档/验收报告.md")
-    assert "【填：页面条目写「本机版」】" in report and "启动浏览器" not in report
+    assert "【填：「本机版：」或「真跑：」开头】" in report and "启动浏览器" not in report
+    assert "<th>project_id</th>" not in report and "## 截图证据" in report
     for name in ("PRD.md", "方案.md", "制作进度.md"):
         assert "启动浏览器" not in _read(f"design/开发文档/{name}"), name
 
@@ -1137,8 +1140,12 @@ def test_deploying_to_online_preview_needs_explicit_authorization():
         "部署只到开发者的在线预览，不上线、不发布",
         "依赖已部署版本的条目（`workspace` 真跑、开发工作集里查到的行）按 2.4 的表记「未测」",
         "开发者在没部署的情况下说「可以上线」，按 [5-上线.md](5-上线.md)「2.1 只上线已部署的草稿」处理",
+        # 走查 10-29：还没回答部署时不扣住报告
+        "本机版的检查做完就交报告，不等部署的回答",
+        "部署的问句放在交报告的同一条消息里",
     ):
         assert fact in deploy, fact
+    assert "不交报告。" not in deploy
     skill = _read("SKILL.md")
     red_lines = skill.split("## 4. 红线", 1)[1].split("## 5.", 1)[0]
     # B18 改写：「不加必点按钮或表单」改为正面写「在原对话照抄原句问一次，文字或语音的明确同意都算」
