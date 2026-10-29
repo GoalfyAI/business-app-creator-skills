@@ -4,8 +4,8 @@
   "version": "v20261027-531fb2",
   "package_version": "2.0.33",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-28T16:12:11Z",
-  "update_reason": "⑤ 补测没通过：能改的自己改好重测（上限 3 轮），改不了或到上限才问开发者接不接受",
+  "released_at": "2026-10-29T03:02:06Z",
+  "update_reason": "R-367 06：Studio 卡片整版确认、SKILL 阶段记录指引、Studio 旧应用接续、五段版断言",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -55,7 +55,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "86184909114893183a39087e0566549aa83f215171dada6ce74679ef24feb252",
+    "SKILL.md": "8155413dd6f4640ed09536a107907d09184bdef9d073db296c9501ff4b982d98",
     "agents/openai.yaml": "d04a3798927cbc33720df4c8692870a0ad987bcb7cbc79f0d0a0a24832eb46b2",
     "checklists/验收清单.md": "3698b515d98d4fcb8afc97f973d686be97b798c663608760be157f89e73604d6",
     "design/PRD.md": "1ab2457de73b2323d64f18b5a69671553e36f0c74557fdd38e969e6bd7df596e",
@@ -73,7 +73,7 @@
     "design/谁来做.md": "7acdd89f324443bf87d827f6383f105217b6464dfd0fc2f96db8a5547dea29bd",
     "design/选择题与判断题.md": "6f7027e27eefcb0c8bca5ed6e68034e7d969bf7d4ebf480efc7364380b9e2dc6",
     "design/验收报告与上线结果.md": "6e060776995e96a4514b69c68c9d2443f0c1f2f33241b9ac5035608bac940a6b",
-    "reference/Studio表单与卡片.md": "82293fbfe9c8a35c6c36130c216c1fbfadebf0efa1c71c51bc1ade1c9059d8c2",
+    "reference/Studio表单与卡片.md": "099fd71f9acc72447b20b39aa7a0831546158bec90e763eb31166d7c3cd49de5",
     "reference/业务路线.md": "f8aa76578c3a8c7d2b3c4ac6b731d8e226b1655c5465f375d2b40db8b4e7ccab",
     "reference/依赖与MCP接入.md": "f3937ccff73e7df84f15aed8bf0c3c813f023ee2c77cd49ed7730a3d93261e65",
     "reference/前端页面.md": "a6c935cffc32d0f9d4029e7c68b68f64b725e55d2529653a8fcc564c8267911f",
@@ -97,7 +97,7 @@
     "stages/5-上线.md": "a4d6da7b1b44e3f78038a94aba0ac1333a9a8d4f5cf923d162afbb322d0519a6",
     "tasks/仅讨论.md": "74dffeeaf27942b592e4b2b02c3eb3a37206841a8bf42c9097ae844d0b1d68f9",
     "tasks/修订.md": "632287bda21f4195be9054b40aea370af2b4f3e4ef97945871bd5e19e1b97da5",
-    "tasks/接续.md": "7b2a87b9216d5986bdc0da11d3a9ca5f4d086c64355f87a09ae695d6a4af089c",
+    "tasks/接续.md": "f5f267c4c53a67fd141504c068e753d773378b855fb1ee414f7d8fa52b3ea248",
     "tasks/用户反馈.md": "49d07ce09f39c1888c8e6eb1cd05a04335ab1108928fba66ca0bf67a38c785fa",
     "tasks/能力试用.md": "9fcbc66ef8668ebcb97cdb035f9f0579875c278ebb3dd629f753c12d40265052",
     "tasks/诊断.md": "3713e86457c804d1432f5a904fc658b418a90d25ccfe8a5ab908003772578eb3"
