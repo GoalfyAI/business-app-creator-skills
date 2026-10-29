@@ -352,8 +352,11 @@ def test_stage_exits_write_stage_records_in_one_place():
         text = _read(f"stages/{name}")
         assert "business_ui_stage" in text, name
         assert fact in text, name
-    # SKILL.md 只指路：阶段标记与阶段记录怎么写见开发者中心（business_ui_stage 写法只在那一处）
-    assert "存哪、阶段标记与阶段记录怎么写见 [reference/开发者中心与工作区.md](reference/开发者中心与工作区.md)" in _read("SKILL.md")
+    # SKILL.md 只指路：一句规则加链接，business_ui_stage 参数写法只在开发者中心那一处
+    assert (
+        "存哪、阶段标记与阶段记录（每段出口用 `business_ui_stage` 写本段的 G 项）怎么写见 "
+        "[reference/开发者中心与工作区.md](reference/开发者中心与工作区.md)"
+    ) in _read("SKILL.md")
     workspace = _read("reference/开发者中心与工作区.md")
     for fact in ("### 阶段记录", "`completion`", "`next_plan`", "`skipped`", "**一项调一次**", "**只写不读**",
                  "| G6 交棒条件都满足，但有「未测」条目 | `passed` | `partial`"):
