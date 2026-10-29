@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20260916-8941ec",
   "skill_name": "business-app-creator",
-  "version": "v20261027-531fb2",
-  "package_version": "2.0.33",
+  "version": "v20261027-2271fd",
+  "package_version": "2.0.34",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-29T03:02:06Z",
-  "update_reason": "R-367 06：Studio 卡片整版确认、SKILL 阶段记录指引、Studio 旧应用接续、五段版断言",
+  "released_at": "2026-10-29T03:02:57Z",
+  "update_reason": "R-367 五段版：合入 main v20261027-2271fd 后重生成",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -55,7 +55,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "8155413dd6f4640ed09536a107907d09184bdef9d073db296c9501ff4b982d98",
+    "SKILL.md": "207d60ca3d22358eee047d057e4f56aaba073668c6b3f30934182f679f2778b8",
     "agents/openai.yaml": "d04a3798927cbc33720df4c8692870a0ad987bcb7cbc79f0d0a0a24832eb46b2",
     "checklists/验收清单.md": "3698b515d98d4fcb8afc97f973d686be97b798c663608760be157f89e73604d6",
     "design/PRD.md": "1ab2457de73b2323d64f18b5a69671553e36f0c74557fdd38e969e6bd7df596e",
