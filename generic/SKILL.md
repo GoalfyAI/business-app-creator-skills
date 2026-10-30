@@ -1,6 +1,6 @@
 ---
 name: business-app-creator
-description: 制作和维护 GoalfyMax 智能应用（场景包 + 数据模板 + 前后端应用）时使用，涵盖新建、接续、修订、诊断、能力试用和方案讨论。按五段推进：需求确认、方案、制作、试用验收、上线；每段交给开发者一份看得懂的交付物，开发者只确认自己的业务、看得见的东西、取舍和自己手上的事。平台操作引用 MCP 合同，工程实现引用脚手架合同。一次性业务执行或平台概念咨询不使用。[skill-version:v20261030-f904ce]
+description: 制作和维护 GoalfyMax 智能应用（场景包 + 数据模板 + 前后端应用）时使用，涵盖新建、接续、修订、诊断、能力试用和方案讨论。按五段推进：需求确认、方案、制作、试用验收、上线；每段交给开发者一份看得懂的交付物，开发者只确认自己的业务、看得见的东西、取舍和自己手上的事。平台操作引用 MCP 合同，工程实现引用脚手架合同。一次性业务执行或平台概念咨询不使用。[skill-version:v20261030-60f195]
 keywords:
   - 智能应用
   - 智能应用开发
@@ -23,7 +23,7 @@ keywords:
   - MCP
 ---
 # 智能应用制作
-<!-- scaffold-min-required-version:v20261028-fb251c -->
+<!-- scaffold-min-required-version:v20261030-e23fde -->
 
 > 本文件只放跨段规则、地图和路由。五段的做法在 `stages/`，其他任务入口在 `tasks/`，交给开发者的东西怎么写在 `design/`，平台机制在 `reference/`。平台参数以 MCP 当前 Schema 为准，长契约按需 `get_diagnosis_doc(topic)`；工程实现以当前应用模板的 README 与 package.json 为准。
 
