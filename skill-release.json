@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20261030-e23fde",
   "skill_name": "business-app-creator",
-  "version": "v20261030-f904ce",
-  "package_version": "2.0.35",
+  "version": "v20261030-60f195",
+  "package_version": "2.0.36",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-30T03:15:21Z",
-  "update_reason": "最低脚手架标记改为已发 PRE 的 v20261030-e23fde（脚手架 main，含短码）",
+  "released_at": "2026-10-30T03:18:33Z",
+  "update_reason": "fix(skill): 最低脚手架标记改为 v20261030-e23fde [需求:T-4865]",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -55,7 +55,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "c13fe88e73e0b1e47b73f3a68480fa67782ed11aed800b8b6bef69a6f35a11a3",
+    "SKILL.md": "ec8eb0bcbdaeb1e46392ae3b6127476cf9befcb0b9163f93bf5449406e70248d",
     "agents/openai.yaml": "d04a3798927cbc33720df4c8692870a0ad987bcb7cbc79f0d0a0a24832eb46b2",
     "checklists/验收清单.md": "3698b515d98d4fcb8afc97f973d686be97b798c663608760be157f89e73604d6",
     "design/PRD.md": "1ab2457de73b2323d64f18b5a69671553e36f0c74557fdd38e969e6bd7df596e",
