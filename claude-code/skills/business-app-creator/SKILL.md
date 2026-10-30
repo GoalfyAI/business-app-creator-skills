@@ -23,7 +23,7 @@ keywords:
   - MCP
 ---
 # 智能应用制作
-<!-- scaffold-min-required-version:v20261028-fb251c -->
+<!-- scaffold-min-required-version:v20261030-e23fde -->
 
 > 本文件只放跨段规则、地图和路由。五段的做法在 `stages/`，其他任务入口在 `tasks/`，交给开发者的东西怎么写在 `design/`，平台机制在 `reference/`。平台参数以 MCP 当前 Schema 为准，长契约按需 `get_diagnosis_doc(topic)`；工程实现以当前应用模板的 README 与 package.json 为准。
 
