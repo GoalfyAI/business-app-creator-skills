@@ -289,7 +289,7 @@ def test_acceptance_deploys_draft_for_workspace_runs():
     """④ 部署草稿供 workspace 真跑，页面条目在本机版上验；挂本人场景包草稿也能部署，上线应用时草稿随应用一起上线。 [任务:T-3976]"""
     acceptance = _read("stages/4-试用验收.md")
     assert "deployed_scaffold_version" in acceptance
-    assert "调用方式（`workspace`、家族 ID、`business_id`、`wait` / `reply`、`route_runs`）按 [../reference/部署与版本.md](../reference/部署与版本.md)「真跑」" in acceptance
+    assert "调用方式（`workspace`、应用 ID、`business_id`、`wait` / `reply`、`route_runs`）按 [../reference/部署与版本.md](../reference/部署与版本.md)「真跑」" in acceptance
     deploy = _read("reference/部署与版本.md")
     assert 'business_ui_id=<应用家族 ID>, business_ui_data_space="workspace"' in deploy.split("### 真跑", 1)[1].split("\n### ", 1)[0]
     assert "页面条目由你在应用的本机版上用无头浏览器照条目操作" in acceptance
