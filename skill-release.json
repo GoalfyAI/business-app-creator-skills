@@ -1,11 +1,11 @@
 {
-  "scaffold_min_required_version": "v20261028-fb251c",
+  "scaffold_min_required_version": "v20261030-e23fde",
   "skill_name": "business-app-creator",
   "version": "v20261030-f904ce",
   "package_version": "2.0.35",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-10-30T03:06:27Z",
-  "update_reason": "test(skill): 真跑调用写法断言按应用 ID 更新；fix(skill): 制作中建改 TPE 与场景包显式 publish_mode=staged，场景包只随应用上线；fix(skill): 评测第十四轮修正：⑤ 云端保存清单收窄并规定失败处理，② G3 记录须调用，④ 不靠单独上线排查真跑故障；fix(skill): Studio 走查归因修正：④ 本机测完即交报告、进度与验收分开、报告业务列与内嵌截图；feat(skill): R-367 06 收尾：② 整版确认措辞、阶段记录指引、Studio 旧应用接续与五段版断言；fix(skill): ⑤ 补测没通过先自己修（上限 3 轮），改不了或到上限才问开发者接不接受；chore(skill): 最低脚手架标记升到 v20261028-fb251c [任务:T-4736]；fix(skill): ⑤ 结单前先 workspace_push 存云端并列入交棒条件，写清整份覆盖要传的文件；fix(skill): 开工不传 --environment，Studio 由脚手架读宿主环境，报缺少环境时才问站点；fix(skill): ① 第一条回复起交接消息就写全四件事和花费三个数，状态标签只写一次；fix(skill): 按七节点遗留反馈补齐五段里仍会出现的几处；fix(skill): 只改挂载的派生版本可以直接在工作集真跑；fix(skill): 按纸面走查补齐命令行宿主与几处会做错的地方；fix(skill): 方案生成后只做一次整版确认；refactor(skill): 五段版瘦身，每条规则归到唯一位置；fix(skill): 五段版「谁来用」只写一种使用者，不问几种人；fix(skill): 五段版 ⑤ 补测分情形处理，Studio 部署单独授权，页面条目证据与判定表，补回 skill_version；docs(skill): 应用 ID、版本行与报错写法按制作 MCP 改造同步 [任务:T-4736]；fix(skill): 五段版反馈完成改为上线后由开发者发布，再同步 completed，AI 不发布；feat(skill): 五段版统一用词为部署、上线、发布，⑤ 只上线已部署的草稿；fix(skill): 五段版制作进度样例格子按模板写「做好了」；feat(skill): 五段版 ④ 页面条目改…",
+  "released_at": "2026-10-30T03:15:21Z",
+  "update_reason": "最低脚手架标记改为已发 PRE 的 v20261030-e23fde（脚手架 main，含短码）",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -55,7 +55,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "49763993b079c308da3593e8d852e3be58de93a8888b2dfb338fb2a466d2c6fe",
+    "SKILL.md": "c13fe88e73e0b1e47b73f3a68480fa67782ed11aed800b8b6bef69a6f35a11a3",
     "agents/openai.yaml": "d04a3798927cbc33720df4c8692870a0ad987bcb7cbc79f0d0a0a24832eb46b2",
     "checklists/验收清单.md": "3698b515d98d4fcb8afc97f973d686be97b798c663608760be157f89e73604d6",
     "design/PRD.md": "1ab2457de73b2323d64f18b5a69671553e36f0c74557fdd38e969e6bd7df596e",
