@@ -167,3 +167,6 @@ def test_start_environment_and_push_before_closing(read_skill):
     assert "没拿到成功回执不往下写 G7、不结单" in closing
     assert "只在本地标记不算" in read_skill("stages/2-方案.md").split("## 5. 交棒条件", 1)[1]
     assert "不用单独上线场景包、上线应用或发布来排查" in read_skill("stages/4-试用验收.md")
+    # 评测第二轮：otpe_manage 默认 online 会把场景包提前上线，制作中显式 staged
+    assert "都显式传 `publish_mode=\"staged\"`" in read_skill("reference/部署与版本.md")
+    assert "`publish_mode=\"staged\"`" in read_skill("reference/业务路线.md")
