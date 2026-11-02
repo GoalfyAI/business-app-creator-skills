@@ -75,7 +75,7 @@ def test_editor_route_derives_own_drafts_and_requests_finalize(read_skill):
     route = _section(text, "### 编辑协作者的草稿与各层资产")
     assert "`change_note` 必填" in route
     assert "别人创建的草稿不改、不拿来部署" in route
-    assert "工具组 → 工具集或 FA → 场景包路线 → 应用挂载" in route
+    assert "工具组 → 工具集或 FA → TPE → 应用版本上的路线与 `tpe_ids`" in route
     assert "再自己上线这一层（`finalize_asset_version_online`" in route
     shared = _section(text, "### 共享开发工作集")
     assert "属主绑定在应用上的共享工作集" in shared
@@ -172,11 +172,11 @@ def test_borrowed_assets_and_preview_limits(read_skill):
     created = _section(text, "### 协作中新建或克隆的资产")
     assert "**必须**显式带 `collaboration_business_ui_id=<应用家族 ID>`" in created
     for tool in (
-        "`create_fast_agent`", "`create_toolset`", "`create_tpe`", "`otpe_manage` 的创建", "`clone_asset`",
+        "`create_fast_agent`", "`create_toolset`", "`otpe_manage` 的创建", "`clone_asset`",
         "`register_and_refresh_tool_group` 的创建模式", "`upload_and_register_tool_group`", "`import_skill_package`",
-        "`create_derived_scene_package`", '`scene_package_manage(action="create")`',
     ):
         assert tool in created
+    assert "`create_tpe`" not in created  # create_tpe 建的是带提示词的 Agent 型 TPE，执行里没有 Agent
     assert "资产落在属主名下" in created
     limits = _section(text, "### 预览、费用与限制")
     assert "BUSINESS_UI_RECHARGE_OWNER_ONLY" in limits
@@ -187,8 +187,8 @@ def test_borrowed_assets_and_preview_limits(read_skill):
 def test_setup_derivation_requires_change_note(read_skill):
     """setup 需要派生草稿时同样要带 change_note。"""
     deploy = read_skill("reference/部署与版本.md")
-    # 裁决 R10：首次 setup 建身份不强制 change_note；派生草稿带 change_note
-    assert "应用建草稿（含 update、对已有应用的 `setup`、`ship` 自动派生）带 `change_note` 写这次改了什么，首次 `setup` 建应用身份不用带" in deploy
+    # 裁决 R10：① 建应用占位不强制 change_note；派生草稿带 change_note
+    assert "应用建草稿（含 update、对已有应用的 `setup`、`ship` 自动派生）带 `change_note` 写这次改了什么，① 建应用占位不用带" in deploy
     drafts = _section(read_skill("reference/多人协作.md"), "### 编辑协作者的草稿与各层资产")
     assert "`update`、`setup`、`ship` 需要从上线版派生草稿时同样要带" in drafts
     errors = read_skill("reference/报错对照.md")

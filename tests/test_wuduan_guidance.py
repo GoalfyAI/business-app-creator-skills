@@ -98,9 +98,9 @@ def test_development_documents(surface, read_skill):
         "Studio 下按 PRD（`documentType=prd`）交，请开发者确认一次",
         "已有的方案记录不当作 ② 已确认的方案，不凭它跳过 ① ②，也不改写它",
         "工作区已有的方案页不删除、不改写",
-        "G6 既没有 ④ 验收报告、也没有开发者确认上线或确认预览的原话 checkpoint",
+        "G6 既没有 ④ 验收报告、也没有开发者「可以上线」原话 checkpoint",
         "算 ④ 未验收，接到 ④ 或 ⑤ 时按 ④ 验收",
-        "开发者此前在在线预览里确认过的 G6 结论照旧保留，不重测",
+        "开发者说预览看过没问题不算验收",
         "开发者说「可以上线」后才上线",
         "已经上线的按 [修订.md](修订.md) 处理",
     ):
@@ -114,10 +114,10 @@ def test_platform_feedback_written_into_skill(read_skill):
     quota = next(line for line in errors.splitlines() if line.startswith("| `BUSINESS_UI_DEPLOYMENT_QUOTA_EXCEEDED`"))
     assert "等开发者指明释放哪个" in quota and "你不自己做，也不原样重试" in quota
     contract = next(line for line in errors.splitlines() if line.startswith("| `BUSINESS_UI_CONTRACT_OUTDATED`"))
-    assert "刚 deploy 成功、之后没有换挂也没有改场景包时出现，是平台对草稿的误报，不再重复 deploy" in contract
+    assert "刚 deploy 成功、之后没改过这些仍报的，先看 `tpe_ids` 有没有写 `latest`" in contract
     deploy = read_skill("reference/部署与版本.md")
-    assert "只改了挂载（换场景包版本、换模板版本）、没重新部署的版本也会被选中" in deploy
-    assert "business_ui.version" in deploy
+    assert "只改挂载（编排、`tpe_ids`、模板版本）没重新部署的草稿也会被选中" in deploy
+    assert "`business_ui_version_id` 是这次执行用的版本行" in deploy
     skill = read_skill("SKILL.md")
     assert "正式使用（包括开发者本人正式使用、到点自动运行）只认发布" in skill
     materials = read_skill("stages/5-上线.md").split("### 2.6 发布要准备的材料", 1)[1]
@@ -166,13 +166,13 @@ def test_start_environment_and_push_before_closing(read_skill):
         assert fact in failed, fact
     assert "没拿到成功回执不往下写 G7、不结单" in closing
     assert "只在本地标记不算" in read_skill("stages/2-方案.md").split("## 5. 交棒条件", 1)[1]
-    assert "不用单独上线场景包、上线应用或发布来排查" in read_skill("stages/4-试用验收.md")
-    assert "也不为排查另建试探用的 TPE、FA、工具集或场景包" in read_skill("stages/4-试用验收.md")
-    # 评测第二轮：otpe_manage 默认 online 会把场景包提前上线，制作中显式 staged
-    assert "都显式传 `publish_mode=\"staged\"`" in read_skill("reference/部署与版本.md")
-    assert "`publish_mode=\"staged\"`" in read_skill("reference/业务路线.md")
-    # 生产测试后：TPE 的 online 照做，只拦场景包上线
-    assert "`otpe_manage(action=\"online\")` 只启用这条 TPE、不上线场景包" in read_skill("reference/部署与版本.md")
+    assert "不用上线应用或发布来排查" in read_skill("stages/4-试用验收.md")
+    assert "也不为排查另建试探用的 TPE、FA、工具集或应用" in read_skill("stages/4-试用验收.md")
+    # 评测第二轮：制作中 TPE 新版本先暂存；TPE 的 online 照做，挂到应用版本靠 update 的 tpe_ids
+    deploy = read_skill("reference/部署与版本.md")
+    assert "制作中建、改 TPE 不用传 `publish_mode`：缺省 `staged`" in deploy
+    assert "`otpe_manage(action=\"online\")` 只启用这条 TPE" in deploy
+    assert "TPE 上线不会改应用版本" in deploy
     # ③ 进度不攒到 ④；④ 真跑后补发「我先跑了一遍」进交棒条件
     build = read_skill("stages/3-制作.md")
     assert "进度在做的过程中发出，不攒到 ④" in build

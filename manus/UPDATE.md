@@ -1,4 +1,4 @@
-# 场景包制作 Skill 更新指南 — Manus（Agent 版）
+# 智能应用制作 Skill 更新指南 — Manus（Agent 版）
 
 被 `SCENE_SKILL_UPGRADE_REQUIRED` 拒单，或需要把 Skill 升到最新版时按本文执行。
 
@@ -11,7 +11,7 @@ Skill 文件在这里读不到），唯一路径是带着新 Skill 开一个新�
 用用户当前对话使用的语言输出下面的模板（用户不使用中文时翻译它，保留 H1 标题和加粗，
 不要放进代码块或引用块）：
 
-# 需要操作：更新场景包制作 Skill
+# 需要操作：更新智能应用制作 Skill
 
 **1. 下载最新的 Skill 包：https://github.com/GoalfyAI/business-app-creator-skills/raw/business-pre/manus/business-app-creator-skill.zip**
 

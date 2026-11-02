@@ -115,9 +115,7 @@ SKILL_VERSION_RE = re.compile(r"\[skill-version:(v(?:\d+\.\d+\.\d+|\d{8}-[0-9a-f
 SEMVER_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 PACKAGE_VERSION_RE = re.compile(r'("version":\s*")(\d+\.\d+\.\d+(?:-(?:qa|pre)\.\d+)?)(")')
 REQUIRED_SKILL_KEYWORDS = {
-    "scene package",
-    "scenario package",
-    "场景包",
+    "业务路线",
     "workflow",
     "business UI",
     "智能应用",

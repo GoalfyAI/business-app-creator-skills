@@ -76,9 +76,9 @@ cd manus/skill && zip -r ../business-app-creator-skill.zip SKILL.md flow tasks d
 
 开一个新会话，确认：
 
-1. Skill 已加载，Agent 能说明自己会制作场景包
+1. Skill 已加载，Agent 能说明自己会制作智能应用
 2. `business-app-creator` 的 MCP 工具已就绪（如 `task_manager`、`list_assets`）
-3. 执行一次只读请求，例如「列出我能访问的场景包」，能正常返回
+3. 执行一次只读请求，例如「列出我能访问的智能应用」，能正常返回
 
 ## 更新
 
@@ -89,7 +89,7 @@ cd manus/skill && zip -r ../business-app-creator-skill.zip SKILL.md flow tasks d
 | 现象 | 处理 |
 |---|---|
 | `401 Unauthorized` | 连接器里的密钥错误或已撤销，重新编辑连接器 |
-| `403 Forbidden` | 该账号没有目标场景包的访问权限 |
+| `403 Forbidden` | 该账号没有目标智能应用或资产的访问权限 |
 | `503` | MCP 依赖暂时不可用，等待恢复后重试 |
 | Skill 已上传但工具不可用 | 连接器和 Skill 是两处配置，确认第 2 步已完成 |
 | 更新后行为没变 | Skill 只在会话开始时加载，需要开新会话 |
