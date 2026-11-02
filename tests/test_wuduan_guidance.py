@@ -57,7 +57,7 @@ def test_development_documents(surface, read_skill):
     for fact in (
         "| PRD | ① 按轮问问完、开发者回「对」之后，写第 1 版 |",
         "| 方案 | ② 取舍、验收要求和费用变化问清之后 |",
-        "| 制作进度 | ③ 开始时 |",
+        "| 制作进度 | ③ 开始时，建任何资产、写代码之前 |",
         "| 验收报告 | ④ 报告过了硬门之后 |",
         "`prd`", "`proposal`", "`progress`", "`acceptance`",
         "还没到的段不写，也不写「暂无」「未开始」的占位页",
@@ -167,6 +167,43 @@ def test_start_environment_and_push_before_closing(read_skill):
     assert "没拿到成功回执不往下写 G7、不结单" in closing
     assert "只在本地标记不算" in read_skill("stages/2-方案.md").split("## 5. 交棒条件", 1)[1]
     assert "不用单独上线场景包、上线应用或发布来排查" in read_skill("stages/4-试用验收.md")
+    assert "也不为排查另建试探用的 TPE、FA、工具集或场景包" in read_skill("stages/4-试用验收.md")
     # 评测第二轮：otpe_manage 默认 online 会把场景包提前上线，制作中显式 staged
     assert "都显式传 `publish_mode=\"staged\"`" in read_skill("reference/部署与版本.md")
     assert "`publish_mode=\"staged\"`" in read_skill("reference/业务路线.md")
+    # 生产测试后：TPE 的 online 照做，只拦场景包上线
+    assert "`otpe_manage(action=\"online\")` 只启用这条 TPE、不上线场景包" in read_skill("reference/部署与版本.md")
+    # ③ 进度不攒到 ④；④ 真跑后补发「我先跑了一遍」进交棒条件
+    build = read_skill("stages/3-制作.md")
+    assert "进度在做的过程中发出，不攒到 ④" in build
+    exit_rules = build.split("## 5. 交棒条件", 1)[1]
+    assert "第一版制作进度在第一个建资产、写代码的动作之前就已保存" in exit_rules
+    assert "已按 2.3 发过 ③ 的最后一条进度" in exit_rules
+    assert "真跑通过后都已按 2.3 第 6 步补发「我先跑了一遍」" in read_skill("stages/4-试用验收.md").split("## 5. 交棒条件", 1)[1]
+    entry = build.split("## 1. 进入条件", 1)[1].split("## 2.", 1)[0]
+    assert "进入 ③ 的第一个动作是保存第一版制作进度" in entry and "这一步之前不建任何资产、不写代码" in entry
+    assert "先按 [stages/3-制作.md](stages/3-制作.md)「进入条件」保存第一版制作进度" in read_skill("SKILL.md")
+    assert "| 制作进度 | ③ 开始时，建任何资产、写代码之前 |" in read_skill("design/开发文档/README.md")
+    # 失败条目：每个「做不成怎么办」一条，写明怎么造失败；造不出来的归入「未测」
+    assert "每个「做不成怎么办」各写一条失败条目" in read_skill("design/选择题与判断题.md")
+    assert "每个失败条目都按条目造出一次失败看表现，报告写明失败是怎么造出来的" in read_skill("checklists/验收清单.md")
+    assert "「测试中造不出这种失败」，加试过哪些做法" in read_skill("stages/4-试用验收.md")
+    # FK-1257：对开发者不提 Skill 与规则出处、不说流程内部词，PRD 说「需求文档」
+    skill = read_skill("SKILL.md")
+    assert "也不提本 Skill、SKILL.md、段文件、规则出处，不说「交棒」「阶段标记」" in skill
+    assert "PRD 对开发者一律说「需求文档」" in skill
+    assert "刚做完：需求文档第 2 版" in read_skill("design/交接消息.md")
+    assert "依据 PRD" not in read_skill("design/开发文档/方案.md") and "对齐" not in read_skill("design/开发文档/PRD.md")
+    # 会原样给开发者看的格子和句子不用「真跑」「基线过期」
+    for doc in ("design/交接消息.md", "design/开发文档/制作进度.md", "stages/3-制作.md", "stages/4-试用验收.md"):
+        text = read_skill(doc)
+        assert "做好了，真跑过" not in text and "做好了，等部署后真跑" not in text, doc
+    assert "做好了，用真实数据试过" in read_skill("design/开发文档/制作进度.md")
+    assert "基线过期的通知" not in read_skill("reference/多人协作.md")
+    # 方案页状态文字写阶段名，不写 G 编号
+    page = read_skill("design/方案页.md")
+    assert '<div class="pv-state">④ 试用验收</div>' in page and "不写 G1–G7" in page
+    # FB-785：会话里没有 business_ui_stage 时的替代记录
+    assert "工具列表里没有 `business_ui_stage` 时，把这三件事写进阶段文档和工单 checkpoint" in read_skill("reference/开发者中心与工作区.md")
+    # 红线：不读取、打印开发者的 Key 和连接配置
+    assert "**禁止**读取、打印或截取开发者的 API Key 和插件连接配置" in read_skill("SKILL.md")

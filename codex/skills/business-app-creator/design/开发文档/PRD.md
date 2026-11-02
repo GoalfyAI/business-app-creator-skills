@@ -9,7 +9,7 @@
 | 01 要做什么 | 你要的是什么（现在怎么做 → 做成后）、谁来用、要做的功能清单、这次不做的 | `.beforeafter`、`.roles`、`.scope`、一段「这次不做：」 |
 | 02 怎么用 | 每一步谁来做（人 `human`、模型 `model`、脚本 `rule`，按使用顺序排）、做不成的时候 | `.legend`、`.journey`（`.step`、`.branches`）、`<details>` + `.facts` |
 | 03 会得到什么 | 每个刚需一张功能卡：标题带核实结论；中间写在第一段；拿出来放 `.sample`；怎样算做成放 `.standard`；放进去、这样不行、会停下的情况、核实依据、验收预期放折叠的 `.facts`。非刚需放 `.otherfeatures`；界面放最后一个 `<details>` | `.feature`、`.badge`、`.sample`、`.standard`、`.otherfeatures`、`.rulesbody` |
-| 04 确认与约定 | 要先对齐的事、花多少（预计、上限、停下确认的线）、费用与副作用和要从外面拿的数据、做不到的和替代、自动发生的事、上线范围、会记下来的东西、要你提供的、按默认补上的 | `.notice`、`.budget`、`.budgetbar`、`.rulegrid`、`<table>`、`.decision` |
+| 04 确认与约定 | 要你先定的事、花多少（预计、上限、停下确认的线）、费用与副作用和要从外面拿的数据、做不到的和替代、自动发生的事、上线范围、会记下来的东西、要你提供的、按默认补上的 | `.notice`、`.budget`、`.budgetbar`、`.rulegrid`、`<table>`、`.decision` |
 
 - 核实结论的 `.badge` 只用四种：「已试过，能做」「能做」「要新做，没试过」（加 `pending`）、「做不到，见替代」（加 `pending`）。
 - `.sample` 放真实拿到的东西；还没做出来的内容在 `.samplelabel` 第二个 `<span>` 写「预期」，不写成已有结果。
@@ -69,7 +69,7 @@
 </section>
 
 <section id="prd-agreement"><div class="sectionhead"><em>04</em><h2>确认与约定</h2></div>
-<div class="notice"><strong>【填：要先对齐的事】</strong>【填：为什么要对齐、你要定什么】</div><!-- 没有要先对齐的事就删掉这一块 -->
+<div class="notice"><strong>【填：要你先定的事】</strong>【填：为什么要先定、你要定什么】</div><!-- 没有要先定的事就删掉这一块 -->
 <div class="budget"><div><small>制作与测试预计 · 积分</small><strong>【填：预计范围】</strong></div><div><small>以后每次使用约 · 积分</small><strong>【填】</strong></div></div>
 <div class="budgetbar" style="--estimate:【填】%;--stop:【填】%" role="img" aria-label="【填：预计最高、停下确认的线、上限】"></div>
 <div class="budgetlabels"><span>预计最高【填】</span><span>【填】停下确认</span><span>上限【填】</span></div>
@@ -120,7 +120,7 @@
 <section id="prd-results"><div class="sectionhead"><em>03</em><h2>会得到什么</h2></div><p>先看结果是不是你要的，再展开检查具体规则。</p>
 <div class="feature"><div class="featurehead"><h3>1. 找准门店与官方账号</h3><span class="badge">已试过，能做</span></div><p>输入店名和可选的城市，得到可以核对、修改和确认的候选门店。</p><div class="sample"><div class="samplelabel"><span>海底捞火锅 · 北京</span><span>真实结果</span></div><div class="store-row"><strong>◉ 王府井丹耀店</strong><small>东城区王府井大街 176 号</small></div><div class="store-row"><strong>○ 崇文门新世界百货店</strong><small>新世界百货 1 期 5 层</small></div></div><div class="standard">做好标准：候选是真实门店；选填留空也能提交；找错或找不到时能手填。</div><details><summary>查看规则与核实依据</summary><dl class="facts"><div><dt>放进去</dt><dd>店名必填；城市、官网选填。</dd></div><div><dt>不能出现</dt><dd>把帖子标题、景点或无关网站当成门店；替使用者默认确认。</dd></div><div><dt>会停下的情况</dt><dd>一个可靠候选都没有时，停在手填这一步等使用者补资料。</dd></div><div><dt>核实依据</dt><dd>试跑「海底捞火锅 · 北京」返回 3 家门店；「清水缘和服租 · 京都」核实后没有候选，转手填。</dd></div><div><dt>验收预期</dt><dd>7 家测试店都能进入选候选或手填。</dd></div></dl></details></div>
 </section>
-<section id="prd-agreement"><div class="sectionhead"><em>04</em><h2>确认与约定</h2></div><div class="notice"><strong>有一处需要先对齐</strong>报告目标是 25 分钟内，试跑最长用了 29.5 分钟。要保留完整内容，就需要你定：优化到 25 分钟，还是把目标放宽到 30 分钟。</div>
+<section id="prd-agreement"><div class="sectionhead"><em>04</em><h2>确认与约定</h2></div><div class="notice"><strong>有一处要你先定</strong>报告目标是 25 分钟内，试跑最长用了 29.5 分钟。要保留完整内容，就需要你定：优化到 25 分钟，还是把目标放宽到 30 分钟。</div>
 <div class="budget"><div><small>制作与测试预计 · 积分</small><strong>9,050–9,800</strong></div><div><small>以后每份报告约 · 积分</small><strong>750</strong></div></div><div class="budgetbar" style="--estimate:65.3%;--stop:80%" role="img" aria-label="预计最高 9,800 积分，12,000 积分停下确认，上限 15,000 积分"></div><div class="budgetlabels"><span>预计最高 9,800</span><span>12,000 停下确认</span><span>上限 15,000</span></div><p>按每周 6 份报告、12 篇内容算，上线后每周约 5,000 积分。</p>
 <details><summary>费用依据与不能直接承诺的能力</summary><dl class="facts"><div><dt>估算来源</dt><dd>你在第 2 轮同意试跑一份后的实测：一份报告 730–782 积分、20–29.5 分钟；页面和存数据按功能数估算。</dd></div><div><dt>外部调用</dt><dd>小红书数据每次 10 积分，每份最多 35 次。不会向外发送任何东西。</dd></div></dl></details>
 <div class="prdfoot"><strong>怎么确认这份需求</strong><p>在聊天里回「确认这一版」，或直接说哪一块、哪里要改。确认之后这一页不再改动，是否已确认以 Studio 显示的确认状态为准。</p></div>
