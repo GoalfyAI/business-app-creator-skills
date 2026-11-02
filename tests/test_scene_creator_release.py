@@ -1331,7 +1331,7 @@ def test_launch_finalizes_without_requesting_release():
     result = _read("design/验收报告与上线结果.md")
     for fact in (
         "「发布后你自己和已安装的使用者会用上这一版；正式入口和到点自动运行在发布后才能用，你自己也一样；发不发、发给谁由你定」",
-        "本段 N；累计 N；上限 N", "| 未测的 |", "| ④ 验过什么 |",
+        "这一阶段 N；一共 N；上限 N", "| 未测的 |", "| ④ 验过什么 |",
         "「要你做的」不写「请你发布」，也不等开发者回「发布了」再结单",
     ):
         assert fact in result, fact
@@ -1379,7 +1379,7 @@ def test_long_text_tool_output_declares_single_string_field():
 def test_no_waiting_on_developer_after_confirmation():
     """整版方案确认后一路做到 ④ 交报告；制作中的测试费用已在 PRD 同意，不再逐次等开发者。"""
     skill = _read("SKILL.md")
-    assert "② 整版方案确认后一路做到 ④ 交出验收报告" in skill
+    assert "保存第一版制作进度，再一路做到 ④ 交出验收报告" in skill
     assert "**确认 PRD 即同意 PRD 列出的费用与副作用**" in skill
     assert "之后照做，跑完在交付物「费用与副作用」补实际花费、在交接消息里报，不逐次问" in skill
     assert "先向开发者说明费用并取得同意" not in _read("stages/3-制作.md")
@@ -1528,11 +1528,11 @@ def test_app_db_routes_prove_with_workspace_real_run():
 
 
 def test_dev_feedback_reports_by_blocking():
-    """平台问题按阻塞程度报：走不下去立即提并带两项标注，已绕过与诉求交付时汇总，应用自身问题不提。"""
+    """平台问题按阻塞程度报：走不下去才提（临时故障先隔几分钟重试一次）并带两项标注，同一问题跨工单追加，已绕过与诉求交付时汇总，应用自身问题不提。"""
     skill = _read("SKILL.md")
     platform = skill.split("## 10. 平台问题", 1)[1].split("## 11.", 1)[0]
     assert "已经绕过去的也照提" not in skill
-    assert '阻塞的（按指引处理后仍走不下去、没有绕法）立即 `submit_dev_feedback(blocking="blocked")`' in platform
+    assert '阻塞的（按指引处理后仍走不下去、没有绕法）按 [reference/报错对照.md](reference/报错对照.md)「平台问题怎么报」的时机 `submit_dev_feedback(blocking="blocked")`' in platform
     assert "不阻塞的（已绕过、功能诉求）记进开发记录，⑤ 上线或会话结束时汇总成一条" in platform
     assert "应用自己的脚本、页面、数据格式、提示词问题自己改，不提交" in platform
     assert "[reference/报错对照.md](reference/报错对照.md)「平台问题怎么报」" in platform
@@ -1543,6 +1543,8 @@ def test_dev_feedback_reports_by_blocking():
     assert "`platform_defect`" in report and "`skill_mismatch`" in report and "`environment`" in report
     assert "⑤ 上线或本次会话结束时和功能诉求汇总成一条" in report
     assert "新建前先 `query_dev_feedback` 查本人未关闭的反馈" in report
+    assert "隔几分钟重试一次，仍失败就提交" in report
+    assert "不管是哪张工单、哪次会话提的" in report
     assert "此时汇总成一条提交，没有就不提" in _read("stages/5-上线.md")
     assert "绕过后继续" not in _read("stages/4-试用验收.md")
 
@@ -1662,7 +1664,7 @@ def test_studio_desktop_demo_scope_without_local_only_exit():
     assert "不为纯数据管理应用虚构额外业务流程" in _read("stages/2-方案.md")
     assert "Studio 宿主的演示见同一文件「Studio 宿主」" in _read("stages/3-制作.md")
     assert "不部署、不进 ④ ⑤" not in section and "只做本地演示" not in section
-    assert "不回写已确认的 PRD 和方案" in _read("design/开发文档/README.md")
+    assert "已确认的 PRD 和方案什么时候出新一版，见 [../PRD.md](../PRD.md)「版本、批注和确认」" in _read("design/开发文档/README.md")
     assert "写入结果未知" in section and "只查询原操作的结果，不重新发起写入" in section
     revision = _read("tasks/修订.md")
     assert "不进 ④ ⑤" not in revision and "只要本地修改" not in revision
@@ -1691,3 +1693,35 @@ def test_publish_dependent_items_are_untested_with_reason():
     assert "| 未测的 | ④ 有「未测」条目时单列" in result and "到点真触发、从目录或分享打开，发布后看（写清怎么看）" in result
     assert "到点真触发按 ④「2.4 逐条判定」记「未测」，上线结果单列" in _read("checklists/验收清单.md")
     assert "到点真触发怎么记见 [../stages/4-试用验收.md](../stages/4-试用验收.md)「2.4 逐条判定」" in _read("reference/自动化.md")
+
+
+def test_studio_walkthrough_tightens_existing_rules():
+    """10-29/10-30 Studio 业务走查：在原有规则处收紧，不另起平行规则——表单被聊天关掉按没回答处理、每轮说还剩几轮、积分题说明看得懂、进度随验收报告更新、上限改了 PRD 出新一版、Mock 待办不删消息中心。"""
+    form = _read("reference/Studio表单与卡片.md")
+    answers = form.split("### 答案怎么回来", 1)[1].split("\n## ", 1)[0]
+    assert "Studio 会关掉这张表单，再也交不了" in answers and "同样按没回答处理" in answers
+    assert "用新表单（`id` 换新的）接着问，不请他回旧表单提交" in answers
+
+    rounds = _read("design/按轮问.md")
+    assert "不限轮数" not in rounds
+    assert "「下一步」写答完这一轮还剩哪几块要问、按现在的树估计还要几轮" in rounds
+    assert "答完这一轮就问完了的，写明这一轮答完不再出题" in rounds
+    assert "写出 1 积分折多少元、每个选项约合多少元（数字取自 [../reference/平台对象速查.md](../reference/平台对象速查.md)「积分怎么算」" in rounds
+    assert rounds.count("0.01 元") == 1  # 只出现在例子里，换算的正本在平台对象速查
+    assert "美元" not in rounds
+    assert "1 元 = 100 积分（1 积分 = 0.01 元）" in _read("reference/平台对象速查.md")
+    assert "美元" not in _read("reference/平台对象速查.md")
+
+    progress = _read("design/开发文档/制作进度.md")
+    assert "④ 里验收报告每出一版有没通过的条目（含开发者提的修改），这一份在同一条回复里跟着更新" in progress
+    assert "怎么改见 [../design/开发文档/制作进度.md](../design/开发文档/制作进度.md)「什么时候更新、改哪些」" in _read("stages/4-试用验收.md")
+    readme = _read("design/开发文档/README.md")
+    assert "只更新当段这一份" not in readme and "④ 里制作进度跟着验收报告更新，见 [制作进度.md](制作进度.md)" in readme
+
+    prd = _read("design/PRD.md")
+    assert "「钱不够就多花点」也算" in prd and "PRD 出新一版只改「花多少」，方案里写到上限的地方同一步改" in prd
+    assert "后来改过的按最新一条（[PRD.md](PRD.md)「版本、批注和确认」）" in _read("design/交接消息.md")
+
+    starter = _read("reference/前端页面.md").split("### 清起始件", 1)[1].split("\n### ", 1)[0]
+    assert "SDK 内置 Mock 生成的项目和待办" in starter and "不为去掉它删消息中心、待办角标或改 Mock" in starter
+    assert "待补充信息项目（mock）" not in _studio_section()
