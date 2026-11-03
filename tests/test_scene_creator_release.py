@@ -1690,7 +1690,8 @@ def test_publish_dependent_items_are_untested_with_reason():
     # 硬门：「未测」只能用表里的一类且原因对得上（代替旧的「以『要先发布』为由标了『未测』」反例）
     assert "每条「未测」都写了原因，且属于 2.4「未测」表里的一类，原因与情况对得上" in acceptance
     assert "**「未测」只用于下面几类**（唯一枚举）" in acceptance
-    assert "| 未测的 | ④ 有「未测」条目时单列" in result and "到点真触发、从目录或分享打开，发布后看（写清怎么看）" in result
+    assert "| 未测的 | ④ 有「未测」条目时单列" in result and "照 ④「未测」表「以后开发者自己怎么看」那一列写（写清怎么看）" in result
+    assert "② 照「未测的」里每条写的方法去看那几条" in result
     assert "到点真触发按 ④「2.4 逐条判定」记「未测」，上线结果单列" in _read("checklists/验收清单.md")
     assert "到点真触发怎么记见 [../stages/4-试用验收.md](../stages/4-试用验收.md)「2.4 逐条判定」" in _read("reference/自动化.md")
 
@@ -1725,3 +1726,43 @@ def test_studio_walkthrough_tightens_existing_rules():
     starter = _read("reference/前端页面.md").split("### 清起始件", 1)[1].split("\n### ", 1)[0]
     assert "SDK 内置 Mock 生成的项目和待办" in starter and "不为去掉它删消息中心、待办角标或改 Mock" in starter
     assert "待补充信息项目（mock）" not in _studio_section()
+
+
+def test_fk1233_stop_and_studio_acceptance_tighten_existing_rules():
+    # 停下只认 SKILL.md「按依赖走、不多等」一处；交接消息的状态说明引用它
+    skill = _read("SKILL.md")
+    stop_rule = next(line for line in skill.splitlines() if line.startswith("- **按依赖走、不多等**"))
+    # 原停下清单一字不删，新句只补在它后面
+    assert (
+        "只在这些时候停下问：③「2.4 什么时候请开发者拍板」的情况；要部署而没有授权；"
+        "缺开发者本人才能给的东西（授权、密钥、业务事实）；要做 PRD 没列的副作用；你确实推进不下去。"
+        "结束这一条回复就是停下"
+    ) in stop_rule
+    mentions = [
+        path.relative_to(SKILL_ROOT).as_posix()
+        for path in SKILL_ROOT.rglob("*.md")
+        if "结束这一条回复就是停下" in path.read_text(encoding="utf-8")
+    ]
+    assert mentions == ["SKILL.md"]
+    handoff = _read("design/交接消息.md")
+    assert "「正在做」只用于发完这条你在同一条回复里还接着做的消息" in handoff
+    assert "[../SKILL.md](../SKILL.md)「按依赖走、不多等」" in handoff
+
+    # 必写哪几类验收条目只在「验收条目」一节写全，② 2.4 引用它
+    items = _read("design/选择题与判断题.md")
+    assert "各写一条改完回到列表或日历找到这条的" in items and "各写一条翻过去再翻回来的" in items
+    assert "Studio 宿主下另写一条「在 Studio 里打开看各页面」，④ 按「未测」表记 Studio 窗口，其他宿主不写这一条" in items
+    plan = _read("stages/2-方案.md")
+    assert "另外哪几类必须各写一条也见同一节" in plan and "各写一条翻过去再翻回来的" not in plan
+
+    acceptance = _read("stages/4-试用验收.md")
+    assert "截图你自己看一遍：文字被挤成一字一行或被遮住" in acceptance
+    studio_row = next(line for line in acceptance.splitlines() if line.startswith("| 依赖 Studio 里的真实窗口"))
+    assert "「只有在 Studio 里打开才能验证：Studio 窗口」" in studio_row
+    assert "只用于 ② 在 Studio 宿主下另写的「在 Studio 里打开看各页面」那一条" in studio_row
+    assert "其他页面条目照本机版结论写" in studio_row and "其他宿主没有这一条" in studio_row
+    report = _read("design/开发文档/验收报告.md")
+    assert "只有在 Studio 里打开才能验证：Studio 窗口" in report
+    assert "<div><b>0</b>没通过</div><div><b>20</b>通过</div><div><b>5</b>要你判断</div><div><b>3</b>未测</div>" in report
+    assert "28 条里通过 20、要你判断 5、未测 3" in report
+    assert "<td>28 · 在 Studio 里打开看各页面</td>" in report
