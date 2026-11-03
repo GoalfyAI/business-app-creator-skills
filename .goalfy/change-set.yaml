@@ -4,7 +4,7 @@ task_id: T-3998
 service: scene-creator-mcp-server
 scope: cross-service
 docs_impact: major
-reason: 统一智能应用开发反馈写入九节点反馈真源并同步Skill路由口径
+reason: 统一场景包开发反馈写入九节点反馈真源并同步Skill路由口径
 permission_domain: open
 affected_doc_ids:
     - goalfymax.oa.developer-feedback-nine-node-convergence

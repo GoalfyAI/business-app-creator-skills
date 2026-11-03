@@ -1,6 +1,6 @@
 ---
 name: 场景分享
-about: 分享你用智能应用解决的业务问题
+about: 分享你用场景包解决的业务问题
 title: "[Use Case] "
 labels: use-case
 assignees: ''
@@ -10,9 +10,9 @@ assignees: ''
 
 原来这件事是怎么做的，耗时多少，卡在哪里？
 
-## 智能应用怎么做的
+## 场景包怎么做的
 
-用了哪些部分（业务路线 / 编排型 TPE / FastAgent / 工具集 / 数据模板 / 前端页面 / 专属后端）？
+用了哪些资产（任务点 / 工具集 / FastAgent / Workflow / 业务界面）？
 
 ## 效果
 

@@ -1,4 +1,4 @@
-# 智能应用制作 Skill 更新指南 — 通用集成（Agent 版）
+# 场景包制作 Skill 更新指南 — 通用集成（Agent 版）
 
 被 `SCENE_SKILL_UPGRADE_REQUIRED` 拒单，或需要把 Skill 升到最新版时按本文执行。
 每一步都可重复执行。
