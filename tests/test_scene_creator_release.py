@@ -1728,6 +1728,24 @@ def test_studio_walkthrough_tightens_existing_rules():
     assert "待补充信息项目（mock）" not in _studio_section()
 
 
+def test_fk1382_skipped_form_answer_means_you_decide():
+    # 「跳过·你来判断」回传的 (skipped) 按「你看着办」定，正本仍是按轮问「什么算定了」
+    form = _read("reference/Studio表单与卡片.md")
+    answers = form.split("### 答案怎么回来", 1)[1].split("\n## ", 1)[0]
+    assert "写着 `(skipped)` 的题是开发者点了「跳过·你来判断」，算他对这一题说「你看着办」" in answers
+    assert "按 [../design/按轮问.md](../design/按轮问.md)「什么算定了」定下、标「按默认」，不再问这一题" in answers
+    assert "有推荐的按推荐，事实题照回「不确定」那条" in answers
+    assert (
+        "方向题、「我理解的是这些」，以及要他同意才能做的题（试跑、[../SKILL.md](../SKILL.md)「红线」里的外部副作用和部署授权、"
+        "「花费」里用到 80% 后继续或提高上限）被跳过不算答了，也不算同意，下一轮接着问"
+    ) in answers
+    assert "`(skipped)` 的题按没回答处理" not in answers
+    skill = _read("SKILL.md")
+    assert "| 外部副作用 |" in skill and "| 部署授权 |" in skill and "**80% 停**" in skill
+    decided = _read("design/按轮问.md").split("### 什么算定了", 1)[1].split("\n## ", 1)[0]
+    assert "「你看着办」，这时按推荐定下" in decided and "事实题回「不确定」" in decided
+
+
 def test_fk1233_stop_and_studio_acceptance_tighten_existing_rules():
     # 停下只认 SKILL.md「按依赖走、不多等」一处；交接消息的状态说明引用它
     skill = _read("SKILL.md")

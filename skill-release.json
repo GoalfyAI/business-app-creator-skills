@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20261030-e23fde",
   "skill_name": "business-app-creator",
-  "version": "v20261103-ae3df8",
-  "package_version": "2.0.39-pre.19",
+  "version": "v20261103-4fa24a",
+  "package_version": "2.0.41-pre.20",
   "mcp_endpoint": "https://business-app-creator-mcp.pre.goalfyai.cn/mcp",
-  "released_at": "2026-11-03T06:05:50Z",
-  "update_reason": "PRE 版，来自 main bcf4c1398（build 19）",
+  "released_at": "2026-11-03T14:04:31Z",
+  "update_reason": "PRE 版，来自 main f0e11bc07（build 20）",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -56,7 +56,7 @@
     "tasks/诊断.md"
   ],
   "checksums": {
-    "SKILL.md": "12d860a02d381760d3a56d33e1f4a6d773a3be3dab5278a6152b3dfcc8b67aaf",
+    "SKILL.md": "e82cdcdda2ede3c88fa45c5933752e9c24e4eeeeee4d48c07ec0b454eecfb022",
     "agents/openai.yaml": "7227269dd595c93f0fd8874dac5c68fb5d904c49cb062f845f7621addb55bf29",
     "checklists/验收清单.md": "ac1a52fc7b4415ae15e4565d6b8f788dc2502d7052a1ce6d7ff518b503dcacef",
     "design/PRD.md": "df82e23081d8a779912e5bc24a33efcc93259cb660e769adb9043e3baf18a95a",
@@ -74,8 +74,8 @@
     "design/谁来做.md": "7acdd89f324443bf87d827f6383f105217b6464dfd0fc2f96db8a5547dea29bd",
     "design/选择题与判断题.md": "c4256d21d4c8c470218615cbd18b79a66b1a8f0ec0c9bcd3479daab3f451611e",
     "design/验收报告与上线结果.md": "3c298bcbd8e5742d6a5fea703d309438397cda9d3041844b2133e0163c5babde",
-    "reference/Studio表单与卡片.md": "7c3e5b8f915275576165bce2f0bb7c4e7f02d7de89fd9a4b6a7e39adf5afdadf",
-    "reference/业务路线.md": "56b860db5d4cfde81cc6822f185ee02a7d1f8175b69d727f4518fd30836cd9cc",
+    "reference/Studio表单与卡片.md": "7b0efa1c9cf6e2cf95bc1324e5e72378db2a42d2c7843df07a72019939e1a03b",
+    "reference/业务路线.md": "ce7bcf6c68919ec41db46698ac8e73551886708ed489fbe9c6e9e6c2a999ff65",
     "reference/依赖与MCP接入.md": "f3937ccff73e7df84f15aed8bf0c3c813f023ee2c77cd49ed7730a3d93261e65",
     "reference/前端页面.md": "2a02b29b729079883f9cf190ad8cc4a14803ba31c2ac87bf2b286b2e1fcd8f45",
     "reference/多人协作.md": "6419f6c189b95e6337eaaf1d59d47e9f6f94de84b3fbc2145fc561341ae10dbb",
