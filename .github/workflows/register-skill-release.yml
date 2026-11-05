@@ -1,0 +1,44 @@
+name: Register Skill Release
+
+# 校验产物并登记到各环境 Hub，成功后自动抬建议线；强制线保持不变。
+# 日常发版与抬线已由 Codeup 三条环境流水线（scripts/deploy_env.py）完成，GitHub 只跟随推送；
+# 这里不再随推送触发，只保留手动运行作为应急补登记。
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# 与 QA 共用写窗口；旧发布重跑另由脚本按登记 ID 防止建议线回退。
+concurrency:
+  group: scene-skill-version-policy
+  cancel-in-progress: false
+
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # 拦住绕过发布流程的手工编辑：版本号没动时，无法区分新内容与上一版。
+      # 直接调用仓库脚本，校验逻辑只有一份——单独在这里重写会漏掉新增平台。
+      - name: Verify release manifest matches published files
+        run: |
+          python3 -m pip install --quiet pyyaml
+          python3 scripts/build_platform_packages.py check
+
+      - name: Register release and raise recommended version in Max Hub environments
+        env:
+          # 变量名必须与 register-skill-release.py 读取的一致
+          SCENE_SKILL_RELEASE_REGISTRY_TARGETS: ${{ secrets.SCENE_SKILL_RELEASE_REGISTRY_TARGETS }}
+          SCENE_SKILL_RELEASE_RECOMMENDED_TARGETS: ${{ secrets.SCENE_SKILL_RELEASE_RECOMMENDED_TARGETS }}
+
+        run: |
+          python3 scripts/register-skill-release.py --register-and-recommend
