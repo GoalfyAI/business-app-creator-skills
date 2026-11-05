@@ -1,6 +1,6 @@
 ---
 name: business-app-creator
-description: 制作和维护 GoalfyMax 智能应用（场景包或应用直挂的业务路线 + 数据模板 + 前后端应用）时使用，涵盖新建、接续、修订、诊断、能力试用和方案讨论。按五段推进：需求确认、方案、制作、试用验收、上线；每段交给开发者一份看得懂的交付物，开发者只确认自己的业务、看得见的东西、取舍和自己手上的事。平台操作引用 MCP 合同，工程实现引用脚手架合同。一次性业务执行或平台概念咨询不使用。[skill-version:v20261103-4fa24a]
+description: 制作和维护 GoalfyMax 智能应用（场景包或应用直挂的业务路线 + 数据模板 + 前后端应用）时使用，涵盖新建、接续、修订、诊断、能力试用和方案讨论。按五段推进：需求确认、方案、制作、试用验收、上线；每段交给开发者一份看得懂的交付物，开发者只确认自己的业务、看得见的东西、取舍和自己手上的事。平台操作引用 MCP 合同，工程实现引用脚手架合同。一次性业务执行或平台概念咨询不使用。[skill-version:v20261105-dca303]
 keywords:
   - 智能应用
   - 智能应用开发
@@ -115,6 +115,7 @@ keywords:
 | 改已上线应用的页面、接口、表、路线或能力 | 修订 | [tasks/修订.md](tasks/修订.md) |
 | 效果差、报错、数据不对、页面异常 | 诊断 | [tasks/诊断.md](tasks/诊断.md) |
 | 验证一个外部能力值不值得做进来 | 能力试用 | [tasks/能力试用.md](tasks/能力试用.md) |
+| 升级脚手架、检查更新、Studio「检查并升级」发来的固定指令 | 升级 | [tasks/升级.md](tasks/升级.md) |
 | 纯概念咨询、没指向具体应用、或明确只在聊天里回答 | 仅讨论 | [tasks/仅讨论.md](tasks/仅讨论.md) |
 | 查使用者反馈、整理反馈报告、按报告改应用、同步处理状态 | 用户反馈 | [tasks/用户反馈.md](tasks/用户反馈.md) |
 
@@ -125,14 +126,12 @@ keywords:
 - `viewer`（只读协作者）：不管要做什么都走 [tasks/诊断.md](tasks/诊断.md)，不写任何东西。
 - `none`：告诉开发者他没有这个应用的权限，请属主把他加为协作者；`list` 里有待接受的邀请时按 [reference/多人协作.md](reference/多人协作.md)「先认角色」告诉他怎么接受。
 
-意图或关键参数缺失时先问；工程上的小取舍按可逆默认做，写进开发记录。
+任何任务（含用户反馈、能力试用）开始前先查有没有没做完的升级，有就先按 [tasks/升级.md](tasks/升级.md)「先读什么」第 5 条处理（`viewer` 只告知、不处理）。意图或关键参数缺失时先问；工程上的小取舍按可逆默认做，写进开发记录。
 
-## 7. 开工
-
-每个应用只做一次，接续时逐步核对：
+## 7. 开工（每个应用只做一次，接续时逐步核对）
 
 1. **建工单**：`task_manager(action="create", mode="write", skill_version=…)`，标题写应用名。`skill_version` **必须**填已安装 SKILL.md description 里 `[skill-version:...]` 的原值，每次建 write 工单前从文件读，不留空、不填 `dev`、不凭记忆。之后制作、部署、运行工具都带这个 `task_id`；关键事实（资产 ID、版本、run_id）用 `task_manager(action="insert", entry_type="checkpoint")` 记，不写过程流水。被拒按 [reference/报错对照.md](reference/报错对照.md)「工单闸门」。
-2. **定位应用工程并核脚手架版本**：在开发者中心分配的 `apps/<应用目录>/` 下工作（没有开发者中心的命令行宿主见 [reference/开发者中心与工作区.md](reference/开发者中心与工作区.md)「命令行宿主」）；读应用根的 `scaffold-release.json`，调 `business_ui_bundle(action="download_template")` 核版本，低于必须线先升级（[reference/脚手架与预置件.md](reference/脚手架与预置件.md)「版本闸门与升级」）。
+2. **定位应用工程并核脚手架版本**：在开发者中心分配的 `apps/<应用目录>/` 下工作（没有开发者中心的命令行宿主见 [reference/开发者中心与工作区.md](reference/开发者中心与工作区.md)「命令行宿主」）；先查有没有没做完的升级（`docs/upgrade/latest.json` 为 `awaiting_consent`，或「upgrade: before」之后没有完成、失败或停止提交），有就先按 [tasks/升级.md](tasks/升级.md)「先读什么」第 5 条处理；读应用根的 `scaffold-release.json`，调 `business_ui_bundle(action="download_template")` 核版本，低于必须线先按 [tasks/升级.md](tasks/升级.md) 升级（版本依据见 [reference/脚手架与预置件.md](reference/脚手架与预置件.md)「版本闸门与升级」）。清单带 `guide_baseline` 时按同文件「新建与存量」判定并删掉它；新建应用在第 3 步 `scaffold:init` 之后、`npm run setup` 之前判定。
 3. **初始化或接续工作区**：宿主给了初始化命令就原样执行。没有现成命令时，新建用 `npm run scaffold:init -- --app-name "<应用名>"`，不传 `--environment`：宿主（Studio）提供了环境，脚手架自己读。只有它报「缺少环境」时，才问开发者在哪个 GoalfyMax 站点开发（只有他知道的事实，不给推荐；和 ① 第一轮的题一起发，编作 Q1），答案原样填进 `--environment` 再初始化；接续时缺失文件用 `npm run scaffold:repair -- --app-name "<应用名>"` 补。然后 `npm run setup`、`npm run doctor`。三件套见 [reference/开发者中心与工作区.md](reference/开发者中心与工作区.md)「三件套与阶段标记」；Studio 宿主不另传文档模式参数（同文件「Studio 宿主」）。
 4. **读一次开发者偏好**：`dev_preferences(action="pull")`；写过的照做，其余用可逆默认，当前指令优先。
 5. **读协作状态**（已有应用）：`business_ui_manage(action="get")` 看 `role`、待上线的提请、自己草稿的基线是否过期；属主有提请先按 [tasks/接续.md](tasks/接续.md) 处理，协作者草稿基线过期先按 [tasks/修订.md](tasks/修订.md) 合并。
@@ -181,7 +180,7 @@ keywords:
 |---|---|
 | 对象、执行形态、`*_id`、版本词、积分、工具速查、术语表、模型档位 | [reference/平台对象速查.md](reference/平台对象速查.md) |
 | 工作区三件套、方案页、阶段标记与记录、演示预览、本机版页面验收、Studio 宿主、换机 | [reference/开发者中心与工作区.md](reference/开发者中心与工作区.md) |
-| 脚手架版本闸门、升级、预置件、verify | [reference/脚手架与预置件.md](reference/脚手架与预置件.md) |
+| 脚手架版本闸门、新建与存量、预置件、verify；升级记录与手册 | [reference/脚手架与预置件.md](reference/脚手架与预置件.md)；[reference/升级手册模板.md](reference/升级手册模板.md) |
 | 编排脚本、建 FA、`_output`、失败出口、事件契约、读写应用库 | [reference/编排脚本.md](reference/编排脚本.md) |
 | 路线对象、assemble、中途表单、交付审阅；新路应用（新 SDK、不挂场景包） | [reference/业务路线.md](reference/业务路线.md)；[reference/新路应用.md](reference/新路应用.md) |
 | 建表、列可编辑性、谁建行、模板版本与迁移 | [reference/数据模板.md](reference/数据模板.md) |

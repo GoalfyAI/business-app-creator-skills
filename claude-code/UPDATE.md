@@ -10,10 +10,12 @@
 ### 第 1 步：升级插件
 
 ```bash
+claude plugin marketplace update business-app-creator
 claude plugin update business-app-creator@business-app-creator
 ```
 
-插件市场会拉取公开仓库、比较 `plugin.json` 版本并完成更新。
+先刷新插件市场再升级：`claude plugin update` 只拿本机已有的市场副本比较版本，不会先去拉公开仓库，
+单独执行会一直停在旧版。
 
 **兜底**：如果提示插件市场不是 Git 市场，或升级后 `[skill-version:...]` 标记仍是旧值，说明市场
 当初是从本地目录添加的，一直在复用陈旧缓存。重新绑回公开仓库后再执行上面的升级：

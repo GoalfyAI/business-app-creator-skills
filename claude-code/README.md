@@ -74,6 +74,7 @@ claude plugin install business-app-creator@business-app-creator
 ## 更新
 
 ```bash
+claude plugin marketplace update business-app-creator
 claude plugin update business-app-creator@business-app-creator
 ```
 

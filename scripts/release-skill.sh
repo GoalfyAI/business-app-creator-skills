@@ -44,7 +44,7 @@ if [ "$QA_ONLY" = false ] && [ "$BRANCH" != "main" ]; then
 fi
 
 # 切版本：生成随机 Skill 版本、提升所有插件 package version、
-# 重建四个平台的 Skill 副本与压缩包、刷新发布清单。
+# 重建两个平台的 Skill 副本、刷新发布清单。
 VERSION="$(SCENE_SKILL_RELEASE_NOTES="${NOTES}" python3 - "${NOTES}" <<'PY'
 import sys
 from pathlib import Path
@@ -62,7 +62,7 @@ git add -A
 git commit -m "chore(skill): release ${VERSION}" -m "${NOTES}"
 if [ "$QA_ONLY" = true ]; then
   echo "已生成 QA 候选版 ${VERSION}，未创建生产 tag、未登记版本、未抬杆。"
-  echo "推送当前测试分支到 origin 与 github 后，仅向指定 QA 环境登记。"
+  echo "推送当前测试分支到 origin 后，由 QA 环境流水线生成安装物料并登记。"
   exit 0
 fi
 # 每个版本对应一次提交，GitHub Actions 据此发布 Release。
@@ -70,6 +70,6 @@ git tag -a "skill/${VERSION}" -m "${NOTES}"
 
 echo
 echo "已发布 ${VERSION}"
-echo "推送两个远程："
+echo "推送到 Codeup："
 echo "  git push --follow-tags origin main"
-echo "  git push --follow-tags github main"
+echo "GitHub 只由流水线追加发布快照，不要把 main 直接推到 GitHub（会带上全部开发历史）。"

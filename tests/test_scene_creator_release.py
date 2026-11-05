@@ -28,7 +28,7 @@ PLATFORM_FILES = ("README.md", "AGENTS.md", "UPDATE.md", ".mcp.json")
 
 def _copy_repo(tmp_path: Path) -> Path:
     """复制一份完整仓库结构，返回其中的 Skill 内容目录。"""
-    for name in ("skills", "claude-code", "codex", "manus", "generic", ".claude-plugin", ".agents"):
+    for name in ("skills", "claude-code", "codex", ".claude-plugin", ".agents"):
         shutil.copytree(ROOT / name, tmp_path / name)
     for name in ("skill-release.json", "pyproject.toml", "uv.lock", "README.md"):
         shutil.copy2(ROOT / name, tmp_path / name)
@@ -132,7 +132,7 @@ def test_every_install_surface_ships_production_endpoint():
 
 
 def test_platform_skill_copies_match_the_single_source():
-    """四个平台的 Skill 副本必须与唯一源逐字节一致。"""
+    """两个平台的 Skill 副本必须与唯一源逐字节一致。"""
     release_module.check_platform_skills(SKILL_ROOT)
 
     canonical = (SKILL_ROOT / "SKILL.md").read_bytes()
@@ -141,7 +141,7 @@ def test_platform_skill_copies_match_the_single_source():
         assert copy.read_bytes() == canonical, platform
     # 只有 Codex 需要 openai.yaml
     assert (ROOT / "codex/skills/business-app-creator/agents/openai.yaml").is_file()
-    for platform in ("claude-code", "manus", "generic"):
+    for platform in ("claude-code",):
         target = release_module._platform_skill_dir(SKILL_ROOT, platform) / "agents"
         assert not target.exists(), platform
 
@@ -419,16 +419,6 @@ def test_business_app_guidance_does_not_restore_removed_form_prefill():
     assert "useFormPrefill" not in pages
 
 
-def test_stale_zip_is_rejected(tmp_path: Path):
-    """源文件改了但没重新打包时必须报错，否则只能等 CI 兜底。"""
-    copied = _copy_repo(tmp_path)
-    readme = tmp_path / "generic" / "README.md"
-    readme.write_text(readme.read_text(encoding="utf-8") + "\n补充说明\n", encoding="utf-8")
-
-    with pytest.raises(release_module.ReleaseError, match="平台压缩包已过期"):
-        release_module.check_release(copied)
-
-
 def test_install_docs_state_the_required_facts():
     """安装文档必须交代：密钥从哪来、装完怎么验证、从哪装。"""
     for platform, layout in release_module.PLATFORM_LAYOUTS.items():
@@ -539,8 +529,6 @@ def test_application_workspace_paths_are_not_skill_references(tmp_path: Path):
     [
         "claude-code/skills/business-app-creator/SKILL.md",
         "codex/skills/business-app-creator/SKILL.md",
-        "manus/skill/SKILL.md",
-        "generic/SKILL.md",
     ],
 )
 def test_platform_copy_drift_is_rejected(tmp_path: Path, relative: str):
@@ -730,7 +718,9 @@ def test_release_script_covers_the_whole_publish_flow():
     assert "release_prod_source" in script, "未切版本"
     assert "build_platform_packages.py check" in script, "未在提交前校验"
     assert "git commit" in script and "git tag" in script, "未提交或未打 tag"
-    assert "origin main" in script and "github main" in script, "未提示推送两个远程"
+    assert "origin main" in script, "未提示推送 Codeup"
+    # GitHub 只放流水线追加的发布快照，不能提示把带开发历史的 main 直接推过去（FB-1544）
+    assert "push --follow-tags github main" not in script, "不应提示直接推 GitHub main"
     # 工作区不干净时无法分辨哪些改动属于本次发布
     assert "git status --porcelain" in script
 
@@ -933,7 +923,7 @@ def test_qa_build_switches_every_environment_value(tmp_path: Path, monkeypatch):
     manifest = json.loads((out / "skill-release.json").read_text(encoding="utf-8"))
     assert manifest["mcp_endpoint"] == release_module.RELEASE_CHANNELS["qa"]["mcp_endpoint"]
     prod = release_module.RELEASE_CHANNELS["prod"]
-    install_roots = ("skills", "claude-code", "codex", "manus", "generic", "docs", "README.md")
+    install_roots = ("skills", "claude-code", "codex", "docs", "README.md")
     for root_name in install_roots:
         base = out / root_name
         files = [base] if base.is_file() else [p for p in base.rglob("*") if p.suffix in {".md", ".json", ".yaml"}]
