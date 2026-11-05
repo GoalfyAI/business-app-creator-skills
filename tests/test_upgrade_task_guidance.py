@@ -378,3 +378,10 @@ def test_v565_round3_platform_rollback_and_step_times(read_skill):
     template = read_skill("reference/升级手册模板.md")
     assert '"rollback_platform":[{' in template and "`rollback_platform`：" in template
     assert "`steps[].at` 是该步实际结束的时间" in template
+
+
+def test_v565_round4_upgrade_caused_is_decided_by_rollback_point(read_skill):
+    """07 V-565 第 4 轮：新数据集检查时修时不修。「是否升级带来」按回滚点旧模板判断，不凭业务代码观感。"""
+    adapt = _step(read_skill("tasks/升级.md"), 7)
+    assert "只看这项检查在回滚点" in adapt and "`DATASET_TABLE_UNDECLARED`" in adapt
+    assert "**禁止**因为业务代码看起来早就这样" in adapt
