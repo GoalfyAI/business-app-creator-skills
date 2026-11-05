@@ -1,10 +1,9 @@
 """R-367 五段版：四份开发文档、Studio 接续、平台反馈与七节点遗留反馈、开工环境与结单前保存。
 
-每条都从唯一源、四个平台和两个安装包读实际分发的文件。
+每条都从唯一源和两个平台副本读实际分发的文件。
 """
 
 from pathlib import Path
-from zipfile import ZipFile
 
 import pytest
 
@@ -13,10 +12,6 @@ SURFACES = (
     "skills/business-app-creator",
     "claude-code/skills/business-app-creator",
     "codex/skills/business-app-creator",
-    "generic",
-    "manus/skill",
-    "generic/business-app-creator-generic.zip",
-    "manus/business-app-creator-skill.zip",
 )
 DOCS = "design/开发文档/"
 
@@ -29,18 +24,12 @@ def surface(request):
 @pytest.fixture
 def read_skill(surface):
     def read(relative: str) -> str:
-        if surface.suffix == ".zip":
-            with ZipFile(surface) as archive:
-                return archive.read(relative).decode("utf-8")
         return (surface / relative).read_text(encoding="utf-8")
 
     return read
 
 
 def _names(surface: Path) -> list[str]:
-    if surface.suffix == ".zip":
-        with ZipFile(surface) as archive:
-            return archive.namelist()
     return [p.relative_to(surface).as_posix() for p in surface.rglob("*") if p.is_file()]
 
 

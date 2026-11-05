@@ -1,5 +1,4 @@
 from pathlib import Path
-from zipfile import ZipFile
 
 import pytest
 
@@ -9,22 +8,14 @@ SURFACES = (
     "skills/business-app-creator",
     "claude-code/skills/business-app-creator",
     "codex/skills/business-app-creator",
-    "generic",
-    "manus/skill",
-    "generic/business-app-creator-generic.zip",
-    "manus/business-app-creator-skill.zip",
 )
 
 
 @pytest.fixture(params=SURFACES)
 def form_guidance(request):
-    """从唯一源、四个平台和两个安装包读取实际分发的表单指导。"""
+    """从唯一源和两个平台副本读取实际分发的表单指导。"""
     surface = ROOT / request.param
-    if surface.suffix == ".zip":
-        with ZipFile(surface) as archive:
-            text = archive.read(GUIDANCE).decode("utf-8")
-    else:
-        text = (surface / GUIDANCE).read_text(encoding="utf-8")
+    text = (surface / GUIDANCE).read_text(encoding="utf-8")
     return text.split("### 表单定义放哪", 1)[1].split("### ", 1)[0]
 
 

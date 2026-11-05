@@ -1,5 +1,4 @@
 from pathlib import Path
-from zipfile import ZipFile
 
 import pytest
 
@@ -8,22 +7,15 @@ SURFACES = (
     "skills/business-app-creator",
     "claude-code/skills/business-app-creator",
     "codex/skills/business-app-creator",
-    "generic",
-    "manus/skill",
-    "generic/business-app-creator-generic.zip",
-    "manus/business-app-creator-skill.zip",
 )
 
 
 @pytest.fixture(params=SURFACES)
 def read_skill(request):
-    """从唯一源、四个平台和两个安装包读取实际分发的 Skill 文件。"""
+    """从唯一源和两个平台副本读取实际分发的 Skill 文件。"""
     surface = ROOT / request.param
 
     def read(relative: str) -> str:
-        if surface.suffix == ".zip":
-            with ZipFile(surface) as archive:
-                return archive.read(relative).decode("utf-8")
         return (surface / relative).read_text(encoding="utf-8")
 
     return read

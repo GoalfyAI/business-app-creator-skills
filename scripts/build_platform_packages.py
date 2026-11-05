@@ -18,7 +18,6 @@ import re
 import secrets
 import shutil
 import sys
-import zipfile
 from collections.abc import Iterable
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
@@ -32,8 +31,9 @@ PLUGIN_NAME = "business-app-creator"  # 插件 / 市场名（产品名），与 
 SKILL_CONTENT_DIR = "skills/business-app-creator"
 MANIFEST_RELATIVE_PATH = Path("skill-release.json")
 OPENAI_METADATA_RELATIVE_PATH = Path("agents/openai.yaml")
-# 各平台的安装形态不同：插件市场平台把 Skill 放进 skills/ 子目录，
-# Manus 上传 skill 包，通用集成直接摊在目录根。Skill 内容本身四份完全一致。
+# 只发 Claude Code 与 Codex 两个插件市场平台，Skill 放进 skills/ 子目录，内容与唯一源完全一致。
+# Manus 与通用集成已停止维护：不再生成目录和 zip，zip 每次发版重新提交曾把仓库撑到 69MB，
+# 让插件市场克隆超时（FB-1544）。
 # Skill 内容目录（只放 .md）：stages 五段主流程、tasks 非新建任务入口、design 沟通模板、
 # reference 按需查阅的正本、checklists 人判验收项。发布包按这个清单收文件。
 SKILL_CONTENT_MD_DIRS = ("stages", "tasks", "design", "reference", "checklists")
@@ -53,26 +53,6 @@ PLATFORM_LAYOUTS = {
         "mcp_config": ".mcp.json",
         "docs": ("README.md", "AGENTS.md", "UPDATE.md"),
     },
-    "manus": {
-        "skill_subdir": "skill",
-        "with_openai_metadata": False,
-        # Manus 在网页里手工添加连接器，仓库不放 .mcp.json
-        "mcp_config": None,
-        "docs": ("README.md", "UPDATE.md"),
-        # Manus 要求 SKILL.md 位于压缩包根目录
-        "zip": ("business-app-creator-skill.zip", "skill", ("SKILL.md", *SKILL_CONTENT_MD_DIRS, "scripts")),
-    },
-    "generic": {
-        "skill_subdir": ".",
-        "with_openai_metadata": False,
-        "mcp_config": ".mcp.json",
-        "docs": ("README.md", "UPDATE.md"),
-        "zip": (
-            "business-app-creator-generic.zip",
-            ".",
-            (".mcp.json", "SKILL.md", *SKILL_CONTENT_MD_DIRS, "scripts", "README.md"),
-        ),
-    },
 }
 PLATFORM_NAMES = tuple(PLATFORM_LAYOUTS)
 # 附加 Skill：仓库根目录下自研的额外 Skill，随插件同步到 claude-code / codex 的 skills/ 下。
@@ -82,7 +62,6 @@ EXTRA_SKILL_SOURCES: dict[str, Path] = {}
 # 已退役的附加 Skill：同步时从各平台 skills/ 下删除，校验时发现残留即拒绝发布。
 RETIRED_EXTRA_SKILLS = ("business-app-creator-lite",)
 EXTRA_SKILL_PLATFORMS = ("claude-code", "codex")
-ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 # 仓库里的安装物料统一指向同一个 MCP 地址，由本常量唯一决定。
 # 2026-09-02 拍板：生产 MCP 尚未部署（404），安装物料先指向 QA；切回生产时改这一处 +
 # 文档里的 API 密钥页域名（goalfymax.goalfyai.cn ↔ goalfymax.goalfyai.cn），再发版。
@@ -409,8 +388,7 @@ def validate_platform_install_files(skill_root: Path) -> None:
         for required_text in ("/developer/api-keys", "list_assets"):
             if required_text not in docs:
                 raise ReleaseError(f"{platform} 安装文档必须提到 {required_text!r}")
-        # 有 .mcp.json 的平台靠环境变量注入密钥，文档必须写明变量名；
-        # Manus 在网页里直接填明文密钥，没有环境变量可言。
+        # 有 .mcp.json 的平台靠环境变量注入密钥，文档必须写明变量名
         if mcp_name and config["api_key_env"] not in docs:
             raise ReleaseError(f"{platform} 安装文档必须说明 API Key 环境变量 {config['api_key_env']}")
         # 渠道之间不能串：prod 物料里出现 QA 地址或 QA 变量名（反之亦然）都拒绝发布 [任务:T-3784]
@@ -418,7 +396,7 @@ def validate_platform_install_files(skill_root: Path) -> None:
         leaked = [marker for marker in foreign if marker in docs or marker in mcp_text]
         if leaked:
             raise ReleaseError(f"{platform} 的安装物料混入了其他渠道的配置：{leaked}")
-        # 走插件市场的平台必须给出公开来源；Manus 与通用集成是手工配置，不适用
+        # 走插件市场的平台必须给出公开来源
         if (
             layout["skill_subdir"].startswith("skills/")
             and "GoalfyAI/business-app-creator-skills" not in docs
@@ -806,71 +784,6 @@ def check_platform_skills(skill_root: Path) -> None:
     check_extra_skills(skill_root)
 
 
-def build_platform_zips(skill_root: Path) -> list[Path]:
-    """为没有插件管理器的平台打包 Skill。
-
-    确定性打包：固定时间戳、按路径排序、显式标记 UTF-8 文件名。
-    前两项保证内容不变时 zip 字节不变，最后一项保证中文文件名不乱码。
-    """
-    repository_root = _repository_root(skill_root)
-    built = []
-    for platform, layout in PLATFORM_LAYOUTS.items():
-        spec = layout.get("zip")
-        if not spec:
-            continue
-        archive_name, base_subdir, entries = spec
-        platform_root = repository_root / platform
-        base = platform_root if base_subdir == "." else platform_root / base_subdir
-        paths: list[Path] = []
-        for entry in entries:
-            target = base / entry
-            if target.is_dir():
-                paths.extend(sorted(path for path in target.rglob("*") if path.is_file()))
-            elif target.is_file():
-                paths.append(target)
-            else:
-                raise ReleaseError(f"{platform} 打包缺少文件：{target}")
-        output = platform_root / archive_name
-        with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
-            for path in sorted(paths, key=lambda item: item.relative_to(base).as_posix()):
-                info = zipfile.ZipInfo(
-                    path.relative_to(base).as_posix(), date_time=ZIP_TIMESTAMP
-                )
-                info.compress_type = zipfile.ZIP_DEFLATED
-                info.external_attr = 0o644 << 16
-                info.flag_bits |= 0x800
-                archive.writestr(info, path.read_bytes())
-        built.append(output)
-    return built
-
-
-def check_platform_zips(skill_root: Path) -> None:
-    """校验已提交的 zip 与当前源文件一致。
-
-    zip 是确定性打包的，所以重新打一份逐字节比对即可。少了这道校验，
-    改完源文件忘记重新打包时本地校验会放行，只能等 CI 兜底。
-    """
-    repository_root = _repository_root(skill_root)
-    stale = []
-    existing = {}
-    for platform, layout in PLATFORM_LAYOUTS.items():
-        spec = layout.get("zip")
-        if not spec:
-            continue
-        path = repository_root / platform / spec[0]
-        existing[path] = path.read_bytes() if path.is_file() else None
-    for path, previous in existing.items():
-        if previous is None:
-            stale.append(f"{path.name}（缺失）")
-    build_platform_zips(skill_root)
-    for path, previous in existing.items():
-        if previous is not None and path.read_bytes() != previous:
-            path.write_bytes(previous)  # 校验不改仓库状态
-            stale.append(path.name)
-    if stale:
-        raise ReleaseError(f"平台压缩包已过期，请执行 release 或 zip：{sorted(stale)}")
-
-
 def scaffold_min_required_version(skill_root: Path) -> str:
     markers = re.findall(r"<!-- scaffold-min-required-version:([^\s]+) -->", (skill_root / "SKILL.md").read_text(encoding="utf-8"))
     if len(markers) != 1 or not DATA_SKILL_VERSION_RE.fullmatch(markers[0]):
@@ -926,7 +839,6 @@ def check_release(skill_root: Path) -> dict[str, Any]:
         raise ReleaseError(f"发布校验和已过期：{stale}")
 
     check_platform_skills(skill_root)
-    check_platform_zips(skill_root)
     return manifest
 
 
@@ -969,7 +881,6 @@ def release(
     _bump_package_version(skill_root, package_version)
     sync_plugin_display_metadata(skill_root)
     sync_platform_skills(skill_root)
-    build_platform_zips(skill_root)
 
     files = discover_source_files(skill_root)
     manifest = {
@@ -1040,7 +951,6 @@ def _parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="action", required=True)
     subparsers.add_parser("check", help="校验仓库中的发布清单与各平台副本")
     subparsers.add_parser("sync", help="按当前发布版本重新同步各平台 Skill 副本")
-    subparsers.add_parser("zip", help="重新打包 Manus 与通用集成的 Skill 压缩包")
 
     release_parser = subparsers.add_parser("release", help="写入新的发布清单")
     release_parser.add_argument("--version", required=True, help="package version")
@@ -1055,13 +965,9 @@ def main(argv: list[str] | None = None) -> int:
         if args.action == "check":
             manifest = check_release(skill_root)
             print(f"{SKILL_NAME} 发布版本 {manifest['version']} 已是最新状态")
-        elif args.action == "zip":
-            for output in build_platform_zips(skill_root):
-                print(f"已打包 {output.name}")
         elif args.action == "sync":
             manifest = _load_manifest(skill_root)
             sync_platform_skills(skill_root)
-            build_platform_zips(skill_root)
             check_release(skill_root)
             print(f"{SKILL_NAME} 平台副本已按 {manifest['version']} 同步")
         else:

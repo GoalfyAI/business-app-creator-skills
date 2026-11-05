@@ -73,6 +73,7 @@ Agent 会建一个只读工单，逐层检查提示词、工具契约、编排�
 ## 更新
 
 ```bash
+claude plugin marketplace update business-app-creator
 claude plugin update business-app-creator@business-app-creator
 ```
 
