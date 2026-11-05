@@ -148,6 +148,7 @@ MCP 连接只有重启后才生效，重启前无法验证。**逐字输出**下
 ### 第 1 步：升级插件
 
 ```bash
+claude plugin marketplace update business-app-creator
 claude plugin update business-app-creator@business-app-creator
 ```
 
