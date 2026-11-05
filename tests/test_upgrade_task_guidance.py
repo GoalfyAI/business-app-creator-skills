@@ -365,3 +365,16 @@ def test_review_r7_cursor_retry_and_plan_warnings(read_skill):
     judge = _step(upgrade, 6)
     assert "`code=dependency_unresolved`" in judge and "判断规则不变、依赖照常保留" in judge
     assert "`retired_reasons`" in _step(upgrade, 11)
+
+
+def test_v565_round3_platform_rollback_and_step_times(read_skill):
+    """07 V-565 第 3 轮：E11 整次回滚要恢复平台草稿并如实记录；A13 steps.at 记各步实际结束时间。"""
+    upgrade = read_skill("tasks/升级.md")
+    adapt = _step(upgrade, 7)
+    assert "改平台上的应用配置前先记原值" in adapt and "第 13 步整次回滚时按这份记录逆序恢复" in adapt
+    rollback = _step(upgrade, 13)
+    assert "恢复平台上的应用配置" in rollback and "`rollback_platform`" in rollback
+    assert "**禁止**说成回滚已全部完成" in rollback
+    template = read_skill("reference/升级手册模板.md")
+    assert '"rollback_platform":[{' in template and "`rollback_platform`：" in template
+    assert "`steps[].at` 是该步实际结束的时间" in template
