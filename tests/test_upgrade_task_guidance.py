@@ -216,6 +216,8 @@ def test_review_round4_unfinished_upgrade(read_skill):
     assert "**禁止**在没做完升级的工作区上做别的任务" in prepare
     precheck = _step(upgrade, 0)
     assert "告诉开发者先按 `doctor` 的 `GIT_ROOT_MISMATCH` 处理" not in precheck and "用白话告诉开发者" in precheck
+    # 07 V-565 A9(4)：前置检查不通过只记失败并停止，不能当场 git init 后继续升级
+    assert "本次升级**禁止**自己 `git init`" in precheck and "重跑本任务" not in precheck
     template = read_skill("reference/升级手册模板.md")
     assert '"status":"checked|awaiting_consent|done|failed"' in template and '"awaiting":{' in template
     assert "写 `awaiting_consent` 时只改" in template
