@@ -43,16 +43,18 @@
 ### 9. 我可以手工编辑各平台目录吗？
 
 各平台的集成文档（`README.md`、`AGENTS.md`、`UPDATE.md`、`.mcp.json`）可以直接编辑。
-但 Skill 副本是发布流程从 `skills/business-app-creator/` 生成的，手工修改会被下次发布覆盖，
-而且会导致校验失败——要改 Skill 内容请改 `skills/business-app-creator/` 下的唯一源。
+但 Skill 副本和 `.zip` 是发布流程从 `skill/` 生成的，手工修改会被下次发布覆盖，
+而且会导致校验失败——要改 Skill 内容请改 `skill/` 下的唯一源。
 
 ### 10. 支持哪些客户端？
 
 | 客户端 | 安装与升级方式 |
 |---|---|
 | Claude Code、Codex | 各自的插件管理器，一行命令安装与升级 |
+| Manus | 网页添加 MCP 连接器 + 上传 Skill 压缩包，更新需重新上传并开新对话 |
+| 其他 MCP 客户端 | 手工配置 MCP + 加载 Skill 文件 |
 
-两个平台拿到的 Skill 内容逐字节相同。
+四个平台拿到的 Skill 内容逐字节相同。
 
 ### 11. 需要什么权限才能用？
 

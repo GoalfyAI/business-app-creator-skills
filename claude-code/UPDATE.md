@@ -10,12 +10,10 @@
 ### 第 1 步：升级插件
 
 ```bash
-claude plugin marketplace update business-app-creator
 claude plugin update business-app-creator@business-app-creator
 ```
 
-先刷新插件市场再升级：`claude plugin update` 只拿本机已有的市场副本比较版本，不会先去拉公开仓库，
-单独执行会一直停在旧版。
+插件市场会拉取公开仓库、比较 `plugin.json` 版本并完成更新。
 
 **兜底**：如果提示插件市场不是 Git 市场，或升级后 `[skill-version:...]` 标记仍是旧值，说明市场
 当初是从本地目录添加的，一直在复用陈旧缓存。重新绑回公开仓库后再执行上面的升级：
@@ -26,7 +24,7 @@ claude plugin marketplace add "https://github.com/GoalfyAI/business-app-creator-
 
 ### 第 2 步：读取新版本标记并重试（在本次会话内完成，先不要让用户重启）
 
-版本闸门只校验版本串，所以本次会话内即可解除阻塞。搜索已安装的 `skills/business-app-creator/SKILL.md`，
+版本闸门只校验版本串，所以本次会话内即可解除阻塞。搜索已安装的 `skills/agenticapp-creator/SKILL.md`（入口 Skill 以前叫 `business-app-creator`，升级后只看新名字），
 不要凭记忆拼装安装路径——路径里有连续同名层级和中间版本目录。搜索命中多份时（旧版本目录、
 市场副本），取版本目录最高或最近修改的那份。从它的 description 读出 `[skill-version:...]`，
 原样填入 `skill_version` 重试刚才失败的 `task_manager` create。

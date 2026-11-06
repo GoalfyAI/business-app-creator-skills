@@ -110,20 +110,12 @@ def test_main_then_prod_then_feature(tmp_path, hub, monkeypatch):
     assert qa_manifest["version"] == version and qa_manifest["package_version"].endswith("-qa.3")
     assert state["policy"]["min_required_version"] == state["policy"]["min_recommended_version"] == version
 
-    # 2. prod 部署同一份 main：沿用版本，不再发版；GitHub main 追加内容相同的发布快照，tag 打在快照上
-    github_before = git("rev-parse", "refs/heads/main", cwd=github)
+    # 2. prod 部署同一份 main：沿用版本，不再发版；GitHub main 与 tag 跟上 Codeup
     prod = checkout(tmp_path, codeup, "prod-main", "main")
     summary = load_deploy(prod, hub_url).deploy("prod", "main", 4)
     assert summary == {**summary, "version": version, "released": "False", "source_sha": codeup_main}
-    snapshot = git("rev-parse", "refs/heads/main", cwd=github)
-    assert snapshot != codeup_main
-    assert git("rev-parse", f"{snapshot}^{{tree}}", cwd=github) == git("rev-parse", f"{codeup_main}^{{tree}}", cwd=codeup)
-    assert git("rev-parse", f"{snapshot}^", cwd=github) == github_before
-    assert git("rev-parse", f"refs/tags/skill/{version}^{{commit}}", cwd=github) == snapshot
-    assert f"source: {codeup_main}" in git("log", "-1", "--format=%B", snapshot, cwd=github)
-    # 重跑 prod：tag 已在且内容相同，不再追加
-    load_deploy(checkout(tmp_path, codeup, "prod-rerun", "main"), hub_url).deploy("prod", "main", 4)
-    assert git("rev-parse", "refs/heads/main", cwd=github) == snapshot
+    assert git("rev-parse", "refs/heads/main", cwd=github) == codeup_main
+    assert git("rev-parse", f"refs/tags/skill/{version}^{{commit}}", cwd=github) == codeup_main
     puts = state["puts"]
 
     # 3. QA 部署功能分支：新版本登记、business-qa 前进，版本线不动
@@ -179,10 +171,7 @@ def test_release_pipeline_pins_commit_through_pre_and_prod(tmp_path, hub, monkey
     prod = checkout(tmp_path, codeup, "prod-main", "main")
     result = load_deploy(prod, hub_url).deploy("prod", "main", 8)
     assert result["source_sha"] == pinned and result["released"] == "False"
-    github_main = git("rev-parse", "refs/heads/main", cwd=github)
-    assert git("rev-parse", f"{github_main}^{{tree}}", cwd=github) == git("rev-parse", f"{pinned}^{{tree}}", cwd=codeup)
-    message = git("log", "-1", "--format=%B", github_main, cwd=github)
-    assert f"source: {pinned}" in message and later not in message
+    assert git("rev-parse", "refs/heads/main", cwd=github) == pinned != later
     assert state["policy"]["min_required_version"] == summary["version"]
 
 

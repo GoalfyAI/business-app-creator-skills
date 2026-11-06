@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""校验并发布 business-app-creator 插件（单一 Skill：business-app-creator，含 G1–G7 阶段层、P1–P8 模块层、协议层）。
+"""校验并发布 business-app-creator 插件（入口 Skill agenticapp-creator 与五段、任务、平台对象等 19 个平级 Skill）。
 
-模型很简单：`skills/business-app-creator/` 是唯一源，发布时把它复制到各平台的 `skills/business-app-creator/`，
-再给所有 SKILL.md 副本打上同一个版本标记。平台安装文档（README/AGENTS/UPDATE/.mcp.json）
+模型很简单：`skills/` 下 20 个平级 Skill 目录是唯一源，发布时逐个复制到各平台的 `skills/<名字>/`，
+版本标记只写在入口 SKILL.md。平台安装文档（README/AGENTS/UPDATE/.mcp.json）
 和插件 manifest 都是手工维护的最终文件，不做模板渲染。
 
 发布清单 `skill-release.json` 记录版本与校验和，用来发现"改了内容但没发布"。
@@ -18,6 +18,7 @@ import re
 import secrets
 import shutil
 import sys
+import zipfile
 from collections.abc import Iterable
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
@@ -25,43 +26,102 @@ from typing import Any
 
 import yaml
 
-SKILL_NAME = "business-app-creator"
+SKILL_NAME = "agenticapp-creator"
 MCP_SERVER_NAME = "business-app-creator-mcp"  # 客户端 mcpServers 键 / 服务端 EXTERNAL_MCP_NAME
-PLUGIN_NAME = "business-app-creator"  # 插件 / 市场名（产品名），与 skill 同名
-SKILL_CONTENT_DIR = "skills/business-app-creator"
+PLUGIN_NAME = "business-app-creator"  # 插件 / 市场名（产品名）；已安装的插件按这个名字升级，所以不随 Skill 改名
+# Skill 唯一源：仓库 skills/ 下 20 个平级目录，每个一个 SKILL.md（name 等于目录名）。
+# 宿主（Claude Code、Codex）按插件 skills/ 下的一级目录发现 Skill，嵌套在入口里的 Skill 不会出现在宿主列表。
+SKILLS_DIR = "skills"
+# 入口 Skill 的目录：版本标记、keywords、Codex 元数据与发布清单都以它为准。
+SKILL_CONTENT_DIR = f"{SKILLS_DIR}/{SKILL_NAME}"
 MANIFEST_RELATIVE_PATH = Path("skill-release.json")
 OPENAI_METADATA_RELATIVE_PATH = Path("agents/openai.yaml")
-# 只发 Claude Code 与 Codex 两个插件市场平台，Skill 放进 skills/ 子目录，内容与唯一源完全一致。
-# Manus 与通用集成已停止维护：不再生成目录和 zip，zip 每次发版重新提交曾把仓库撑到 69MB，
-# 让插件市场克隆超时（FB-1544）。
-# Skill 内容目录（只放 .md）：stages 五段主流程、tasks 非新建任务入口、design 沟通模板、
-# reference 按需查阅的正本、checklists 人判验收项。发布包按这个清单收文件。
-SKILL_CONTENT_MD_DIRS = ("stages", "tasks", "design", "reference", "checklists")
-# 旧结构的目录（含七节点版的 flow），同步平台副本时一并清掉，避免已删除的旧文件残留在安装包里。
-RETIRED_SKILL_DIRS = ("references", "flow", "modules", "protocols")
+# 入口目录里允许的内容：SKILL.md、agents/openai.yaml 与 references/*.md。
+ENTRY_REFERENCES_DIR = "references"
+# 其他 Skill 目录里允许的内容：参考与模板只放文本，脚本只放 Python。
+# 它们不带 agents/openai.yaml：MCP 由插件的 .mcp.json 统一声明，Codex 的 Skill 级依赖只在入口声明一次。
+ATOMIC_SKILL_SUBDIRS = {"references": (".md",), "assets": (".md", ".html", ".css"), "scripts": (".py",)}
+# 五段 Skill，按段的顺序。
+STAGE_SKILLS = (
+    "agenticapp-stage-1-requirements",
+    "agenticapp-stage-2-plan",
+    "agenticapp-stage-3-build",
+    "agenticapp-stage-4-acceptance",
+    "agenticapp-stage-5-launch",
+)
+# 入口之外的全部 Skill；少一个或多出一个都拒绝发布，防止改名或漏建。
+ATOMIC_SKILLS = (
+    *STAGE_SKILLS,
+    "agenticapp-task-revise",
+    "agenticapp-task-diagnose",
+    "agenticapp-task-user-feedback",
+    "agenticapp-tool-workspace",
+    "agenticapp-tool-workflow",
+    "agenticapp-tool-data-template",
+    "agenticapp-tool-frontend",
+    "agenticapp-tool-deploy",
+    "agenticapp-tool-integration",
+    "agenticapp-tool-automation",
+    "agenticapp-role-collab",
+    "agenticapp-host-studio",
+    "agenticapp-ref-platform-limits",
+    "agenticapp-ref-experience",
+)
+ALL_SKILLS = (SKILL_NAME, *ATOMIC_SKILLS)
+# 旧结构的目录（七节点版的 flow、modules、protocols，以及拆成子 Skill 之前的五段、任务、沟通模板、
+# 参考、清单和根目录脚本）。平台副本按 Skill 整目录重建，残留在 Skill 目录里的旧文件由副本校验拦下。
+RETIRED_SKILL_DIRS = ("flow", "modules", "protocols", "stages", "tasks", "design", "reference", "checklists", "scripts")
+# 各平台的 Skill 都放在平台目录的 skills/ 下，20 个目录平级，内容四份完全一致。
 PLATFORM_LAYOUTS = {
     "claude-code": {
-        "skill_subdir": "skills/business-app-creator",
+        "marketplace": True,
         "with_openai_metadata": False,
         "mcp_config": ".mcp.json",
         "docs": ("README.md", "AGENTS.md", "UPDATE.md"),
     },
     "codex": {
-        "skill_subdir": "skills/business-app-creator",
-        # Codex 读 agents/openai.yaml 取展示名、默认提示词与 MCP 依赖声明
+        "marketplace": True,
+        # Codex 读入口的 agents/openai.yaml 取展示名、默认提示词与 MCP 依赖声明
         "with_openai_metadata": True,
         "mcp_config": ".mcp.json",
         "docs": ("README.md", "AGENTS.md", "UPDATE.md"),
     },
+    "manus": {
+        "marketplace": False,
+        "with_openai_metadata": False,
+        # Manus 在网页里手工添加连接器，仓库不放 .mcp.json
+        "mcp_config": None,
+        "docs": ("README.md", "UPDATE.md"),
+        # 压缩包根目录是 20 个 Skill 目录，每个目录根有自己的 SKILL.md
+        "zip": ("business-app-creator-skill.zip", SKILLS_DIR, ALL_SKILLS),
+    },
+    "generic": {
+        "marketplace": False,
+        "with_openai_metadata": False,
+        "mcp_config": ".mcp.json",
+        "docs": ("README.md", "UPDATE.md"),
+        "zip": (
+            "business-app-creator-generic.zip",
+            ".",
+            (".mcp.json", SKILLS_DIR, "README.md"),
+        ),
+    },
+}
+# 改成平级之前各平台的副本位置：Manus 的 skill/，通用集成摊在目录根的入口。同步时删除，残留即拒绝发布。
+LEGACY_PLATFORM_PATHS = {
+    "manus": ("skill",),
+    "generic": ("SKILL.md", "references", "agents", *RETIRED_SKILL_DIRS),
 }
 PLATFORM_NAMES = tuple(PLATFORM_LAYOUTS)
 # 附加 Skill：仓库根目录下自研的额外 Skill，随插件同步到 claude-code / codex 的 skills/ 下。
-# 不进 business-app-creator 的发布清单与版本闸门，随插件版本自然更新。
+# 不进入口 Skill 的发布清单与版本闸门，随插件版本自然更新。
 # 2026-09-27 起 lite 版并入主 Skill，不再有附加 Skill；机制保留给以后需要时使用。 [任务:T-3724]
 EXTRA_SKILL_SOURCES: dict[str, Path] = {}
-# 已退役的附加 Skill：同步时从各平台 skills/ 下删除，校验时发现残留即拒绝发布。
-RETIRED_EXTRA_SKILLS = ("business-app-creator-lite",)
+# 已退役的 Skill 目录：同步时从各平台 skills/ 下删除，校验时发现残留即拒绝发布。
+# business-app-creator 是入口改名为 agenticapp-creator 之前的目录。
+RETIRED_EXTRA_SKILLS = ("business-app-creator-lite", "business-app-creator")
 EXTRA_SKILL_PLATFORMS = ("claude-code", "codex")
+ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 # 仓库里的安装物料统一指向同一个 MCP 地址，由本常量唯一决定。
 # 2026-09-02 拍板：生产 MCP 尚未部署（404），安装物料先指向 QA；切回生产时改这一处 +
 # 文档里的 API 密钥页域名（goalfymax.goalfyai.cn ↔ goalfymax.goalfyai.cn），再发版。
@@ -147,8 +207,13 @@ def _other_channel_markers(channel: str) -> list[str]:
 
 
 def _skill_root() -> Path:
-    """Skill 内容目录：只放要发给用户的 SKILL.md / agents / references。"""
+    """入口 Skill 目录（skills/agenticapp-creator）；其他 Skill 是它的同级目录。"""
     return Path(__file__).resolve().parents[1] / SKILL_CONTENT_DIR
+
+
+def _skills_root(skill_root: Path) -> Path:
+    """全部 Skill 的上级目录：仓库的 skills/。"""
+    return skill_root.resolve().parent
 
 
 def _repository_root(skill_root: Path) -> Path:
@@ -160,12 +225,28 @@ def _manifest_path(skill_root: Path) -> Path:
 
 
 def _relative(path: Path, skill_root: Path) -> str:
-    return path.relative_to(skill_root).as_posix()
+    """发布清单里的路径：相对 skills/，以 Skill 名开头，例如 agenticapp-creator/SKILL.md。"""
+    return path.resolve().relative_to(_skills_root(skill_root)).as_posix()
+
+
+def _is_shipped(relative_path: PurePosixPath, suffix: str) -> bool:
+    parts = relative_path.parts
+    if len(parts) < 2:
+        return False
+    rest = parts[1:]
+    if rest == ("SKILL.md",):
+        return True
+    if parts[0] == SKILL_NAME:
+        return rest == OPENAI_METADATA_RELATIVE_PATH.parts or (
+            len(rest) == 2 and rest[0] == ENTRY_REFERENCES_DIR and suffix == ".md"
+        )
+    return len(rest) == 2 and rest[0] in ATOMIC_SKILL_SUBDIRS and suffix in ATOMIC_SKILL_SUBDIRS[rest[0]]
 
 
 def discover_source_files(skill_root: Path) -> list[Path]:
-    """返回作为 Skill 内容发布的唯一源文件集合。"""
+    """返回作为 Skill 内容发布的唯一源文件集合（skills/ 下全部平级 Skill）。"""
     skill_root = skill_root.resolve()
+    skills_root = _skills_root(skill_root)
     entrypoint = skill_root / "SKILL.md"
     if not entrypoint.is_file():
         raise ReleaseError(f"缺少 Skill 入口文件：{entrypoint}")
@@ -174,13 +255,12 @@ def discover_source_files(skill_root: Path) -> list[Path]:
     if not openai_metadata.is_file():
         raise ReleaseError(f"缺少 Codex 元数据：{openai_metadata}")
 
-    for required_dir in SKILL_CONTENT_MD_DIRS:
-        if not (skill_root / required_dir).is_dir():
-            raise ReleaseError(f"缺少 Skill 目录：{skill_root / required_dir}")
+    if not (skill_root / ENTRY_REFERENCES_DIR).is_dir():
+        raise ReleaseError(f"缺少 Skill 目录：{skill_root / ENTRY_REFERENCES_DIR}")
 
     files = []
-    for path in skill_root.rglob("*"):
-        relative_path = path.relative_to(skill_root)
+    for path in skills_root.rglob("*"):
+        relative_path = PurePosixPath(path.relative_to(skills_root).as_posix())
         if path.is_symlink():
             raise ReleaseError(f"Skill 发布文件不允许使用符号链接：{path}")
         if not path.is_file():
@@ -189,13 +269,7 @@ def discover_source_files(skill_root: Path) -> list[Path]:
             continue
         if any(part.startswith(".") for part in relative_path.parts):
             raise ReleaseError(f"不支持的 Skill 隐藏文件：{relative_path.as_posix()}")
-        if relative_path == Path("SKILL.md") or relative_path == OPENAI_METADATA_RELATIVE_PATH:
-            files.append(path)
-            continue
-        if relative_path.parts[0] in SKILL_CONTENT_MD_DIRS and path.suffix.lower() == ".md":
-            files.append(path)
-            continue
-        if relative_path.parts[0] == "scripts" and path.suffix.lower() == ".py":
+        if _is_shipped(relative_path, path.suffix.lower()):
             files.append(path)
             continue
         raise ReleaseError(f"不支持的 Skill 文件：{relative_path.as_posix()}")
@@ -208,7 +282,7 @@ def discover_source_files(skill_root: Path) -> list[Path]:
 # 开头的写法——`workspace.json`、`backend/README.md` 这类是智能应用工程里的文件，不在发布包内。
 _REFERENCE_SPAN_RE = re.compile(r"`([^`\n]+)`|\]\(([^)\s]+)\)")
 _REFERENCE_PATH_RE = re.compile(r"^(?:\.{1,2}/)*[\w\-.]+(?:/[\w\-.]+)*\.(?:md|py|json|ya?ml|sh|ts|js|txt)$")
-_SKILL_CONTENT_DIRS = {*SKILL_CONTENT_MD_DIRS, "scripts", "agents"}
+_SKILL_CONTENT_DIRS = {ENTRY_REFERENCES_DIR, *ATOMIC_SKILL_SUBDIRS, "agents", *ALL_SKILLS}
 # 允许不在发布包里的引用：(引用所在文件的前缀, 引用原文, 原因)。前缀为空表示任意文件。
 REFERENCE_ALLOWLIST: tuple[tuple[str, str, str], ...] = (
     ("", "./scripts/pack.sh", "智能应用工程里的打包脚本"),
@@ -240,16 +314,17 @@ def _normalize_reference(base: PurePosixPath, reference: str) -> str | None:
 def find_broken_references(skill_root: Path) -> list[str]:
     """列出发布包内 md 正文中指向不存在文件的引用（文件:行号: 引用）。
 
-    解析顺序：引用所在目录、Skill 根目录。
+    解析顺序：引用所在目录、引用所在 Skill 的根目录。跨 Skill 引用写成 `../<名字>/...` 的相对路径。
     """
     skill_root = skill_root.resolve()
-    shipped = {_relative(path, skill_root) for path in discover_source_files(skill_root)}
+    skills_root = _skills_root(skill_root)
+    shipped ={_relative(path, skill_root) for path in discover_source_files(skill_root)}
     shipped_dirs = {str(parent) for item in shipped for parent in PurePosixPath(item).parents}
     broken = []
     for source in sorted(item for item in shipped if item.endswith(".md")):
         source_path = PurePosixPath(source)
-        bases = [source_path.parent, PurePosixPath("")]
-        text = (skill_root / source).read_text(encoding="utf-8")
+        bases = [source_path.parent, PurePosixPath(source_path.parts[0])]
+        text = (skills_root / source).read_text(encoding="utf-8")
         for line_number, line in enumerate(text.splitlines(), start=1):
             for match in _REFERENCE_SPAN_RE.finditer(line):
                 code_span, link_target = match.groups()
@@ -388,7 +463,8 @@ def validate_platform_install_files(skill_root: Path) -> None:
         for required_text in ("/developer/api-keys", "list_assets"):
             if required_text not in docs:
                 raise ReleaseError(f"{platform} 安装文档必须提到 {required_text!r}")
-        # 有 .mcp.json 的平台靠环境变量注入密钥，文档必须写明变量名
+        # 有 .mcp.json 的平台靠环境变量注入密钥，文档必须写明变量名；
+        # Manus 在网页里直接填明文密钥，没有环境变量可言。
         if mcp_name and config["api_key_env"] not in docs:
             raise ReleaseError(f"{platform} 安装文档必须说明 API Key 环境变量 {config['api_key_env']}")
         # 渠道之间不能串：prod 物料里出现 QA 地址或 QA 变量名（反之亦然）都拒绝发布 [任务:T-3784]
@@ -396,71 +472,98 @@ def validate_platform_install_files(skill_root: Path) -> None:
         leaked = [marker for marker in foreign if marker in docs or marker in mcp_text]
         if leaked:
             raise ReleaseError(f"{platform} 的安装物料混入了其他渠道的配置：{leaked}")
-        # 走插件市场的平台必须给出公开来源
-        if (
-            layout["skill_subdir"].startswith("skills/")
-            and "GoalfyAI/business-app-creator-skills" not in docs
-        ):
+        # 走插件市场的平台必须给出公开来源；Manus 与通用集成是手工配置，不适用
+        if layout["marketplace"] and "GoalfyAI/business-app-creator-skills" not in docs:
             raise ReleaseError(f"{platform} 安装文档必须给出公开插件市场来源")
 
 
-# 各类文件的固定骨架：同事往框架里补内容时照这个填，发布检查逐文件核对二级标题的名称与顺序。
-# 标题写成「## 1. 进入条件」或「## 适用场景」都可以，编号不参与比较。 [任务:T-3724]
-FILE_SKELETONS: dict[str, tuple[str, ...]] = {
-    "reference": ("适用场景", "规则", "常见错误", "相关工具与契约主题"),
-    "tasks": ("识别信号", "先读什么", "从哪一段进"),
-}
-# 五段文件各段要交给开发者的东西不同，中间的小节可以不一样；这几节必须有，且按这个顺序出现。
-STAGE_REQUIRED_HEADINGS = ("进入条件", "段里怎么做", "产出与落盘", "出问题怎么办")
-# 体积预算（行数）：超了就把细节拆进 reference，不往入口和主流程里塞。
-# 一段可能合了原来两个节点（① = G1+G2，③ = G4+G5），预算比原来单个节点的 150 行略宽。
-LINE_BUDGETS: dict[str, int] = {"SKILL.md": 200, "stages": 160, "reference": 400}
-STAGE_FILES = (
-    "1-需求确认.md",
-    "2-方案.md",
-    "3-制作.md",
-    "4-试用验收.md",
-    "5-上线.md",
-)
+# 体积预算（行数）：每个 SKILL.md 只写这个时机要做的事，细节进 references/、模板进 assets/。
+LINE_BUDGETS: dict[str, int] = {"SKILL.md": 150, "references": 200}
+# 段 Skill 这几节必须有且按顺序：开工前核对、可逐条核对的步骤、交棒条件与下一个 Skill；
+# ⑤ 是最后一段，没有下一段可交，最后一节写「结束」。
+STAGE_REQUIRED_HEADINGS = ("开始前确认", "按这个顺序做", "交棒")
+LAST_STAGE_REQUIRED_HEADINGS = ("开始前确认", "按这个顺序做", "结束")
+# 平台对象 Skill 必须有「常见错误」：工具用错的地方集中在这里。
+TOOL_REQUIRED_HEADINGS = ("常见错误",)
+# 入口之外的 Skill 的 description 全部常驻宿主的 Skill 目录，控制长度（Codex 单条超过 1024 字符会被截断）。
+ATOMIC_SKILL_DESCRIPTION_MAX = 200
 _SECTION_HEADING_RE = re.compile(r"^##\s+(?:\d+\.\s*)?(.+?)\s*$")
 
 
+def _frontmatter(path: Path, label: str) -> tuple[dict[str, Any], list[str]]:
+    lines = path.read_text(encoding="utf-8").splitlines()
+    if not lines or lines[0] != "---" or "---" not in lines[1:]:
+        raise ReleaseError(f"{label} 必须以闭合的 YAML frontmatter 开头")
+    closing = lines.index("---", 1)
+    return _load_yaml_mapping("\n".join(lines[1:closing]), f"{label} frontmatter"), lines[closing + 1 :]
+
+
+def _headings(lines: list[str]) -> list[str]:
+    in_code = False
+    headings = []
+    for line in lines:
+        if line.startswith("```"):
+            in_code = not in_code
+            continue
+        match = None if in_code else _SECTION_HEADING_RE.match(line)
+        if match:
+            headings.append(match.group(1))
+    return headings
+
+
+def _atomic_skill_errors(skill_root: Path, name: str) -> list[str]:
+    """入口之外的 Skill 的 frontmatter 与必备小节：name 与目录同名、description 非空不超长、不带版本标记。"""
+    label = f"{name}/SKILL.md"
+    path = _skills_root(skill_root) / name / "SKILL.md"
+    if not path.is_file():
+        return [f"{label} 缺失"]
+    frontmatter, body = _frontmatter(path, label)
+    errors = []
+    if set(frontmatter) != {"name", "description"}:
+        errors.append(f"{label} 的 frontmatter 必须且只能包含 name 和 description")
+    if frontmatter.get("name") != name:
+        errors.append(f"{label} 的 name 必须与目录名 {name!r} 一致")
+    description = frontmatter.get("description")
+    if not isinstance(description, str) or not description.strip():
+        errors.append(f"{label} 的 description 不能为空")
+    elif len(description) > ATOMIC_SKILL_DESCRIPTION_MAX:
+        errors.append(f"{label} 的 description 有 {len(description)} 字符，超过 {ATOMIC_SKILL_DESCRIPTION_MAX}")
+    elif SKILL_VERSION_RE.search(description):
+        errors.append(f"{label} 不能带 skill-version 标记，版本只写在入口 SKILL.md")
+    headings = _headings(body)
+    if name == STAGE_SKILLS[-1]:
+        required = LAST_STAGE_REQUIRED_HEADINGS
+    elif name in STAGE_SKILLS:
+        required = STAGE_REQUIRED_HEADINGS
+    elif name.startswith("agenticapp-tool-"):
+        required = TOOL_REQUIRED_HEADINGS
+    else:
+        required = ()
+    if required and tuple(h for h in headings if h in required) != required:
+        errors.append(f"{label} 的二级标题必须按顺序包含 {list(required)}，当前 {headings}")
+    return errors
+
+
 def validate_skill_layout(skill_root: Path) -> None:
-    """校验框架骨架：五段主流程文件齐全、各类文件二级标题符合固定写法、行数不超预算。"""
+    """校验框架骨架：skills/ 下正好是约定的平级 Skill、各自元数据与必备小节齐全、行数不超预算。"""
     skill_root = skill_root.resolve()
     errors = []
-    stage_files = sorted(path.name for path in (skill_root / "stages").glob("*.md"))
-    if stage_files != sorted(STAGE_FILES):
-        errors.append(f"stages/ 必须正好是五段文件 {list(STAGE_FILES)}，当前 {stage_files}")
+    present = sorted(path.name for path in _skills_root(skill_root).iterdir() if path.is_dir())
+    missing = sorted(set(ALL_SKILLS) - set(present))
+    unexpected = sorted(set(present) - set(ALL_SKILLS))
+    if missing or unexpected:
+        errors.append(f"平级 Skill 必须正好是 {list(ALL_SKILLS)}；缺少 {missing}，多出 {unexpected}")
+    for name in ATOMIC_SKILLS:
+        if name in present:
+            errors.extend(_atomic_skill_errors(skill_root, name))
     for path in discover_source_files(skill_root):
         relative = PurePosixPath(_relative(path, skill_root))
-        if relative.suffix != ".md":
+        if relative.suffix != ".md" or "assets" in relative.parts:
             continue
+        budget = LINE_BUDGETS["SKILL.md" if relative.name == "SKILL.md" else "references"]
         lines = path.read_text(encoding="utf-8").splitlines()
-        budget_key = "SKILL.md" if relative.as_posix() == "SKILL.md" else relative.parts[0]
-        budget = LINE_BUDGETS.get(budget_key)
-        if budget is not None and len(lines) > budget:
+        if len(lines) > budget:
             errors.append(f"{relative} 有 {len(lines)} 行，超过 {budget} 行预算")
-        is_stage = len(relative.parts) > 1 and relative.parts[0] == "stages"
-        skeleton = FILE_SKELETONS.get(relative.parts[0]) if len(relative.parts) > 1 else None
-        if skeleton is None and not is_stage:
-            continue
-        in_code = False
-        headings = []
-        for line in lines:
-            if line.startswith("```"):
-                in_code = not in_code
-                continue
-            match = None if in_code else _SECTION_HEADING_RE.match(line)
-            if match:
-                headings.append(match.group(1))
-        if is_stage:
-            required = [heading for heading in headings if heading in STAGE_REQUIRED_HEADINGS]
-            if tuple(required) != STAGE_REQUIRED_HEADINGS:
-                errors.append(f"{relative} 的二级标题必须按顺序包含 {list(STAGE_REQUIRED_HEADINGS)}，当前 {headings}")
-            continue
-        if tuple(headings) != skeleton:
-            errors.append(f"{relative} 的二级标题必须依次为 {list(skeleton)}，当前 {headings}")
     if errors:
         raise ReleaseError("Skill 框架骨架不符：\n" + "\n".join(errors))
 
@@ -608,7 +711,7 @@ def sync_plugin_display_metadata(skill_root: Path) -> None:
         manifest = json.loads(path.read_text(encoding="utf-8"))
         if "plugins" in manifest:
             manifest["description"] = interface["short_description"]
-            plugin = next(item for item in manifest["plugins"] if item["name"] == SKILL_NAME)
+            plugin = next(item for item in manifest["plugins"] if item["name"] == PLUGIN_NAME)
         else:
             plugin = manifest
         plugin["description"] = description
@@ -636,34 +739,46 @@ def _validate_released_at(value: Any) -> None:
 
 
 def _platform_skill_dir(skill_root: Path, platform: str) -> Path:
-    subdir = PLATFORM_LAYOUTS[platform]["skill_subdir"]
-    root = _repository_root(skill_root) / platform
-    return root if subdir == "." else root / subdir
+    """平台副本里放 20 个平级 Skill 的目录：<平台>/skills/。"""
+    return _repository_root(skill_root) / platform / SKILLS_DIR
 
 
 def _platform_skill_files(skill_root: Path, platform: str) -> dict[str, Path]:
-    """返回该平台应当持有的 Skill 内容文件（相对路径 -> 唯一源路径）。"""
+    """返回该平台应当持有的 Skill 内容文件（相对 <平台>/skills/ 的路径 -> 唯一源路径）。"""
     layout = PLATFORM_LAYOUTS[platform]
+    openai_metadata = f"{SKILL_NAME}/{OPENAI_METADATA_RELATIVE_PATH.as_posix()}"
     selected = {}
     for path in discover_source_files(skill_root):
-        relative = Path(_relative(path, skill_root))
-        if relative == OPENAI_METADATA_RELATIVE_PATH and not layout["with_openai_metadata"]:
+        relative = _relative(path, skill_root)
+        if relative == openai_metadata and not layout["with_openai_metadata"]:
             continue
-        selected[relative.as_posix()] = path
+        selected[relative] = path
     return selected
+
+
+def _remove(path: Path) -> None:
+    if path.is_dir() and not path.is_symlink():
+        shutil.rmtree(path, ignore_errors=True)
+    else:
+        path.unlink(missing_ok=True)
 
 
 def sync_platform_skills(skill_root: Path) -> None:
     """把 Skill 内容复制到各平台安装目录。
 
-    复制而非渲染：各平台拿到的 Skill 内容必须逐字节相同。只清理并重建
-    Skill 内容本身，平台自己的安装文档和配置不受影响。
+    复制而非渲染：各平台拿到的 Skill 内容必须逐字节相同。每个 Skill 整目录删掉重建
+    （改成平级前嵌套在入口里的副本随之清掉），平台自己的安装文档和配置不受影响。
     """
     for platform in PLATFORM_NAMES:
+        platform_root = _repository_root(skill_root) / platform
+        for legacy in LEGACY_PLATFORM_PATHS.get(platform, ()):
+            _remove(platform_root / legacy)
         target_root = _platform_skill_dir(skill_root, platform)
-        (target_root / "SKILL.md").unlink(missing_ok=True)
-        for stale in (*SKILL_CONTENT_MD_DIRS, *RETIRED_SKILL_DIRS, "scripts", "agents"):
-            shutil.rmtree(target_root / stale, ignore_errors=True)
+        # skills/ 由发布流程独占：本插件的 Skill 整目录重建，改名或嵌套留下的目录一并删掉（附加 Skill 另行同步）
+        if target_root.is_dir():
+            for path in target_root.iterdir():
+                if path.name not in EXTRA_SKILL_SOURCES:
+                    _remove(path)
         for relative, source in _platform_skill_files(skill_root, platform).items():
             destination = target_root / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
@@ -764,14 +879,29 @@ def check_extra_skills(skill_root: Path) -> None:
 def check_platform_skills(skill_root: Path) -> None:
     """校验各平台的 Skill 副本与唯一源逐字节一致。"""
     for platform in PLATFORM_NAMES:
+        platform_root = _repository_root(skill_root) / platform
         target_root = _platform_skill_dir(skill_root, platform)
-        leftovers = [name for name in RETIRED_SKILL_DIRS if (target_root / name).exists()]
+        leftovers = [name for name in LEGACY_PLATFORM_PATHS.get(platform, ()) if (platform_root / name).exists()]
+        known = {*ALL_SKILLS, *EXTRA_SKILL_SOURCES, *RETIRED_EXTRA_SKILLS}
+        if target_root.is_dir():
+            leftovers += sorted(f"{SKILLS_DIR}/{path.name}" for path in target_root.iterdir() if path.name not in known)
         if leftovers:
             raise ReleaseError(f"{platform} 仍带着旧结构目录 {leftovers}，请执行 release")
         expected = {
             relative: _sha256(source)
             for relative, source in _platform_skill_files(skill_root, platform).items()
         }
+        extra = sorted(
+            path.relative_to(target_root).as_posix()
+            for name in ALL_SKILLS
+            if (target_root / name).is_dir()
+            for path in (target_root / name).rglob("*")
+            if path.is_file()
+            and "__pycache__" not in path.parts
+            and path.relative_to(target_root).as_posix() not in expected
+        )
+        if extra:
+            raise ReleaseError(f"{platform} 仍带着旧结构目录或多余文件 {extra}，请执行 release")
         actual = {}
         for relative in expected:
             path = target_root / relative
@@ -782,6 +912,71 @@ def check_platform_skills(skill_root: Path) -> None:
             stale = sorted(name for name, digest in expected.items() if actual.get(name) != digest)
             raise ReleaseError(f"{platform} 的 Skill 副本已过期，请执行 release：{stale}")
     check_extra_skills(skill_root)
+
+
+def build_platform_zips(skill_root: Path) -> list[Path]:
+    """为没有插件管理器的平台打包 Skill。
+
+    确定性打包：固定时间戳、按路径排序、显式标记 UTF-8 文件名。
+    前两项保证内容不变时 zip 字节不变，最后一项保证中文文件名不乱码。
+    """
+    repository_root = _repository_root(skill_root)
+    built = []
+    for platform, layout in PLATFORM_LAYOUTS.items():
+        spec = layout.get("zip")
+        if not spec:
+            continue
+        archive_name, base_subdir, entries = spec
+        platform_root = repository_root / platform
+        base = platform_root if base_subdir == "." else platform_root / base_subdir
+        paths: list[Path] = []
+        for entry in entries:
+            target = base / entry
+            if target.is_dir():
+                paths.extend(sorted(path for path in target.rglob("*") if path.is_file()))
+            elif target.is_file():
+                paths.append(target)
+            else:
+                raise ReleaseError(f"{platform} 打包缺少文件：{target}")
+        output = platform_root / archive_name
+        with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+            for path in sorted(paths, key=lambda item: item.relative_to(base).as_posix()):
+                info = zipfile.ZipInfo(
+                    path.relative_to(base).as_posix(), date_time=ZIP_TIMESTAMP
+                )
+                info.compress_type = zipfile.ZIP_DEFLATED
+                info.external_attr = 0o644 << 16
+                info.flag_bits |= 0x800
+                archive.writestr(info, path.read_bytes())
+        built.append(output)
+    return built
+
+
+def check_platform_zips(skill_root: Path) -> None:
+    """校验已提交的 zip 与当前源文件一致。
+
+    zip 是确定性打包的，所以重新打一份逐字节比对即可。少了这道校验，
+    改完源文件忘记重新打包时本地校验会放行，只能等 CI 兜底。
+    """
+    repository_root = _repository_root(skill_root)
+    stale = []
+    existing = {}
+    for platform, layout in PLATFORM_LAYOUTS.items():
+        spec = layout.get("zip")
+        if not spec:
+            continue
+        path = repository_root / platform / spec[0]
+        existing[path] = path.read_bytes() if path.is_file() else None
+    for path, previous in existing.items():
+        if previous is None:
+            stale.append(f"{path.name}（缺失）")
+    build_platform_zips(skill_root)
+    for path, previous in existing.items():
+        if previous is not None and path.read_bytes() != previous:
+            path.write_bytes(previous)  # 校验不改仓库状态
+            stale.append(path.name)
+    if stale:
+        raise ReleaseError(f"平台压缩包已过期，请执行 release 或 zip：{sorted(stale)}")
 
 
 def scaffold_min_required_version(skill_root: Path) -> str:
@@ -839,6 +1034,7 @@ def check_release(skill_root: Path) -> dict[str, Any]:
         raise ReleaseError(f"发布校验和已过期：{stale}")
 
     check_platform_skills(skill_root)
+    check_platform_zips(skill_root)
     return manifest
 
 
@@ -881,6 +1077,7 @@ def release(
     _bump_package_version(skill_root, package_version)
     sync_plugin_display_metadata(skill_root)
     sync_platform_skills(skill_root)
+    build_platform_zips(skill_root)
 
     files = discover_source_files(skill_root)
     manifest = {
@@ -951,6 +1148,7 @@ def _parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="action", required=True)
     subparsers.add_parser("check", help="校验仓库中的发布清单与各平台副本")
     subparsers.add_parser("sync", help="按当前发布版本重新同步各平台 Skill 副本")
+    subparsers.add_parser("zip", help="重新打包 Manus 与通用集成的 Skill 压缩包")
 
     release_parser = subparsers.add_parser("release", help="写入新的发布清单")
     release_parser.add_argument("--version", required=True, help="package version")
@@ -965,9 +1163,13 @@ def main(argv: list[str] | None = None) -> int:
         if args.action == "check":
             manifest = check_release(skill_root)
             print(f"{SKILL_NAME} 发布版本 {manifest['version']} 已是最新状态")
+        elif args.action == "zip":
+            for output in build_platform_zips(skill_root):
+                print(f"已打包 {output.name}")
         elif args.action == "sync":
             manifest = _load_manifest(skill_root)
             sync_platform_skills(skill_root)
+            build_platform_zips(skill_root)
             check_release(skill_root)
             print(f"{SKILL_NAME} 平台副本已按 {manifest['version']} 同步")
         else:
