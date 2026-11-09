@@ -78,7 +78,6 @@
       "type": "user_gate",
       "allowed_actions": [
         {"action_key": "accept", "kind": "complete_business"},
-        {"action_key": "ask_agent", "kind": "agent_gate"},
         {
           "action_key": "revise",
           "kind": "start_orchestration",
@@ -91,7 +90,7 @@
 }
 ```
 
-接受交付才完成 Business；咨询 Agent 不等于完成；改稿启动目标路线的新 Runtime，并保留原 Runtime 与 Delivery。
+接受交付才完成 Business；改稿启动目标路线的新 Runtime，并保留原 Runtime 与 Delivery。
 
 ## 反例：把 handoff 当成隐藏的数据节点
 

@@ -32,7 +32,7 @@ description: 调用 business_ui_automation、或在 business_ui_manage(update) �
    - `automation_key`：跨版本保持不变。改了等于删掉旧自动化，使用者已开的规则会被暂停并要求重新确认。
    - 触发方式：定时 `trigger{type:"schedule", default_cron（5 段）, timezone, min_interval_minutes, user_editable}`；事件 `trigger{type:"event", table, operations, watch_columns, max_runs_per_hour, timezone}`，`max_runs_per_hour` 必填。定时与事件之间改触发方式，使用者要删掉旧规则重新开启。
    - `params`：入口每个必填字段一个来源，`fixed`、`user`、`trigger_var`、`event_field`（仅事件触发）四种，各自能填什么见 [references/自动化.md](references/自动化.md)「声明与校验」。每个 `event_field` 参数写 `label`，需要说明格式时写 `help`。
-   - `timeout_minutes`，以及 `review`（`user_gate` 或 `agent_gate`，缺省 `user_gate`），`review` 必须等于路线的 `delivery.review.type`。
+   - `timeout_minutes`，以及 `review`：写 `user_gate`，必须等于路线的 `delivery.review.type`；存量声明里的 `agent_gate`，修订时连同路线一起改成直接交付或等使用者确认。
 2. 排队上限、逐条触发的行数上限、连续失败几次自动暂停这类数值归平台管理，不写死进设计，以 `validate` 返回和平台当前配置为准。
 
 做成：保存成功。平台在保存和发布时逐项校验，不满足直接拒绝，按返回逐条改。
@@ -42,7 +42,7 @@ description: 调用 business_ui_automation、或在 business_ui_manage(update) �
 1. `business_ui_automation(action="validate")` 校验声明。挂着本人场景包草稿时直接对草稿校验，不用先把场景包上线。做成：`validate` 通过，返回的 `validated_against` 是你挂载的那一行。
 2. `business_ui_automation(action="bubble")` 按自动化的入口在开发工作集里跑一次，验处理逻辑。做成：跑到终态、结果符合 PRD，`run_id` 与结果留作 ④ 的证据。
 3. 这两个是 ④ 的证据。到点真触发要发布后开规则才有，④ 记「未测」（`agenticapp-stage-4-acceptance`），上线结果里告诉开发者发布并在「自动化」面板打开规则后才会自动跑。
-4. `run_once` 以开发者身份在正式实例上真跑一次，要求应用已有上线版本，结果不作验收证据；`run_status` / `run_stop` 看和停。
+4. `run_once` 以开发者身份在正式实例上实际跑一次，要求应用已有上线版本，结果不作验收证据；`run_status` / `run_stop` 看和停。
 
 各动作的花费按入口「花费」；冒泡和自动化运行都花开发者的积分。
 
@@ -62,7 +62,7 @@ description: 调用 business_ui_automation、或在 business_ui_manage(update) �
 | 错误 | 正确做法 |
 |---|---|
 | 把 `run_once` 的结果当 ④ 验收证据 | ④ 只用 `validate` 和 `bubble`；到点真触发记「未测」 |
-| 想验到点真触发，先去上线或催开发者发布 | 上线和发布按 `agenticapp-stage-5-launch`；④ 照记「未测」 |
+| 想验到点真触发，先去上线或催开发者发布 | 上线在 ④ 部署成功后做，发布由开发者定；到点真触发照记「未测」 |
 | 在开发工作集里写库，等事件规则触发 | 事件触发只看使用者实例库，开发工作集里的写入不会触发；处理逻辑用 `bubble` 验 |
 | 以为写了 `user_gate` 就是直接交付 | 直接交付要显式写 `message_type:"result"`，缺省是等使用者确认 |
 | 声明的 `review` 和路线 `delivery.review.type` 不一致，保存被拒 | 改路线的审阅形态或改声明，两者一致 |

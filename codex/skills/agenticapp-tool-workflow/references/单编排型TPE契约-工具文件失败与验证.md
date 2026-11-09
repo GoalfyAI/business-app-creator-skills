@@ -97,7 +97,7 @@ Max 编排型 TPE 默认可调用 `file`、`shell`、`send_email`，不需为它
 - Preview 通过后，Max 和 External 制作入口都必须通过 Max Runtime 对目标编排型 TPE 做冒泡运行，并对返回轨迹做语义验证；入口只改变调用适配，不改变冒泡语义和通过标准。
 - 当前 Max 冒泡语义是 `dry_run=true` 且未开启 `full_run`：FA 不真起，按步骤 `_output` 生成桩值；`shell`、`file` 和直连工具真实执行；`ctx.dry_run=true`。使用代表性业务输入逐条运行，未提供输入时 Runtime 可能按 Schema 合成空值，但合成输入不能代替真实样例验收。
 - 冒泡前必须检查副作用：邮件、通知、发布、扣费、创建远端对象、写正式业务状态等步骤使用 `ctx.dry_run` 只隔离该对外副作用，并返回满足最终 `output_schema` 的明确“未执行验证态”；Workspace 内用于验证管路的过程文件和候选产物仍应真实生成。不得用 `ctx.dry_run` 跳过普通工具、Schema 校验、文件管路，或绕过 FA 桩值导致的下游失败。
-- FA 桩产出是按 `_output` 生成的空值，字段写了 `examples` 时取样例值；下游把它当真实路径、URL 或业务值时可能失败。这是冒泡覆盖边界，不得为得到假绿灯添加 `if ctx.dry_run` 绕过该下游。需要验证真实 FA 数据流时，用 `full_run=true` 重跑同一冒泡（`otpe_manage(bubble)` 或路线级 `scene_package_manage(bubble)`）：FA 真跑；路线级全真运行通过的结果（`fa_stubbed=false`）即该路线的冒泡证据。要不要先问开发者见 [编排型TPE总契约.md](编排型TPE总契约.md) 的全真运行规则。
+- FA 桩产出是按 `_output` 生成的空值，字段写了 `examples` 时取样例值；下游把它当真实路径、URL 或业务值时可能失败。这是冒泡覆盖边界，不得为得到假绿灯添加 `if ctx.dry_run` 绕过该下游。需要验证真实 FA 数据流时，用 `full_run=true` 重跑同一冒泡（`otpe_manage(bubble)` 或路线级 `scene_package_manage(bubble)`）：FA 实际跑；路线级全真运行通过的结果（`fa_stubbed=false`）即该路线的冒泡证据。要不要先问开发者见 [编排型TPE总契约.md](编排型TPE总契约.md) 的全真运行规则。
 - FA 桩返回空数组时，只证明数组容器通过了本次 Schema 校验；循环体、元素字段访问及其后续分支都没有执行，不得记为路径覆盖。给数组加单元素 `examples` 能让桩走到元素取值（[制作反例集.md](制作反例集.md) 第 7 节）。若 `_output` 连 `items` 元素 Schema 都缺失，属于必须修正的契约缺陷，不是可放行的冒泡盲区。
 - 每条冒泡轨迹必须交给语义验证，核对逐步状态、错误和实际覆盖；轨迹只能证明本次输入触达的管路和非桩步骤，不能冒充 FA 内容正确或未触达分支已通过。External 的直接 `otpe_tool_test` 样本也不能冒充整条编排型 TPE 已运行。
 - Bubble 的 `run_evidence.business_events` 必须返回已声明事件、已持久化事件、缺失必需事件、未触达事件、顺序和持久化裁决。本次路径缺少 `stage_started`、缺少 `stage_result/stage_failed` 终态，或事件顺序错误时，Bubble 必须失败。单条编排型 TPE Bubble 只核验脚本自有事件；Runtime 自有的 `artifact_ready` 与 `delivery_ready` 分别在路线级 Bubble 的 Artifact 登记与 Delivery 冻结后核验。实时推送成功不是证据，只有数据库持久化成功的事件才能计入。

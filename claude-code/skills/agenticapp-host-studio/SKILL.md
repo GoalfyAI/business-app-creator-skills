@@ -22,7 +22,7 @@ Studio 第三栏「开发文档」有四份，代替方案页：
 | 需求说明（PRD） | ① 按轮问问完之后，写第 1 版 | 开发者批注后出新一版 | `prd` | 要，确认这一版 |
 | 方案 | ② 取舍、验收要求和费用变化问清之后 | 按修改意见出新一版 | `proposal` | 要，只确认一次整版 |
 | 制作进度 | ③ 开始时，建任何资产、写代码之前 | 有实质进展时 | `progress` | 不要 |
-| 验收报告 | ④ 报告过了硬门之后 | 按反馈重测后出新一版；⑤ 上线后补「上线结果」，再出一版 | `acceptance` | 开发者看完回「可以上线」 |
+| 验收报告 | ④ 报告过了硬门之后 | 按反馈重测后出新一版；⑤ 收尾时补「上线结果」，再出一版 | `acceptance` | 不要 |
 
 - 只写当前段的文档：① 里只有 PRD，② 里才有方案，依此类推。还没到的段不写，也不写「暂无」「未开始」的占位页。
 - 开工时的最小草案不交 PRD 草稿，记在哪见 [references/各段和任务在Studio下的不同.md](references/各段和任务在Studio下的不同.md)。
@@ -65,7 +65,7 @@ Studio 第三栏「开发文档」有四份，代替方案页：
 
 PRD 和方案要开发者确认；什么算「确认这一版」、新一版要不要重新确认，按 `agenticapp-stage-1-requirements`，整版确认按 `agenticapp-stage-2-plan`。确认卡上点确认和在聊天里明确同意任选其一，完成后不再要求另一种确认。Studio 里这样登记：
 
-- **在聊天里同意的**（文字或语音转写都算）：用 `studio_read_creation` 读这份文档当前的 `artifactId`、`version`、`digest`；调 `studio_confirm_proposal`，传 `documentType`（`prd` 或 `proposal`）、这三项和开发者原话 `userStatement`；再用 `studio_read_creation` 读回已确认。
+- **在聊天里同意的**（文字或语音转写都算）：用 `studio_read_creation` 读这份文档当前的 `artifactId`、`version`、`digest`；调 `studio_confirm_proposal`，传 `documentType`（`prd` 或 `proposal`）、这三项和开发者原话 `userStatement`；再用 `studio_read_creation` 读回已确认。原话要是针对这一份的：对方案的同意（包括方案确认卡）不登记成需求文档的确认，反过来也一样。
 - **在确认卡上点了确认的**：宿主已登记，用 `studio_read_creation` 读回已确认。
 - 读回已确认才往下走：PRD 读到确认之前只查不建，方案读到确认之后才进 ③。已确认范围内的修订以宿主返回的当前确认状态为准，不自行增加确认步骤。
 - 给开发者只说文档内容、实际确认状态和下一步；`artifactId`、`version`、`digest` 这类核对字段只记进阶段文档。
@@ -77,7 +77,7 @@ PRD 和方案要开发者确认；什么算「确认这一版」、新一版要�
 1. 过了 `agenticapp-stage-4-acceptance`「交报告前的三道硬门」才保存；生成脚本会拦下一部分（未测类别、条目外的未测计数、路径结论和条目对不上），其余按硬门自查。
 2. 页面条目的截图存成 `shots/<条目编号>-<序号>.png`，写进那条的 `shots`，随 `files` 一起保存。
 3. 按反馈重测后出新一版，只改变了的条目，写进 `fix_log`。每出一版有没通过的条目，制作进度在同一条回复里跟着更新。
-4. ⑤ 上线后，上线结果写进 `launch`（每项写什么按 `agenticapp-stage-5-launch`），再保存新的一版。
+4. ⑤ 收尾时，上线结果写进 `launch`（每项写什么按 `agenticapp-stage-5-launch`），再保存新的一版。
 
 ## 表单与记忆卡
 

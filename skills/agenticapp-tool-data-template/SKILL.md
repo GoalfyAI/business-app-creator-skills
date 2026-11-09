@@ -6,7 +6,7 @@ description: 调用 dataset_template_workspace 写操作或 business_ui_manage(s
 
 **数据模板**是开发期定稿的表结构，含每一列由谁写和审计列。使用者第一次打开应用时，平台照模板给他建一份自己的库（**应用库**，也叫实例），应用后端直连它，编排脚本和 FA 经平台工具 `GOALFYAI_TOOL_query_business_app_dataset` 读写同一份。几个词：
 
-- **开发工作集**：`dataset_template_workspace(action="open")` 给的独立 PG schema，用 `data_uid` 标识；建表、灌样例、跑查询都在这里，在线预览和带 `workspace` 的真跑读写的也是它。
+- **开发工作集**：`dataset_template_workspace(action="open")` 给的独立 PG schema，用 `data_uid` 标识；建表、灌样例、跑查询都在这里，在线预览和带 `workspace` 的实际跑读写的也是它。
 - **模板版本**：`extract` 从工作集抽出的整数版本；挂到应用时钉住，不跟随最新。
 
 先记住这几条：
@@ -60,7 +60,7 @@ description: 调用 dataset_template_workspace 写操作或 business_ui_manage(s
 
 - 它不占配额、不给使用者用，只给开发者和协作者用；在里面改数据或结构不影响使用者实例。
 - `open` 给的写连接串 2 小时有效，只填进 `backend/.env`，不进工单、聊天、代码。过期用 `dataset_template_workspace(action="connect")` 重签；已知应用时传 `business_ui_id`，防止两个应用串库。
-- 绑定到应用后，部署出的在线预览容器直连它（角色 `bui_w_<data_uid>`）。在线预览和带 `business_ui_data_space="workspace"` 的真跑读写这一份；使用者运行和自动化读写各自的实例。
+- 绑定到应用后，部署出的在线预览容器直连它（角色 `bui_w_<data_uid>`）。在线预览和带 `business_ui_data_space="workspace"` 的实际跑读写这一份；使用者运行和自动化读写各自的实例。
 - **一直绑定在应用上**：制作、验收、上线之后都不解绑、不 `close`、不为它重新 deploy。`close` 会把 schema 和角色一起删掉，连着它的预览容器唤醒后健康检查一直 503、页面卡在 Waking up；还有部署跑在上面时平台会拒绝 `close`。
 - 要看空库时页面怎么显示，在演示版上清空 Mock 数据看，不为此解绑或换绑。
 - 有协作者时这个工作集由属主和全部协作者共用：编辑协作者改结构前先核对模板基线并和其他人协调，只读协作者只能用只读连接查询，见 `agenticapp-role-collab`。

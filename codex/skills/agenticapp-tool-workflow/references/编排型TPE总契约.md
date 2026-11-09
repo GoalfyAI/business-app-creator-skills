@@ -85,7 +85,7 @@
 - 路线 Bubble 默认只读取精简证据：路线终态、节点/步骤摘要、失败错误、输出字段、事件覆盖、Artifact、Delivery 验证和 Review。完整步骤输出、最终输出值与事件 Payload 留在 Runtime；只有精简证据不足以定位失败时，才对同一 `run_id` 请求 `evidence_level="full"`，不得通过重跑路线获取同一证据。
 - 路线 Bubble 失败时先按响应中的 `failure_stage`、`repair_target`、`repair_action` 定位责任层；存在 `failed_node_id` 或 `failed_step_key` 时只修对应节点/步骤。只有 `repair_target=platform_runtime` 才按平台阻断处理，禁止把资产错误笼统记为平台问题。
 - 每条路线通过后，用结构化工单检查点保存 `evidence_type=orchestration_bubble_validated`、真实场景包标识、`orchestration_id` 和 `run_id`。工单完成接口会结合当前业务路线和同一工单的工具调用审计做机器核验。结单时每条当前路线都要有交代：以当前合同下最近一次终态冒泡为准，通过即可；最近一次失败须修好重跑，或写 `route_verification_waived`（带该失败 `run_id` 与理由）豁免；没有当前合同下的终态运行须补跑，或写不带 `run_id` 的 `route_verification_waived` 说明原因。豁免与未验证分别出现在 `completion_evidence.waived_routes` / `unverified_routes`，须写进交付说明。
-- 全真运行（`full_run=true` 的冒泡、`manage_goalfymax_project` 真跑）要不要问开发者，只按入口「红线」的「花钱和对外动作」判断：方案「运行条件」列过的直接跑，不再问；没列过的先说清范围、Fast Agent 费用与外部副作用，他同意后再跑。不在单条编排型 TPE 制作循环中逐条询问。真跑从业务表单入口启动整条路线，运行中表单继续使用同一 Business/Runtime 回填；他不同意时记录 `full_validation_skipped` 和剩余盲区，不得伪造 project_id、项目日志或全真产物证据。
+- 全真运行（`full_run=true` 的冒泡、`manage_goalfymax_project` 实际跑）要不要问开发者，只按入口「红线」的「花钱和对外动作」判断：方案「运行条件」列过的直接跑，不再问；没列过的先说清范围、Fast Agent 费用与外部副作用，他同意后再跑。不在单条编排型 TPE 制作循环中逐条询问。实际跑从业务表单入口启动整条路线，运行中表单继续使用同一 Business/Runtime 回填；他不同意时记录 `full_validation_skipped` 和剩余盲区，不得伪造 project_id、项目日志或全真产物证据。
 - 冒泡不需要为了节省 FA 成本而询问用户，但不是“所有工具都为桩”：FA 使用桩，`shell`、`file` 和直连工具按当前 Runtime 语义真实执行。制作入口必须在冒泡前落实 [单编排型 TPE 制作契约](单编排型TPE契约-脚本Schema与事件.md) 的 `ctx.dry_run` 副作用隔离和授权边界。
 - External Agent 不在本地获得或模拟 Max Toolbox；它通过 External MCP 的运行适配调用真实 Max Runtime。具体 action 和参数以实时 MCP Tool Schema 为准，不把 Max 内部工具原样复制进 External Skill。
 - 两个入口不把对方专属的工具名、参数或操作顺序复制进自己的 Playbook。

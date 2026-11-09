@@ -34,7 +34,7 @@ SHIPPED_SCRIPTS = (
 
 def _copy_repo(tmp_path: Path) -> Path:
     """复制一份完整仓库结构，返回其中的 Skill 内容目录。"""
-    for name in ("skills", "claude-code", "codex", "manus", "generic", ".claude-plugin", ".agents"):
+    for name in ("skills", "claude-code", "codex", ".claude-plugin", ".agents"):
         shutil.copytree(ROOT / name, tmp_path / name)
     for name in ("skill-release.json", "pyproject.toml", "uv.lock", "README.md"):
         shutil.copy2(ROOT / name, tmp_path / name)
@@ -138,7 +138,7 @@ def test_every_install_surface_ships_production_endpoint():
 
 
 def test_platform_skill_copies_match_the_single_source():
-    """四个平台的 Skill 副本必须与唯一源逐字节一致。"""
+    """两个平台的 Skill 副本必须与唯一源逐字节一致。"""
     release_module.check_platform_skills(SKILL_ROOT)
 
     for name in release_module.ALL_SKILLS:
@@ -148,22 +148,12 @@ def test_platform_skill_copies_match_the_single_source():
             assert copy.read_bytes() == canonical, (platform, name)
     # 只有 Codex 需要 openai.yaml，且只在入口
     assert (ROOT / "codex/skills/agenticapp-creator/agents/openai.yaml").is_file()
-    for platform in ("claude-code", "manus", "generic"):
+    for platform in ("claude-code",):
         target = release_module._platform_skill_dir(SKILL_ROOT, platform) / "agenticapp-creator" / "agents"
         assert not target.exists(), platform
     for platform in release_module.PLATFORM_NAMES:
         present = sorted(path.name for path in release_module._platform_skill_dir(SKILL_ROOT, platform).iterdir())
         assert present == sorted(release_module.ALL_SKILLS), platform
-
-
-def test_stale_zip_is_rejected(tmp_path: Path):
-    """源文件改了但没重新打包时必须报错，否则只能等 CI 兜底。"""
-    copied = _copy_repo(tmp_path)
-    readme = tmp_path / "generic" / "README.md"
-    readme.write_text(readme.read_text(encoding="utf-8") + "\n补充说明\n", encoding="utf-8")
-
-    with pytest.raises(release_module.ReleaseError, match="平台压缩包已过期"):
-        release_module.check_release(copied)
 
 
 def test_install_docs_state_the_required_facts():
@@ -184,8 +174,7 @@ def test_install_docs_state_the_required_facts():
             assert "BUSINESS_APP_CREATOR_API_KEY" in mcp_text
             assert not re.search(r"Bearer\s+sk_[A-Za-z0-9]", mcp_text)
             assert "BUSINESS_APP_CREATOR_API_KEY" in docs, f"{platform} 未说明密钥环境变量"
-        if layout["marketplace"]:
-            assert "GoalfyAI/business-app-creator-skills" in docs, f"{platform} 缺少公开市场来源"
+        assert "GoalfyAI/business-app-creator-skills" in docs, f"{platform} 缺少公开市场来源"
         # 仓库已公开：任何平台文档都不得再引导用户走 Codeup 内网 / SSH 地址，
         # 否则外部用户会被带去云效配公钥（T-3741）。
         for forbidden in ("codeup.aliyun.com", "git@"):
@@ -287,8 +276,6 @@ def test_application_workspace_paths_are_not_skill_references(tmp_path: Path):
     [
         "claude-code/skills/agenticapp-creator/SKILL.md",
         "codex/skills/agenticapp-creator/SKILL.md",
-        "manus/skills/agenticapp-creator/SKILL.md",
-        "generic/skills/agenticapp-creator/SKILL.md",
         "codex/skills/agenticapp-tool-deploy/SKILL.md",
         "claude-code/skills/agenticapp-stage-1-requirements/references/谁来做.md",
     ],
@@ -480,7 +467,9 @@ def test_release_script_covers_the_whole_publish_flow():
     assert "release_prod_source" in script, "未切版本"
     assert "build_platform_packages.py check" in script, "未在提交前校验"
     assert "git commit" in script and "git tag" in script, "未提交或未打 tag"
-    assert "origin main" in script and "github main" in script, "未提示推送两个远程"
+    assert "origin main" in script, "未提示推送 Codeup"
+    # GitHub 只放流水线追加的发布快照，不能提示把带开发历史的 main 直接推过去（FB-1544）
+    assert "push --follow-tags github main" not in script, "不应提示直接推 GitHub main"
     # 工作区不干净时无法分辨哪些改动属于本次发布
     assert "git status --porcelain" in script
 
@@ -865,7 +854,7 @@ def test_qa_build_switches_every_environment_value(tmp_path: Path, monkeypatch):
     manifest = json.loads((out / "skill-release.json").read_text(encoding="utf-8"))
     assert manifest["mcp_endpoint"] == release_module.RELEASE_CHANNELS["qa"]["mcp_endpoint"]
     prod = release_module.RELEASE_CHANNELS["prod"]
-    install_roots = ("skills", "claude-code", "codex", "manus", "generic", "docs", "README.md")
+    install_roots = ("skills", "claude-code", "codex", "docs", "README.md")
     for root_name in install_roots:
         base = out / root_name
         files = [base] if base.is_file() else [p for p in base.rglob("*") if p.suffix in {".md", ".json", ".yaml"}]
@@ -939,13 +928,10 @@ def test_retired_structure_directories_are_rejected_in_platform_copies(tmp_path:
         "claude-code/skills/agenticapp-creator/skills/agenticapp-tool-deploy/SKILL.md",
         "codex/skills/agenticapp-creator/skills/agenticapp-tool-deploy/SKILL.md",
         "codex/skills/agenticapp-old-name/SKILL.md",
-        "manus/skill/SKILL.md",
-        "generic/SKILL.md",
-        "generic/references/开工细则.md",
     ],
 )
 def test_nested_layout_copies_are_rejected_and_removed(tmp_path: Path, legacy: str):
-    """改成平级之前的副本位置（嵌套在入口里的 Skill、Manus 的 skill/、通用集成目录根的入口）残留即拒绝，同步时删掉。"""
+    """改成平级之前嵌套在入口里的 Skill、改名留下的目录残留即拒绝，同步时删掉。"""
     copied = _copy_repo(tmp_path)
     leftover = tmp_path / legacy
     leftover.parent.mkdir(parents=True, exist_ok=True)

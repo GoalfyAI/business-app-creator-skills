@@ -13,8 +13,6 @@
 |---|---|---|---|
 | **Claude Code** | 把 [安装指南](https://raw.githubusercontent.com/GoalfyAI/business-app-creator-skills/business-pre/claude-code/AGENTS.md) 发给 Agent，它会自己装完并验证 | [Claude Code 快速上手](docs/claude-code-quickstart.md) | 可用 |
 | **Codex** | 把 [安装指南](https://raw.githubusercontent.com/GoalfyAI/business-app-creator-skills/business-pre/codex/AGENTS.md) 发给 Agent，它会自己装完并验证 | [Codex 快速上手](docs/codex-quickstart.md) | 可用 |
-| **Manus** | 在网页添加 MCP 连接器，上传 Skill 压缩包 | [Manus 快速上手](docs/manus-quickstart.md) | 可用，需手工操作 |
-| **其他 MCP 客户端** | 手工配置远端 MCP，加载通用 Skill | [通用集成指南](generic/README.md) | 可用，步骤因客户端而异 |
 
 ## 怎么用
 
@@ -44,8 +42,6 @@ Agent 会创建只读工单，逐层检查提示词、工具契约、编排配�
 skills/         唯一源：入口 agenticapp-creator/ 与五段、任务、平台对象等 19 个平级 Skill 目录
 claude-code/    Claude Code 插件目录：安装文档 + Skill 副本
 codex/          Codex 插件目录：安装文档 + Skill 副本
-manus/          Manus 集成说明 + 可上传的 Skill 压缩包
-generic/        通用集成指南 + MCP 配置 + Skill 文件
 docs/           各平台快速上手
 scripts/        构建与发布工具
 ```
@@ -59,10 +55,8 @@ scripts/        构建与发布工具
 
 | 平台 | 更新方式 | 详细步骤 |
 |---|---|---|
-| **Claude Code** | `claude plugin update business-app-creator@business-app-creator` | [claude-code/UPDATE.md](claude-code/UPDATE.md) |
+| **Claude Code** | `claude plugin marketplace update business-app-creator` 后 `claude plugin update` | [claude-code/UPDATE.md](claude-code/UPDATE.md) |
 | **Codex** | `codex plugin marketplace upgrade business-app-creator` 后 remove + add | [codex/UPDATE.md](codex/UPDATE.md) |
-| **Manus** | 重新下载 zip，在 Skills 页删旧传新，然后开新对话 | [manus/UPDATE.md](manus/UPDATE.md) |
-| **其他 MCP 客户端** | 重新获取 `SKILL.md` 与各内容目录并重新载入 | [generic/UPDATE.md](generic/UPDATE.md) |
 
 ## 文档
 
@@ -70,10 +64,8 @@ scripts/        构建与发布工具
 |---|---|
 | [Claude Code 快速上手](docs/claude-code-quickstart.md) | 安装、验证、更新与排障 |
 | [Codex 快速上手](docs/codex-quickstart.md) | 同上 |
-| [Manus 快速上手](docs/manus-quickstart.md) | 连接器与 Skill 上传 |
-| [通用集成指南](generic/README.md) | 其他 MCP 客户端 |
 | 各平台 AGENTS.md | 交给 Agent 直接执行的安装流程：[Claude Code](https://raw.githubusercontent.com/GoalfyAI/business-app-creator-skills/business-pre/claude-code/AGENTS.md) · [Codex](https://raw.githubusercontent.com/GoalfyAI/business-app-creator-skills/business-pre/codex/AGENTS.md) |
-| 各平台 UPDATE.md | 升级步骤，写给 Agent 直接执行：[Claude Code](claude-code/UPDATE.md) · [Codex](codex/UPDATE.md) · [Manus](manus/UPDATE.md) · [通用](generic/UPDATE.md) |
+| 各平台 UPDATE.md | 升级步骤，写给 Agent 直接执行：[Claude Code](claude-code/UPDATE.md) · [Codex](codex/UPDATE.md) |
 | [常见问题](FAQ.md) | 产品与使用问题 |
 | [参与贡献](CONTRIBUTING.md) | 目录职责、本地验证、版本机制 |
 | [安全策略](SECURITY.md) | 漏洞报告与安全约定 |

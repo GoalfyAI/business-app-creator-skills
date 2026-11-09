@@ -5,7 +5,7 @@ BUSINESS_APP_CREATOR_<环境>_API_KEY、升级链接指向该分支。源码一�
 所以 main 与其他分支之间合并不会因为环境配置冲突。
 
 流程：导出源码 → 替换环境相关的值 → 写入 Skill 版本（部署 main 时沿用 main 的发布版本，其他分支随机生成）
-→ package version 为源码版本加 -<环境>.N → 按该环境渠道重建副本、压缩包与发布清单并 check → 提交到环境分支。
+→ package version 为源码版本加 -<环境>.N → 按该环境渠道重建副本与发布清单并 check → 提交到环境分支。
 登记与抬线由 scripts/deploy_env.py 在 Codeup 流水线里完成。
 
 用法：
@@ -33,7 +33,7 @@ ENV_BRANCHES = {"qa": "business-qa", "pre": "business-pre"}
 DEFAULT_PUSH_URL = "git@github.com:GoalfyAI/business-app-creator-skills.git"
 PUBLIC_REPO = "GoalfyAI/business-app-creator-skills"
 # 只改安装物料与文档；脚本、测试、CI 配置保持原样
-TEXT_ROOTS = ("skills", "claude-code", "codex", "manus", "generic", "docs", ".claude-plugin", ".agents", "README.md")
+TEXT_ROOTS = ("skills", "claude-code", "codex", "docs", ".claude-plugin", ".agents", "README.md")
 TEXT_SUFFIXES = {".md", ".json", ".yaml", ".yml", ".txt"}
 
 

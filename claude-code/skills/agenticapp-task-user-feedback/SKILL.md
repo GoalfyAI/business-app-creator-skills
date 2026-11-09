@@ -26,12 +26,12 @@ description: 使用者反馈。调用 business_ui_feedback 前必须加载；开
 5. **按决定改**（开发者明确要求按报告执行后）：
    - 先跑脚本 `validate`，只处理返回的 `accepted` 问题，`review_ready` 的不重复改；记下 `report_sha256`，每次开始写对应代码前带 `--expected-sha256` 再校验一次，摘要变了就重新读开发者的决定；
    - 核对应用家族、当前源码、真实调用链和 `developer_notes`，然后加载 `agenticapp-task-revise`，按它的起点表从受影响的那一段进，④ 和 ⑤ 照常做；
-   - `accepted` 不等于授权提交或上线，放到在线预览前也要这次改动确认过（入口「红线」）；
+   - `accepted` 只表示同意处理这个问题；他明确要求按报告执行，算这次改动确认过，改完部署直接上线，破坏性改动和要的东西变了的仍按 `agenticapp-task-revise` 确认；
    - 改动期间按实际更新决定块的 `implementation_status`（`in_progress` / `review_ready` / `blocked`），改动文件、验证结果、没解决的问题写进 `feedback-issues.json` 的 `implementation_result`，再重新取摘要、刷新报告；
    - 被拒的问题保留原因，不执行。
 6. **同步使用者看到的状态**（开发者明确要求后）：
    - 不予处理：`update_status(status="rejected")` 带理由，理由会展示给提交者。
-   - 已完成：修复要经过 ④ 验证并上线，再由开发者自己在发布管理页发布。开发者告诉你已发布后，核对发布成功，再 `update_status(status="completed")` 带 `completed_release_id` 和说明。他还没发布或发布失败时保持 `pending`；你不发布、不请求发布，也不为关闭反馈催促发布。
+   - 已完成：修复要上线并经过 ④ 验证，再由开发者自己在发布管理页发布。开发者告诉你已发布后，核对发布成功，再 `update_status(status="completed")` 带 `completed_release_id` 和说明。他还没发布或发布失败时保持 `pending`；你不发布、不请求发布，也不为关闭反馈催促发布。
    - 一条反馈拆成多个问题时：还有待决定或没解决的问题就保持 `pending`；全部不予处理才写 `rejected`；部分采纳、部分拒绝的，先请开发者明确整条反馈的最终结果和给使用者的说明，再同步。
    - 多条同步时逐条记结果，有失败的分别写明，不说全部已同步。
 

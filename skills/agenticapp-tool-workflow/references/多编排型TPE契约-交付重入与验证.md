@@ -21,7 +21,6 @@
       "type": "user_gate",
       "allowed_actions": [
         {"action_key": "accept", "kind": "complete_business"},
-        {"action_key": "ask_agent", "kind": "agent_gate"},
         {
           "action_key": "revise",
           "kind": "start_orchestration",
@@ -37,8 +36,8 @@
 - `delivery.node_id` 指向路线内真实节点；`mapping` 非空，每个 value 是相对该节点 output Schema 的 JSON Path 字符串。
 - 正式事实源是 `TaskPoint.output.data → delivery.mapping → 核验 → 冻结 Delivery`。WorkflowRun `final_output`、Agent 自述和 COT 只用于诊断。
 - output Schema、mapping、具体统计和 Workspace 文件检查未通过时，不冻结 Delivery。
-- `review.type` 只能是 `user_gate` 或 `agent_gate`；`allowed_actions` 非空，`action_key` 唯一。
-- 当前 Hub action kind 接受 `complete_business`、`fail_business`、`agent_gate`、`start_orchestration`。
+- `review.type` 只能是 `user_gate` 或 `agent_gate`；`allowed_actions` 非空，`action_key` 唯一。`agent_gate` 只出现在存量旧路线里，新写不用。
+- 当前 Hub action kind 接受 `complete_business`、`fail_business`、`agent_gate`、`start_orchestration`。`agent_gate` 只出现在存量旧路线里，新写不用。
 - `complete_business`、`fail_business` 和 `agent_gate` 不携带 `orchestration_id/form_id`。
 - `start_orchestration` 指向同一 2.0 对象中存在的路线，并携带与目标 `entry.form_id` 完全一致的 `form_id`。
 - `fail_business` 用于最终 Gate 明确拒绝当前 Delivery：当前 Runtime 保持 `succeeded`，Business 写入结构化失败原因并进入 `failed`；它不需要再次核验已拒绝的 Delivery。

@@ -21,18 +21,17 @@
 | `scripts/` | 构建与发布工具 |
 | `tests/` | 测试 |
 | `claude-code/`、`codex/` | 插件安装文档手工维护；`skills/` 子目录由发布流程复制，**不要手工编辑** |
-| `manus/`、`generic/` | 集成说明手工维护；Skill 副本与 `.zip` 由发布流程生成，**不要手工编辑** |
 | `.claude-plugin/`、`.agents/` | 插件市场清单，版本号由发布流程更新 |
 
-Skill 副本与压缩包由发布流程重建，手工改动会被覆盖并导致校验失败。要改 Skill 内容
+Skill 副本由发布流程重建，手工改动会被覆盖并导致校验失败。要改 Skill 内容
 请改 `skills/` 下的唯一源，然后执行 `release` 重新生成。
 
 ## 提交代码
 
 只修改 `skills/`、各平台目录下的安装文档、`scripts/`、`tests/`。
 
-改完源文件后必须刷新发布清单，否则校验不通过——这一步会同时重建四个平台的 Skill
-副本和两个压缩包：
+改完源文件后必须刷新发布清单，否则校验不通过——这一步会同时重建两个平台的 Skill
+副本：
 
 ```bash
 uv run python scripts/build_platform_packages.py release \
@@ -102,6 +101,8 @@ Skill 版本必须不可预测，插件版本必须可比大小，两个要求�
 ## 发版
 
 发版跟随 Codeup 的环境部署，GitHub 只作为安装源，由流水线推送，不在 GitHub 上手工改分支。
+GitHub 上的 main 与 `business-qa`、`business-pre` 都只放发布快照：每次部署追加一个与发布内容相同的提交，
+不带 Codeup 的开发历史，所以不要把 Codeup 的 main 直接推到 GitHub。
 入口都是 `scripts/deploy_env.py`，有两类云效流水线：
 
 - **发版流水线**（模板 `scripts/flow/skill-release.yaml`，只跑 main，走 OA 发车）：
@@ -126,15 +127,14 @@ Skill 版本必须不可预测，插件版本必须可比大小，两个要求�
 `GITHUB_PUSH_URL`、`SKILL_REGISTRY_SECRET`、`HUB_API_KEY`、`HUB_OPERATOR_EMAIL`、`HUB_OPERATOR_ID`。
 任何一项缺失都在写入前失败。
 
-本地仍可用 `./scripts/release-skill.sh "变更说明"` 切版本并推送 main 与 tag；之后运行对应环境
-流水线时会沿用这个版本。
+本地仍可用 `./scripts/release-skill.sh "变更说明"` 切版本并把 main 与 tag 推到 Codeup；之后运行对应环境
+流水线时会沿用这个版本，GitHub 由流水线同步。
 
 GitHub Actions：
 
 | Workflow | 触发 | 作用 |
 |---|---|---|
 | `publish-skill-release` | `skill/v*` tag | 从发布清单创建 GitHub Release |
-| `build-platform-zips` | Skill 内容变更 | 重新打包 Manus 与通用集成的压缩包 |
 | `register-skill-release` / `register-skill-qa` | 仅手动 | 应急补登记，日常不用 |
 
 两条流水线各自串行，跨环境不加锁；现有策略接口是整体 PUT，人工编辑策略须避开部署写窗口。

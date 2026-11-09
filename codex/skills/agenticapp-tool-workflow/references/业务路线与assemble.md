@@ -34,7 +34,7 @@
 ## assemble 怎么用
 
 1. 各节点 TPE 已建好并挂进场景包后，按执行顺序调 `scene_package_manage(action="assemble", task_id, scene_package_id, tpe_ids=[…], orchestration_id, title, entry_form_id)`。
-2. 它读各 TPE 的输入输出 Schema：同名字段接上游输出，并把被读的节点列为直接依赖；其余字段进入口表单；交付覆盖末节点输出；审阅缺省 `user_gate`。返回合并进现有编排的 `workflow_orchestration` 草稿，不写库。入口映射、节点映射、交付映射都由它生成，你只审 `unresolved` 与 `notes`。
+2. 它读各 TPE 的输入输出 Schema：同名字段接上游输出，并把被读的节点列为直接依赖；其余字段进入口表单；交付覆盖末节点输出；审阅缺省 `user_gate`；旧应用的草稿会带 `ask_agent`（`kind:"agent_gate"`）动作，保存前换成 `{"action_key":"reject","kind":"fail_business"}`，也不要传 `review_type="agent_gate"`。返回合并进现有编排的 `workflow_orchestration` 草稿，不写库。入口映射、节点映射、交付映射都由它生成，你只审 `unresolved` 与 `notes`。
 3. 先处理 `unresolved`（类型不一致、输出为空）与 `notes`（需改名的字段），再把 `workflow_orchestration` 整份传给 `scene_package_manage(action="update", scene_package_id, workflow_orchestration)` 保存（整体替换的规则见「路线对象」）。
 4. 局限：只做线性和「读谁就依赖谁」的接线；分支、并行、扇出、中途表单、Agent 接管、跳转到另一条路线仍按 [多编排型TPE契约-图模型与标准对象.md](多编排型TPE契约-图模型与标准对象.md) 手写。节点只能从直接依赖的上游读 `node_output`，读了非直接依赖的上游，保存被拒。
 
@@ -42,9 +42,9 @@
 
 - **交付映射**：要交付的文件，路径字段必须进 `delivery.mapping`，否则不会登记为附件（只在 `output_schema` 里声明，界面显示无产出文件）；映射引用的字段本次缺失时跳过，必填由 `output_schema` 的 `required` 决定。文件必须真实存在、声明为 `workspace-file-path`、在最终节点的 `ctx.output_dir` 里。
 - 未声明为文件的 workspace 路径不会成为附件，交付里显示为「内部资料：文件名」。本来要交付的文件没成为附件时，补齐复制、声明和映射，不以引用文字代替。
-- **审阅动作**：结束业务、以结构化原因拒绝并结束、跳转到另一条路线、交由 Agent 处理（新 SDK 应用没有这一种）。每个动作只写 `action_key` 与 `kind`，跳转另加 `orchestration_id` 与可选 `target_input_mapping`；按钮文案由 Runtime 生成，动作里不写 `label`、`description`（保存门拒收未知字段）。
+- **审阅动作**：结束业务、以结构化原因拒绝并结束、跳转到另一条路线。存量旧路线里可能有 `kind:"agent_gate"`（交由 Agent 处理）；新写或修订时不用，换成 `complete_business` / `fail_business`。每个动作只写 `action_key` 与 `kind`，跳转另加 `orchestration_id` 与可选 `target_input_mapping`；按钮文案由 Runtime 生成，动作里不写 `label`、`description`（保存门拒收未知字段）。
 - **跳转两种形态**：不需要使用者新输入时声明 `target_input_mapping`（每项 `source='delivery'`，覆盖目标路线全部必填字段），使用者点了直接启动；需要新输入（如写修改意见）时不声明映射，跳转后展示目标路线的入口表单。
-- **审阅形态**：`user_gate` 停在审阅等使用者确认（缺省，`message_type` 为 `ask`）；`user_gate` 加 `message_type:"result"` 是直接交付，平台把 `delivery.mapping.text` 作为结果消息发给使用者并结束项目、不唤醒 Agent，要求 `delivery.mapping.text` 存在且只声明一个 `complete_business` 动作；`agent_gate` 由 Agent 按路线声明的标准收尾，使用者不逐次审阅，但每次都有 Agent 模型费用。自动化路线怎么选见 `agenticapp-tool-automation`「收尾方式」。
+- **审阅形态**：`user_gate` 停在审阅等使用者确认（缺省，`message_type` 为 `ask`）；`user_gate` 加 `message_type:"result"` 是直接交付，平台把 `delivery.mapping.text` 作为结果消息发给使用者并结束项目、不唤醒 Agent，要求 `delivery.mapping.text` 存在且只声明一个 `complete_business` 动作；存量旧路线可能是 `agent_gate`（由 Agent 收尾）；新写或修订时不用——结果不需要判断就用直接交付，需要人判断就用等使用者确认。自动化路线怎么选见 `agenticapp-tool-automation`「收尾方式」。
 - 审阅应答只提交 `{ action_key }`；要改数据用中途表单或带表单的审阅动作。
 
 ## 表单定义放哪
@@ -59,4 +59,4 @@
 发起、续等、verify 和 checkpoint 按 SKILL.md「路线冒泡」与 [各动作细则.md](各动作细则.md)「路线冒泡」；这里只补交付审阅。
 
 - 交付审阅在冒泡里怎么收尾：`agent_gate` 和直接交付（`user_gate` 加 `message_type:"result"`）冒泡里没人确认，平台自动走路线唯一的终态动作并结束；`agent_gate` 声明了多个终态动作时，首次发起用 `review_action_key` 指定走哪个。`review_action_key` 只有场景包路线接受（新 SDK 应用不收），传了就按路线声明校验，不符会让冒泡失败。等使用者确认的 `user_gate`（`message_type` 为 `ask`）冒泡停在审阅，用 `run_id + formdata={"action_key": …}` 回填。
-- 能证明什么、止损和时限见 [冒泡与真跑能证明什么.md](冒泡与真跑能证明什么.md)。
+- 能证明什么、止损和时限见 [冒泡与实际跑能证明什么.md](冒泡与实际跑能证明什么.md)。

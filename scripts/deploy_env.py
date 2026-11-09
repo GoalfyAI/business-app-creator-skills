@@ -3,7 +3,9 @@
 部署 main：
   1. main 最新提交上已有 skill/<版本> tag 就沿用该版本；否则自动发版（scripts/release-skill.sh），
      把发布提交与 tag 推回 Codeup main。同一份 main 先后部署到三个环境用的是同一个版本。
-  2. prod：把这次提交与 tag 推到 GitHub main；qa / pre：按环境渠道生成安装物料，推到 GitHub business-qa / business-pre。
+  2. prod：在 GitHub main 上追加一个内容与本次发布提交完全相同的快照提交，并把 tag 打在快照上；
+     qa / pre：按环境渠道生成安装物料，推到 GitHub business-qa / business-pre。
+     GitHub 只放发布快照、不带 Codeup 开发历史，已装用户克隆插件市场时下载量小（FB-1544）。
   3. 登记到该环境 Hub，并把该环境的强制线与建议线设为这个版本（按登记 ID 只升不降）。
 部署其他分支（只允许 qa / pre）：
   按环境渠道生成带新版本的安装物料，推到该环境 GitHub 分支并登记，不动版本线。
@@ -157,9 +159,64 @@ def release_only(branch: str) -> dict[str, str]:
     return {"version": version, "source_sha": sha, "released": str(released)}
 
 
-def push_github_main(github_url: str, sha: str, version: str) -> None:
-    git("push", "--atomic", github_url, f"{sha}:refs/heads/main", f"refs/tags/skill/{version}")
-    print(f"GitHub main 与 tag skill/{version} 已同步到 {sha[:9]}")
+def push_github_main(github_url: str, sha: str, version: str) -> str:
+    """在 GitHub main 上追加发布快照：树与 Codeup 发布提交相同，父提交是 GitHub main 原来的提交。
+
+    GitHub 是已装用户的升级源，只放发布快照、不带 Codeup 开发历史（FB-1544：带上历史后仓库涨到 69MB，
+    插件市场完整克隆超时）。tag skill/<版本> 打在快照上；只追加不强推。重跑时 tag 已在且内容相同则直接返回。
+    本次来源提交必须是 GitHub main 当前来源提交本身或其后续提交，否则拒绝：旧版本的 tag 不在 GitHub 上时
+    （例如重建发布仓库删掉了旧 tag）重发旧发布提交，不能把 main 退回旧版。
+    """
+    root = REPO_ROOT
+    tag = f"refs/tags/skill/{version}"
+    tree = git("rev-parse", f"{sha}^{{tree}}", cwd=root)
+    objects = Path(git("rev-parse", "--path-format=absolute", "--git-common-dir", cwd=root)) / "objects"
+    with tempfile.TemporaryDirectory(prefix="github-main-") as tmp:
+        work = Path(tmp)
+        git("init", "-q", "--bare", cwd=work)
+        # 借用本地仓库的对象，快照提交不用复制文件
+        (work / "objects" / "info" / "alternates").write_text(f"{objects}\n", encoding="utf-8")
+        remote = {}
+        for line in git("ls-remote", github_url, "refs/heads/main", tag, cwd=work).splitlines():
+            ref_sha, ref = line.split()
+            remote[ref] = ref_sha
+        if tag in remote:
+            git("fetch", "-q", "--depth=1", github_url, tag, cwd=work)
+            if git("rev-parse", "FETCH_HEAD^{tree}", cwd=work) != tree:
+                raise DeployError(f"GitHub 上 tag skill/{version} 已存在，但内容与发布提交 {sha[:9]} 不同")
+            print(f"GitHub tag skill/{version} 已存在且内容一致，沿用")
+            return remote[tag]
+        parents: list[str] = []
+        if "refs/heads/main" in remote:
+            git("fetch", "-q", "--depth=1", github_url, "refs/heads/main", cwd=work)
+            current = remote["refs/heads/main"]
+            _require_newer_source(root, current, git("log", "-1", "--format=%B", current, cwd=work), sha, version)
+            parents = ["-p", current]
+        message = f"{RELEASE_COMMIT_PREFIX}{version}\n\nsource: {sha}\n"
+        snapshot = git("commit-tree", tree, *parents, "-m", message, cwd=work, env={**os.environ, **BOT_IDENTITY})
+        git("push", "--atomic", github_url, f"{snapshot}:refs/heads/main", f"{snapshot}:{tag}", cwd=work)
+    print(f"GitHub main 与 tag skill/{version} 已同步为发布快照 {snapshot[:9]}（来源 {sha[:9]}）")
+    return snapshot
+
+
+def _snapshot_source(github_main: str, message: str) -> str:
+    """GitHub main 当前对应的 Codeup 来源提交：快照取提交说明里的 source 行；旧版直推的 main 就是 Codeup 提交本身。"""
+    found = re.findall(r"^source: ([0-9a-f]{40})\s*$", message, flags=re.MULTILINE)
+    return found[-1] if found else github_main
+
+
+def _require_newer_source(root: Path, github_main: str, message: str, sha: str, version: str) -> None:
+    current_source = _snapshot_source(github_main, message)
+    try:
+        git("cat-file", "-e", f"{current_source}^{{commit}}", cwd=root)
+    except DeployError:
+        raise DeployError(
+            f"GitHub main 的来源提交 {current_source[:9]} 不在 Codeup 历史里，无法判断新旧，拒绝追加 {version}") from None
+    try:
+        git("merge-base", "--is-ancestor", current_source, sha, cwd=root)
+    except DeployError:
+        raise DeployError(
+            f"发布提交 {sha[:9]}（{version}）不晚于 GitHub main 当前来源 {current_source[:9]}，拒绝把 GitHub main 退回旧版") from None
 
 
 def _load(name: str, path: Path):

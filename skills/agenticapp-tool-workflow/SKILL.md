@@ -9,7 +9,7 @@ description: 调用 otpe_manage、create_fast_agent、scene_package_manage 前�
 - **FA（FastAgent）**：一个模型步骤。挂上工具后在一次调用里多轮做完一个业务环节；没有记忆，不和使用者交互。
 - **编排型 TPE**：确定性脚本 `async def run(input, ctx)`，自己不推理，要模型时调 FA；管准备、分发、汇合、幂等写库和固定收口。
 - **路线**（`orchestration_id`）：把一条或几条 TPE 接成节点图，带入口表单、中途表单、最终交付与审阅。旧应用的路线在场景包的 `workflow_orchestration` 里。
-- **冒泡**：在隐藏验证项目里跑一次。默认 FA 是桩（按 `_output` 造值），`full_run=true` 才真调模型；写库被跳过。真跑见 `agenticapp-tool-deploy`「真跑」。
+- **冒泡**：在隐藏验证项目里跑一次。默认 FA 是桩（按 `_output` 造值），`full_run=true` 才真调模型；写库被跳过。实际跑见 `agenticapp-tool-deploy`「实际跑」。
 
 原语签名和字段以 [references/编排型TPE总契约.md](references/编排型TPE总契约.md) 起的编排型 TPE 契约和工具当前 Schema 为准。单次运行时长、读取上限这类数字怎么用来定分批，见 `agenticapp-ref-platform-limits`。
 
@@ -57,8 +57,8 @@ description: 调用 otpe_manage、create_fast_agent、scene_package_manage 前�
 
 1. `otpe_manage(action="preview", task_id, script, input_schema, output_schema, business_event_contracts, preload_toolset_ids)`。
 2. 通过后 `create`（同一组参数加 `scene_package_id`、`name`、`description`），再 `online`。建、改、挂 TPE 都传 `publish_mode="staged"`（原因见 `agenticapp-tool-deploy`「场景包上线」）。
-3. `otpe_manage(action="verify", task_id, tpe_id)` 看 `verdict`：`blocked` 按 `failed` 项改后重来；`needs_bubble` 说明静态项都过了，只差运行证据。做成：`failed` 为空、没有 `toolsets_online` / `tpe_online` 失败；读写应用库的路线到 `needs_bubble` 为止，运行证据到 ④ 真跑补。
-4. 需要时单条冒泡，什么时候用见 [references/冒泡与真跑能证明什么.md](references/冒泡与真跑能证明什么.md)「verify 收哪种证据」。
+3. `otpe_manage(action="verify", task_id, tpe_id)` 看 `verdict`：`blocked` 按 `failed` 项改后重来；`needs_bubble` 说明静态项都过了，只差运行证据。做成：`failed` 为空、没有 `toolsets_online` / `tpe_online` 失败；读写应用库的路线到 `needs_bubble` 为止，运行证据到 ④ 实际跑补。
+4. 需要时单条冒泡，什么时候用见 [references/冒泡与实际跑能证明什么.md](references/冒泡与实际跑能证明什么.md)「verify 收哪种证据」。
 5. **核对**：`get_asset(asset_type="tpe")` 反读脚本和事件契约；`tpe_id` 记进工单。
 
 ## 组装路线
@@ -78,7 +78,7 @@ description: 调用 otpe_manage、create_fast_agent、scene_package_manage 前�
 1. `scene_package_manage(action="bubble", task_id, scene_package_id, orchestration_id, workflow_input=<例子>)`；要模型真的跑出内容时加 `full_run=true`。做成：回执到终态（没到就用同一 `run_id` 续等）；FA 是桩时只算「只用模拟数据试过」。
 2. 到终态后，对路线里每条 TPE 用这次的 `run_id` 调 `otpe_manage(action="verify", tpe_id, run_id)`。
 3. 一条路线一条工单 checkpoint，各带自己的 `run_id`。做成：`task_manager(insert)` 返回不带 `format_warning`。
-4. 跑太久、积分一直涨就 cancel 止损。冒泡能证明什么、哪种 `run_id` 能给 verify、多久后读不到：[references/冒泡与真跑能证明什么.md](references/冒泡与真跑能证明什么.md)。
+4. 跑太久、积分一直涨就 cancel 止损。冒泡能证明什么、哪种 `run_id` 能给 verify、多久后读不到：[references/冒泡与实际跑能证明什么.md](references/冒泡与实际跑能证明什么.md)。
 
 ## 配置写法与自审
 
@@ -95,7 +95,7 @@ description: 调用 otpe_manage、create_fast_agent、scene_package_manage 前�
 
 | 错误 | 正确做法 |
 |---|---|
-| 冒泡跑通了，就说读写库的功能做好了，其实库里有没有写进数据都没验过 | 冒泡里读空、写被跳过；读写应用库的路线要 ④ `workspace` 真跑后 verify |
+| 冒泡跑通了，就说读写库的功能做好了，其实库里有没有写进数据都没验过 | 冒泡里读空、写被跳过；读写应用库的路线要 ④ `workspace` 实际跑后 verify |
 | 为了让冒泡通过，把读库包进 `dry_run`、从入口塞数据、加 `fallback_*` 或删掉读写；后三种让反读自查记「没有」，路线不算做好 | 读库不包 `dry_run`，只把写库包进去；入口只放业务键 |
 | 按步骤拆 FA，或脚本写成 tool → FA → tool → FA 长链 | 拆 FA 只看职责边界；「看结果再决定查什么」交给一个 FA |
 | FA 只允许成功态（模型会编数据去满足 schema）；FA 返回 `needs_input` 仍继续写库 | `status` 留 `partial`、`blocked` 出口；非成功态不进写库和下游 |

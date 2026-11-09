@@ -59,7 +59,7 @@ description: 调用 create_toolset、*_tool_group、create_auth_card 前必须�
 **第一道：编排型 TPE 创建前**
 
 1. 根据脚本确定完整的预加载工具集清单：把核实过的工具组、FA 用 `create_toolset(name, description, tool_group_ids, fast_agent_ids)` 装成工具集，一条路线通常一个；脚本要读写应用库的，工具集里装上工具组「query_business_app_dataset」。
-2. 本轮新建或导入、含 MCP 工具组的工具集，用 `otpe_tool_test` 做一次安全的真实取样（[references/工具取样.md](references/工具取样.md)）；只含 FA 的工具集没有单独的测试入口，`get_asset` 反读 FA 配置无误即可，首次运行测试放到路线冒泡；读写应用库的路线首次运行测试放到 ④ 工作集真跑。做成：取样返回的 `structured_content` 是脚本要的那个对象。
+2. 本轮新建或导入、含 MCP 工具组的工具集，用 `otpe_tool_test` 做一次安全的真实取样（[references/工具取样.md](references/工具取样.md)）；只含 FA 的工具集没有单独的测试入口，`get_asset` 反读 FA 配置无误即可，首次运行测试放到路线冒泡；读写应用库的路线首次运行测试放到 ④ 工作集实际跑。做成：取样返回的 `structured_content` 是脚本要的那个对象。
 3. 全部无失败后 `online_toolsets`，只传本轮新建的标识。
 4. `get_asset` 反读，确认清单里每一个都已上线。通过后才创建编排型 TPE，在此之前只做 preview。
 
@@ -87,7 +87,7 @@ description: 调用 create_toolset、*_tool_group、create_auth_card 前必须�
 
 ## 外部平台授权与充值
 
-PRD 写了「外部平台授权」或充值才做：③ 建好应用后用 `business_ui_manage` 查授权候选、保存开发者确认的选择、查充值开通状态；页面经 `sdk.authorization` / `sdk.payment` 接入；⑤ 上线前再核一遍。调用、页面规则、应用自管外部登录和上线前核对见 [references/外部平台授权与充值.md](references/外部平台授权与充值.md)。
+PRD 写了「外部平台授权」或充值才做：③ 建好应用、挂好路线（旧写法应用挂好场景包）后用 `business_ui_manage` 查授权候选、保存开发者确认的选择、查充值开通状态；页面经 `sdk.authorization` / `sdk.payment` 接入；④ 交报告前再核一遍。调用、页面规则、应用自管外部登录和交报告前核对见 [references/外部平台授权与充值.md](references/外部平台授权与充值.md)。
 
 ## 配置写法
 
