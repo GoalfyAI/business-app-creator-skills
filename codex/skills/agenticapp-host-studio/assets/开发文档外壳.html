@@ -238,7 +238,7 @@ button.pin{cursor:pointer}
 .plink{font-size:11px;color:var(--pass-text);padding:6px 0 6px 18px;border-left:2px solid var(--pass-line);margin-left:16px}
 .plink.fail{color:var(--red);border-color:var(--fail)}.plink.blocked{color:var(--orange);border-color:var(--blocked)}.plink.unknown{color:var(--muted);border-left-style:dashed;border-color:var(--unknown)}
 .evidence-box{margin-top:12px;background:var(--bg-subtle);border:1px solid var(--line);border-radius:8px;padding:18px 15px;font-size:13px}
-.evidence-box .label{font-size:9px;font-weight:600;letter-spacing:1px;color:var(--faint)}
+.evidence-box .label{display:block;font-size:9px;font-weight:600;letter-spacing:1px;color:var(--faint)}
 .node-ev{display:none}
 .shots img{max-width:100%;border:1px solid var(--line);border-radius:6px;margin-top:6px}
 .result-pass{color:var(--green)}.result-fail{color:var(--red)}.result-judge{color:var(--purple)}.result-untested{color:var(--orange)}
@@ -369,6 +369,18 @@ tr:last-child td{border-bottom:0}
 .evidence-box{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius)}
 .result-pass{color:var(--ok)}.result-judge{color:var(--accent-text)}
 .footer{border-top:1px solid var(--border);color:var(--faint);font-size:12px}
+.journal-side{margin-top:16px;border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;font-size:13px;line-height:1.8}
+.journal-side>summary{cursor:pointer;color:var(--muted)}
+.journal-side section{margin-top:12px}
+.journal-side h3{font-size:12px;font-weight:600;color:var(--ink-2)}
+.dependency{padding:8px 0;border-top:1px solid var(--border);color:var(--ink)}
+.dependency:first-of-type{border-top:0}
+.dependency small{display:block;font-size:12px;color:var(--muted)}
+.item-record{display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.item-record .kv{margin-top:6px}
+.item-record .shots{display:block}
+.section:not(.ready) .pnode{flex-wrap:wrap}
+.section:not(.ready) .node-ev{display:block;flex-basis:100%;font-size:13px;color:var(--ink)}
 @media(max-width:520px){.doc{padding:22px 16px 60px}.doc-head h1{font-size:calc(var(--h1) - 4px)}.event{grid-template-columns:52px 22px 1fr;gap:6px}.overview .row{grid-template-columns:1fr;gap:2px;padding:12px 0}.kv{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
 </style>

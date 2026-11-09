@@ -47,7 +47,7 @@ Studio 第三栏「开发文档」有四份，代替方案页：
    python3 <本 Skill 目录>/scripts/build_studio_doc.py <documentType> docs/studio/<documentType>/data.json
    ```
 
-   退出码 1 时按它列出的每一条改 `data.json` 或 Demo 再跑，直到生成成功。它拦的是测试里真出过的错：结论条数对不上、条目外的未测没算进去、禁用词、Demo 联网或用 `<form>`、编号和说明对不上、标了「实际跑过」却没有「我先跑了一遍」。
+   退出码 1 时按它列出的每一条改 `data.json` 或 Demo 再跑，直到生成成功。它拦的是测试里真出过的错：结论条数对不上、条目外的未测没算进去、禁用词、Demo 联网或用 `<form>`、编号和说明对不上、验收条目没挂到路径上、写了原型里没有的区块。
 4. **看一眼**：`build_studio_doc.py shot docs/studio/<documentType>/index.html frontend` 截 400px 和 900px 两张图，打开看，按 [references/检查清单.md](references/检查清单.md) 逐条对。第一次生成通常有排版或内容问题，改完再生成、再看，看过没问题再保存。
 5. **保存**：先跑 `build_studio_doc.py verify docs/studio/<documentType>/index.html`，没过说明页面不是脚本生成的或被改过，回第 3 步。再确认已调 `studio_select_application`（初始化应用工程后、第一次保存前调；传真实应用根路径，已有 `.workbench/application.json` 时传其中的 UUID）。用 `studio_read_creation` 读这一类文档当前的 `artifactId`，调 `studio_write_proposal`：`documentType` 按上表，`version` 写 `<documentType>-<版本号>`（例如 `prd-2`），`baseArtifactId` 传刚读到的（还没有这类文档时传 `null`），`files` 放脚本最后一行列出的文件。报 `STUDIO_DOCUMENT_CONFLICT` 时重读当前一版，把对方的改动合进 `data.json` 再生成，不覆盖。保存成功只代表存好了，不代表开发者已确认。
 6. **交接**：同时发交接消息（入口「交接」）：说文档在「开发文档」里、这一版改了什么，不把文档全文贴进聊天。
@@ -76,7 +76,7 @@ PRD 和方案要开发者确认；什么算「确认这一版」、新一版要�
 
 1. 过了 `agenticapp-stage-4-acceptance`「交报告前的三道硬门」才保存；生成脚本会拦下一部分（未测类别、条目外的未测计数、路径结论和条目对不上），其余按硬门自查。
 2. 页面条目的截图存成 `shots/<条目编号>-<序号>.png`，写进那条的 `shots`，随 `files` 一起保存。
-3. 按反馈重测后出新一版，只改变了的条目，写进 `fix_log`。每出一版有没通过的条目，制作进度在同一条回复里跟着更新。
+3. 按反馈重测后出新一版，只改变了的条目，改了什么、重测了哪几条写进 `changes`。每出一版有没通过的条目，制作进度在同一条回复里跟着更新。
 4. ⑤ 收尾时，上线结果写进 `launch`（每项写什么按 `agenticapp-stage-5-launch`），再保存新的一版。
 
 ## 表单与记忆卡

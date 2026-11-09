@@ -56,6 +56,17 @@ MOVED_KEYS = {
         "cost_review": "费用复核写进 conditions.cost 和 conditions.effects",
         "summary": "一共要做什么写进 scope.summary",
     },
+    "progress": {
+        "trials": "「我先跑了一遍」只在聊天的进度消息里发；跑过的那一次在 events 里记一条",
+        "pages": "页面说明只在聊天的进度消息里写，页面长什么样看方案「功能与页面设计」",
+        "problems": "卡在哪写成 events 里一条 status 为 blocked 的事件，detail 写原因、影响哪个功能、谁在处理、什么时候能继续",
+    },
+    "acceptance": {
+        "results": "实际跑出的结果写进那一条条目的 seen；要他判断的写进 actual",
+        "automation": "自动发生的那件事按它的验收条目写，挂到路径里到点开始的那一步",
+        "costs": "每次花了多少、和估算比、要等多久写进跑它的那一条条目的 seen；总花费在聊天交接里说",
+        "fix_log": "这一版改了什么、重测了哪几条写进 changes",
+    },
 }
 RESULTS = ("通过", "没通过", "好不好你说了算", "未测")
 NODE_STATES = {"pass": "通过", "fail": "没通过", "blocked": "受阻", "unknown": "未验证"}
@@ -451,9 +462,22 @@ def feature_done(f: dict) -> str:
     return "doing"
 
 
-def cell(v: str) -> str:
-    cls = "ok" if str(v).startswith("做好了") else "doing" if v == "在做" else "no"
-    return f'<span class="{cls}">{e(v)}</span>'
+def journal_side(p: Problems, d: dict, feats: list) -> str:
+    """时间轴下面折叠的「交付范围与待明确条件」：原型里制作进度只有摘要、时间轴和这一块。"""
+    word = {"done": "做好了", "doing": "在做", "todo": "没开始"}
+    rows = "".join(f'<div class="dependency">{e(f.get("name"))}<small>{word[feature_done(f)]} · 后台 {e(f.get("backend"))} · 页面 {e(f.get("page"))} · 存数据 {e(f.get("data"))}</small></div>'
+                   for f in feats if isinstance(f, dict))
+    diffs = items(p, d, "diffs", "data", required=False)
+    if diffs:
+        rows += "".join(f'<div class="dependency">和方案不一样<small>{e(x)}</small></div>' for x in diffs)
+    out = f'<section><h3>本轮交付范围</h3>{rows}</section>'
+    pend = items(p, d, "pending", "data", required=False)
+    for i, x in enumerate(pend):
+        text(p, x, "what", f"pending[{i}]")
+        text(p, x, "affects", f"pending[{i}]")
+    if pend:
+        out += '<section><h3>仍需明确的条件</h3>' + "".join(f'<div class="dependency">{e(x.get("what"))}<small>影响：{e(x.get("affects"))}</small></div>' for x in pend) + "</section>"
+    return f'<details class="journal-side"><summary>交付范围与待明确条件</summary>{out}</details>'
 
 
 def build_progress(p: Problems, d: dict) -> str:
@@ -475,8 +499,8 @@ def build_progress(p: Problems, d: dict) -> str:
         p.add("data.state", "只写 working（在做）、done（都做完了）、blocked（卡住了）")
     if state == "done" and done != total:
         p.add("data.state", f"还有 {total - done} 个功能没做好，不能写 done")
-    if state == "blocked" and not d.get("problems"):
-        p.add("data.problems", "写了卡住了，就要写卡在哪")
+    if state == "blocked" and not any(isinstance(ev, dict) and ev.get("status") == "blocked" for ev in d.get("events") or []):
+        p.add("data.events", "写了卡住了，就要在时间轴上有一条 blocked 事件，detail 写卡在哪、影响哪个功能、谁在处理、什么时候能继续")
     label = {"working": "制作中", "done": "都做完了", "blocked": "卡住了"}.get(state, "")
     not_real = sum(1 for f in feats if f.get("backend") in ("做好了，只用模拟数据试过", "做好了，等在线预览时实际跑"))
     caveat = f"其中 {not_real} 个的后台还没用真实数据跑过。" if not_real else ""
@@ -491,9 +515,6 @@ def build_progress(p: Problems, d: dict) -> str:
            f'<p class="muted" style="font-size:12px;margin-top:8px">{caveat}</p>'
            + (f'<div class="next"><small>下一步</small><div><b>{e(nxt.get("title"))}</b><p class="muted">{e(nxt.get("detail", ""))}</p></div></div>' if nxt.get("title") else "")
            + "</section>"]
-    rows = [[e(f.get("name")), cell(f.get("backend", "")), cell(f.get("page", "")), cell(f.get("data", ""))] for f in feats]
-    out.append('<section class="section"><div class="section-head"><h2>每个功能做到哪</h2></div><div class="cells">'
-               + table(["功能", "后台", "页面", "存数据"], rows) + '</div><p class="muted" style="font-size:12px;margin-top:6px">三格都做好（或不需要）才算做好一个功能。</p></section>')
     events = items(p, d, "events", "data")
     ev_html = []
     for i, ev in enumerate(events):
@@ -520,38 +541,8 @@ def build_progress(p: Problems, d: dict) -> str:
                        f'<div class="body"><h3>{e(text(p, ev, "title", w))} {tag}</h3><p>{e(text(p, ev, "detail", w))}</p>{sub_html}</div></article>')
     out.append('<section class="section"><div class="section-head"><h2>制作时间轴</h2><span><button type="button" data-play="progress">▶ 回放</button> '
                '<button type="button" data-stop="progress">停止</button></span></div>'
-               f'<div class="timeline">{"".join(ev_html)}</div><p class="muted" style="font-size:12px">回放只按上面已有的记录走一遍。</p></section>')
-    trials = items(p, d, "trials", "data", required=False)
-    ran = {f.get("name") for f in feats if f.get("backend") == "做好了，实际跑过"}
-    covered = set()
-    t_html = []
-    for i, t in enumerate(trials):
-        w = f"trials[{i}]"
-        covered.add(t.get("feature"))
-        pairs = [("例子", text(p, t, "example", w)), ("为什么挑它", text(p, t, "why", w)), ("用了什么", text(p, t, "used", w)),
-                 ("每一步", text(p, t, "steps", w)), ("结果", text(p, t, "result", w)), ("花了多少、用了多久", text(p, t, "cost", w))]
-        tag = '<span class="tag warn">测试数据</span>' if t.get("test_data") else '<span class="tag">真实数据</span>'
-        t_html.append(f'<div class="card trial"><div class="detail-head"><h3>{e(t.get("feature"))}</h3>{tag}</div>{kv(pairs)}</div>')
-    for name in sorted(x for x in ran - covered if x):
-        p.add("data.trials", f"「{name}」标了「做好了，实际跑过」，要有一份「我先跑了一遍」（六项写全）")
-    if t_html:
-        out.append('<section class="section"><div class="section-head"><h2>我先跑了一遍</h2></div>' + "".join(t_html) + "</section>")
-    blocks = []
-    diffs = items(p, d, "diffs", "data", required=False)
-    if diffs:
-        blocks.append(fold("和方案不一样的地方", ul(diffs), True))
-    pages = items(p, d, "pages", "data", required=False)
-    if pages:
-        blocks.append(fold("页面说明", table(["页面", "给谁用", "显示什么", "有哪些按钮"], [[e(x.get("name")), e(x.get("for")), e(x.get("shows")), e(x.get("buttons"))] for x in pages])))
-    probs = items(p, d, "problems", "data", required=False)
-    if probs:
-        blocks.append(fold("当前遇到的问题", table(["问题", "原因", "影响哪个功能", "谁在处理", "什么时候能继续"],
-                                                [[e(x.get("what")), e(x.get("why")), e(x.get("affects")), e(x.get("who")), e(x.get("when"))] for x in probs]), True))
-    pend = items(p, d, "pending", "data", required=False)
-    if pend:
-        blocks.append(fold("还要明确的条件", table(["什么", "影响什么"], [[e(x.get("what")), e(x.get("affects"))] for x in pend])))
-    if blocks:
-        out.append('<section class="section">' + "".join(blocks) + "</section>")
+               f'<div class="timeline">{"".join(ev_html)}</div><p class="muted" style="font-size:12px">回放只按上面已有的记录走一遍。</p>'
+               + journal_side(p, d, feats) + "</section>")
     out.append(foot(c))
     return "".join(out)
 
@@ -564,14 +555,15 @@ def build_acceptance(p: Problems, d: dict, base: Path) -> tuple[str, list[str]]:
     by_id, shots_all = {}, []
     counts = {r: 0 for r in RESULTS}
     accepted = 0
-    untested_rows = []
-    rows = []
+    untested_list = []
+    records = {}
     for i, it in enumerate(its):
         w = f"items[{i}]"
         iid = text(p, it, "id", w)
         if iid in by_id:
             p.add(f"{w}.id", f"编号 {iid} 重复")
         by_id[iid] = it
+        title = text(p, it, "title", w)
         res = it.get("result")
         if res not in RESULTS:
             p.add(f"{w}.result", "只写：通过 / 没通过 / 好不好你说了算 / 未测")
@@ -579,13 +571,12 @@ def build_acceptance(p: Problems, d: dict, base: Path) -> tuple[str, list[str]]:
         counts[res] += 1
         if res == "没通过" and it.get("accepted"):
             accepted += 1
-        how, seen, ev = it.get("how", ""), it.get("seen", ""), it.get("evidence", "")
-        shots = it.get("shots") or []
         if res in ("通过", "没通过", "好不好你说了算"):
             for key in ("how", "seen", "evidence"):
                 text(p, it, key, w)
         if res == "好不好你说了算" and not it.get("actual"):
             p.add(f"{w}.actual", "要你判断的条目附上实际结果原文（报告全文、内容原文、前后对比）")
+        why_untested = ""
         if res == "未测":
             un = it.get("untested") or {}
             kind = un.get("kind")
@@ -595,21 +586,23 @@ def build_acceptance(p: Problems, d: dict, base: Path) -> tuple[str, list[str]]:
                 reason, later, need = UNTESTED[kind]
                 if need and not un.get("detail"):
                     p.add(f"{w}.untested.detail", f"「{reason}」要补上具体情况（做过的处理和错误原文 / 哪一份样本 / 试过哪些做法）")
-                untested_rows.append([e(iid + " " + str(it.get("title", ""))), e(reason + ("：" + un["detail"] if un.get("detail") else "")), e(later)])
-            how = seen = ev = "无"
+                why_untested = reason + ("：" + un["detail"] if un.get("detail") else "") + "。" + later
+                untested_list.append(title)
         shot_html = ""
-        for s in shots:
+        for s in it.get("shots") or []:
             if not (base / s).is_file():
                 p.add(f"{w}.shots", f"找不到截图 {s}（相对 data.json 所在目录）")
             elif not re.fullmatch(r"shots/[\w.-]+\.(png|jpg|jpeg|webp)", s):
                 p.add(f"{w}.shots", "截图放在 shots/ 下，文件名只用字母数字和 - _ .，格式 png/jpg/webp")
             else:
                 shots_all.append(s)
-                shot_html += f'<img src="{e(s)}" alt="{e(iid)} 的截图">'
+                shot_html += f'<img src="{e(s)}" alt="{e(title)} 的截图">'
         res_cls = {"通过": "pass", "没通过": "fail", "好不好你说了算": "judge", "未测": "untested"}[res]
         label = res + ("，你选了接受" if res == "没通过" and it.get("accepted") else "")
-        rows.append([e(iid), e(text(p, it, "title", w)), f'<span class="result-{res_cls}">{e(label)}</span>', e(how), e(seen),
-                     e(ev) + (f'<div class="shots">{shot_html}</div>' if shot_html else "")])
+        pairs = [("怎么测的", it.get("how", "")), ("看到的结果", it.get("seen", "")), ("实际结果", it.get("actual", "")),
+                 ("证据", it.get("evidence", "")), ("为什么没测", why_untested)]
+        records[iid] = (f'<span class="item-record"><b>{e(title)}</b> <span class="result-{res_cls}">{e(label)}</span>{kv(pairs)}'
+                        + (f'<span class="shots">{shot_html}</span>' if shot_html else "") + "</span>")
     for i, x in enumerate(items(p, d, "extra_untested", "data", required=False)):
         w = f"extra_untested[{i}]"
         kind = x.get("kind")
@@ -619,16 +612,18 @@ def build_acceptance(p: Problems, d: dict, base: Path) -> tuple[str, list[str]]:
         reason, later, need = UNTESTED[kind]
         if need and not x.get("detail"):
             p.add(f"{w}.detail", f"「{reason}」要补上具体情况")
-        untested_rows.append([e(text(p, x, "title", w)), e(reason + ("：" + x["detail"] if x.get("detail") else "")), e(later)])
+        untested_list.append(f'{text(p, x, "title", w)}（{reason}{"：" + x["detail"] if x.get("detail") else ""}）')
         counts["未测"] += 1
     total = sum(counts.values())
     out = [head(c, "04 / 验收报告", "验收报告", "按业务路径看每一步走没走通，结论都有依据。")]
     stat = lambda cls, n_, label, sub: f'<div class="stat-card {cls}"><p>{label}</p><strong>{n_}</strong><p>{sub}</p></div>'
+    untested_sub = "；".join(e(x) for x in untested_list) or "没有"
     out.append('<div class="stats">' + stat("fail", counts["没通过"], "没通过", f"其中你接受的 {accepted} 条") + stat("pass", counts["通过"], "通过", "")
-               + stat("judge", counts["好不好你说了算"], "要你判断", "好不好你说了算") + stat("untested", counts["未测"], "未测", "原因见下面")
+               + stat("judge", counts["好不好你说了算"], "要你判断", "点路径里的那一步看实际结果") + stat("untested", counts["未测"], "未测", untested_sub)
                + f'</div><p style="margin-top:10px">共 {total} 条：没通过 {counts["没通过"]} · 通过 {counts["通过"]} · 要你判断 {counts["好不好你说了算"]} · 未测 {counts["未测"]}。{e(text(p, d, "impact", "data"))}</p>')
     paths = items(p, d, "paths", "data")
     plist, pflows = [], []
+    shown = set()
     for i, pa in enumerate(paths):
         w = f"paths[{i}]"
         nodes = items(p, pa, "nodes", w, min_len=2)
@@ -645,6 +640,7 @@ def build_acceptance(p: Problems, d: dict, base: Path) -> tuple[str, list[str]]:
                 st = "unknown"
             states.append(st)
             refs = nd.get("items") or []
+            shown.update(refs)
             if st in ("pass", "fail") and not refs:
                 p.add(f"{nw}.items", "通过、没通过的节点要写依据哪几条验收条目（编号）")
             for r in refs:
@@ -656,9 +652,9 @@ def build_acceptance(p: Problems, d: dict, base: Path) -> tuple[str, list[str]]:
                 p.add(f"{nw}.state", "标了没通过，依据的条目里要有一条结论是「没通过」")
             if st in ("blocked", "unknown") and not nd.get("note"):
                 p.add(f"{nw}.note", "受阻、未验证的节点写清为什么")
-            ev = "".join(f'<p><b>{e(r)}</b> {e(by_id.get(r, {}).get("title", ""))}：{e(by_id.get(r, {}).get("seen", ""))}</p>' for r in refs)
+            ev = "".join(records.get(r, "") for r in refs)
             n_html.append(f'<button type="button" class="pnode {st}"><span>{j + 1:02d} {e(text(p, nd, "title", nw))}</span><span class="st">{NODE_STATES[st]}</span>'
-                          f'<span class="node-ev"><span class="label">第 {j + 1} 步 · {NODE_STATES[st]}</span><b>{e(nd.get("title"))}</b>{ev}<p>{e(nd.get("note", ""))}</p></span></button>')
+                          f'<span class="node-ev"><span class="label">第 {j + 1} 步 · {NODE_STATES[st]}</span><b>{e(nd.get("title"))}</b><p>{e(nd.get("note", ""))}</p>{ev}</span></button>')
             if j < len(nodes) - 1 and j < len(links):
                 nxt = nodes[j + 1].get("state", "unknown")
                 n_html.append(f'<div class="plink {e(nxt)}">↓ {e(links[j])}</div>')
@@ -669,32 +665,13 @@ def build_acceptance(p: Problems, d: dict, base: Path) -> tuple[str, list[str]]:
         detail = e(text(p, pa, "detail", w))
         pflows.append(f'<div class="path-flow" data-path="{i}"><div class="path-title"><b>{e(name)}</b><span class="tag {tag_cls}">{NODE_STATES[overall]}</span></div>'
                       f'{"".join(n_html)}<div class="evidence-box"><p>{detail}</p></div><div class="path-detail-src" hidden><p>{detail}</p><small class="muted">点任意一步看依据。</small></div></div>')
+    for iid in by_id:
+        if iid not in shown:
+            p.add("data.paths", f"条目 {iid} 没挂到任何一步上，页面上看不到它；写进它验证的那一步的 items")
     out.append('<section class="section"><div class="section-head"><h2>业务路径检查</h2><span><button type="button" data-play="paths">▶ 回放这条路径</button> '
                '<button type="button" data-stop="paths">停止</button></span></div>'
                f'<div class="checks"><div class="path-list">{"".join(plist)}</div><div>{"".join(pflows)}</div></div>'
                '<p class="muted" style="font-size:12px;margin-top:8px">回放只按已有的验收记录走一遍，不是重新测试。</p></section>')
-    judge = [it for it in its if it.get("result") == "好不好你说了算"]
-    if judge:
-        out.append('<section class="section"><div class="section-head"><h2>好不好你说了算</h2></div>'
-                   + "".join(f'<div class="card"><b>{e(it.get("id"))} {e(it.get("title"))}</b><p style="margin-top:6px">{e(it.get("actual"))}</p></div>' for it in judge)
-                   + "</section>")
-    out.append('<section class="section"><div class="section-head"><h2>未测的</h2></div>'
-               + (table(["条目", "原因", "这意味着"], untested_rows) if untested_rows else "<p>没有。</p>") + "</section>")
-    results = items(p, d, "results", "data")
-    test_tag = '<span class="tag warn">测试数据</span>'
-    out.append('<section class="section"><div class="section-head"><h2>实际跑出的结果</h2></div>'
-               + "".join(f'<div class="card"><div class="detail-head"><b>{e(r.get("title"))}</b>{test_tag if r.get("test_data") else ""}</div><p>{e(r.get("text"))}</p></div>' for r in results)
-               + "</section>")
-    out.append('<section class="section"><div class="section-head"><h2>自动发生的</h2></div>' f'<p>{e(text(p, d, "automation", "data"))}</p></section>')
-    costs = items(p, d, "costs", "data")
-    out.append('<section class="section"><div class="section-head"><h2>实际花费</h2></div>'
-               + table(["操作", "实际花了", "估算", "每次要等多久"], [[e(x.get("action")), e(x.get("actual")), e(x.get("estimate")), e(x.get("wait"))] for x in costs]) + "</section>")
-    out.append('<section class="section">' + fold(f"全部条目（{total - len(items(p, d, 'extra_untested', 'data', required=False))} 条）",
-                                                  table(["#", "验收条目", "结论", "怎么测的", "看到的结果", "证据"], rows)))
-    fixes = items(p, d, "fix_log", "data", required=False)
-    if fixes:
-        out.append(fold("修改记录", table(["问题", "改了什么", "重测了哪几条"], [[e(x.get("problem")), e(x.get("change")), e("、".join(x.get("retested") or []))] for x in fixes])))
-    out.append("</section>")
     launch = d.get("launch")
     if launch:
         li = launch.get("items") or []

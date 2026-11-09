@@ -109,8 +109,31 @@ def test_progress_blocked_event_and_marker(tmp_path: Path) -> None:
     assert subprocess.run([sys.executable, str(SCRIPT), "verify", str(hand)], capture_output=True, text=True, check=False).returncode == 1
 
 
-def test_progress_requires_trial_for_real_run(tmp_path: Path) -> None:
+def test_progress_and_acceptance_only_show_prototype_blocks(tmp_path: Path) -> None:
+    data_path = _prepare(tmp_path, "progress", _sample("progress"))
+    assert _build("progress", data_path).returncode == 0
+    body = (data_path.parent / "index.html").read_text(encoding="utf-8").split('id="doc-data"')[0]
+    assert "制作时间轴" in body and "交付范围与待明确条件" in body and "后厨是否共用一个账号" in body
+    assert "我先跑了一遍" not in body and "每个功能做到哪" not in body and "页面说明" not in body
+    data = _sample("acceptance")
+    data["items"][3]["id"] = "writing_judgement"
+    data["paths"][1]["nodes"][1]["items"] = ["writing_judgement"]
+    data_path = _prepare(tmp_path, "acceptance", data)
+    assert _build("acceptance", data_path).returncode == 0
+    body = (data_path.parent / "index.html").read_text(encoding="utf-8").split('id="doc-data"')[0]
+    assert "业务路径检查" in body and "你觉得后厨看得清吗" in body and "到点触发要等真实时间" in body
+    assert "writing_judgement" not in body
+    for old in ("<h2>好不好你说了算", "<h2>未测的", "实际跑出的结果", "自动发生的", "实际花费", "全部条目", "修改记录"):
+        assert old not in body
+
+
+def test_progress_and_acceptance_reject_old_blocks(tmp_path: Path) -> None:
     data = _sample("progress")
-    data["trials"] = []
+    data.update({"trials": [{"feature": "每天出清单"}], "state": "blocked"})
     out = _build("progress", _prepare(tmp_path, "progress", data)).stdout
-    assert "要有一份「我先跑了一遍」" in out
+    assert "data.trials" in out and "进度消息" in out and "blocked 事件" in out
+    data = _sample("acceptance")
+    data["costs"] = []
+    data["paths"][1]["nodes"][1]["items"] = []
+    out = _build("acceptance", _prepare(tmp_path, "acceptance", data)).stdout
+    assert "data.costs" in out and "条目 5 没挂到任何一步上" in out
