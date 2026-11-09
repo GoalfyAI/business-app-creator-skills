@@ -2,10 +2,10 @@
   "scaffold_min_required_version": "v20261030-e23fde",
   "skill_name": "business-app-creator",
   "version": "v20261109-5f1c94",
-  "package_version": "2.0.44-pre.28",
+  "package_version": "2.0.44-pre.29",
   "mcp_endpoint": "https://business-app-creator-mcp.pre.goalfyai.cn/mcp",
-  "released_at": "2026-11-09T13:39:55Z",
-  "update_reason": "PRE 版，来自 main 2ef987b5b（build 28）",
+  "released_at": "2026-11-09T13:51:53Z",
+  "update_reason": "PRE 版，来自 main 2ef987b5b（build 29）",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
