@@ -144,9 +144,14 @@ def _checkout_pinned_release(pinned: str) -> tuple[str, str, bool]:
 
 def release_only(branch: str) -> dict[str, str]:
     """发版流水线「准备发版」：在 main 最新提交上发版或沿用，把发布提交写进 Flow 变量 USER_COMMIT。"""
-    if branch.removeprefix("refs/heads/").strip() != "main":
-        raise DeployError("发版流水线只运行 main")
-    version, sha, released = ensure_main_release(required_env("CODEUP_PUSH_URL"))
+    branch = branch.removeprefix("refs/heads/").strip()
+    if branch.startswith("release/"):
+        # release 分支只用来发 PRE 联调：不发版、不推 main，后面的 deploy 走非 main 分支，不动版本线
+        version, sha, released = "", git("rev-parse", "HEAD"), False
+    elif branch != "main":
+        raise DeployError("发版流水线只运行 main 或 release/*")
+    else:
+        version, sha, released = ensure_main_release(required_env("CODEUP_PUSH_URL"))
     flow_env = os.environ.get("FLOW_ENV", "").strip()
     if flow_env:
         with open(flow_env, "a", encoding="utf-8") as handle:
