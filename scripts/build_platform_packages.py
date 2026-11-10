@@ -12,11 +12,13 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 import re
 import secrets
 import shutil
+import subprocess
 import sys
 from collections.abc import Iterable
 from datetime import datetime, timezone
@@ -37,6 +39,9 @@ OPENAI_METADATA_RELATIVE_PATH = Path("agents/openai.yaml")
 # Skill 内容目录（只放 .md）：stages 五段主流程、tasks 非新建任务入口、design 沟通模板、
 # reference 按需查阅的正本、checklists 人判验收项。发布包按这个清单收文件。
 SKILL_CONTENT_MD_DIRS = ("stages", "tasks", "design", "reference", "checklists")
+# 升级指南目录：<D编号>.md 与 schema.json 随 Skill 发布，格式与关系由 scripts/upgrade_guides.py 校验。 [需求:D-3962]
+UPGRADE_GUIDES_DIR = "upgrade-guides"
+UPGRADE_GUIDES_SCRIPT = Path("scripts/upgrade_guides.py")
 # 旧结构的目录（含七节点版的 flow），同步平台副本时一并清掉，避免已删除的旧文件残留在安装包里。
 RETIRED_SKILL_DIRS = ("references", "flow", "modules", "protocols")
 PLATFORM_LAYOUTS = {
@@ -198,6 +203,11 @@ def discover_source_files(skill_root: Path) -> list[Path]:
         if relative_path.parts[0] == "scripts" and path.suffix.lower() == ".py":
             files.append(path)
             continue
+        if relative_path.parts[0] == UPGRADE_GUIDES_DIR and len(relative_path.parts) == 2 and (
+            path.suffix == ".md" or path.name == "schema.json"
+        ):
+            files.append(path)
+            continue
         raise ReleaseError(f"不支持的 Skill 文件：{relative_path.as_posix()}")
 
     return sorted(files, key=lambda path: _relative(path, skill_root))
@@ -208,7 +218,7 @@ def discover_source_files(skill_root: Path) -> list[Path]:
 # 开头的写法——`workspace.json`、`backend/README.md` 这类是智能应用工程里的文件，不在发布包内。
 _REFERENCE_SPAN_RE = re.compile(r"`([^`\n]+)`|\]\(([^)\s]+)\)")
 _REFERENCE_PATH_RE = re.compile(r"^(?:\.{1,2}/)*[\w\-.]+(?:/[\w\-.]+)*\.(?:md|py|json|ya?ml|sh|ts|js|txt)$")
-_SKILL_CONTENT_DIRS = {*SKILL_CONTENT_MD_DIRS, "scripts", "agents"}
+_SKILL_CONTENT_DIRS = {*SKILL_CONTENT_MD_DIRS, "scripts", "agents", UPGRADE_GUIDES_DIR}
 # 允许不在发布包里的引用：(引用所在文件的前缀, 引用原文, 原因)。前缀为空表示任意文件。
 REFERENCE_ALLOWLIST: tuple[tuple[str, str, str], ...] = (
     ("", "./scripts/pack.sh", "智能应用工程里的打包脚本"),
@@ -247,6 +257,9 @@ def find_broken_references(skill_root: Path) -> list[str]:
     shipped_dirs = {str(parent) for item in shipped for parent in PurePosixPath(item).parents}
     broken = []
     for source in sorted(item for item in shipped if item.endswith(".md")):
+        # 指南正文写的是智能应用工程里的路径，不是 Skill 自身文件。
+        if re.fullmatch(rf"{UPGRADE_GUIDES_DIR}/D-[0-9]+\.md", source):
+            continue
         source_path = PurePosixPath(source)
         bases = [source_path.parent, PurePosixPath("")]
         text = (skill_root / source).read_text(encoding="utf-8")
@@ -662,7 +675,7 @@ def sync_platform_skills(skill_root: Path) -> None:
     for platform in PLATFORM_NAMES:
         target_root = _platform_skill_dir(skill_root, platform)
         (target_root / "SKILL.md").unlink(missing_ok=True)
-        for stale in (*SKILL_CONTENT_MD_DIRS, *RETIRED_SKILL_DIRS, "scripts", "agents"):
+        for stale in (*SKILL_CONTENT_MD_DIRS, *RETIRED_SKILL_DIRS, "scripts", "agents", UPGRADE_GUIDES_DIR):
             shutil.rmtree(target_root / stale, ignore_errors=True)
         for relative, source in _platform_skill_files(skill_root, platform).items():
             destination = target_root / relative
@@ -784,6 +797,71 @@ def check_platform_skills(skill_root: Path) -> None:
     check_extra_skills(skill_root)
 
 
+def _upgrade_guides_module(skill_root: Path):
+    """加载 Skill 自带的 upgrade_guides.py：发布检查与 Agent 用同一份解析与校验代码。"""
+    spec = importlib.util.spec_from_file_location("skill_upgrade_guides", skill_root / UPGRADE_GUIDES_SCRIPT)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def validate_upgrade_guides(skill_root: Path) -> None:
+    """升级指南的格式与关系；不合规不能发布。"""
+    module = _upgrade_guides_module(skill_root)
+    try:
+        module.load_guides(skill_root / UPGRADE_GUIDES_DIR)
+    except module.GuideError as error:
+        lines = [f"{p['file']} {p['field']}（{p['code']}）：{p['message']}" for p in error.problems]
+        raise ReleaseError("升级指南不合规：\n" + "\n".join(lines)) from None
+
+
+def _git(repository_root: Path, *args: str) -> str | None:
+    try:
+        return subprocess.run(
+            ["git", "-C", str(repository_root), *args], check=True, capture_output=True, text=True
+        ).stdout
+    except (OSError, subprocess.CalledProcessError):
+        return None
+
+
+def released_guide_checksums(skill_root: Path) -> dict[str, dict[str, str]]:
+    """各发布标签 skill/<版本> 上 skill-release.json 里的指南校验和：{路径: {版本: sha256}}。
+
+    shortcut: 依赖本地已有发布标签；没有 git 或没 fetch 标签时查不到历史，按无已发布指南处理，
+    流水线要拦就先 git fetch --tags。
+    """
+    repository_root = _repository_root(skill_root)
+    tags = _git(repository_root, "tag", "--list", "skill/*") or ""
+    released: dict[str, dict[str, str]] = {}
+    for tag in tags.split():
+        raw = _git(repository_root, "show", f"{tag}:{MANIFEST_RELATIVE_PATH.as_posix()}")
+        try:
+            checksums = json.loads(raw).get("checksums", {}) if raw else {}
+        except (ValueError, AttributeError):
+            continue
+        for path, digest in checksums.items():
+            if re.fullmatch(rf"{UPGRADE_GUIDES_DIR}/D-[0-9]+\.md", path):
+                released.setdefault(path, {})[tag.removeprefix("skill/")] = digest
+    return released
+
+
+def check_released_guides_frozen(skill_root: Path) -> None:
+    """已随某版 Skill 发出的指南文件不能再改、删或改名；更正用新 D 的 replaces / withdraws。"""
+    errors = []
+    for path, versions in sorted(released_guide_checksums(skill_root).items()):
+        current = skill_root / path
+        actual = _sha256(current) if current.is_file() else None
+        for version, digest in sorted(versions.items()):
+            if actual != digest:
+                state = "已删除或改名" if actual is None else "内容已改"
+                errors.append(f"{path} 已随 {version} 发布，{state}")
+                break
+    if errors:
+        raise ReleaseError(
+            "已发布的升级指南不能修改，要更正请新写一份指南用 replaces / withdraws：\n" + "\n".join(errors)
+        )
+
+
 def scaffold_min_required_version(skill_root: Path) -> str:
     markers = re.findall(r"<!-- scaffold-min-required-version:([^\s]+) -->", (skill_root / "SKILL.md").read_text(encoding="utf-8"))
     if len(markers) != 1 or not DATA_SKILL_VERSION_RE.fullmatch(markers[0]):
@@ -798,6 +876,8 @@ def check_release(skill_root: Path) -> dict[str, Any]:
     validate_platform_install_files(skill_root)
     validate_internal_references(skill_root)
     validate_skill_layout(skill_root)
+    validate_upgrade_guides(skill_root)
+    check_released_guides_frozen(skill_root)
     manifest = _load_manifest(skill_root)
     if set(manifest) != MANIFEST_KEYS:
         missing = sorted(MANIFEST_KEYS - set(manifest))
@@ -856,6 +936,8 @@ def release(
     validate_platform_install_files(skill_root)
     validate_internal_references(skill_root)
     validate_skill_layout(skill_root)
+    validate_upgrade_guides(skill_root)
+    check_released_guides_frozen(skill_root)
     _validate_package_version(package_version)
     skill_version = _validate_skill_version(skill_version or _current_skill_version(skill_root))
     reason = reason.strip()

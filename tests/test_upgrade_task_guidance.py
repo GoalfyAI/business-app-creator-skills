@@ -23,6 +23,14 @@ RETIRED_UPGRADE_TERMS = (
     "entries_truncated",
     "entry_counts",
     "source_key",
+    # 第 9 版起指南随 Skill 发布，upgrade_plan 不再返回指南，分页、游标、班车分组与 OA 发布状态一并废弃。
+    "next_offset",
+    "batch_unresolved",
+    "UPGRADE_GUIDES_UNAVAILABLE",
+    "UPGRADE_PLAN_CURSOR_INVALID",
+    "dependency_unresolved",
+    "oa_missing",
+    "applied_guides=",
 )
 
 
@@ -55,16 +63,20 @@ def test_upgrade_task_is_routed_and_opening_line_covers_guides(read_skill):
     assert "本任务只换脚手架固定层" not in upgrade
 
 
-def test_plan_passes_only_settled_entries_and_reads_to_the_end(read_skill):
-    plan = _step(read_skill("tasks/升级.md"), 1)
-    assert "`applied_guides` 只传 `history.json` 里 `how` 为 `tested`、`already_done`、`not_applicable`、`baseline` 的条目，每条传 `did`、`sha`、`how`；`how=deferred` 与 `how=failed` 的不传" in plan
-    assert 'detail="full"' in plan
-    assert "直到 `next_offset=null`；各页 `guides.source.commit` 必须相同，不同就从第一页重取" in plan
-    assert "`applied_guides` 在原传条目之外加上本次已取到的每份指南的 `did` 与 `sha`（不带 `how`）" in plan
-    assert "全程只有一个「upgrade: before」提交" in plan
-    assert "`UPGRADE_PLAN_CURSOR_INVALID` 不带 `cursor` 从第一页重取一次" in plan
+def test_plan_reads_skill_guides_only_when_pulling_a_new_template(read_skill):
+    """第 9 版：MCP 只给固定层与两线；候选指南由 Skill 自带脚本按 history.json 算，只在拉新模板时读。"""
+    upgrade = read_skill("tasks/升级.md")
+    plan = _step(upgrade, 1)
+    assert 'business_ui_bundle(action="upgrade_plan", task_id, current_scaffold_version=<version>, skill_version=<有才传>, workspace_id)`' in plan
+    assert "`latest.version` 与本地 `version` 不同（本次要拉新模板），或下面「旧路跨主版本」要迁到 SDK 5 时，运行 `python3 <skill目录>/scripts/upgrade_guides.py candidates --app <应用根>`" in plan
+    assert "候选只认脚本输出，**禁止**自己读指南目录另算" in plan
+    assert "`latest.version` 等于本地 `version`（上一条旧路要迁移的除外）→ 不读指南" in plan
+    assert "脚本退出码不是 0（`status=invalid_guide`" in plan
     assert "`latest.json` 写 `failed(step=plan)` 与错误原文后停止，不改应用文件" in plan
     assert "**禁止**当成没有指南只换固定层" in plan
+    signals = upgrade.split("## 识别信号", 1)[1].split("## 先读什么", 1)[0]
+    assert "**只在拉了新的 SDK 5 模板之后读**" in signals and "旧路应用改 bug 不重拉模板、不读指南" in signals
+    assert "第 1 步脚本输出 `guides` 里的全部指南" in _step(upgrade, 2)
 
 
 def test_judgement_decides_without_waiting_and_required_cannot_defer(read_skill):
@@ -74,7 +86,7 @@ def test_judgement_decides_without_waiting_and_required_cannot_defer(read_skill)
         "暂不做（`deferred`，写理由，下次仍返回）",
         "问了不等回复，先处理其他指南",
         "已有同一个没答的问题时不再问",
-        "`guides.reconsider[]`",
+        "脚本输出的 `reconsider`",
         "条件没变保持 `not_applicable`",
         "`impact=required` 的只能是不适用、已满足或做，**禁止**暂缓",
         "本条记 `deferred`，理由写「依赖 <did> 未完成」，不执行",
@@ -95,8 +107,6 @@ def test_execution_order_commits_and_rollback_granularity(read_skill):
     assert 'git commit -m "upgrade: guide <did>"' in adapt
     assert "其他失败（固定层本身、`required` 指南）→ 整次失败" in _step(upgrade, 8)
     single = _step(upgrade, 9)
-    assert "先按第 1 步重新取一次完整计划" in single
-    assert "该 did 已不在候选（被替代或撤回）→ 回退本条修改" in single
     assert "记 `failed`，理由写失败的测试 id 与输出摘要，依赖它的后续指南一并回退并记 `deferred`，接着做下一条" in single
     assert "**禁止**加 `-x` / `-X`" in single
     rollback = _step(upgrade, 13)
@@ -114,7 +124,7 @@ def test_records_are_written_once_at_the_end(read_skill):
     prepare = upgrade.split("## 先读什么", 1)[1].split("## 从哪一段进", 1)[0]
     assert "**禁止**放进应用根或 git，单条回退和整次回滚都不会抹掉它" in prepare
     closing = _step(upgrade, 11)
-    assert "删掉计划 `retired` 里的 did" in closing and "2000" in closing
+    assert "删掉脚本输出 `retired` 里的 did" in closing and "2000" not in closing
     template = read_skill("reference/升级手册模板.md")
     for field in ("guide_decisions", "guide_tests", "guide_commits", "suspect_guides", "questions", "feedback"):
         assert f'"{field}"' in template, field
@@ -136,8 +146,8 @@ def test_opening_classifies_new_and_existing_apps(read_skill):
         "提交说明「chore(scaffold): 模板基线」、作者 `goalfy-agent <agent@goalfy.local>`",
         "`git status --porcelain` 为空（未跟踪文件也算改动，`.gitignore` 忽略的不算）",
         "`docs/upgrade/history.json` 不存在",
-        'applied_guides=[], detail="summary"',
-        '`{did, sha, how: "baseline"}`；QA/PRE 的未上线指南不记',
+        "`python3 <skill目录>/scripts/upgrade_guides.py baseline`，基线 = 当前 Skill 自带的全部有效指南",
+        '`{did, sha, how: "baseline"}` 原样写进 `docs/upgrade/history.json` 的 `applied_guides`',
         "只删标记、不写 `history.json`，按存量处理",
     ):
         assert fact in section, fact
@@ -156,15 +166,11 @@ def test_review_round1_fixes(read_skill):
     """06B 第 1 轮：回滚点、部署后测试未跑、上限停止、错误处置、只检查保留记录、applied_guides 与 upgrades 分写。"""
     upgrade = read_skill("tasks/升级.md")
     plan = _step(upgrade, 1)
-    assert "再从第 2 步按顺序做（第 3 步提交回滚点，第 4 步记 `skipped`，第 5 步 setup → doctor）" in plan
     assert "`SCAFFOLD_POLICY_UNAVAILABLE` 隔几分钟重试一次" in plan
-    assert "**禁止**改 `sha` 或 `how` 凑数" in plan
-    assert "按第 13 步整次失败回滚，`step=plan`，**禁止**停在半升级状态" in _step(upgrade, 6)
+    assert "**禁止**改 `history.json` 的 `sha` 或 `how` 凑数" in plan
     deploy = _step(upgrade, 10)
     assert "指南只要有一条测试没跑，就**禁止**记 `tested`" in deploy
     assert "`required` 指南有测试没跑不算完成，按整次失败处理" in deploy
-    closing = _step(upgrade, 11)
-    assert "已完成的业务修改与提交保留、不回滚" in closing and "`step=record`" in closing
     prepare = upgrade.split("## 先读什么", 1)[1].split("## 从哪一段进", 1)[0]
     assert "往 `history.json` 的 `upgrades` 追加本次升级记录" in prepare and "只替换这一个字段" in prepare
     template = read_skill("reference/升级手册模板.md")
@@ -179,7 +185,7 @@ def test_owner_decisions_1105(read_skill):
     judge = _step(upgrade, 6)
     assert "**提前要部署授权**：判断完、第 7 步改代码之前" in judge
     assert "按第 13 步整次失败回滚，`step=judge`" in judge
-    assert "`depends_on` 已由 `upgrade_plan` 按替代与撤回解析好" in judge and "`depends_on_declared`" in judge
+    assert "`depends_on` 已由脚本按替代与撤回解析好" in judge and "`depends_on_declared`" in judge
     assert "理由写「依赖 <did> 未完成」" in judge
     assert "含第 6 步提前问到的" in _step(upgrade, 10)
     rollback = _step(upgrade, 13)
@@ -208,7 +214,7 @@ def test_review_round4_unfinished_upgrade(read_skill):
     upgrade = read_skill("tasks/升级.md")
     judge = _step(upgrade, 6)
     assert "`status=awaiting_consent`、`step=judge`" in judge and 'git commit -m "upgrade: awaiting consent"' in judge
-    assert "被撤回或其需求单已关闭/作废时去掉" in judge
+    assert "被撤回时去掉" in judge
     prepare = upgrade.split("## 先读什么", 1)[1].split("## 从哪一段进", 1)[0]
     assert "5. 没做完的升级与中断后接续" in prepare
     assert "提交 `upgrade: failed <from>→<to> at judge`" in prepare
@@ -263,7 +269,6 @@ def test_doctor_findings_go_to_adaptation_and_verify_is_the_gate(read_skill):
 def test_review_round6_retryable_doctor_findings_and_reference_sync(read_skill):
     """06B 第 6 次复审机械性小修：retryable=false 不重试；收尾与整次失败都写 doctor_findings；脚手架参考不再说业务代码只按指南改。"""
     upgrade = read_skill("tasks/升级.md")
-    assert "返回 `metadata.retryable=false`（凭据被拒、配置缺失）的不重试" in _step(upgrade, 1)
     assert "`guide_commits`、`doctor_findings`；第 3 步有 wip 提交时加 `pre_upgrade_wip`）" in _step(upgrade, 11)
     assert "`guide_commits`、`doctor_findings`，建了 stash 时加 `rollback_stash`，建了备份分支时加 `rollback_backup`" in _step(upgrade, 13)
     reference = read_skill("reference/脚手架与预置件.md")
@@ -320,10 +325,8 @@ def test_review_cwj_rollback_safety_entry_cost_and_plan_change(read_skill):
     assert rollback.index("git reset --hard") < rollback.index("重新 `npm run setup`")
     assert "回滚点之后你自己做的提交已保存在备份分支" in rollback
     judge = _step(upgrade, 6)
-    assert "**计划变更**（本步与第 9 步重取计划都适用）" in judge and "`guides.source.commit` 变了" in judge
-    assert "第 1 步**首次**传入的 `applied_guides`" in judge
+    assert "也不是第 1 步 `history.json` 里已处理过的" in judge
     assert "部署同意不代替花费同意" in judge
-    assert "按第 6 步「计划变更」核对" in _step(upgrade, 9)
     deploy = _step(upgrade, 10)
     assert "**禁止**拿部署授权代替" in deploy and "没有花费授权" in deploy
     checkpoint = _step(upgrade, 3)
@@ -351,20 +354,15 @@ def test_review_r7_partial_stash_backup_notice_cost_trigger_viewer(read_skill):
     assert "已建成 stash 的先 `git stash pop` 把暂存的改动放回工作区" in rollback
     assert rollback.index("git stash pop") < rollback.index("git reset --hard")
     assert "之后的提交都会丢掉" not in rollback
-    assert "重取计划时目标版本变了（第 6 步「计划变更」）" in rollback
     assert "第 3 步有 wip 提交时加 `pre_upgrade_wip`" in rollback and "第 3 步有 wip 提交时加 `pre_upgrade_wip`" in _step(upgrade, 11)
 
 
-def test_review_r7_cursor_retry_and_plan_warnings(read_skill):
-    """协调方补充：游标无效虽 retryable=false 仍重取一次；retryable=false 不重试只限 UPGRADE_GUIDES_UNAVAILABLE；dependency_unresolved 交接、retired_reasons。"""
+def test_reconsider_and_retired_come_from_script(read_skill):
+    """第 9 版：reconsider 带完整内容直接转候选，不再重取计划；retired 原因只剩替代、撤回、文件已删。"""
     upgrade = read_skill("tasks/升级.md")
-    plan = _step(upgrade, 1)
-    assert "`UPGRADE_PLAN_CURSOR_INVALID` 不带 `cursor` 从第一页重取一次（它的 `metadata.retryable` 总是 `false`，照样重取这一次）" in plan
-    assert "`UPGRADE_GUIDES_UNAVAILABLE` 返回 `metadata.retryable=false`（凭据被拒、配置缺失）的不重试" in plan
-    assert "；返回 `metadata.retryable=false`" not in plan
-    judge = _step(upgrade, 6)
-    assert "`code=dependency_unresolved`" in judge and "判断规则不变、依赖照常保留" in judge
-    assert "`retired_reasons`" in _step(upgrade, 11)
+    assert "用 `reconsider` 里该条的完整动作与测试按上一条判断" in _step(upgrade, 6)
+    closing = _step(upgrade, 11)
+    assert "`retired_reasons`" in closing and "`file_deleted` 指南文件已从 Skill 删除" in closing and "`closed`" not in closing
 
 
 def test_v565_round3_platform_rollback_and_step_times(read_skill):
@@ -385,3 +383,66 @@ def test_v565_round4_upgrade_caused_is_decided_by_rollback_point(read_skill):
     adapt = _step(read_skill("tasks/升级.md"), 7)
     assert "只看这项检查在回滚点" in adapt and "`DATASET_TABLE_UNDECLARED`" in adapt
     assert "**禁止**因为业务代码看起来早就这样" in adapt
+
+
+def test_v565_pre_round_deploy_does_not_report_early(read_skill):
+    """07 V-565 PRE 轮：第 10 步部署前按「部署」第 1 条带三个版本调 download_template，提前形成 local_report，随后整次失败工单版本与应用不符。"""
+    upgrade = read_skill("tasks/升级.md")
+    deploy = _step(upgrade, 10)
+    assert "「部署」第 1 条核门槛的 `download_template` 这里不调" in deploy and "只在第 12 步调一次" in deploy
+    rollback = _step(upgrade, 13)
+    assert "把申报更正为实际版本" in rollback and "最新一条 `local_report`" in rollback and "缺的不传" in rollback
+    assert "`git worktree add <临时目录> <upgrade: before 提交>`" in _step(upgrade, 7) and "**禁止**在应用根里 checkout 或 reset 到回滚点" in _step(upgrade, 7)
+
+
+
+def test_bugfix_does_not_repull_and_repull_migrates_by_guides(read_skill):
+    """R-683 第 4 版第 5 项（D-4133，本人 11-10 11:13）：修 bug、加功能不重新拉脚手架、不迁移；一旦重新拉到 SDK 5 模板，按 Skill 自带的指南迁完（R-438 第 9 版），不问开发者。"""
+    scaffold = read_skill("reference/脚手架与预置件.md")
+    section = scaffold.split("#### 修 bug 不迁移与重新拉脚手架", 1)[1].split("#### 新建与接续", 1)[0]
+    for fact in (
+        "返回里的 `scaffold_route` 是应用所在的路（`legacy` 旧路、`new` 新路），`route_source` 是判路依据",
+        "**禁止**自己按版本串、`executor` 或日期另判",
+        "`fixed_layer.base_source=current_is_latest`（`latest.version` 等于本地 `version`、不带下载地址）表示模板已是最新，**禁止**另找模板下载，按已是最新结束、不读指南",
+        "同时 `scaffold_route=legacy`（旧路应用，最新模板是 SDK 5）时**不是**已是最新",
+        "`scaffold_route` 不是 `legacy`（新路主版本不同或确认不了）时按已是最新结束",
+        "在现有工程上直接改、验证、部署，不重新下载模板、不迁移",
+        "只在开发记录写「建议升级脚手架版本」，改完照常部署",
+        "**禁止**把升级 SDK、换模板或迁到新路当成修 bug 的前提",
+        "按《升级》运行本 Skill 自带的 `scripts/upgrade_guides.py candidates` 取升级指南（含旧应用迁到新路的指南），按指南完成迁移",
+        "**禁止**问开发者要不要迁（指南要求告知的影响照常告知，发布时间由开发者定），**禁止**只换固定层不迁，**禁止**为了不迁另找旧版模板",
+    ):
+        assert fact in section, fact
+    assert "修 bug、加功能的会话不因建议线升级" in scaffold.split("#### 升级步骤", 1)[1]
+    signals = read_skill("tasks/升级.md").split("## 识别信号", 1)[1].split("## 先读什么", 1)[0]
+    assert "[../reference/新路应用.md](../reference/新路应用.md)「旧应用迁到新路」" in signals
+    assert "**禁止**问开发者要不要迁" in signals
+    assert "开发者只要修 bug 或加功能时不进本任务，`upgrade_recommended=true` 也不进" in signals
+    assert "例如 SDK 4→5 后的页面接口与路由" in _step(read_skill("tasks/升级.md"), 7)
+    plan = _step(read_skill("tasks/升级.md"), 1)
+    assert "或下面「旧路跨主版本」要迁到 SDK 5 时，运行" in plan
+    legacy = plan.split("   - 旧路跨主版本：", 1)[1].split("\n", 1)[0]
+    for fact in (
+        "`scaffold_upgrade_notice` 里「本次不替换固定层，不要重试，也不要自行换模板」说的是一键升级不替换固定层，接下来按这一条做",
+        "**不是**已是最新，也**禁止**问开发者要不要迁（指南要求告知的影响照常告知，发布时间由开发者定）：照上一条运行脚本取候选",
+        "第 4 步记 `skipped`，固定层与 SDK 在第 7 步按迁移指南的动作迁",
+        "`sdk_major_skipped` 而 `scaffold_route` 不是 `legacy`（新路主版本不同或确认不了）时按下一条已是最新结束",
+    ):
+        assert fact in legacy, fact
+    assert "level=migrate" not in plan and "guides` 照常返回" not in plan
+    assert "或返回 `fixed_layer.base_source=sdk_major_skipped` 且 `scaffold_route=legacy`" in scaffold.split("#### 升级步骤", 1)[1]
+    revise = read_skill("tasks/修订.md").split("## 识别信号", 1)[1].split("## 先读什么", 1)[0]
+    assert "不重新拉脚手架，**禁止**把升级 SDK、换模板或迁到新路当成前提" in revise
+    assert "按 [升级.md](升级.md) 重新拉脚手架，按本 Skill 自带的迁移指南做完" in revise
+    migrate = read_skill("reference/新路应用.md").split("### 旧应用迁到新路", 1)[1]
+    assert "动作和测试以本 Skill 自带的迁移指南为准" in migrate
+    assert "场景包挂载与编排挂载互斥" in migrate
+
+
+def test_no_feature_not_open_reply_in_any_surface():
+    """D-4133 第 4 版：取消「只回复功能尚未开放」与「不迁到另一条路」的规则；指南随 Skill 发布后不再按 MCP 的 level=migrate 迁移。任何分发文件都不得再出现。"""
+    for relative in SURFACES:
+        for path in (ROOT / relative).rglob("*.md"):
+            text = path.read_text(encoding="utf-8")
+            for term in ("功能尚未开放", "同路升级", "迁到另一条路", "无感", "level=migrate"):
+                assert term not in text, (relative, path.name, term)

@@ -1198,6 +1198,8 @@ def test_skill_uses_deploy_finalize_release_terms_only():
     old_name_error = "- 给开发者转述时照搬 MCP 里的「定版」等旧词；按本文「术语表」改说。"
     glossary = SKILL_ROOT / "reference/平台对象速查.md"
     for path in sorted(SKILL_ROOT.rglob("*.md")):
+        if path.parent.name == "upgrade-guides":
+            continue  # 升级指南是随 D 冻结的原文（发布后不可修改），不按正本用词改写
         text = path.read_text(encoding="utf-8")
         if path == glossary:
             assert text.count(old_name_row) == 1 and text.count(old_name_error) == 1
