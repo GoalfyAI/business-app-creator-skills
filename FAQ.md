@@ -43,8 +43,8 @@
 ### 9. 我可以手工编辑各平台目录吗？
 
 各平台的集成文档（`README.md`、`AGENTS.md`、`UPDATE.md`、`.mcp.json`）可以直接编辑。
-但 Skill 副本是发布流程从 `skills/` 生成的，手工修改会被下次发布覆盖，
-而且会导致校验失败——要改 Skill 内容请改 `skills/` 下的唯一源。
+但 Skill 副本是发布流程从 `skills/business-app-creator/` 生成的，手工修改会被下次发布覆盖，
+而且会导致校验失败——要改 Skill 内容请改 `skills/business-app-creator/` 下的唯一源。
 
 ### 10. 支持哪些客户端？
 

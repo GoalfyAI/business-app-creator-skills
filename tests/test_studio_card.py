@@ -6,14 +6,14 @@ import re
 import unittest
 from pathlib import Path
 
-SKILL = Path(__file__).parents[1] / "skills/agenticapp-host-studio"
+SKILL = Path(__file__).parents[1] / "skills/business-app-creator"
 spec = importlib.util.spec_from_file_location("studio_card", SKILL / "scripts/studio_card.py")
 m = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(m)
 
 
 def reference_questions():
-    text = (SKILL / "references/表单控件.md").read_text(encoding="utf-8")
+    text = (SKILL / "reference/Studio表单与卡片.md").read_text(encoding="utf-8")
     block = re.search(r"```json\n(.*?)```", text, re.DOTALL).group(1)
     return [json.loads(line) for line in block.strip().splitlines()]
 
