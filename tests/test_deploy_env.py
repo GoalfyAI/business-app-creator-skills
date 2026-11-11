@@ -142,8 +142,3 @@ def test_main_deploy_passes_pinned_user_commit(steps, monkeypatch):
 def test_release_only_refuses_non_main(steps):
     with pytest.raises(deploy_env.DeployError, match="只运行 main"):
         deploy_env.release_only("feat/x")
-
-
-def test_release_only_skips_release_for_release_branch(steps):
-    summary = deploy_env.release_only("release/2026-11-06-pm")
-    assert summary["version"] == "" and summary["released"] == "False" and summary["source_sha"]

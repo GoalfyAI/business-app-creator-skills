@@ -50,7 +50,7 @@ def test_snapshot_appends_forward(repos):
     assert git("rev-parse", f"{second}^{{tree}}", cwd=github) == git("rev-parse", f"{rel['v2']}^{{tree}}", cwd=codeup)
     assert refs(github)["refs/tags/skill/v2"] == second == refs(github)["refs/heads/main"]
     # GitHub 不含 Codeup 的提交
-    assert subprocess.run(["git", "cat-file", "-e", rel["v1"]], cwd=github, check=False).returncode != 0
+    assert subprocess.run(["git", "cat-file", "-e", rel["v1"]], cwd=github).returncode != 0
 
 
 def test_old_release_without_tag_is_rejected_after_newer(repos):
