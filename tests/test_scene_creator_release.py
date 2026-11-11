@@ -1198,6 +1198,8 @@ def test_skill_uses_deploy_finalize_release_terms_only():
     old_name_error = "- 给开发者转述时照搬 MCP 里的「定版」等旧词；按本文「术语表」改说。"
     glossary = SKILL_ROOT / "reference/平台对象速查.md"
     for path in sorted(SKILL_ROOT.rglob("*.md")):
+        if path.parent.name == "upgrade-guides":
+            continue  # 升级指南是随 D 冻结的原文（发布后不可修改），不按正本用词改写
         text = path.read_text(encoding="utf-8")
         if path == glossary:
             assert text.count(old_name_row) == 1 and text.count(old_name_error) == 1
@@ -1494,6 +1496,7 @@ def test_app_db_routes_prove_with_workspace_real_run():
     assert "冒泡里读空、写被跳过是预期" in making
     script = _read("reference/编排脚本.md")
     assert "为了让冒泡通过，把读库包进 `dry_run`、从入口塞数据、加 `fallback_*` 兜底或删掉读写" in script
+    assert "真跑执行还在运行或停在交付审阅时同样返回 `needs_bubble`，不说明脚本有问题" in script
     acceptance = _read("stages/4-试用验收.md")
     deploy = _read("reference/部署与版本.md")
     real_run = deploy.split("### 真跑", 1)[1].split("\n### ", 1)[0]
@@ -1507,7 +1510,9 @@ def test_app_db_routes_prove_with_workspace_real_run():
     errors_run = _read("reference/报错对照.md").split("### 真跑", 1)[1].split("\n### ", 1)[0]
     assert "| `BUSINESS_UI_NOT_DEPLOYED`（`run` 带 `workspace` 时） |" in errors_run
     # 出口要接上 ③「passed 由 ④ 真跑补上」；残留的「核对上线版本 / 先上线自测」会把 Agent 引去 finalize
-    assert "每条 TPE 最近一次 `verify(tpe_id, project_id)` 为 `passed`" in acceptance
+    assert "每条 TPE 最近一次 `verify(tpe_id, project_id)`（新路应用为 `verify(tpe_id, run_id=<BIZ- 号>)`）为 `passed`" in acceptance
+    assert acceptance.count("`project_id`（新路应用为 `business_id`）") == 2
+    assert "停在交付审阅时返回 `needs_bubble`、`next_action=wait`" in acceptance
     assert "按第 3 步核对上线版本" not in acceptance
     assert "按 G6 第 3 步先定版自测" not in deploy and "首版先 finalize" not in deploy
     table = deploy.split("### 草稿、上线、发布各能做什么", 1)[1].split("\n### ", 1)[0]
