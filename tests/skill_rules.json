@@ -460,8 +460,8 @@
   "text": "「演示版页面验收」"
  },
  {
-  "source": "test_scene_creator_release.py:1048",
-  "text": "GoalfyMax 正式入口、登录页、在线预览或演示预览的地址、容器地址要走平台登录和身份注入，不在你要访问的范围里；开发者已登录的会话也不借用"
+  "source": "FB-2032：宿主准备/读取演示环境，保留本地验收与在线入口边界",
+  "text": "Studio 下只允许使用 `studio_demo` 返回的本地 `hostUrl`，它是当前应用的 Dev Host 验收入口。GoalfyMax 正式入口、登录页、在线预览、容器地址不在你要访问的范围里；开发者已登录的会话也不借用"
  },
  {
   "source": "test_scene_creator_release.py:1050",
@@ -1120,8 +1120,8 @@
   "text": "**先在演示版上测**"
  },
  {
-  "source": "复核:不用部署的先做：页面条目、`npm --prefix fro",
-  "text": "不用部署的先做完：页面条目、`npm --prefix frontend run check`、布局回归、清空 Mock 数据看空库表现"
+  "source": "FB-2032 Review：独立 Mock 与 Studio 真实后端清理边界",
+  "text": "不用部署的先做完：页面条目、`npm --prefix frontend run check`、布局回归、空库表现。清空数据只用于独立 Mock 环境；Studio 使用已授权的空测试数据，不能安全取得时把该项记「未测」，不清空真实应用库。"
  },
  {
   "source": "复核:开发者同意部署的，最近一次部署 `status=succes",
@@ -1360,16 +1360,16 @@
   "text": "Studio 宿主下上线结果写进开发文档「验收报告」最后一节，按 `agenticapp-host-studio`「验收报告」保存新的一版"
  },
  {
-  "source": "复核:Studio 下桌面入口已在跑当前工程的开发服务时直接用它，",
-  "text": "Studio 宿主下桌面入口已在跑当前工程的开发服务时直接用它，不另起、不停掉（见 `agenticapp-host-studio`）"
+  "source": "FB-2032：宿主准备/读取演示环境，保留本地验收与在线入口边界",
+  "text": "Studio 下不执行这些启动和状态命令：调用 `studio_demo(action=\"ensure\")` 复用或启动当前应用服务，从返回读 `hostUrl`；用 `action=\"read\"` 核对真实状态，不猜默认端口，未知结果先读不重放。"
  },
  {
   "source": "复核:宿主提供的受限检查能力的机器结果可以作补充，和你在本机版上的",
   "text": "宿主提供的检查工具的机器结果可以作补充，和你在演示版上的操作分开记，不能代替页面条目的演示版操作"
  },
  {
-  "source": "复核:**演示**：桌面入口管理当前工程的开发服务，你只准备工程与",
-  "text": "| 演示预览与演示版 | 桌面入口管理当前工程的开发服务：你只准备工程与依赖，不另起后台服务"
+  "source": "FB-2032：宿主准备/读取演示环境，保留本地验收与在线入口边界",
+  "text": "`action=\"read\"` 查询真实状态，不以脚手架 `dev:status` 判断宿主服务已退出；未知结果先 read，不重放 ensure。不要自行启动、重启或停止宿主管理的服务。"
  },
  {
   "source": "复核:`studio.acceptance.json` 与方案的 ",
