@@ -196,3 +196,19 @@ def test_start_environment_and_push_before_closing(read_skill):
     assert "工具列表里没有 `business_ui_stage` 时，把这三件事写进阶段文档和工单 checkpoint" in read_skill("reference/开发者中心与工作区.md")
     # 红线：不读取、打印开发者的 Key 和连接配置
     assert "**禁止**读取、打印或截取开发者的 API Key 和插件连接配置" in read_skill("SKILL.md")
+
+
+def test_closed_feedback_recovery_reads_conclusions(read_skill):
+    """FK-2017：反馈关闭后先读处理结论，核对是否用上修复，汇报四件事分开写。"""
+    errors = read_skill("reference/报错对照.md")
+    recovery = errors.split("反馈已关闭（`status` 为 `closed`）或修复已发布（`completed`）时", 1)[1].split("\n### ", 1)[0]
+    assert "先读 `query_dev_feedback` 返回的 `conclusions`" in recovery
+    assert "只凭状态不能说已解决" in recovery
+    assert "核对本应用是否已用上修复" in recovery
+    assert "反馈是否已关闭、修复是否已发布、本应用是否已用上修复、原来失败的场景是否已验证通过" in recovery
+    # 关闭后追加没人看到：原问题仍在要新提 blocked 反馈并带原编号与结论
+    assert "不往原反馈追加" in recovery
+    assert "新提一条 `blocking=\"blocked\"` 的反馈，按上面新建规则带 `title`、`attribution` 和五段正文，正文写原反馈编号、它的处理结论和这次复现的证据" in recovery
+    assert "用同一 `feedback_code` 追加本次证据" not in recovery
+    # 升级 Skill 走工单闸门，不做脚手架升级
+    assert "要求升级本 Skill 的，按下面「工单闸门」`SCENE_SKILL_UPGRADE_REQUIRED` 的方法升级 Skill，不做脚手架升级" in recovery

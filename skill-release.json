@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20261030-e23fde",
   "skill_name": "business-app-creator",
-  "version": "v20261111-6b4f86",
-  "package_version": "2.0.48",
+  "version": "v20261112-da4d07",
+  "package_version": "2.0.49",
   "mcp_endpoint": "https://business-app-creator-mcp.goalfyai.cn/mcp",
-  "released_at": "2026-11-11T13:10:39Z",
-  "update_reason": "test(skill): 第 11 步拷贝固定层清单、不重复追加升级记录与 D-3962 旧路手工迁移动作补断言 [需求:D-3962][R-438]；fix(skill): 按评审补旧路手工迁移口径；candidates 传 --sdk-major；第 11 步不重复追加升级记录并核固定层清单 [需求:D-3962][R-438]；test(skill): guard the needs_bubble open-execution sentence in orchestration script reference (FK-2001)；docs(skill): needs_bubble while a real-run execution is open is not a script problem (FK-2001)；test(skill): assert new-route business_id wording appears twice in acceptance stage (FK-2001)；docs(skill): new-path real-run evidence wording uses business_id (FK-2001)；docs(skill): cover remaining verify project_id wordings for new-path apps (FK-2001)；docs(skill): verify takes the BIZ- execution id of a new-path real run；fix(skill): 升级指南候选只取适用目标 SDK 主版本（默认 5）的指南；D-3962 指南正文按第 10 版更正 [需求:D-3962][R-438]；feat(skill): 新增升级指南 D-4155 替代 D-4001，旧项目链接可保留只做跳转的入口 [需求:D-4155][任务:T-5189][R-705]；fix(skill): 《升级》旧路跨主版本引用 MCP !288 ff4648d 的跳过提示原文 [需求:D-4133][任务:T-5165]；fix(skill): 修 bug、加功能不重新拉脚手架、不迁移；旧路重新拉到 SDK 5 模板按 Skill 自带的迁移指南迁完 [需求:…",
+  "released_at": "2026-11-12T12:11:35Z",
+  "update_reason": "docs(skill): require full new-feedback fields when refiling a closed feedback；docs(skill): file a new blocked feedback when a closed one still reproduces；docs(skill): recover making from conclusions after a platform feedback closes",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -71,7 +71,7 @@
     "upgrade-guides/schema.json"
   ],
   "checksums": {
-    "SKILL.md": "00f48ba1591f62fe59fdd7cfb655e5acac1307ffd91551dc89827377103e3a60",
+    "SKILL.md": "8d0d061198cf37138fa0a89dfe500f5d2dba13a49c4e67211e16d6becbc83dd0",
     "agents/openai.yaml": "d04a3798927cbc33720df4c8692870a0ad987bcb7cbc79f0d0a0a24832eb46b2",
     "checklists/验收清单.md": "ad6fea0e35740b88c5341f14e270a774c6340dc80ad301a148c160608dd0e5da",
     "design/PRD.md": "df82e23081d8a779912e5bc24a33efcc93259cb660e769adb9043e3baf18a95a",
@@ -97,7 +97,7 @@
     "reference/多人协作.md": "6419f6c189b95e6337eaaf1d59d47e9f6f94de84b3fbc2145fc561341ae10dbb",
     "reference/平台对象速查.md": "c8c95db5eb55c4e0ac4dc07583f9c71864b1afdf392c024dbf431533003d0b49",
     "reference/开发者中心与工作区.md": "bdd4b9f21a3580c8d027ab2036e72f9b97f44e95a139006a3ac30256f578541a",
-    "reference/报错对照.md": "335943c1442eda16b83b7fce1d193ec8ae5280413b004971e5f69234943680c9",
+    "reference/报错对照.md": "d02b946b331bc12fd5e06fa101362416f9befab179134dff44ecb254e5a849b7",
     "reference/授权与充值.md": "ac5dd1ebaaa41dd099c48ac722d4c015988833ff146c515c1c6189ef63ceff92",
     "reference/数据模板.md": "edf0c7c489c75d98514110560a6b6a76a478b9a644372e29c3a70b2820d79ad5",
     "reference/新路应用.md": "c92468ffe552299398bbf64609acb9c6a6abf806a78f07a98be05b6b2fe291af",
