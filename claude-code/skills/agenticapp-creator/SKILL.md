@@ -1,6 +1,6 @@
 ---
 name: agenticapp-creator
-description: GoalfyMax 智能应用制作的总规矩。开发者要做、续做、改、查一个智能应用时最先加载，例如「帮我做个应用」「把这个流程做成智能应用」「这个能不能做成应用」「接着做上次那个」「这个应用出问题了」。只问平台概念、只跑一次业务任务时不用。[skill-version:v20261112-578085]
+description: GoalfyMax 智能应用制作的总规矩。开发者要做、续做、改、查一个智能应用时最先加载，例如「帮我做个应用」「把这个流程做成智能应用」「这个能不能做成应用」「接着做上次那个」「这个应用出问题了」。只问平台概念、只跑一次业务任务时不用。[skill-version:v20261112-e0929e]
 keywords:
   - 智能应用
   - 智能应用开发
@@ -73,18 +73,21 @@ keywords:
 | 应用已上线或这次制作已收尾，他明确说要改什么 | `agenticapp-task-revise`，自己接上，不问走什么流程，不让他换入口 |
 | 问这个应用的问题，或说效果差、报错、数据不对、页面异常 | 只回答；要查原因用 `agenticapp-task-diagnose`（只读）。不改、不部署、不上线 |
 | 查看、整理使用者反馈，按反馈改 | `agenticapp-task-user-feedback` |
+| 升级脚手架、检查更新、Studio「检查并升级」发来的固定指令 | `agenticapp-tool-workspace`，按它的「脚手架升级」做 |
 | 只聊概念、没指向具体应用 | 直接回答，不开工、不调制作工具；概念查 [references/平台对象与用词.md](references/平台对象与用词.md)，工具契约和配置写法查对应 `agenticapp-tool-*` Skill 的 references |
 
 拿不准他是要改还是在问时按问题处理，答完问一句要不要改：判成要改就会直接上线。
 
 指向已有应用时先 `business_ui_manage(action="get")` 看 `role`：不是 `owner` 的先加载 `agenticapp-role-collab`；`viewer` 不管做什么都只读。工具列表里有 `studio_write_proposal` 时，同时加载 `agenticapp-host-studio`。
 
+任何任务（含用户反馈、能力试用）开始前先查有没有没做完的升级，有就先按 `agenticapp-tool-workspace` 的 [升级任务.md](../agenticapp-tool-workspace/references/升级任务.md)「先读什么」第 5 条处理（`viewer` 只告知、不处理）。
+
 ## 开工
 
 每个应用做一次，接续时逐步核对。每一步的完整做法见 [references/开工细则.md](references/开工细则.md)：
 
 1. `task_manager(action="create", mode="write", skill_version=…)` 建工单，`skill_version` 原样取本文件 description 里的 `[skill-version:…]`。
-2. 加载 `agenticapp-tool-workspace`，定位应用工程、初始化或接续工作区。
+2. 加载 `agenticapp-tool-workspace`，定位应用工程、初始化或接续工作区：先处理没做完的升级，再核脚手架版本，低于必须线先升级；清单带 `guide_baseline` 时判定新建与存量。
 3. `dev_preferences(action="pull")` 读一次开发者偏好；偏好和记忆都不能代替这次的确认。
 4. 方向还不清楚时只问方向那一题，不调制作工具；方向定了再做第 1–3 步。
 5. 问需求题之前先确认制作工具能用，不能用就停下，引导开发者配置好再问。
@@ -127,4 +130,4 @@ keywords:
 
 - 先查当前工具 Skill 的「常见错误」，按返回的结构化错误改同一份对象再试；被闸门拒绝按返回给的出口在原工单、原对象上处理，不另开工单、不改名重试。
 - 同一个错误连续两次（`repeated_error_count>=2`）就换思路；`recoverable=False` 的不重试，如实告诉开发者。
-- 应用自己的脚本、页面、数据、提示词问题自己改；平台问题按 [references/平台问题怎么报.md](references/平台问题怎么报.md) 提交，提交成功不等于解决。使用者的业务反馈走 `agenticapp-task-user-feedback`。
+- 应用自己的脚本、页面、数据、提示词问题自己改；平台问题按 [references/平台问题怎么报.md](references/平台问题怎么报.md) 提交，提交成功不等于解决。新建反馈必须带 `title` 和五段正文（要完成什么、操作经过、看到什么、预期、影响），截图和日志用 `attachments`（先 `file_to_url`）。使用者的业务反馈走 `agenticapp-task-user-feedback`。

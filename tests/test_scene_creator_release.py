@@ -153,7 +153,7 @@ def test_platform_skill_copies_match_the_single_source():
         assert not target.exists(), platform
     for platform in release_module.PLATFORM_NAMES:
         present = sorted(path.name for path in release_module._platform_skill_dir(SKILL_ROOT, platform).iterdir())
-        assert present == sorted(release_module.ALL_SKILLS), platform
+        assert present == sorted([*release_module.ALL_SKILLS, release_module.UPGRADE_GUIDES_HOME]), platform
 
 
 def test_install_docs_state_the_required_facts():
@@ -613,7 +613,7 @@ def _layout_error(skill_root: Path, message: str) -> str:
 def test_current_skill_layout_passes():
     release_module.validate_skill_layout(SKILL_ROOT)
     present = sorted(path.name for path in SKILLS_ROOT.iterdir() if path.is_dir())
-    assert present == sorted(release_module.ALL_SKILLS)
+    assert present == sorted([*release_module.ALL_SKILLS, release_module.UPGRADE_GUIDES_HOME])
     assert len(release_module.ALL_SKILLS) == 20
     assert release_module.ATOMIC_SKILLS[:5] == release_module.STAGE_SKILLS
     assert not (SKILL_ROOT / "skills").exists()
@@ -893,10 +893,24 @@ def test_env_channel_package_suffix_must_match_channel(monkeypatch):
         release_module._validate_package_version("2.0.12-qa.3")
 
 
-@pytest.mark.parametrize("retired", ["business-app-creator-lite", "business-app-creator"])
+def test_old_entry_files_beside_upgrade_guides_are_removed_and_rejected(tmp_path: Path):
+    """入口已从 business-app-creator 改名为 agenticapp-creator；同名目录只留升级指南与读取脚本 [需求:D-3962]，
+    旧入口文件残留即拒绝发布，同步时删掉。"""
+    copied = _copy_repo(tmp_path)
+    for platform in release_module.EXTRA_SKILL_PLATFORMS:
+        assert not (tmp_path / platform / "skills/business-app-creator/SKILL.md").exists(), platform
+    stale = tmp_path / "codex/skills/business-app-creator/SKILL.md"
+    stale.write_text("stale\n", encoding="utf-8")
+    with pytest.raises(release_module.ReleaseError, match="多余文件"):
+        release_module.check_release(copied)
+    release_module.sync_platform_skills(copied)
+    assert not stale.exists()
+    release_module.check_release(copied)
+
+
+@pytest.mark.parametrize("retired", ["business-app-creator-lite"])
 def test_retired_skill_copies_are_removed_and_rejected(tmp_path: Path, retired: str):
-    """lite 已并入主 Skill [任务:T-3724]，入口已从 business-app-creator 改名为 agenticapp-creator：
-    同步时删掉平台里的旧目录，残留即拒绝发布。"""
+    """lite 已并入主 Skill [任务:T-3724]：同步时删掉平台里的旧目录，残留即拒绝发布。"""
     copied = _copy_repo(tmp_path)
     for platform in release_module.EXTRA_SKILL_PLATFORMS:
         assert not (tmp_path / platform / "skills" / retired).exists(), platform

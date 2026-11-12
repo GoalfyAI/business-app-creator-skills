@@ -1,6 +1,6 @@
 ---
 name: agenticapp-tool-workspace
-description: 开工、接续，或调用 business_ui_stage、workspace_push、download_template 前必须加载：应用工程、工作区文件、阶段记录、演示版验收、脚手架版本。
+description: 开工、接续、升级脚手架，或调用 business_ui_stage、workspace_push、download_template、upgrade_plan 前必须加载：应用工程、工作区文件、阶段记录、演示版验收、脚手架版本与升级。
 ---
 # 应用工程与工作区
 
@@ -22,13 +22,16 @@ description: 开工、接续，或调用 business_ui_stage、workspace_push、do
 
 建工单后、初始化或继续开发前做；部署前 `agenticapp-tool-deploy` 会再核一次。
 
+先查有没有没做完的升级：`docs/upgrade/latest.json` 为 `awaiting_consent`，或 `git log` 里「upgrade: before」之后没有完成、失败或停止提交。有就先按 [references/升级任务.md](references/升级任务.md)「先读什么」第 5 条处理，再做下面的事。
+
 1. 在已确认的应用根读 `scaffold-release.json` 的 `version`。没有文件就是未声明，传空；不从 `package.json`、压缩包名或日期猜。
 2. `business_ui_bundle(action="download_template", task_id, current_scaffold_version=<本地版本>, workspace_id=<已有应用的真实标识>)`。新建还没有工作区时省略 `workspace_id`。
 3. 返回的 `version`、`sha256`、`min_required_version`、`min_recommended_version`、`upgrade_required`、`upgrade_recommended` 要齐全。
-   - `upgrade_required=true`：先做「脚手架升级」再继续。
-   - `upgrade_recommended=true`：可以继续，开发记录写「建议升级脚手架版本」，下一次部署前升级。
+   - `upgrade_required=true`：先按「脚手架升级」升级再继续。
+   - `upgrade_recommended=true`：可以继续，开发记录写「建议升级脚手架版本」，下一次部署前按「脚手架升级」升级。
    - 达到必须线就继续，不必每次升到最新。
 4. 新建时校验下载包 `sha256`，用 `tar -xzf <包> -C <应用目录>` 解到本应用的独立目录，不加 `--strip-components`。做成：`scaffold-release.json` 等在应用目录第一层，它的 `version` 与返回的 `version` 相同。
+5. 清单带 `guide_baseline` 时按 [references/脚手架版本与升级.md](references/脚手架版本与升级.md)「新建与存量」判定并删掉它；新建应用在下一节 `scaffold:init` 之后、`npm run setup` 之前判定。
 
 每一步的细则（返回缺字段、解压后核对什么）和各类版本号的含义读 [references/脚手架版本与升级.md](references/脚手架版本与升级.md)。
 
@@ -37,13 +40,13 @@ description: 开工、接续，或调用 business_ui_stage、workspace_push、do
 **新建**：宿主给了初始化命令就原样执行。没有时：
 
 1. `npm run scaffold:init -- --app-name "<应用名>"`，不传 `--environment`：宿主提供了环境，脚手架自己读。报「缺少环境」或要不带示例包时，读 [references/初始化与接续细则.md](references/初始化与接续细则.md)「新建」。
-2. `npm run setup`、`npm run doctor`。做成：应用根有三件套和 `docs/stages/` 七份阶段文档，`doctor` 没有 `FAIL`。
+2. 清单带 `guide_baseline` 时先按上一节第 5 步判定，再 `npm run setup`、`npm run doctor`。做成：应用根有三件套和 `docs/stages/` 七份阶段文档，`doctor` 没有 `FAIL`。
 3. 第一次实质答复结束前，把已知的业务目标、范围和待明确事项写进方案页的最小草案，未知的标「未知」。
 
 **接续**：
 
 1. 先读工作区：三件套（`current_stage`、`business_ui_id`、阶段标记）、`docs/stages/` 当前阶段的文档、方案页 `status`。走到哪以 `workspace.json` 为准，没有工作区的从 ① 开始。工作区里缺失或换了机器才从云端取，见 [references/云端保存与换机.md](references/云端保存与换机.md)。
-2. 照上一节核脚手架版本；缺的工作区文件用 `npm run scaffold:repair -- --app-name "<应用名>"` 补，保留已有事实；再 `setup`、`doctor`。做成：`doctor` 没有 `FAIL`。
+2. 照上一节核脚手架版本（先处理没做完的升级，低于必须线先按「脚手架升级」升级）；缺的工作区文件用 `npm run scaffold:repair -- --app-name "<应用名>"` 补，保留已有事实；再 `setup`、`doctor`。做成：`doctor` 没有 `FAIL`。
 3. 协作者工作区里没有工程、已有应用（先看 `role`）、没有 PRD 的应用怎么接，读 [references/初始化与接续细则.md](references/初始化与接续细则.md)「接续」。
 
 ## 工作区文件
@@ -74,9 +77,9 @@ Studio 右栏有两个预览：「演示预览」是工作区里的当前工程�
 
 ## 脚手架升级
 
-`download_template` 返回 `upgrade_required=true`，或部署报 `SCAFFOLD_UPGRADE_REQUIRED` 时做，做完才继续制作或部署。按 [references/脚手架版本与升级.md](references/脚手架版本与升级.md)「升级步骤」四步做：独立目录下载新模板并备份当前应用，三方差异迁移平台固定层、保留业务代码和数据，验证通过后用同一个 `workspace_id` 上报。做成：`task_manager(action="get")` 的 `scaffold_versions` 里，这个工作区的 `local_report` 是升级后的版本。
+`download_template` 返回 `upgrade_required=true`（做完才继续制作或部署）或 `upgrade_recommended=true`（下一次部署前做），部署报 `SCAFFOLD_UPGRADE_REQUIRED` 或返回带 `scaffold_upgrade_notice`，开发者说「升级脚手架」「检查更新」「检查并升级」，或 Studio 发来「检查并升级」的固定指令时，按 [references/升级任务.md](references/升级任务.md) 做：取升级计划、替换固定层、按升级指南改业务代码并逐条测试、跑验证链、预览部署、用同一个 `workspace_id` 上报；失败整次回滚到回滚点。只检查不升级也走它，写出 `status=checked` 为止。`docs/upgrade/` 下的手册、`latest.json`、`history.json` 怎么写见 [references/升级手册模板.md](references/升级手册模板.md)。做成：`task_manager(action="get")` 的 `scaffold_versions` 里，这个工作区的 `local_report` 是升级后的版本。
 
-迁移边界、部署时的版本证据、`SCAFFOLD_*` 错误码也在这份 references。所有工程命令见 [references/脚手架命令与预置件.md](references/脚手架命令与预置件.md)。
+什么时候必须升、新建与存量怎么判、手工迁移的两种情况、部署时的版本证据、`SCAFFOLD_*` 错误码在 [references/脚手架版本与升级.md](references/脚手架版本与升级.md)。所有工程命令见 [references/脚手架命令与预置件.md](references/脚手架命令与预置件.md)。
 
 ## 常见错误
 

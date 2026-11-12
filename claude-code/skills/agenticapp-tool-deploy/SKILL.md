@@ -18,7 +18,7 @@ description: 调用 business_ui_bundle、manage_goalfymax_project 运行、busin
 
 已经部署过、这次是重新部署时，提醒以工具返回为准：`ship` 返回更新提醒，就先在回复正文里原样发给开发者再上传。受影响的功能这时要已改回「在做」（`agenticapp-stage-4-acceptance`「按反馈改」）。更新中的短暂报错照实说成「正在更新」，不说成配置错了或部署不了。
 
-1. `business_ui_bundle(action="download_template")` 核脚手架门槛，低于必须线的先按 `agenticapp-tool-workspace` 升级。做成：返回的 `upgrade_required` 不是 `true`。
+1. `business_ui_bundle(action="download_template")` 核脚手架门槛，需要升级时先按 `agenticapp-tool-workspace`「脚手架升级」升级并验证。做成：返回的 `upgrade_required` 不是 `true`。
 2. 应用根运行 `npm run verify:release`，全部通过后得到 `.pack/business-ui-bundle.tar.gz`；按这个包算 `source_sha256` 和 `size_bytes`。部署包只能由它产出，不手工打包。做成：命令退出码 0，应用根下有这次新打出的 `.pack/business-ui-bundle.tar.gz`。
 3. `business_ui_bundle(action="ship", task_id, business_ui_id, source_sha256, file_name="business-ui-bundle.tar.gz", size_bytes)`。传上线行时同时带 `change_note`，写这次改了什么；同一张工单上线后再部署也这样传，平台派生新草稿，版本号顺延。
    - 返回 `upload_required`：按 `upload_url` 和 `headers` PUT 源码包原字节，再带上 `bundle_key` 原参数重调；
@@ -48,7 +48,7 @@ manage_goalfymax_project(action="run", task_id, idempotency_key,
 - 结果以 `route_runs` 里各路线的状态为准（路线完成后项目可能仍显示 running）；`get_project_execution_logs(action="workflow_trace")` 看每一步。
 - **跑的是哪一版**：用这个应用版本号最高、且有可用容器的版本（草稿一创建就会被选中）。只换了挂载（场景包或模板版本）、没重新部署的版本也会被选中：挂载按它解析，直接生效；容器沿用它继承的源版本，所以源版本必须部署过。改了页面或后端代码，要重新部署才生效。跑完先核对返回的 `business_ui.version` 是不是你要验的那一版（`host_version` 是实际承载的容器版本）。
 - 做成：`business_ui.version` 是要验的那一版，`route_runs` 里每条要验的路线都是 `succeeded`；项目还显示 running 不影响这个判断。
-- 读写应用库的路线，跑完对每条 TPE 调 `otpe_manage(action="verify", task_id, tpe_id, project_id)` 补运行证据。
+- 读写应用库的路线，跑完对每条 TPE 调 `otpe_manage(action="verify", task_id, tpe_id, project_id)` 补运行证据（新 SDK 应用传这次实际跑的 `business_id`：`verify(tpe_id, run_id=<BIZ- 号>)`），见 `agenticapp-tool-workflow` 的 [冒泡与实际跑能证明什么.md](../agenticapp-tool-workflow/references/冒泡与实际跑能证明什么.md)「verify 收哪种证据」。
 
 新 SDK 应用：不论碰不碰应用库都传 `business_ui_id` 和 `business_ui_data_space`（制作和验收用 `workspace`，上线后也一样，读写开发工作集；`instance` 读写开发者本人的正式实例，要应用已发布，制作和验收不用它），不传 `scenario_package_ids`；`submit_data` 写 `{orchestration_id, form_id, formdata}`，不放 `business_id`。`business_id` 由服务端生成、在回执里给出，用于后面的 `wait / status / reply / stop`。执行里没有对话，没有 `send`；`reply` 时 `orchestration_id` 由工具补上，按回执的 `next_action.template` 填。
 

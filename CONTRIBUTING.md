@@ -17,7 +17,7 @@
 
 | 目录 | 说明 |
 |---|---|
-| `skills/` | Skill 的唯一源，20 个平级目录随插件 `business-app-creator` 发布：入口 `agenticapp-creator/`（`SKILL.md` 写红线、开发者确认什么、任务路由、开工、五段与退回、交接，带 `references/` 和 `agents/openai.yaml`）；另外 19 个 Skill（五段 `agenticapp-stage-*`、任务 `agenticapp-task-*`、平台对象 `agenticapp-tool-*`、协作 `agenticapp-role-collab`、宿主 `agenticapp-host-studio`、资料 `agenticapp-ref-platform-limits`、`agenticapp-ref-experience`），各自带 `references/`、`assets/`、`scripts/` |
+| `skills/` | Skill 的唯一源，20 个平级目录随插件 `business-app-creator` 发布：入口 `agenticapp-creator/`（`SKILL.md` 写红线、开发者确认什么、任务路由、开工、五段与退回、交接，带 `references/` 和 `agents/openai.yaml`）；另外 19 个 Skill（五段 `agenticapp-stage-*`、任务 `agenticapp-task-*`、平台对象 `agenticapp-tool-*`、协作 `agenticapp-role-collab`、宿主 `agenticapp-host-studio`、资料 `agenticapp-ref-platform-limits`、`agenticapp-ref-experience`），各自带 `references/`、`assets/`、`scripts/`。另有 `business-app-creator/` 不是 Skill，只放升级指南 `upgrade-guides/`（格式见其中的 README）和读取脚本 `scripts/upgrade_guides.py`，随插件发布；已发布的指南按路径冻结，所以留在原位置 |
 | `scripts/` | 构建与发布工具 |
 | `tests/` | 测试 |
 | `claude-code/`、`codex/` | 插件安装文档手工维护；`skills/` 子目录由发布流程复制，**不要手工编辑** |
@@ -56,7 +56,7 @@ uv run python scripts/build_platform_packages.py check
 
 `skills/` 是给 Agent 读的执行指引，不是给人读的说明书。20 个 Skill 平级，宿主列表里每个都能看到；入口只做路由，每件事在用到它的那一刻由对应的 Skill 交代：进入某一段加载那一段的 `agenticapp-stage-*`，调某类工具前加载对应的 `agenticapp-tool-*`。发布检查会校验：
 
-- `skills/` 下正好是入口加约定的 19 个 Skill（清单见 `scripts/build_platform_packages.py` 的 `ATOMIC_SKILLS`）；入口只放 `SKILL.md`、`agents/openai.yaml`、`references/*.md`，其他每个目录只放 `SKILL.md`、`references/*.md`、`assets/`（md、html、css）、`scripts/*.mjs`（随 Skill 发布的脚本只用 Node 自带模块：Studio 随包带 Node，用户电脑上不一定有 Python）
+- `skills/` 下正好是入口加约定的 19 个 Skill（清单见 `scripts/build_platform_packages.py` 的 `ATOMIC_SKILLS`），外加升级指南目录 `business-app-creator/`；入口只放 `SKILL.md`、`agents/openai.yaml`、`references/*.md`，其他每个目录只放 `SKILL.md`、`references/*.md`、`assets/`（md、html、css）、`scripts/*.mjs`（随 Skill 发布的脚本只用 Node 自带模块：Studio 随包带 Node，用户电脑上不一定有 Python；`business-app-creator/` 里的指南读取脚本 `scripts/upgrade_guides.py` 除外）
 - 入口之外的 Skill 的 frontmatter 只有 `name`（与目录同名）和 `description`（第一句写什么时候用、由谁指过来；工具 Skill 写「调用 xxx 前必须先加载」；不超过 200 字符；不带版本标记，版本只在入口）
 - 五段 Skill 必须按顺序有「开始前确认」「按这个顺序做」「交棒」三节（⑤ 的最后一节是「结束」）；`agenticapp-tool-*` 必须有「常见错误」
 - 五段与工作区阶段的对应固定为 ① = G1、G2，② = G3，③ = G4、G5，④ = G6，⑤ = G7；工作区 `workspace.json` 仍是 G1–G7 七项

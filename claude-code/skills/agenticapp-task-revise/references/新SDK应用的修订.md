@@ -9,12 +9,12 @@
 
 ## 旧应用迁到新 SDK
 
-迁移是一次修订，按 SKILL.md 的起点表属于「只改做法」，从 ③ 进（`agenticapp-stage-3-build`）。
+迁移是一次修订，按 SKILL.md 的起点表属于「只改做法」，从 ③ 进（`agenticapp-stage-3-build`）。重新拉脚手架拿到 SDK 5 模板时由 `agenticapp-tool-workspace` 的 [升级任务.md](../../agenticapp-tool-workspace/references/升级任务.md) 执行，动作和测试以插件自带的迁移指南为准；下面是平台细节。
 
 1. **编排格式不变**：从场景包取出 `workflow_orchestration` 与 TPE 清单，去掉需要运行 Agent 的写法（哪些写法不能用见 `agenticapp-tool-workflow` 的新 SDK 一段）。
 2. **核对节点工具**：节点在旧路就只用它的 TPE 自己挂的工具集，迁移不改变节点能用的工具；场景包工具箱里的工具是给主控 Agent 用的，不用搬。只需确认每个节点脚本调用的工具都挂在该节点 TPE 上；旧应用里偶有脚本调了 TPE 没挂的工具，借迁移补上（`update_asset_relations(asset_type="tpe", asset_id, add_toolset_ids)`）。
 3. **挂到应用草稿**：`business_ui_manage(action="update", business_ui_id, workflow_orchestration, tpe_ids)`。保存是整体替换，规则见 `agenticapp-tool-workflow`。场景包挂载与编排挂载互斥，同一份草稿只留一种。
-4. **换新 SDK 脚手架**：页面改成以执行为单位（写法以模板 `frontend/src/sdk/docs/README.md` 为准，见 `agenticapp-tool-frontend`），重新部署并上线，再试用验收；发布由开发者决定。
+4. **换新 SDK 脚手架**：页面改成以执行为单位（写法以模板 `frontend/src/sdk/docs/README.md` 为准，见 `agenticapp-tool-frontend`），重新部署并上线，再试用验收；发布由开发者决定。换上 5.0 模板后按 [升级任务.md](../../agenticapp-tool-workspace/references/升级任务.md) 读插件自带的升级指南（含旧应用迁到新路的指南），是否适用由你按每份指南的 `applies_to.when` 自己判断。
 5. **放好时告诉开发者**：发布后，旧路上停在等待使用者的执行会被平台取消并通知使用者。
 
 发布新 SDK 版本受灰度名单控制，被拒时把原文告诉开发者，不为了能发布改回旧路。

@@ -1297,7 +1297,7 @@
  },
  {
   "source": "复核:每条 TPE 最近一次 `verify(tpe_id, pr",
-  "text": "已部署时，读写应用库的条目有 `workspace` 实际跑的 `project_id`，对应 TPE 最近一次 verify 为 `passed`"
+  "text": "已部署时，读写应用库的条目有 `workspace` 实际跑的 `project_id`（新 SDK 应用为 `business_id`），对应 TPE 最近一次 verify（旧应用 `verify(tpe_id, project_id)`，新 SDK 应用 `verify(tpe_id, run_id=<BIZ- 号>)`）为 `passed`"
  },
  {
   "source": "复核:reference/自动化.md",
@@ -2074,5 +2074,125 @@
  {
   "source": "R-485/T-4959",
   "text": "只换了品牌色和圆角、或沿用起始应用布局又说不出业务理由的，记「没通过」"
+ },
+ {
+  "source": "R-679 返回阻断只结束本节点",
+  "text": "返回阻断只结束本节点，下游照常派发"
+ },
+ {
+  "source": "R-679 要停整条路线按契约业务阻断写法",
+  "text": "要停整条路线，按[多编排型TPE契约-入口映射交互与介入.md](多编排型TPE契约-入口映射交互与介入.md)「业务阻断怎么写」选交接或抛错"
+ },
+ {
+  "source": "R-679 新 SDK 应用只能脚本抛错",
+  "text": "旧流程用成功后交接或脚本抛错，新 SDK 应用只能脚本抛错"
+ },
+ {
+  "source": "R-679 写库失败只结束本节点",
+  "text": "这只结束本节点，多节点路线里下游照常派发；要停整条路线就抛错"
+ },
+ {
+  "source": "R-679 门禁先裁业务状态",
+  "text": "上游 FA 返回非成功状态（如 `needs_input`、`blocked`）时，脚本内不再往下做，也不原样重试"
+ },
+ {
+  "source": "R-679 跳过规则已不再支持",
+  "text": "路线保存或上线被拒，提示中途表单的跳过规则已不再支持"
+ },
+ {
+  "source": "I-866 shell 文本按内容取行",
+  "text": "只要文本时按内容取需要的行，不按位置切（不写 `lines[1:-1]`、`len(lines)-2`），外壳行也不算坏数据"
+ },
+ {
+  "source": "I-866 命令输出末尾必须有换行",
+  "text": "命令输出末尾必须有换行，声明 `_output` 时也一样"
+ },
+ {
+  "source": "I-866 失败时保住最后一行",
+  "text": "确实要保住失败时的最后一行，写 `( 命令 ); rc=$?; echo; (exit $rc)`，不能写 `exit $rc`"
+ },
+ {
+  "source": "FB-1594 新 SDK 路线冒泡可带文件",
+  "text": "入口要读文件时带 `workspace_files`（先 `file_to_url(purpose=\"tool_test_fixture\")` 上传，`formdata_pointer` 指向 `workflow_input` 里的空文件字段）"
+ },
+ {
+  "source": "FB-1825 带文件冒泡结果不明不重发",
+  "text": "带文件发起失败或超时（回执 `next_action=\"ask_developer\"`）时不要直接重发"
+ },
+ {
+  "source": "D-4150 新建反馈标题与五段",
+  "text": "`content` 固定五段：`## 要完成什么`（业务目标）、`## 操作经过`（在哪个应用或页面做了哪些操作）、`## 看到什么`（现象，报错原文放这里）、`## 预期`（本来应该怎样）、`## 影响`（卡住了什么、影响谁）"
+ },
+ {
+  "source": "D-4150 附件传不过去整次失败",
+  "text": "任何一项传不过去，整次提交失败（`ATTACHMENT_FAILED`），反馈没有写入：修正后原样重试，不改成只传正文"
+ },
+ {
+  "source": "FK-2001 新 SDK 真跑 verify 传 BIZ- 执行号",
+  "text": "新 SDK 应用的实际跑改传这次实际跑返回的执行号：`verify(tpe_id, run_id=<business_id，BIZ- 开头>)`，只按这一次执行判定"
+ },
+ {
+  "source": "FK-2001 WRT- 运行号换成所属 BIZ- 号",
+  "text": "`WRT-` 运行号定位不了执行，传它所属的 `BIZ-` 号"
+ },
+ {
+  "source": "FK-2001 needs_bubble 不说明脚本有问题",
+  "text": "实际跑执行还在运行或停在交付审阅时同样返回 `needs_bubble`，不说明脚本有问题"
+ },
+ {
+  "source": "FK-2001 ④ 真跑补证据传 business_id",
+  "text": "（新 SDK 应用传这次实际跑的 `business_id`：`verify(tpe_id, run_id=<BIZ- 号>)`）"
+ },
+ {
+  "source": "FK-2001 ④ 执行没结束先处理审阅再复核",
+  "text": "停在交付审阅时返回 `needs_bubble`、`next_action=wait`，这说明执行没有结束，不说明脚本有问题"
+ },
+ {
+  "source": "FK-2001 ④ 证据表 business_id（原 4-试用验收.md 第 1 处）",
+  "text": "这次实际跑的 `project_id`（新 SDK 应用为 `business_id`）、`workflow_trace` 里对应步骤的摘要"
+ },
+ {
+  "source": "FK-2001 新 SDK 路线对照表验收证据",
+  "text": "| 验收报告的运行证据 | `otpe_manage(action=\"verify\", tpe_id, project_id)` | 传这次实际跑的执行号：`verify(tpe_id, run_id=<business_id>)`"
+ },
+ {
+  "source": "D-4133 迁移细节以插件自带的迁移指南为准",
+  "text": "重新拉脚手架拿到 SDK 5 模板时由 `agenticapp-tool-workspace` 的 [升级任务.md](../../agenticapp-tool-workspace/references/升级任务.md) 执行，动作和测试以插件自带的迁移指南为准"
+ },
+ {
+  "source": "D-4133 换 5.0 模板后按指南 when 判断",
+  "text": "是否适用由你按每份指南的 `applies_to.when` 自己判断"
+ },
+ {
+  "source": "D-4133 版本错误：修 bug 照常继续",
+  "text": "本次不升级、不手工迁移，按平台问题报；修 bug 照常继续"
+ },
+ {
+  "source": "FK-2017 关闭后先读处理结论",
+  "text": "先读 `query_dev_feedback` 返回的 `conclusions`"
+ },
+ {
+  "source": "FK-2017 只凭状态不能说已解决",
+  "text": "只凭状态不能说已解决"
+ },
+ {
+  "source": "FK-2017 核对是否用上修复",
+  "text": "核对本应用是否已用上修复"
+ },
+ {
+  "source": "FK-2017 汇报四件事分开写",
+  "text": "反馈是否已关闭、修复是否已发布、本应用是否已用上修复、原来失败的场景是否已验证通过"
+ },
+ {
+  "source": "FK-2017 关闭后不往原反馈追加",
+  "text": "不往原反馈追加"
+ },
+ {
+  "source": "FK-2017 原问题仍在新提 blocked 反馈",
+  "text": "新提一条 `blocking=\"blocked\"` 的反馈，按上面新建规则带 `title`、`attribution` 和五段正文，正文写原反馈编号、它的处理结论和这次复现的证据"
+ },
+ {
+  "source": "FK-2017 升级 Skill 走建工单被拒的方法",
+  "text": "要求升级本 Skill 的，按下面「建工单被拒」`SCENE_SKILL_UPGRADE_REQUIRED` 的方法升级 Skill，不做脚手架升级"
  }
 ]

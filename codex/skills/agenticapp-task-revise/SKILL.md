@@ -12,13 +12,14 @@ description: 改已上线或已收尾的智能应用：页面、接口、表、�
 
 - **他明确要改才开工**。「把第 3 条改成含税」「加一个字段」是要改；「第 3 条金额好像不对？」「这里能改吗？」是在问，只回答，查原因走 `agenticapp-task-diagnose`，不改、不部署、不上线。拿不准按问题处理，答完问一句要不要改。
 - **接上这个应用**。同一对话沿用当前应用；新对话里工作目录只有一个应用，或他的话能唯一对应到一个应用，就选定它；分不清时只问是哪个应用，回答前不改任何应用。换了机器先按 `agenticapp-tool-workspace`「云端保存与换机」取回工作区。读阶段文档和上一张工单的记录，不问他走什么流程，不要他提供工单号。
-- 有 write 工单（入口「开工」第 1 步）；上一张工单已结单的新建一张，工单说明写明承接自哪张工单。加载 `agenticapp-tool-workspace`，定位应用工程，核对工作区与云端。
+- 有 write 工单（入口「开工」第 1 步）；上一张工单已结单的新建一张，工单说明写明承接自哪张工单。加载 `agenticapp-tool-workspace`，定位应用工程，核对工作区与云端；有没做完的升级时先按 `agenticapp-tool-workspace` 的 [升级任务.md](../agenticapp-tool-workspace/references/升级任务.md)「先读什么」第 5 条处理。
 - `business_ui_manage(action="get")` 看 `role`：
   - `viewer` 不能修订，转 `agenticapp-task-diagnose`；
   - `editor` 加载 `agenticapp-role-collab`，按它的「编辑协作者改应用」做，起点仍按下面的表；
   - 协作者的草稿基线过期（`baseline_stale=true`、提请或上线返回 `PERSONAL_VERSION_STALE_SOURCE`、站内信通知基线过期），先按 `agenticapp-role-collab`「基线过期的合并」处理。
 - 按使用者反馈报告来改的，先按 `agenticapp-task-user-feedback` 校验报告，只改校验返回的 `accepted` 问题。
-- 认清是哪条路：看 `frontend/goalfy-app.json` 的 `executor`。要把旧应用迁到新 SDK，或修正路线要接着上一趟改，读 [references/新SDK应用的修订.md](references/新SDK应用的修订.md)。
+- 修 bug 不迁移：修页面、接口、数据或路线的问题、加功能时照本 Skill 在现有工程上直接改、验证、部署，不重新拉脚手架，**禁止**把升级 SDK、换模板或迁到新路当成前提；下载入口返回建议升级时只记进开发记录，见 `agenticapp-tool-workspace` 的 [脚手架版本与升级.md](../agenticapp-tool-workspace/references/脚手架版本与升级.md)「修 bug 不迁移与重新拉脚手架」。
+- 认清是哪条路：看 `frontend/goalfy-app.json` 的 `executor`。要把旧应用迁到新 SDK：按 `agenticapp-tool-workspace` 的 [升级任务.md](../agenticapp-tool-workspace/references/升级任务.md) 重新拉脚手架，按插件自带的迁移指南做完，平台细节见 [references/新SDK应用的修订.md](references/新SDK应用的修订.md)「旧应用迁到新 SDK」；修正路线要接着上一趟改，也读这份。
 
 ## 按这个顺序做
 
