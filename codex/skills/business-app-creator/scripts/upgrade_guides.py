@@ -474,8 +474,7 @@ def effective_dids(headers: dict[str, dict]) -> list[str]:
 
 
 def _skill_version() -> str | None:
-    # 版本标记只在入口 Skill；本目录与入口 agenticapp-creator 同在插件的 skills/ 下
-    skill = SKILL_ROOT.parent / "agenticapp-creator" / "SKILL.md"
+    skill = SKILL_ROOT / "SKILL.md"
     match = re.search(r"\[skill-version:([^\]\s]+)\]", skill.read_text(encoding="utf-8")) if skill.is_file() else None
     return match.group(1) if match else None
 
