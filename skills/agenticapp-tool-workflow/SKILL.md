@@ -75,6 +75,8 @@ description: 调用 otpe_manage、create_fast_agent、scene_package_manage 前�
 
 ## 路线冒泡
 
+新路应用的路线冒泡（传 `business_ui_id`，含 `full_run`）要预览范围的付费同意：路线含付费工具时，冒泡前先按 `agenticapp-tool-deploy`「实际跑」读付费同意状态，被拦也按那里处理。旧路场景包的冒泡不读。
+
 1. `scene_package_manage(action="bubble", task_id, scene_package_id, orchestration_id, workflow_input=<例子>)`；要模型真的跑出内容时加 `full_run=true`。做成：回执到终态（没到就用同一 `run_id` 续等）；FA 是桩时只算「只用模拟数据试过」。
 2. 到终态后，对路线里每条 TPE 用这次的 `run_id` 调 `otpe_manage(action="verify", tpe_id, run_id)`。
 3. 一条路线一条工单 checkpoint，各带自己的 `run_id`。做成：`task_manager(insert)` 返回不带 `format_warning`。
