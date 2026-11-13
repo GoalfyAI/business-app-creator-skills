@@ -1,8 +1,8 @@
 # Business App Creator Skills
 
-本仓库提供制作和维护 GoalfyMax 智能应用的统一 Skill `business-app-creator` 与 MCP 连接配置。
+本仓库提供制作和维护 GoalfyMax 智能应用的一组 Skill（入口 `agenticapp-creator` 加 19 个平级 Skill，随插件 `business-app-creator` 安装）与 MCP 连接配置。
 
-制作入口、对象关系和合同来源见 [Skill](skills/business-app-creator/SKILL.md)，贡献与生成规则见 [CONTRIBUTING](CONTRIBUTING.md)。
+制作入口、对象关系和合同来源见 [Skill](skills/agenticapp-creator/SKILL.md)，贡献与生成规则见 [CONTRIBUTING](CONTRIBUTING.md)。
 
 ## 支持的平台
 
@@ -39,7 +39,7 @@ Agent 会创建只读工单，逐层检查提示词、工具契约、编排配�
 ## 这个仓库包含什么
 
 ```
-skills/         business-app-creator/ 是唯一源：入口、五段制作流程、任务路由与按需参考
+skills/         唯一源：入口 agenticapp-creator/ 与五段、任务、平台对象等 19 个平级 Skill 目录
 claude-code/    Claude Code 插件目录：安装文档 + Skill 副本
 codex/          Codex 插件目录：安装文档 + Skill 副本
 docs/           各平台快速上手
