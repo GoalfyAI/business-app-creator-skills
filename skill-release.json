@@ -4,7 +4,7 @@
   "version": "v20261113-1971fd",
   "package_version": "2.0.54-pre.47",
   "mcp_endpoint": "https://business-app-creator-mcp.pre.goalfyai.cn/mcp",
-  "released_at": "2026-11-13T13:25:38Z",
+  "released_at": "2026-11-13T13:38:31Z",
   "update_reason": "PRE 版，来自 main 1d3fda97d（build 47）",
   "source_files": [
     "agenticapp-creator/SKILL.md",
