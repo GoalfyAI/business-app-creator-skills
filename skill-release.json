@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20261030-e23fde",
   "skill_name": "business-app-creator",
-  "version": "v20261113-50f206",
-  "package_version": "2.0.50-pre.42",
+  "version": "v20261113-d20e6d",
+  "package_version": "2.0.51-pre.43",
   "mcp_endpoint": "https://business-app-creator-mcp.pre.goalfyai.cn/mcp",
-  "released_at": "2026-11-13T06:41:44Z",
-  "update_reason": "PRE 版，来自 main d9800cf5c（build 42）",
+  "released_at": "2026-11-13T06:49:06Z",
+  "update_reason": "PRE 版，来自 main b56a24be4（build 43）",
   "source_files": [
     "SKILL.md",
     "agents/openai.yaml",
@@ -67,11 +67,12 @@
     "upgrade-guides/D-4122.md",
     "upgrade-guides/D-4139.md",
     "upgrade-guides/D-4155.md",
+    "upgrade-guides/D-4267.md",
     "upgrade-guides/README.md",
     "upgrade-guides/schema.json"
   ],
   "checksums": {
-    "SKILL.md": "88271876078fc770e5c7a975662b2a35d2ebfe29d449d8e32af19aea9be0507f",
+    "SKILL.md": "90882645e7eca7f65f5a413b822931d6b4628ba0bc99cb7274eaf286dbd3a07a",
     "agents/openai.yaml": "7227269dd595c93f0fd8874dac5c68fb5d904c49cb062f845f7621addb55bf29",
     "checklists/验收清单.md": "ad6fea0e35740b88c5341f14e270a774c6340dc80ad301a148c160608dd0e5da",
     "design/PRD.md": "df82e23081d8a779912e5bc24a33efcc93259cb660e769adb9043e3baf18a95a",
@@ -113,7 +114,7 @@
     "stages/2-方案.md": "40578ea11238a0ef13a248f6bfa1712d07e675479f5a8db731fb3385f600b23d",
     "stages/3-制作.md": "0f48eccc8961aa640fb55d34617d3294e6b697ed5998c4c226ead15732f2986e",
     "stages/4-试用验收.md": "8519477c8752c834eb864e6b512b900a5e386f2371d6498d417b121869306113",
-    "stages/5-上线.md": "d98365918112c6adc854188e31c9d8a4fe956efe03d1d1a64ca2d8caf970e1a7",
+    "stages/5-上线.md": "138aeebd45491c787e9f6244e770d5e6fb0568275e465ecd6217b54ec085a1bc",
     "tasks/仅讨论.md": "74dffeeaf27942b592e4b2b02c3eb3a37206841a8bf42c9097ae844d0b1d68f9",
     "tasks/修订.md": "096ce6d6415245a9fb97fa5f1acd1c0e88ea66518e0c7ddca25650ec1ef301a5",
     "tasks/升级.md": "7f94d177bd626810cd29a5ac9a1ab4af955c69f14d922e464fc1c4afcc1237b4",
@@ -131,6 +132,7 @@
     "upgrade-guides/D-4122.md": "31a6be294083dc4c0422bfd9f12139c2e1ecd14e5f55322ffdd045be72a5c31a",
     "upgrade-guides/D-4139.md": "063ba3939ce28a021858fffaa4b69cf0b400c99db06d2eb02ec7d21015906c22",
     "upgrade-guides/D-4155.md": "1aa8a4cd804375b308977d53b7c457f8c5488c77dc833790daa64eb18a6d64c3",
+    "upgrade-guides/D-4267.md": "7c3c8ce5bcf2d386f2069d5133ca43111da314bcf32727f5844a83c173af259c",
     "upgrade-guides/README.md": "2902bf387bc637ef35e10598fe1d8da882b815443d528e0d7f5c817c7e5511a3",
     "upgrade-guides/schema.json": "adf96530163cc804df7ac9ac4d77b1008447029f08a624be90181f7309dab7e2"
   }

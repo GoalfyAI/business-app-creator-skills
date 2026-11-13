@@ -83,6 +83,13 @@ def test_shipped_guides_are_valid_and_cover_studio_migration():
     assert (GUIDES / "README.md").is_file()
 
 
+def test_storage_diagnostics_guide_supersedes_interaction_evidence():
+    result = ug.candidates(GUIDES, [])
+    by_did = {item["did"]: item for item in result["guides"]}
+    assert by_did["D-4267"]["replaces"] == ["D-4009", "D-4139"]
+    assert {"D-4009", "D-4139"}.isdisjoint(by_did)
+
+
 def test_d3962_manual_edit_ban_only_applies_after_upgrade_script():
     """陈汶君 !120 评审：「不要手工改」只管跑了升级脚本的；旧路手工迁移要拷贝固定层清单、按第 11 步补版本记录。"""
     _, headers = ug.load_guides(GUIDES)
