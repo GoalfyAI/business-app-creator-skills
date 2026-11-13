@@ -1,6 +1,6 @@
 # 智能应用升级指南
 
-本目录随制作 Skill 一起发布。某张 D 的改动会让已有智能应用的代码或开发方式跟着变时，在这里写一份 `<D编号>.md`：开发者升级应用时，《升级》任务（`agenticapp-tool-workspace` 的 [升级任务.md](../../agenticapp-tool-workspace/references/升级任务.md)）用 [../scripts/upgrade_guides.py](../scripts/upgrade_guides.py) 读本目录，按应用的 `docs/upgrade/history.json` 算出还没处理过的指南，逐条判断、修改和测试。
+本目录随制作 Skill 一起发布。某张 D 的改动会让已有智能应用的代码或开发方式跟着变时，在这里写一份 `<D编号>.md`：开发者升级应用时，《升级》任务（[../tasks/升级.md](../tasks/升级.md)）用 [../scripts/upgrade_guides.py](../scripts/upgrade_guides.py) 读本目录，按应用的 `docs/upgrade/history.json` 算出还没处理过的指南，逐条判断、修改和测试。
 
 ## 什么时候要写
 

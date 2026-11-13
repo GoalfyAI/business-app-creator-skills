@@ -1,42 +1,32 @@
+import contextlib
+import importlib.util
+import io
 import json
 import re
-import subprocess
 import unittest
 from pathlib import Path
 
-from node_call import node_call, node_calls
-
-SKILL = Path(__file__).parents[1] / "skills/agenticapp-host-studio"
-SCRIPT = SKILL / "scripts/studio_card.mjs"
-
-
-class m:
-    """把 studio_card.mjs 导出的校验函数包成和原来一样的调用。"""
-
-    TYPES = node_calls(SCRIPT, [{"get": "TYPES"}])[0]["ok"]
-
-    @staticmethod
-    def check_form(data):
-        return node_call(SCRIPT, "checkForm", data)
-
-    @staticmethod
-    def check_memory(data):
-        return node_call(SCRIPT, "checkMemory", data)
-
-    @staticmethod
-    def check_reply(reply):
-        return node_call(SCRIPT, "checkReply", reply)
+SKILL = Path(__file__).parents[1] / "skills/business-app-creator"
+spec = importlib.util.spec_from_file_location("studio_card", SKILL / "scripts/studio_card.py")
+m = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(m)
 
 
 def reference_questions():
-    text = (SKILL / "references/表单控件.md").read_text(encoding="utf-8")
+    text = (SKILL / "reference/Studio表单与卡片.md").read_text(encoding="utf-8")
     block = re.search(r"```json\n(.*?)```", text, re.DOTALL).group(1)
     return [json.loads(line) for line in block.strip().splitlines()]
 
 
 def run(argv, stdin=""):
-    r = subprocess.run(["node", str(SCRIPT), *argv], input=stdin, capture_output=True, text=True, check=False)
-    return r.returncode, r.stdout, r.stderr
+    out, err = io.StringIO(), io.StringIO()
+    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+        old, m.sys.stdin = m.sys.stdin, io.StringIO(stdin)
+        try:
+            code = m.main(argv)
+        finally:
+            m.sys.stdin = old
+    return code, out.getvalue(), err.getvalue()
 
 
 class StudioCardTests(unittest.TestCase):

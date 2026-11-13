@@ -17,7 +17,7 @@
 
 | 目录 | 说明 |
 |---|---|
-| `skills/` | Skill 的唯一源，20 个平级目录随插件 `business-app-creator` 发布：入口 `agenticapp-creator/`（`SKILL.md` 写红线、开发者确认什么、任务路由、开工、五段与退回、交接，带 `references/` 和 `agents/openai.yaml`）；另外 19 个 Skill（五段 `agenticapp-stage-*`、任务 `agenticapp-task-*`、平台对象 `agenticapp-tool-*`、协作 `agenticapp-role-collab`、宿主 `agenticapp-host-studio`、资料 `agenticapp-ref-platform-limits`、`agenticapp-ref-experience`），各自带 `references/`、`assets/`、`scripts/`。另有 `business-app-creator/` 不是 Skill，只放升级指南 `upgrade-guides/`（格式见其中的 README）和读取脚本 `scripts/upgrade_guides.py`，随插件发布；已发布的指南按路径冻结，所以留在原位置 |
+| `skills/business-app-creator/` | Skill 的唯一源：`SKILL.md`（红线、角色、任务识别、开工、五段表与交棒条件、工具速查）、`stages/`（五段：需求确认、方案、制作、试用验收、上线，每段交给开发者什么、开发者做什么、什么时候交棒）、`tasks/`（接续、修订、诊断、能力试用、仅讨论的入口）、`design/`（PRD、按轮问、谁来做、选择题与判断题、交接消息等沟通模板）、`reference/`（按需查阅的平台细则正本）、`checklists/`、`scripts/`、`agents/openai.yaml` |
 | `scripts/` | 构建与发布工具 |
 | `tests/` | 测试 |
 | `claude-code/`、`codex/` | 插件安装文档手工维护；`skills/` 子目录由发布流程复制，**不要手工编辑** |
@@ -28,7 +28,7 @@ Skill 副本由发布流程重建，手工改动会被覆盖并导致校验失�
 
 ## 提交代码
 
-只修改 `skills/`、各平台目录下的安装文档、`scripts/`、`tests/`。
+只修改 `skills/business-app-creator/`、各平台目录下的安装文档、`scripts/`、`tests/`。
 
 改完源文件后必须刷新发布清单，否则校验不通过——这一步会同时重建两个平台的 Skill
 副本：
@@ -50,27 +50,27 @@ uv run pytest -q
 uv run python scripts/build_platform_packages.py check
 ```
 
-四项都通过再提 PR。测试会调用 Skill 里的 `.mjs` 脚本，本机要有 Node 22 以上。
+四项都通过再提 PR。
 
 ## 修改 Skill 内容
 
-`skills/` 是给 Agent 读的执行指引，不是给人读的说明书。20 个 Skill 平级，宿主列表里每个都能看到；入口只做路由，每件事在用到它的那一刻由对应的 Skill 交代：进入某一段加载那一段的 `agenticapp-stage-*`，调某类工具前加载对应的 `agenticapp-tool-*`。发布检查会校验：
+`skills/business-app-creator/` 是给 Agent 读的执行指引，不是给人读的说明书。每类文件有固定写法，发布检查会校验：
 
-- `skills/` 下正好是入口加约定的 19 个 Skill（清单见 `scripts/build_platform_packages.py` 的 `ATOMIC_SKILLS`），外加升级指南目录 `business-app-creator/`；入口只放 `SKILL.md`、`agents/openai.yaml`、`references/*.md`，其他每个目录只放 `SKILL.md`、`references/*.md`、`assets/`（md、html、css）、`scripts/*.mjs`（随 Skill 发布的脚本只用 Node 自带模块：Studio 随包带 Node，用户电脑上不一定有 Python；`business-app-creator/` 里的指南读取脚本 `scripts/upgrade_guides.py` 除外）
-- 入口之外的 Skill 的 frontmatter 只有 `name`（与目录同名）和 `description`（第一句写什么时候用、由谁指过来；工具 Skill 写「调用 xxx 前必须先加载」；不超过 200 字符；不带版本标记，版本只在入口）
-- 五段 Skill 必须按顺序有「开始前确认」「按这个顺序做」「交棒」三节（⑤ 的最后一节是「结束」）；`agenticapp-tool-*` 必须有「常见错误」
+- `stages/` 正好五份：`1-需求确认.md`、`2-方案.md`、`3-制作.md`、`4-试用验收.md`、`5-上线.md`；每份必须按顺序包含「进入条件」「段里怎么做」「产出与落盘」「出问题怎么办」四节，中间可以有「开发者要看、要做的」「不给开发者的」「交棒条件」等小节
 - 五段与工作区阶段的对应固定为 ① = G1、G2，② = G3，③ = G4、G5，④ = G6，⑤ = G7；工作区 `workspace.json` 仍是 G1–G7 七项
-- 行数预算：每个 `SKILL.md` ≤ 150 行，`references/` 单文件 ≤ 200 行；超了就把细节移进 `references/`、模板移进 `assets/`，不调高预算
+- `reference/` 每份依次四节：适用场景、规则、常见错误、相关工具与契约主题
+- `tasks/` 每份依次三节：识别信号、先读什么、从哪一段进
+- 行数预算：`SKILL.md` ≤ 200 行，`stages/` 单文件 ≤ 160 行，`reference/` 单文件 ≤ 400 行；超了先把 AI 内部做法的细表移到已链接的 `reference/` 或 `design/`，红线、四类确认、五段表与交棒条件留在原处，不调高预算
 - 正文里指向 Skill 自身文件的链接必须存在
 
 写作时注意：
 
-- 每个 `SKILL.md` 只写这一刻要做的判断和步骤：开始前确认什么、按顺序做什么、怎么判断、做完交给哪个 Skill；常见的偷懒想法写成「你可能会这么想 → 实际」对照表
-- 跨 Skill 按名字引用（「加载 `agenticapp-tool-deploy`」「见 `agenticapp-tool-workspace`「演示版页面验收」」）；引用入口的参考文件写相对路径 `../agenticapp-creator/references/xx.md`（在 `references/`、`assets/` 里写 `../../agenticapp-creator/references/xx.md`），引用入口小节写「入口「红线」」；Skill 内部用相对链接 `references/xx.md`
-- 一个事实只放一处：红线、开发者确认什么、交接格式、花费只在入口；平台参数、错误码全文、契约字段不抄，写工具 Schema 或链到对应 Skill 的 references 文件
-- 写最终规则，不写「原来怎样、现在改为怎样」这类新旧对照；需要强调就写原因
+- 用**必须** / **禁止**这类明确的强调词，不要写模棱两可的建议
+- 写最终规则，不写「原来怎样、现在改为怎样」这类新旧对照
 - 不要出现平台内部实现细节、代码或组件名
-- 对外文案（入口的 description、keywords）是唯一源，会被注入到各平台安装文件
+- 同事补内容主要往 `reference/` 和 `tasks/` 里加；`SKILL.md` 只做入口和路由，`stages/` 写每段交给开发者什么、开发者做什么、交棒和退回条件
+- 一个事实只放一处，别处用相对路径引用；平台参数、错误码全文、契约字段不抄，写工具 Schema 或 `get_diagnosis_doc` 的 topic 名。例如阶段记录 `business_ui_stage` 的参数写法和 ④ 的浏览器做法只写在 `reference/开发者中心与工作区.md`，段文件只写本段出口写哪几项
+- 对外文案（description、keywords）是唯一源，会被注入到各平台安装文件
 
 ## 环境约定
 
