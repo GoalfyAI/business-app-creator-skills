@@ -33,7 +33,7 @@ _release_spec.loader.exec_module(release)
 
 
 def guide(did: str, *, impact: str = "recommended", replaces=(), withdraws=(), depends_on=None,
-          body: str = "补充说明。\n") -> bytes:
+          body: str = "补充说明。\n", sdk_major: int | None = None) -> bytes:
     header = {
         "did": did, "title": f"{did} 的指南", "impact": impact,
         "applies_to": {"layers": ["sdk"], "when": f"用到 {did} 改动的应用"},
@@ -44,6 +44,8 @@ def guide(did: str, *, impact: str = "recommended", replaces=(), withdraws=(), d
     }
     if depends_on is not None:
         header["depends_on"] = list(depends_on)
+    if sdk_major is not None:
+        header["applies_to"]["sdk_major"] = sdk_major
     return ("```json\n" + json.dumps(header, ensure_ascii=False, indent=2) + "\n```\n\n" + body).encode("utf-8")
 
 
@@ -79,6 +81,16 @@ def test_shipped_guides_are_valid_and_cover_studio_migration():
     _, headers = ug.load_guides(GUIDES)
     assert {"D-3962", "D-4001", "D-4009", "D-4013", "D-4036", "D-4052", "D-4114", "D-4122"} <= set(headers)
     assert (GUIDES / "README.md").is_file()
+
+
+def test_d3962_manual_edit_ban_only_applies_after_upgrade_script():
+    """陈汶君 !120 评审：「不要手工改」只管跑了升级脚本的；旧路手工迁移要拷贝固定层清单、按第 11 步补版本记录。"""
+    _, headers = ug.load_guides(GUIDES)
+    header = headers["D-3962"]
+    actions = header["actions"]
+    assert actions[1].startswith("跑了升级脚本的：不要再按旧的三方对照手工迁移固定层")
+    assert actions[2].startswith("旧路应用按迁到新路的指南手工迁移固定层、没跑升级脚本的：scaffold-fixed-layer.json 从目标模板根目录原样拷贝到应用根")
+    assert "tasks/升级.md" not in (GUIDES / "D-3962.md").read_text(encoding="utf-8")
 
 
 def test_shipped_guides_are_in_release_manifest_and_both_platforms():
@@ -380,3 +392,44 @@ def test_invalid_guide_blocks_release_check(tmp_path):
     (skill_root / "upgrade-guides" / "D-9999.md").write_bytes(guide("D-9998"))
     with pytest.raises(release.ReleaseError, match="升级指南不合规"):
         release.check_release(skill_root)
+
+
+# ==================== 只取适用 SDK 5.x 的指南（A3） ====================
+
+def _allow_sdk_majors(directory: Path, majors: list[int]) -> None:
+    """测试里放开 schema 的 sdk_major 取值，模拟以后有新主版本的指南。"""
+    path = directory / "schema.json"
+    schema = json.loads(path.read_text(encoding="utf-8"))
+    schema["properties"]["applies_to"]["properties"]["sdk_major"]["enum"] = majors
+    path.write_text(json.dumps(schema, ensure_ascii=False), encoding="utf-8")
+
+
+def test_sdk_major_other_than_5_is_rejected_by_shipped_schema(tmp_path):
+    directory = guides_dir(tmp_path, {"D-1.md": guide("D-1", sdk_major=4)})
+    with pytest.raises(ug.GuideError) as exc:
+        ug.candidates(directory, [])
+    assert [(p["file"], p["field"]) for p in exc.value.problems] == [("upgrade-guides/D-1.md", "applies_to.sdk_major")]
+    (tmp_path / "ok").mkdir()
+    assert ug.candidates(guides_dir(tmp_path / "ok", {"D-1.md": guide("D-1", sdk_major=5)}), [])["sdk_major"] == 5
+
+
+def test_candidates_and_baseline_only_take_guides_for_target_sdk_major(tmp_path):
+    d1, d2, d3 = guide("D-1"), guide("D-2", sdk_major=6), guide("D-3", sdk_major=5)
+    directory = guides_dir(tmp_path, {"D-1.md": d1, "D-2.md": d2, "D-3.md": d3})
+    _allow_sdk_majors(directory, [5, 6])
+    assert dids(ug.candidates(directory, [])) == ["D-1", "D-3"]
+    assert dids(ug.candidates(directory, [], sdk_major=6)) == ["D-2"]
+    # 不适用本主版本的 not_applicable 记录也不进 reconsider；已执行记录照常不算 retired。
+    result = ug.candidates(directory, applied(("D-2", sha16(d2), "not_applicable"), ("D-1", sha16(d1), "tested")))
+    assert dids(result) == ["D-3"] and result["reconsider"] == [] and result["retired"] == []
+    assert [e["did"] for e in ug.baseline(directory)["applied_guides"]] == ["D-1", "D-3"]
+
+
+def test_cli_sdk_major_option(tmp_path):
+    directory = guides_dir(tmp_path, {"D-1.md": guide("D-1"), "D-2.md": guide("D-2", sdk_major=6)})
+    _allow_sdk_majors(directory, [5, 6])
+    app = _app(tmp_path, None)
+    default = json.loads(_run("--guides-dir", str(directory), "candidates", "--app", str(app)).stdout)
+    six = json.loads(_run("--guides-dir", str(directory), "candidates", "--app", str(app), "--sdk-major", "6").stdout)
+    assert (default["sdk_major"], dids(default)) == (5, ["D-1"])
+    assert (six["sdk_major"], dids(six)) == (6, ["D-2"])

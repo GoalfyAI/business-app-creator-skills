@@ -3,9 +3,11 @@
 
 只用 Python 标准库；只读文件、只写标准输出。[需求:D-3962][R-438]
 
-  candidates --app <应用根>   本次升级的候选指南、reconsider、retired（《升级》第 1 步）
+  candidates --app <应用根> [--sdk-major N]   本次升级的候选指南、reconsider、retired（《升级》第 1 步）
   baseline                    当前 Skill 自带的全部有效指南，供新建应用写指南基线
   check                       只校验指南目录（格式与关系），发布检查与测试共用
+
+只取适用本次目标模板 SDK 主版本的指南（applies_to.sdk_major，不写按 5；--sdk-major 默认 5）。
 
 指南不合规时整次失败（退出码 2，status=invalid_guide），不当成没有指南。
 sha 是指南文件内容 sha256 的前 16 位，与已有应用 history.json 里记的 sha 同一算法。
@@ -35,6 +37,8 @@ RELATION_FIELDS = ("replaces", "withdraws", "depends_on")
 EXECUTED_HOWS = frozenset({"tested", "already_done", "baseline"})
 APPLIED_HOWS = EXECUTED_HOWS | {"not_applicable", "deferred", "failed"}
 UNSETTLED_HOWS = frozenset({"deferred", "failed"})
+# 4.1 版本线已冻结，指南只适用 SDK 5.x；指南不写 applies_to.sdk_major 时按这个值。
+DEFAULT_SDK_MAJOR = 5
 CONFLICT_MARKERS = ("<<<<<<<", "=======", ">>>>>>>")
 
 
@@ -486,8 +490,12 @@ def _view(did: str, header: dict, data: bytes, deps: list[str], changed: bool) -
     }
 
 
-def candidates(guides_dir: Path, applied: list[dict]) -> dict:
-    """本次候选：有效集合里 did+sha 没处理过的指南（按 did 数字排序），以及 reconsider、retired。"""
+def sdk_major_of(header: dict) -> int:
+    return header["applies_to"].get("sdk_major", DEFAULT_SDK_MAJOR)
+
+
+def candidates(guides_dir: Path, applied: list[dict], sdk_major: int = DEFAULT_SDK_MAJOR) -> dict:
+    """本次候选：有效集合里适用 sdk_major、did+sha 没处理过的指南（按 did 数字排序），以及 reconsider、retired。"""
     files, headers = load_guides(guides_dir)
     retired_targets = {t for header in headers.values() for key in ("replaces", "withdraws") for t in header.get(key) or []}
     replaced_targets = {t for header in headers.values() for t in header.get("replaces") or []}
@@ -510,6 +518,8 @@ def candidates(guides_dir: Path, applied: list[dict]) -> dict:
     reconsider: list[dict] = []
     for did in effective_dids(headers):
         header, data = headers[did], files[f"{did}.md"]
+        if sdk_major_of(header) != sdk_major:
+            continue
         sha = guide_sha(data)
         entries = by_did.get(did, [])
         if any(e["sha"] == sha and (e["how"] is None or e["how"] in EXECUTED_HOWS) for e in entries) \
@@ -528,17 +538,17 @@ def candidates(guides_dir: Path, applied: list[dict]) -> dict:
     for view in guides:
         counts[view["impact"]] = counts.get(view["impact"], 0) + 1
         counts["changed_since_applied"] += view["changed_since_applied"]
-    return {"status": "ok", "skill_version": _skill_version(), "counts": counts, "guides": guides,
+    return {"status": "ok", "skill_version": _skill_version(), "sdk_major": sdk_major, "counts": counts, "guides": guides,
             "reconsider": reconsider, "retired": [r["did"] for r in retired_reasons],
             "retired_reasons": retired_reasons}
 
 
-def baseline(guides_dir: Path) -> dict:
-    """当前 Skill 自带的全部有效指南，写成 applied_guides 的 baseline 条目。"""
+def baseline(guides_dir: Path, sdk_major: int = DEFAULT_SDK_MAJOR) -> dict:
+    """当前 Skill 自带的、适用 sdk_major 的全部有效指南，写成 applied_guides 的 baseline 条目。"""
     files, headers = load_guides(guides_dir)
     return {"status": "ok", "skill_version": _skill_version(),
             "applied_guides": [{"did": did, "sha": guide_sha(files[f"{did}.md"]), "how": "baseline"}
-                               for did in effective_dids(headers)]}
+                               for did in effective_dids(headers) if sdk_major_of(headers[did]) == sdk_major]}
 
 
 # ==================== 命令行 ====================
@@ -549,13 +559,15 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="command", required=True)
     plan = sub.add_parser("candidates", help="本次升级的候选指南")
     plan.add_argument("--app", type=Path, required=True, help="应用根（含 docs/upgrade/history.json）")
+    plan.add_argument("--sdk-major", type=int, default=DEFAULT_SDK_MAJOR,
+                      help="本次目标模板的 SDK 主版本，只返回适用这个主版本的指南（默认 5）")
     sub.add_parser("baseline", help="全部有效指南的 baseline 条目")
     sub.add_parser("check", help="只校验指南目录")
     args = parser.parse_args(argv)
     try:
         if args.command == "candidates":
             applied, history, warnings = read_history(args.app)
-            result = {**candidates(args.guides_dir, applied), "history": history, "warnings": warnings}
+            result = {**candidates(args.guides_dir, applied, args.sdk_major), "history": history, "warnings": warnings}
         elif args.command == "baseline":
             result = baseline(args.guides_dir)
         else:

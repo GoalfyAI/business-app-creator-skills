@@ -20,7 +20,12 @@
           "uniqueItems": true,
           "items": { "enum": ["scaffold", "sdk", "skill", "mcp", "platform"] }
         },
-        "when": { "type": "string", "minLength": 1 }
+        "when": { "type": "string", "minLength": 1 },
+        "sdk_major": {
+          "description": "适用的 SDK 主版本，不写按 5。4.1 版本线已冻结，不出新指南，所以只能取 5；以后有新主版本再加。候选脚本只返回与本次目标模板 SDK 主版本相同的指南。",
+          "type": "integer",
+          "enum": [5]
+        }
       }
     },
     "already_done_check": { "type": "string", "minLength": 1 },

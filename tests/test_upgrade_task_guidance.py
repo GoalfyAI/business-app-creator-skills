@@ -68,7 +68,8 @@ def test_plan_reads_skill_guides_only_when_pulling_a_new_template(read_skill):
     upgrade = read_skill("tasks/升级.md")
     plan = _step(upgrade, 1)
     assert 'business_ui_bundle(action="upgrade_plan", task_id, current_scaffold_version=<version>, skill_version=<有才传>, workspace_id)`' in plan
-    assert "`latest.version` 与本地 `version` 不同（本次要拉新模板），或下面「旧路跨主版本」要迁到 SDK 5 时，运行 `python3 <skill目录>/scripts/upgrade_guides.py candidates --app <应用根>`" in plan
+    assert "`latest.version` 与本地 `version` 不同（本次要拉新模板），或下面「旧路跨主版本」要迁到 SDK 5 时，运行 `python3 <skill目录>/scripts/upgrade_guides.py candidates --app <应用根> --sdk-major <N>`" in plan
+    assert "`target` 不带 `sdk_version`（旧路应用跨主版本迁到新路）时不传，按默认 5" in plan
     assert "候选只认脚本输出，**禁止**自己读指南目录另算" in plan
     assert "`latest.version` 等于本地 `version`（上一条旧路要迁移的除外）→ 不读指南" in plan
     assert "脚本退出码不是 0（`status=invalid_guide`" in plan
@@ -446,3 +447,15 @@ def test_no_feature_not_open_reply_in_any_surface():
             text = path.read_text(encoding="utf-8")
             for term in ("功能尚未开放", "同路升级", "迁到另一条路", "无感", "level=migrate"):
                 assert term not in text, (relative, path.name, term)
+
+
+def test_v565_round14_wrap_up_fills_version_record_when_script_skipped(read_skill):
+    """07 V-565 第 14 轮条目 17：旧路按迁移指南手工迁移、没跑升级脚本时，scaffold-release.json 只有 version，上报 sdk/skill 版本为空。"""
+    wrap_up = _step(read_skill("tasks/升级.md"), 11)
+    assert "`sdk_version` 等于目标模板 `scaffold-fixed-layer.json` 的 `sdk_version`" in wrap_up
+    assert "没跑升级脚本的" in wrap_up and "`{from, to, sdk_version, skill_version, upgraded_at, conflicts}`" in wrap_up
+    assert "第 12 步上报读的就是这里" in wrap_up
+    # 陈汶君 !120 评审：旧路手工迁移时拷贝固定层清单、不重复追加升级记录。
+    assert "应用根有目标模板的 `scaffold-fixed-layer.json`" in wrap_up
+    assert "从目标模板根目录拷贝 `scaffold-fixed-layer.json`" in wrap_up
+    assert "`upgrades` 最后一条不是本次 `from`→`to` 时才追加" in wrap_up
