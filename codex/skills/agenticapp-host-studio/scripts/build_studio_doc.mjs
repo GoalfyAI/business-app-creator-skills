@@ -584,8 +584,7 @@ function buildAcceptance(p, d, base) {
   const its = items(p, d, 'items', 'data');
   const byId = new Map(), shotsAll = [];
   const counts = Object.fromEntries(RESULTS.map(r => [r, 0]));
-  let accepted = 0;
-  const untestedList = [], rows = [];
+  const rows = [];
   const records = new Map();
   its.forEach((it, i) => {
     const w = `items[${i}]`;
@@ -599,7 +598,6 @@ function buildAcceptance(p, d, base) {
       return;
     }
     counts[res] += 1;
-    if (res === '没通过' && truthy(get(it, 'accepted'))) accepted += 1;
     if (['通过', '没通过', '好不好你说了算'].includes(res)) for (const key of ['how', 'seen', 'evidence']) text(p, it, key, w);
     if (res === '好不好你说了算' && !truthy(get(it, 'actual'))) p.add(`${w}.actual`, '要你判断的条目附上实际结果原文（报告全文、内容原文、前后对比）');
     let whyUntested = '';
@@ -613,7 +611,6 @@ function buildAcceptance(p, d, base) {
         const detail = get(un, 'detail');
         if (need && !truthy(detail)) p.add(`${w}.untested.detail`, `「${reason}」要补上具体情况（做过的处理和错误原文 / 哪一份样本 / 试过哪些做法）`);
         whyUntested = reason + (truthy(detail) ? '：' + str(detail) : '') + '。' + later;
-        untestedList.push(title);
       }
     }
     let shotHtml = '';
@@ -644,16 +641,14 @@ function buildAcceptance(p, d, base) {
     const detail = get(x, 'detail');
     if (need && !truthy(detail)) p.add(`${w}.detail`, `「${reason}」要补上具体情况`);
     const title = text(p, x, 'title', w);
-    untestedList.push(`${title}（${reason}${truthy(detail) ? '：' + str(detail) : ''}）`);
     rows.push({ res: '未测', title, label: '未测', pairs: [['为什么没测', reason + (truthy(detail) ? '：' + str(detail) : '') + '。' + later]] });
     counts['未测'] += 1;
   });
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
   const out = [head(c, '04 / 验收报告', '验收报告', '按业务路径看每一步走没走通，结论都有依据。')];
-  const stat = (cls, n, lbl, sub) => `<div class="stat-card ${cls}" data-filter="${cls}"><p>${lbl}</p><strong>${n}</strong><p>${sub}</p><p class="go">看这几条 →</p></div>`;
-  const untestedSub = untestedList.map(x => e(x)).join('；') || '没有';
-  out.push('<div class="stats">' + stat('fail', counts['没通过'], '没通过', `其中你接受的 ${accepted} 条`) + stat('pass', counts['通过'], '通过', '')
-    + stat('judge', counts['好不好你说了算'], '要你判断', '点路径里的那一步看实际结果') + stat('untested', counts['未测'], '未测', untestedSub)
+  const stat = (cls, n, lbl) => `<div class="stat-card ${cls}" data-filter="${cls}"><p>${lbl}</p><strong>${n}</strong><p class="go">查看详情 →</p></div>`;
+  out.push('<div class="stats">' + stat('fail', counts['没通过'], '没通过') + stat('pass', counts['通过'], '通过')
+    + stat('judge', counts['好不好你说了算'], '要你判断') + stat('untested', counts['未测'], '未测')
     + `</div><p style="margin-top:10px">共 ${total} 条：没通过 ${counts['没通过']} · 通过 ${counts['通过']} · 要你判断 ${counts['好不好你说了算']} · 未测 ${counts['未测']}。${e(text(p, d, 'impact', 'data'))}</p>`
     + allItems(rows, counts, total));
   const paths = items(p, d, 'paths', 'data');

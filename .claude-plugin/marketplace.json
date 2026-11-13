@@ -8,7 +8,7 @@
     {
       "name": "business-app-creator",
       "description": "GoalfyMax 智能应用制作的总规矩。开发者要做、续做、改、查一个智能应用时最先加载，例如「帮我做个应用」「把这个流程做成智能应用」「这个能不能做成应用」「接着做上次那个」「这个应用出问题了」。只问平台概念、只跑一次业务任务时不用。",
-      "version": "2.0.52-pre.44",
+      "version": "2.0.53-pre.45",
       "author": {
         "name": "GoalfyAI"
       },
