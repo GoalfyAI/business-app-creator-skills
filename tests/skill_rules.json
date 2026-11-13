@@ -1,0 +1,2226 @@
+[
+ {
+  "source": "test_scene_creator_release.py:166",
+  "text": "`ctx.process_dir` 文件等稳定载体"
+ },
+ {
+  "source": "test_scene_creator_release.py:167",
+  "text": "给使用者看的列表、正文、结论仍以业务字段出现"
+ },
+ {
+  "source": "test_scene_creator_release.py:168",
+  "text": "\"flagged\": flagged, \"summary\": f\"{flagged} 个计划需要关注\""
+ },
+ {
+  "source": "test_scene_creator_release.py:172",
+  "text": "模板二、三用到了 `stage_failed`，用模板一时删掉第三条契约"
+ },
+ {
+  "source": "test_scene_creator_release.py:182",
+  "text": "一个 FA 只承担一个语义责任"
+ },
+ {
+  "source": "test_scene_creator_release.py:183",
+  "text": "| 编排脚本 | 确定性准备、分发、汇合、幂等写入和固定收口 | 判断内容真假"
+ },
+ {
+  "source": "test_scene_creator_release.py:214",
+  "text": "挂的场景包至少有一条路线"
+ },
+ {
+  "source": "test_scene_creator_release.py:215",
+  "text": "平台要求应用挂的场景包至少有一条路线；只有规则步骤的应用也建一条最小的单节点路线"
+ },
+ {
+  "source": "test_scene_creator_release.py:217",
+  "text": "只有脚本步骤的应用，加一句「平台要求挂一条最小路线，应用界面可以不发起它」"
+ },
+ {
+  "source": "test_scene_creator_release.py:218",
+  "text": "费用与副作用"
+ },
+ {
+  "source": "test_scene_creator_release.py:285",
+  "text": "进 G5 前用 `npm run scaffold:bind"
+ },
+ {
+  "source": "11-07 用户决定：先别上线",
+  "text": "他明确说「这版先别上线」就不上线，直到他改口"
+ },
+ {
+  "source": "test_scene_creator_release.py:319",
+  "text": "只改状态不改名"
+ },
+ {
+  "source": "test_scene_creator_release.py:321",
+  "text": "| 阶段名 | 以工作区里已有的为准，按 G 键对应，只改状态不改名 |"
+ },
+ {
+  "source": "test_scene_creator_release.py:339",
+  "text": "跳过的项写进 `skipped`"
+ },
+ {
+  "source": "test_scene_creator_release.py:411",
+  "text": "读应用库这类只读查询以 `found` 布尔作出口即可"
+ },
+ {
+  "source": "test_scene_creator_release.py:417",
+  "text": "按 `getForms(formId)` 渲染，没有预填"
+ },
+ {
+  "source": "test_scene_creator_release.py:418",
+  "text": "表单 schema 的唯一来源是契约包 `forms/` 与 `getForms(formId)`"
+ },
+ {
+  "source": "test_scene_creator_release.py:1016",
+  "text": "发布前开发者想自己看，用 Studio「在线预览」或发布管理页「预览」。不写容器地址"
+ },
+ {
+  "source": "test_scene_creator_release.py:1073",
+  "text": "真实链路；开发者自己想看时用，你不打开"
+ },
+ {
+  "source": "test_scene_creator_release.py:1105",
+  "text": "| 未测的 | ④ 有「未测」条目时单列"
+ },
+ {
+  "source": "test_scene_creator_release.py:1110",
+  "text": "全部通过或只有未测（「好不好你说了算」的算在内，实际结果已附在报告里），每条路线都有证据"
+ },
+ {
+  "source": "test_scene_creator_release.py:1121",
+  "text": "开头只用这四个取值：页面操作、用测试数据跑、查库、脚本检查"
+ },
+ {
+  "source": "test_scene_creator_release.py:1124",
+  "text": "照验收报告模板「怎么测的」的取值开头"
+ },
+ {
+  "source": "test_scene_creator_release.py:1159",
+  "text": "| 开发者说先别放到在线预览，条目依赖已部署版本 | 「你说先不放到在线预览」 |"
+ },
+ {
+  "source": "11-07 用户决定：先别放后改口",
+  "text": "**「先别放」后说放吧**：部署到 `success`，直接上线"
+ },
+ {
+  "source": "11-07 用户决定：不主动问上线",
+  "text": "他没说你也不问"
+ },
+ {
+  "source": "11-07 用户决定：只上线最新的一份",
+  "text": "只上线最新代码部署成功的那一份"
+ },
+ {
+  "source": "11-07 用户决定：开发者打断",
+  "text": "改的是要什么回 ①，怎么做或方案取舍回 ②，已做好的不丢，这不算额外确认"
+ },
+ {
+  "source": "test_scene_creator_release.py:1288",
+  "text": "每条记操作步骤、截图文件路径（写进阶段文档 G6；不截图的写断言原文）和打开过的演示版路由"
+ },
+ {
+  "source": "test_scene_creator_release.py:1303",
+  "text": "新建 write 工单并传 `continued_from_task_id`，"
+ },
+ {
+  "source": "test_scene_creator_release.py:1304",
+  "text": "要改应用或同步状态时用 write 工单（"
+ },
+ {
+  "source": "test_scene_creator_release.py:1408",
+  "text": "| 界面三问："
+ },
+ {
+  "source": "test_scene_creator_release.py:1411",
+  "text": "方案确认后，这里和信息架构就是页面的最高依据"
+ },
+ {
+  "source": "test_scene_creator_release.py:1435",
+  "text": "写库包在 `if not ctx.dry_run:` 里"
+ },
+ {
+  "source": "test_scene_creator_release.py:1435",
+  "text": "这是跳过不是删除"
+ },
+ {
+  "source": "test_scene_creator_release.py:1437",
+  "text": "if not ctx.dry_run:  # 冒泡跳过写库，实际跑照常写"
+ },
+ {
+  "source": "test_scene_creator_release.py:1451",
+  "text": "写开发者本人的正式实例"
+ },
+ {
+  "source": "test_scene_creator_release.py:1453",
+  "text": "2. **写库包在 `if not ctx.dry_run:` 里**"
+ },
+ {
+  "source": "test_scene_creator_release.py:1456",
+  "text": "要按情况查应用库的，建时就挂应用库只读工具并反读确认"
+ },
+ {
+  "source": "test_scene_creator_release.py:1460",
+  "text": "preview 前逐项自查，再 preview → create → online"
+ },
+ {
+  "source": "test_scene_creator_release.py:1462",
+  "text": "每条读写应用库的路线 preview 前逐项自查一遍"
+ },
+ {
+  "source": "test_scene_creator_release.py:1466",
+  "text": "不自写 `sql_literal()`、`query_db()` 之类的转义或查询函数"
+ },
+ {
+  "source": "test_scene_creator_release.py:1467",
+  "text": "读出来交给 FA 总结、判断是允许的"
+ },
+ {
+  "source": "test_scene_creator_release.py:1469",
+  "text": "| 执行中取数，要看上一步结果再决定查什么 | 业务 FA 挂上这个工具自己查"
+ },
+ {
+  "source": "test_scene_creator_release.py:1471",
+  "text": "同一个值不既放入口又读库"
+ },
+ {
+  "source": "test_scene_creator_release.py:1472",
+  "text": "「入口字段放哪」"
+ },
+ {
+  "source": "test_scene_creator_release.py:1472",
+  "text": "| 这个值 | 放哪 |"
+ },
+ {
+  "source": "test_scene_creator_release.py:1473",
+  "text": "json 是脚本环境内置的"
+ },
+ {
+  "source": "test_scene_creator_release.py:1473",
+  "text": "不补 `import json`"
+ },
+ {
+  "source": "test_scene_creator_release.py:1474",
+  "text": "冒泡时跳过、不报「未入库」"
+ },
+ {
+  "source": "test_scene_creator_release.py:1478",
+  "text": "入口只放业务键和使用者这次才给的值；库里已有的由脚本按业务键用 `db()` 读，不由应用后端拼进发起报文"
+ },
+ {
+  "source": "test_scene_creator_release.py:1481",
+  "text": "不加 `--strip-components`"
+ },
+ {
+  "source": "test_scene_creator_release.py:1481",
+  "text": "tar -xzf <包> -C <应用目录>"
+ },
+ {
+  "source": "test_scene_creator_release.py:1504",
+  "text": "`passed` 由 ④ 实际跑补上"
+ },
+ {
+  "source": "test_scene_creator_release.py:1505",
+  "text": "冒泡里读空、写被跳过是预期"
+ },
+ {
+  "source": "test_scene_creator_release.py:1507",
+  "text": "为了让冒泡通过，把读库包进 `dry_run`、从入口塞数据、加 `fallback_*` 兜底或删掉读写"
+ },
+ {
+  "source": "test_scene_creator_release.py:1525",
+  "text": "| `resolve` 反读、发布管理页预览 | | ✓ | |"
+ },
+ {
+  "source": "test_scene_creator_release.py:1528",
+  "text": "所以不用于 ④ ⑤ 的验证"
+ },
+ {
+  "source": "test_scene_creator_release.py:1558",
+  "text": "共用一个会话"
+ },
+ {
+  "source": "test_scene_creator_release.py:1558",
+  "text": "只写在子 shell 的括号里"
+ },
+ {
+  "source": "test_scene_creator_release.py:1577",
+  "text": "Studio 只管文档怎么保存、显示和确认"
+ },
+ {
+  "source": "test_scene_creator_release.py:1593",
+  "text": "| `prd` | 要，确认这一版 |"
+ },
+ {
+  "source": "test_scene_creator_release.py:1594",
+  "text": "| `proposal` | 要，只确认一次整版 |"
+ },
+ {
+  "source": "test_scene_creator_release.py:1597",
+  "text": "调 `studio_confirm_proposal`，传 `documentType`（`prd` 或 `proposal`）"
+ },
+ {
+  "source": "test_scene_creator_release.py:1598",
+  "text": "读回已确认才往下走：PRD 读到确认之前只查不建，方案读到确认之后才进 ③"
+ },
+ {
+  "source": "test_scene_creator_release.py:1599",
+  "text": "已确认范围内的修订以宿主返回的当前确认状态为准，不自行增加确认步骤"
+ },
+ {
+  "source": "test_scene_creator_release.py:1600",
+  "text": "`artifactId`、`version`、`digest` 这类核对字段只记进阶段文档"
+ },
+ {
+  "source": "test_scene_creator_release.py:1601",
+  "text": "同目录还要有 `acceptance.json`"
+ },
+ {
+  "source": "test_scene_creator_release.py:1602",
+  "text": "只写当前段的文档：① 里只有 PRD，② 里才有方案，依此类推。还没到的段不写"
+ },
+ {
+  "source": "test_scene_creator_release.py:1604",
+  "text": "开发者对**当前这一版**的明确同意"
+ },
+ {
+  "source": "test_scene_creator_release.py:1604",
+  "text": "新一版不继承旧版的确认"
+ },
+ {
+  "source": "test_scene_creator_release.py:1605",
+  "text": "方案确认后就能放到在线预览，部署成功直接上线（入口「红线」），不再请他确认"
+ },
+ {
+  "source": "test_scene_creator_release.py:1620",
+  "text": "保存或登记结果未知时只查原操作结果，不重新写入"
+ },
+ {
+  "source": "test_scene_creator_release.py:1637",
+  "text": "④ 怎么验收"
+ },
+ {
+  "source": "test_scene_creator_release.py:1637",
+  "text": "和其他宿主相同"
+ },
+ {
+  "source": "test_scene_creator_release.py:1664",
+  "text": "不自行增减条目"
+ },
+ {
+  "source": "test_scene_creator_release.py:1665",
+  "text": "不为纯数据管理应用虚构额外业务流程"
+ },
+ {
+  "source": "test_scene_creator_release.py:1669",
+  "text": "写入结果未知"
+ },
+ {
+  "source": "test_scene_creator_release.py:1669",
+  "text": "只查询原操作的结果，不重新发起写入"
+ },
+ {
+  "source": "test_scene_creator_release.py:1674",
+  "text": "改动在已确认范围内的不自行增加确认步骤"
+ },
+ {
+  "source": "test_scene_creator_release.py:1683",
+  "text": "`bubble` 用冒泡按自动化的入口在开发工作集里跑一次，验处理逻辑"
+ },
+ {
+  "source": "test_scene_creator_release.py:1685",
+  "text": "| 到点真触发 | 「到点触发要等真实时间」 | 到点会不会自动开始没确认过；发布并在应用的「自动化」面板打开规则后才会自动跑 |"
+ },
+ {
+  "source": "test_scene_creator_release.py:1686",
+  "text": "| 使用者从目录或分享打开 | 「从目录或分享打开要先发布」 | 使用者从目录或分享打开的样子没确认过 |"
+ },
+ {
+  "source": "test_scene_creator_release.py:1695",
+  "text": "② 有定时任务的，发布后在应用的「自动化」面板打开规则才会自动跑"
+ },
+ {
+  "source": "test_scene_creator_release.py:1704",
+  "text": "Studio 会关掉这张表单，再也交不了"
+ },
+ {
+  "source": "test_scene_creator_release.py:1704",
+  "text": "同样按没回答处理"
+ },
+ {
+  "source": "test_scene_creator_release.py:1705",
+  "text": "用新表单（`id` 换新的）接着问，不请他回旧表单提交"
+ },
+ {
+  "source": "test_scene_creator_release.py:1712",
+  "text": "0.01 元"
+ },
+ {
+  "source": "test_scene_creator_release.py:1718",
+  "text": "④ 里验收报告每出一版有没通过的条目（含开发者提的修改），制作进度在同一条回复里跟着更新"
+ },
+ {
+  "source": "test_scene_creator_release.py:1724",
+  "text": "「钱不够就多花点」也算"
+ },
+ {
+  "source": "test_scene_creator_release.py:1724",
+  "text": "按新上限做，之后的交接写新数；PRD 和方案不出新一版"
+ },
+ {
+  "source": "test_scene_creator_release.py:1728",
+  "text": "SDK 内置 Mock 生成的项目和待办"
+ },
+ {
+  "source": "test_scene_creator_release.py:1728",
+  "text": "不为去掉它删消息中心、待办角标或改 Mock"
+ },
+ {
+  "source": "test_scene_creator_release.py:1729",
+  "text": "待补充信息项目（mock）"
+ },
+ {
+  "source": "test_scene_creator_release.py:1754",
+  "text": "各写一条改完回到列表或日历找到这条的"
+ },
+ {
+  "source": "test_scene_creator_release.py:1754",
+  "text": "各写一条翻过去再翻回来的"
+ },
+ {
+  "source": "test_scene_creator_release.py:1762",
+  "text": "「要在 Studio 窗口里打开才看得到」"
+ },
+ {
+  "source": "test_scene_creator_release.py:1764",
+  "text": "其他页面条目照演示版结论写"
+ },
+ {
+  "source": "test_scene_creator_release.py:1766",
+  "text": "要在 Studio 窗口里打开才看得到"
+ },
+ {
+  "source": "test_scene_creator_release.py:1767",
+  "text": "Studio 下的「在 Studio 里打开看各页面」也是一条"
+ },
+ {
+  "source": "test_scene_creator_release.py:156",
+  "text": "控制面最小合同"
+ },
+ {
+  "source": "test_scene_creator_release.py:157",
+  "text": "顶层字段不超过 8 个"
+ },
+ {
+  "source": "test_scene_creator_release.py:158",
+  "text": "对象嵌套不超过 2 层"
+ },
+ {
+  "source": "test_scene_creator_release.py:159",
+  "text": "把内容改成稳定载体引用"
+ },
+ {
+  "source": "test_scene_creator_release.py:160",
+  "text": "Schema 只校验形状，不能证明内容真实"
+ },
+ {
+  "source": "test_scene_creator_release.py:161",
+  "text": "事实区与推断区"
+ },
+ {
+  "source": "test_scene_creator_release.py:162",
+  "text": "连续两轮出现时，停止加字段"
+ },
+ {
+  "source": "test_scene_creator_release.py:175",
+  "text": "`completed`（全部做完、数据真实）"
+ },
+ {
+  "source": "test_scene_creator_release.py:176",
+  "text": "`partial`（做了一部分，未做的不补不编）"
+ },
+ {
+  "source": "test_scene_creator_release.py:177",
+  "text": "`blocked`（一条没做成，数据字段留空）"
+ },
+ {
+  "source": "test_scene_creator_release.py:362",
+  "text": "| G6 交棒条件都满足，但有「未测」或「没通过」条目 | 只有未测 `passed`；有没通过 `in_progress`，他选接受后和 G7 一起标 `passed` | `partial`"
+ },
+ {
+  "source": "test_scene_creator_release.py:407",
+  "text": "只更新已建行的 agent 列：按入口带入的 id 执行 `UPDATE … WHERE id = :id`"
+ },
+ {
+  "source": "test_scene_creator_release.py:408",
+  "text": "由后端的生产回流接口建行"
+ },
+ {
+  "source": "test_scene_creator_release.py:1040",
+  "text": "「演示版页面验收」"
+ },
+ {
+  "source": "test_scene_creator_release.py:1048",
+  "text": "GoalfyMax 正式入口、登录页、在线预览或演示预览的地址、容器地址要走平台登录和身份注入，不在你要访问的范围里；开发者已登录的会话也不借用"
+ },
+ {
+  "source": "test_scene_creator_release.py:1050",
+  "text": "访问被工具审批拒绝时到此为止：不重试、不绕过"
+ },
+ {
+  "source": "test_scene_creator_release.py:1050",
+  "text": "`npm run dev:restart` 后台起演示版"
+ },
+ {
+  "source": "test_scene_creator_release.py:1051",
+  "text": "内容区空白的截图不作证据"
+ },
+ {
+  "source": "test_scene_creator_release.py:1052",
+  "text": "做到付款或授权窗口出现为止，演示版里的结果是 Mock"
+ },
+ {
+  "source": "test_scene_creator_release.py:1054",
+  "text": "打开过的演示版路由"
+ },
+ {
+  "source": "test_scene_creator_release.py:1080",
+  "text": "不表示应用被下线"
+ },
+ {
+  "source": "test_scene_creator_release.py:1096",
+  "text": "| 依赖平台登录身份"
+ },
+ {
+  "source": "test_scene_creator_release.py:1096",
+  "text": "「要用真实账号登录才看得到：平台登录身份」"
+ },
+ {
+  "source": "test_scene_creator_release.py:1096",
+  "text": "| 依赖真实宿主桥接"
+ },
+ {
+  "source": "test_scene_creator_release.py:1096",
+  "text": "「要在 GoalfyMax 里打开才看得到：提醒、授权和付款窗口」"
+ },
+ {
+  "source": "test_scene_creator_release.py:1097",
+  "text": "| 到点真触发 |"
+ },
+ {
+  "source": "test_scene_creator_release.py:1097",
+  "text": "| 使用者从目录或分享打开 |"
+ },
+ {
+  "source": "test_scene_creator_release.py:1097",
+  "text": "演示版能看的部分拆成一条照常测"
+ },
+ {
+  "source": "test_scene_creator_release.py:1098",
+  "text": "其余部分结论「未测」、后三列写「无」，原因照下表原文写"
+ },
+ {
+  "source": "test_scene_creator_release.py:1107",
+  "text": "工程本身的问题回 ③ 修"
+ },
+ {
+  "source": "test_scene_creator_release.py:1112",
+  "text": "演示版上用无头浏览器照条目操作"
+ },
+ {
+  "source": "test_scene_creator_release.py:1184",
+  "text": "3 轮仍不过，或原因你改不了（平台故障、外部数据源、要开发者授权或付费）"
+ },
+ {
+  "source": "test_scene_creator_release.py:1185",
+  "text": "发一道选择题，开头「【⑤ 收尾 → 等你确认】」：只有继续改 / 接受两项"
+ },
+ {
+  "source": "test_scene_creator_release.py:1186",
+  "text": "他选接受：这才算知情。记「没通过，开发者选了接受」"
+ },
+ {
+  "source": "test_scene_creator_release.py:1228",
+  "text": "「这一版上线到 Max，成为你自己的正式版；要自己正式使用或给别人用，需要你在发布管理页发布，发不发布由你决定」"
+ },
+ {
+  "source": "test_scene_creator_release.py:1254",
+  "text": "不另传 `--document-mode`"
+ },
+ {
+  "source": "test_scene_creator_release.py:1255",
+  "text": "`document_mode: studio` 写进 `WORKSPACE.md`，不生成 `docs/proposal/`"
+ },
+ {
+  "source": "test_scene_creator_release.py:1327",
+  "text": "调 `task_manager(action=\"complete\")`。发布不在结单条件里"
+ },
+ {
+  "source": "test_scene_creator_release.py:1334",
+  "text": "「发布后你自己和已安装的使用者会用上这一版；正式入口和到点自动运行在发布后才能用，你自己也一样；发不发、发给谁由你定」"
+ },
+ {
+  "source": "test_scene_creator_release.py:1335",
+  "text": "这一阶段 N；一共 N；上限 N"
+ },
+ {
+  "source": "test_scene_creator_release.py:1335",
+  "text": "| 未测的 |"
+ },
+ {
+  "source": "test_scene_creator_release.py:1335",
+  "text": "| ④ 验过什么 |"
+ },
+ {
+  "source": "test_scene_creator_release.py:1349",
+  "text": "`stage_name` 就是使用者在应用顶部执行状态条上看到的那句话"
+ },
+ {
+  "source": "test_scene_creator_release.py:1350",
+  "text": "写成「正在<动作><对象>」"
+ },
+ {
+  "source": "test_scene_creator_release.py:1352",
+  "text": "每个步骤开始前各发一次 `stage_started`，各用自己的 `event_key`、`stage_key` 并各自声明契约"
+ },
+ {
+  "source": "test_scene_creator_release.py:1353",
+  "text": "同一步骤内部的工具调用不再发"
+ },
+ {
+  "source": "test_scene_creator_release.py:1376",
+  "text": "`_output` 只声明一个必填 string 字段"
+ },
+ {
+  "source": "test_scene_creator_release.py:1376",
+  "text": "平台直接把原文包进去，不经模型"
+ },
+ {
+  "source": "test_scene_creator_release.py:1376",
+  "text": "`_output extraction` 45 秒"
+ },
+ {
+  "source": "test_scene_creator_release.py:1395",
+  "text": "**方案的信息架构、「功能与页面」和开发者之后反馈里说的样子**"
+ },
+ {
+  "source": "test_scene_creator_release.py:1396",
+  "text": "用不用预置件、用多少、改到什么程度由你按开发者要求判断"
+ },
+ {
+  "source": "test_scene_creator_release.py:1398",
+  "text": "外壳（导航、布局、配色体系）也可以自己写"
+ },
+ {
+  "source": "test_scene_creator_release.py:1401",
+  "text": "**只借样式，不搬内容**"
+ },
+ {
+  "source": "test_scene_creator_release.py:1402",
+  "text": "不保留对参考站接口、脚本或 CDN 的引用"
+ },
+ {
+  "source": "test_scene_creator_release.py:1420",
+  "text": "async def db(sql, mode=\"reader\", params=None, why=\"读写应用库\"):"
+ },
+ {
+  "source": "test_scene_creator_release.py:1421",
+  "text": "不改成 `**kwargs` 展开"
+ },
+ {
+  "source": "test_scene_creator_release.py:1423",
+  "text": "`preload_toolset_ids` 里要有一个装了工具组「query_business_app_dataset」的工具集"
+ },
+ {
+  "source": "test_scene_creator_release.py:1427",
+  "text": "提示词写明只用 `mode=\"reader\"`"
+ },
+ {
+  "source": "test_scene_creator_release.py:1442",
+  "text": "FA 只用 `mode=\"reader\"` 查；写库一律由脚本按 FA 的输出执行固定 SQL"
+ },
+ {
+  "source": "test_scene_creator_release.py:1445",
+  "text": "业务键在模板里有唯一约束"
+ },
+ {
+  "source": "test_scene_creator_release.py:1446",
+  "text": "`INSERT … ON CONFLICT` 的冲突目标必须是模板里已有的唯一约束"
+ },
+ {
+  "source": "test_scene_creator_release.py:1556",
+  "text": "退出码只看**最后一条命令**"
+ },
+ {
+  "source": "test_collaboration_guidance.py:46",
+  "text": "分享兑换入口输入站内信里的分享码接受邀请"
+ },
+ {
+  "source": "test_collaboration_guidance.py:58",
+  "text": "建 read 工单（只读协作者也是 read 工单）"
+ },
+ {
+  "source": "test_collaboration_guidance.py:63",
+  "text": "`connect` 申请写连接"
+ },
+ {
+  "source": "test_collaboration_guidance.py:64",
+  "text": "执行写数据的 SQL 或 DDL"
+ },
+ {
+  "source": "test_collaboration_guidance.py:65",
+  "text": "`ship`、部署、冒泡、实际跑这类写流程"
+ },
+ {
+  "source": "test_collaboration_guidance.py:66",
+  "text": "调 `finalize` 或 `request_finalize`"
+ },
+ {
+  "source": "test_collaboration_guidance.py:67",
+  "text": "用 `dataset_read` 读应用开发库"
+ },
+ {
+  "source": "test_collaboration_guidance.py:68",
+  "text": "告诉他自己能查看哪些内容"
+ },
+ {
+  "source": "test_collaboration_guidance.py:69",
+  "text": "改动要请属主或编辑协作者做"
+ },
+ {
+  "source": "test_collaboration_guidance.py:76",
+  "text": "`change_note` 必填"
+ },
+ {
+  "source": "test_collaboration_guidance.py:77",
+  "text": "别人创建的草稿不改、不拿来部署"
+ },
+ {
+  "source": "test_collaboration_guidance.py:78",
+  "text": "工具组 → 工具集或 FA → 场景包路线 → 应用挂载"
+ },
+ {
+  "source": "test_collaboration_guidance.py:81",
+  "text": "属主绑定在应用上的共享工作集"
+ },
+ {
+  "source": "test_collaboration_guidance.py:82",
+  "text": "模板当前版本 `template_version`"
+ },
+ {
+  "source": "test_collaboration_guidance.py:83",
+  "text": "`extract` 抽新版本时带 `expected_base_version=<记下的模板版本>`"
+ },
+ {
+  "source": "test_collaboration_guidance.py:91",
+  "text": "`workspace` 实际跑前先把自己的草稿 `ship` 到 `success`"
+ },
+ {
+  "source": "test_collaboration_guidance.py:98",
+  "text": "`draft_asset_id` 可以省略"
+ },
+ {
+  "source": "test_collaboration_guidance.py:99",
+  "text": "`note` 写明验收报告的结论，属主要看报告才能决定"
+ },
+ {
+  "source": "test_collaboration_guidance.py:100",
+  "text": "「已提请，等属主上线。属主上线后这一版成为属主的正式版，发不发布由属主决定；"
+ },
+ {
+  "source": "test_collaboration_guidance.py:101",
+  "text": "只说已提请，不说已上线，也不为此去 `finalize`、`resolve`"
+ },
+ {
+  "source": "test_collaboration_guidance.py:117",
+  "text": "只打开演示版输出里的地址（`127.0.0.1` 或 `localhost`）"
+ },
+ {
+  "source": "test_collaboration_guidance.py:120",
+  "text": "用 Playwright 无头 Chromium 打开 Dev Host 地址"
+ },
+ {
+  "source": "test_collaboration_guidance.py:127",
+  "text": "④ 有「未测」条目时单列"
+ },
+ {
+  "source": "test_collaboration_guidance.py:160",
+  "text": "编辑档只给指定账号"
+ },
+ {
+  "source": "test_collaboration_guidance.py:161",
+  "text": "分享码模式只能发只读档"
+ },
+ {
+  "source": "test_collaboration_guidance.py:162",
+  "text": "分享兑换入口输入分享码接受"
+ },
+ {
+  "source": "test_collaboration_guidance.py:169",
+  "text": "把它分享给属主的人"
+ },
+ {
+  "source": "test_collaboration_guidance.py:170",
+  "text": "`clone_asset` 克隆到自己名下再换引用"
+ },
+ {
+  "source": "test_collaboration_guidance.py:171",
+  "text": "找分享方修改"
+ },
+ {
+  "source": "test_collaboration_guidance.py:180",
+  "text": "资产落在属主名下"
+ },
+ {
+  "source": "test_collaboration_guidance.py:184",
+  "text": "只写这个现状，不写成「协作者自付」或「属主承担」这类长期承诺"
+ },
+ {
+  "source": "test_collaboration_guidance.py:193",
+  "text": "`update`、`setup`、`ship` 需要从上线版派生草稿时同样要带"
+ },
+ {
+  "source": "test_collaboration_guidance.py:196",
+  "text": "带 `change_note` 重调"
+ },
+ {
+  "source": "test_collaboration_guidance.py:219",
+  "text": "不为此新开 write 工单"
+ },
+ {
+  "source": "test_collaboration_guidance.py:221",
+  "text": "属主名下资产的现役版本用 `get_asset` 看，草稿以派生返回为准，不用 `list_asset_versions` 查"
+ },
+ {
+  "source": "test_collaboration_guidance.py:224",
+  "text": "不请属主升档"
+ },
+ {
+  "source": "test_collaboration_guidance.py:225",
+  "text": "下线（`offline`）、删除（`delete`）"
+ },
+ {
+  "source": "test_collaboration_guidance.py:227",
+  "text": "不调 `list_asset_versions`"
+ },
+ {
+  "source": "test_collaboration_guidance.py:233",
+  "text": "必须显式传 `draft_asset_id`，平台不替你挑"
+ },
+ {
+  "source": "test_collaboration_guidance.py:236",
+  "text": "平台不替你挑"
+ },
+ {
+  "source": "test_collaboration_guidance.py:125",
+  "text": "| 情况 | 原因原文 | 这意味着 |"
+ },
+ {
+  "source": "test_collaboration_guidance.py:125",
+  "text": "按真实账号显示的内容没确认过"
+ },
+ {
+  "source": "test_collaboration_guidance.py:175",
+  "text": "`otpe_manage` 的创建"
+ },
+ {
+  "source": "test_collaboration_guidance.py:176",
+  "text": "`register_and_refresh_tool_group` 的创建模式"
+ },
+ {
+  "source": "test_wuduan_guidance.py:73",
+  "text": "结论数、未测条数都由脚本从 `items` 和 `extra_untested` 算，不手写"
+ },
+ {
+  "source": "test_wuduan_guidance.py:77",
+  "text": "`done` 也不等于验收通过"
+ },
+ {
+  "source": "test_wuduan_guidance.py:78",
+  "text": "第一个改代码或改资产的动作之前，保存新一版制作进度，受影响的功能改回「在做」"
+ },
+ {
+  "source": "test_wuduan_guidance.py:79",
+  "text": "⑤ 收尾时补「上线结果」，再出一版"
+ },
+ {
+  "source": "test_wuduan_guidance.py:115",
+  "text": "你不自己做，也不原样重试"
+ },
+ {
+  "source": "test_wuduan_guidance.py:124",
+  "text": "描述、Logo、版本更新说明"
+ },
+ {
+  "source": "test_wuduan_guidance.py:134",
+  "text": "「已改，已验证」「已改，未验证（原因）」或「没改（原因）」"
+ },
+ {
+  "source": "test_wuduan_guidance.py:142",
+  "text": "刷新或重新打开后找回"
+ },
+ {
+  "source": "test_wuduan_guidance.py:144",
+  "text": "第一次没有数据、资料不全（还缺什么、去哪补）、处理中、失败（原因和下一步）、完成"
+ },
+ {
+  "source": "test_wuduan_guidance.py:158",
+  "text": "`workspace_push` 成功"
+ },
+ {
+  "source": "test_wuduan_guidance.py:168",
+  "text": "只在工作区里标记不算"
+ },
+ {
+  "source": "test_wuduan_guidance.py:180",
+  "text": "第一版制作进度在第一个建资产、写代码的动作之前就已保存"
+ },
+ {
+  "source": "test_wuduan_guidance.py:184",
+  "text": "保存后再建资产、写代码"
+ },
+ {
+  "source": "test_wuduan_guidance.py:186",
+  "text": "| 制作进度 | ③ 开始时，建任何资产、写代码之前 |"
+ },
+ {
+  "source": "test_wuduan_guidance.py:188",
+  "text": "每个「做不成时」各写一条失败条目"
+ },
+ {
+  "source": "test_wuduan_guidance.py:190",
+  "text": "「测试中造不出这种失败」，加试过哪些做法"
+ },
+ {
+  "source": "test_wuduan_guidance.py:195",
+  "text": "刚做完：需求文档第 2 版"
+ },
+ {
+  "source": "test_wuduan_guidance.py:196",
+  "text": "依据 PRD"
+ },
+ {
+  "source": "test_wuduan_guidance.py:201",
+  "text": "做好了，实际跑过"
+ },
+ {
+  "source": "test_wuduan_guidance.py:205",
+  "text": "<div class=\"pv-state\">④ 试用验收</div>"
+ },
+ {
+  "source": "test_wuduan_guidance.py:205",
+  "text": "不写 G1–G7"
+ },
+ {
+  "source": "test_wuduan_guidance.py:71",
+  "text": "## 完整样例"
+ },
+ {
+  "source": "test_wuduan_guidance.py:58",
+  "text": "| 需求说明（PRD） | ① 按轮问问完之后，写第 1 版 |"
+ },
+ {
+  "source": "test_wuduan_guidance.py:59",
+  "text": "| 方案 | ② 取舍、验收要求和费用变化问清之后 |"
+ },
+ {
+  "source": "test_wuduan_guidance.py:61",
+  "text": "| 验收报告 | ④ 报告过了硬门之后 |"
+ },
+ {
+  "source": "test_wuduan_guidance.py:63",
+  "text": "还没到的段不写，也不写「暂无」「未开始」的占位页"
+ },
+ {
+  "source": "test_wuduan_guidance.py:66",
+  "text": "用 `studio_read_creation` 读这份文档当前的 `artifactId`、`version`、`digest`；调 `studio_confirm_proposal`"
+ },
+ {
+  "source": "test_wuduan_guidance.py:67",
+  "text": "页面上不放「确认这一版」"
+ },
+ {
+  "source": "test_wuduan_guidance.py:165",
+  "text": "不能因为文件多或内容长而跳过这一步"
+ },
+ {
+  "source": "test_workspace_output_guidance.py:9",
+  "text": "`ctx.process_dir` 用于过程文件"
+ },
+ {
+  "source": "test_workspace_output_guidance.py:10",
+  "text": "本次新生成且要返回的文件（包括诊断附件）写进 `ctx.output_dir`"
+ },
+ {
+  "source": "test_workspace_output_guidance.py:11",
+  "text": "输入文件字段带入的路径"
+ },
+ {
+  "source": "test_workspace_output_guidance.py:12",
+  "text": "裸路径或完整 JSON"
+ },
+ {
+  "source": "test_workspace_output_guidance.py:14",
+  "text": "不会被解析为可信来源"
+ },
+ {
+  "source": "test_workspace_output_guidance.py:16",
+  "text": "不能只改路径字符串"
+ },
+ {
+  "source": "test_workspace_output_guidance.py:17",
+  "text": "最终交付仍须满足"
+ },
+ {
+  "source": "test_workspace_output_guidance.py:26",
+  "text": "实际写入或复制到 `ctx.output_dir`"
+ },
+ {
+  "source": "test_workspace_output_guidance.py:29",
+  "text": "`File written successfully: <path>` 不会被解析为可信来源"
+ },
+ {
+  "source": "test_workspace_output_guidance.py:31",
+  "text": "不能只改路径字符串、虚构文件或删掉文件声明"
+ },
+ {
+  "source": "test_entry_default_guidance.py:34",
+  "text": "来源只能是 `formdata`"
+ },
+ {
+  "source": "test_entry_default_guidance.py:35",
+  "text": "默认值不直接写成 `default` 字段，按下一条用变换声明"
+ },
+ {
+  "source": "test_entry_default_guidance.py:42",
+  "text": "Schema 的 `default` 只是声明，不会自动填值"
+ },
+ {
+  "source": "test_entry_default_guidance.py:43",
+  "text": "定时自动化发起时仍要传值"
+ },
+ {
+  "source": "复核:| 同类事实错误、引用错误或无产物连续两轮 | 停止加字段、",
+  "text": "| 同类事实错误、引用错误或无产物连续两轮 | 停止加字段、不原样重跑，按 `agenticapp-tool-workflow` 重划 FA 与脚本的职责"
+ },
+ {
+  "source": "复核:| 同类事实错误、引用错误或无产物连续两轮 | 停止加字段、",
+  "text": "要改施工单的回 ② |"
+ },
+ {
+  "source": "复核:design/谁来做.md",
+  "text": "「谁来用」「每一步谁来做」照 [references/谁来做.md](references/谁来做.md)"
+ },
+ {
+  "source": "复核:reference/业务路线.md",
+  "text": "平台要求应用挂的场景包至少有一条路线"
+ },
+ {
+  "source": "复核:reference/业务路线.md",
+  "text": "只有规则步骤的应用也建一条最小的单节点路线"
+ },
+ {
+  "source": "复核:在把 `current_stage` 改成 G5 之前建好应",
+  "text": "应用身份：在把 `current_stage` 改成 G5 之前建好并回填工作区"
+ },
+ {
+  "source": "复核:在把 `current_stage` 改成 G5 之前建好应",
+  "text": "加载 `agenticapp-tool-data-template`"
+ },
+ {
+  "source": "复核:在应用根执行返回的 `scaffold_bind_comma",
+  "text": "在应用根执行返回的 `scaffold_bind_command` 回填 `app.json` 与 `WORKSPACE.md`"
+ },
+ {
+  "source": "复核:调用方式（`workspace`、应用 ID、`busine",
+  "text": "做法见 `agenticapp-tool-deploy`「实际跑」"
+ },
+ {
+  "source": "复核:business_ui_id=<应用 ID，即 WORKSP",
+  "text": "business_ui_id=<WORKSPACE.md 里的 business_ui_id 原值>, business_ui_data_space=\"workspace\")"
+ },
+ {
+  "source": "复核:挂着本人场景包草稿也能部署，场景包不用先上线",
+  "text": "挂在应用上的本人场景包草稿**不单独上线**：预览直接跑草稿，上线应用时一起上线"
+ },
+ {
+  "source": "复核:挂在应用上的本人场景包草稿随应用一起上线：finalize ",
+  "text": "挂在应用上的本人场景包草稿会一起上线，不要单独上线它"
+ },
+ {
+  "source": "复核:**结单门**：按 [../reference/部署与版本.",
+  "text": "**结单门**：按 `agenticapp-tool-deploy`「结单」核每条路线：最近一次到终态的运行通过（路线冒泡和 ④ 的 `workspace` 实际跑都算；读写应用库的路线只认实际跑）"
+ },
+ {
+  "source": "复核:最近一次失败或没法验证时，先问开发者是否接受，接受后写豁免",
+  "text": "路线失败或没法验证的按 `agenticapp-tool-deploy`「结单」写豁免"
+ },
+ {
+  "source": "复核:被拒按 [../reference/报错对照.md](../",
+  "text": "| 结单被拒 | `agenticapp-tool-deploy`「常见错误」"
+ },
+ {
+  "source": "复核:`resolve` 反读上线版本与场景包版本记进工单",
+  "text": "反读上线版本和挂载的场景包版本，两个版本号记进工单"
+ },
+ {
+  "source": "复核:③ 交棒：应用根 `npm run verify` 全绿",
+  "text": "③ 交了棒：应用根 `npm run verify` 全绿"
+ },
+ {
+  "source": "复核:③ 交棒：应用根 `npm run verify` 全绿",
+  "text": "每个功能做好了或写明没做成"
+ },
+ {
+  "source": "复核:③ 交棒：应用根 `npm run verify` 全绿",
+  "text": "读写应用库的路线在阶段文档 G4 有反读自查四项且都是「有」"
+ },
+ {
+  "source": "复核:验收报告过了 2.5 的硬门并已发给开发者",
+  "text": "报告过了三道硬门并已发出"
+ },
+ {
+  "source": "复核:进 ④ 前你先生成本地完成版，开发者可以在「演示预览」看，生",
+  "text": "本轮需求都做完了"
+ },
+ {
+  "source": "复核:进 ④ 前你先生成本地完成版，开发者可以在「演示预览」看，生",
+  "text": "Studio 宿主下开发者随时能在「演示预览」看当前工程（`agenticapp-tool-workspace`「演示预览与在线预览」）"
+ },
+ {
+  "source": "复核:`resolve` 只认上线版本，上线前报「还没有上线版本（",
+  "text": "| 上线前 `resolve` 报「还没有上线版本」 | `resolve` 只认上线版本 | 正常结果，不是平台问题 |"
+ },
+ {
+  "source": "11-07 用户决定：部署后改过代码不上线旧版",
+  "text": "| 部署后又改了代码，把旧部署上线 | 只上线最新代码部署成功的那一份，重新部署后再上线 |"
+ },
+ {
+  "source": "复核:不是平台问题；草稿验收用 `workspace` 实际跑和本机",
+  "text": "正常结果，不是平台问题"
+ },
+ {
+  "source": "复核:打不开或未就绪的处置见 [报错对照.md](报错对照.md)",
+  "text": "在线预览报 `PREVIEW_NOT_READY`、显示「Agentic APP 不存在或加载失败」（3024）时，按 `agenticapp-tool-deploy`「部署与在线预览」的报错表处理"
+ },
+ {
+  "source": "复核:开发者的口头回报、他在在线预览或演示预览（含 Studio ",
+  "text": "部署成功本身、开发者的口头回报、他在在线预览或演示预览（含 Studio 里的演示）里看到的、已发布的版本，都不算"
+ },
+ {
+  "source": "复核:并写开发者自己怎么看",
+  "text": "④ 未测表「这意味着」那一列，让他知道哪些行为没有验证"
+ },
+ {
+  "source": "复核:这类核对字段写进阶段文档 G6，不放进报告",
+  "text": "`project_id`、`workflow_trace`、演示版路由、截图文件路径这类核对字段只写进阶段文档 G6，不放进报告"
+ },
+ {
+  "source": "复核:不用部署的先做：页面条目、`npm --prefix fro",
+  "text": "**先在演示版上测**"
+ },
+ {
+  "source": "复核:不用部署的先做：页面条目、`npm --prefix fro",
+  "text": "不用部署的先做完：页面条目、`npm --prefix frontend run check`、布局回归、清空 Mock 数据看空库表现"
+ },
+ {
+  "source": "复核:开发者同意部署的，最近一次部署 `status=succes",
+  "text": "最近一次部署 `status=success`，属主的上线版本绑定的就是这一次部署；开发者说先别放的"
+ },
+ {
+  "source": "复核:开发者同意部署的，最近一次部署 `status=succes",
+  "text": "依赖部署的条目都记了「未测」"
+ },
+ {
+  "source": "复核:哪些情况可以记「未测」及原因怎么写，都按 [../stage",
+  "text": "每条写四种结论之一加一句依据（这个应用没有这一项的写「不适用」，不算结论），进阶段文档 G6 和工单 checkpoint"
+ },
+ {
+  "source": "复核:问是否部署到开发者在线预览",
+  "text": "每条回复都是一条交接"
+ },
+ {
+  "source": "复核:你上线报告里验过、④ 已部署成功的那一版",
+  "text": "上线的是最新代码部署成功、④ 验收过的那一版"
+ },
+ {
+  "source": "11-07 用户决定：验收状态说清楚",
+  "text": "由验收报告的第一句告诉他"
+ },
+ {
+  "source": "第十三轮评判：进度写进思考、交给子 Agent 后不说话",
+  "text": "`Agent` 交回；③ 里没有不带表的一句话正文"
+ },
+ {
+  "source": "runs-v14 评判：③ 里只发一句话的过程说明，部分是英文",
+  "text": "③ 里工具调用之间的每段回复正文都是开发者要看的，用中文写，而且只有两种"
+ },
+ {
+  "source": "runs-v14 评判：方案确认后先发英文过程说明，没发第一版进度表",
+  "text": "这条带表的进度发在第一个建资产、写代码、挂路线的工具调用之前"
+ },
+ {
+  "source": "11-09 用户决定：读写应用库的路线不豁免",
+  "text": "读写应用库的路线不能豁免，他接受了也不写，工单开着等实际跑通"
+ },
+ {
+  "source": "11-09 陈羽杰 PRE：Agent 用电脑操作工具点了他正在用的 Chrome",
+  "text": "不操作开发者正在用的浏览器、桌面窗口和其他应用（包括用电脑操作工具点他的 Chrome）"
+ },
+ {
+  "source": "11-08 用户决定：对开发者不用对比句",
+  "text": "也不用「不是……而是……」「……而不是……」这类对比句，直接说是什么、做了什么"
+ },
+ {
+  "source": "复核:交接消息一律改说「上线」「提请属主上线」「等属主上线」，不出",
+  "text": "| 定版、提请属主定版、等属主定版 | 上线、提请属主上线、等属主上线 |"
+ },
+ {
+  "source": "复核:这一版成为开发者自己的正式版；要自己正式使用或给别人用，需要",
+  "text": "这一版成为开发者自己的正式版"
+ },
+ {
+  "source": "R-625 范围制作 Skill 第 2 条（占冬 11-09）：报告第一句",
+  "text": "这一版已成为你自己的正式版，发不发布由你决定。验收已完成，在 Studio「在线预览」或发布管理页「预览」里能看到；要自己正式使用或给别人用，需要你在发布管理页发布。"
+ },
+ {
+  "source": "R-625 范围制作 Skill 第 2 条（占冬 11-09）：报告第一句",
+  "text": "这一版已成为你自己的正式版，发不发布由你决定。验收已完成，有 N 条没通过，在 Studio「在线预览」或发布管理页「预览」里能看到；现在发布的话，使用者会遇到"
+ },
+ {
+  "source": "复核:怎么判结论、哪些记「未测」，见 [../stages/4-试",
+  "text": "条目怎么判结论、哪些能记「未测」见 `agenticapp-stage-4-acceptance`"
+ },
+ {
+  "source": "复核:1. 建 write 工单，",
+  "text": "按入口「开工」第 1 步建 write 工单，不进五段"
+ },
+ {
+  "source": "复核:1. 建 write 工单，",
+  "text": "从 ① 进来的沿用原工单"
+ },
+ {
+  "source": "复核:1. 建 read 工单（只读协作者也是 read 工单）；",
+  "text": "建 read 工单（只读协作者也是 read 工单），`skill_version` 照入口「开工」第 1 步取"
+ },
+ {
+  "source": "复核:tasks/修订.md",
+  "text": "有 write 工单（入口「开工」第 1 步）"
+ },
+ {
+  "source": "复核:tasks/用户反馈.md",
+  "text": "要改应用或同步状态时用 write 工单（`skill_version` 照入口「开工」第 1 步取）"
+ },
+ {
+  "source": "复核:**`SCENE_SKILL_VERSION_MISSING",
+  "text": "`SCENE_SKILL_VERSION_MISSING`：没填 `skill_version` 或填了 `dev`"
+ },
+ {
+  "source": "复核:**`SCENE_SKILL_VERSION_MISSING",
+  "text": "不升级，读出标记原样重试"
+ },
+ {
+  "source": "复核:[../tasks/修订.md](../tasks/修订.m",
+  "text": "起点仍按 `agenticapp-task-revise` 的起点表，按这个顺序做："
+ },
+ {
+  "source": "复核:| 开发者在工作台「在线预览」里看（真实身份、开发工作集、路",
+  "text": "| 开发者在 Studio「在线预览」里看 | ✓ | | |"
+ },
+ {
+  "source": "复核:| 开发者本人从正式入口打开、在「自动化」面板开真实到点规则",
+  "text": "| 开发者本人从正式入口打开、在「自动化」面板开到点规则 | | ✓ | ✓ |"
+ },
+ {
+  "source": "复核:发「我理解的是这些」之前核对这几题都有答案",
+  "text": "写 PRD 前核对都有答案（他答的，或按默认）"
+ },
+ {
+  "source": "复核:开发者不指定，按《前端页面》界面风格自定",
+  "text": "外观按 `agenticapp-tool-frontend`「先定样子」自定"
+ },
+ {
+  "source": "复核:**业务页**：PRD「界面」一节是页面的最高依据",
+  "text": "方案的信息架构和「功能与页面」是页面的最高依据"
+ },
+ {
+  "source": "复核:冒泡无法验证真实读写",
+  "text": "不算通过，要回去用 `workspace` 实际跑"
+ },
+ {
+  "source": "复核:**反读自查**：每条读写应用库的路线 online 后反读",
+  "text": "反读自查：每条读写应用库的路线 online 后反读，四项各记「有 / 没有」进阶段文档 G4"
+ },
+ {
+  "source": "复核:### 反读自查四项",
+  "text": "## 反读自查四项"
+ },
+ {
+  "source": "复核:现在就读 [../reference/数据模板.md]",
+  "text": "路线要读写应用库的，现在就按 `agenticapp-tool-workflow`「读写应用库」逐行写清"
+ },
+ {
+  "source": "复核:（脚本要读写应用库时再加「query_business_ap",
+  "text": "（脚本要读写应用库时再加 `query_business_app_dataset`）"
+ },
+ {
+  "source": "复核:以这一步实际要不要按情况查库为准——施工单漏写的也挂，并回 ",
+  "text": "以这一步实际要不要按情况查库为准，施工单漏写的也挂，并回 ② 把施工单补上"
+ },
+ {
+  "source": "复核:任一项「没有」回第 5 步改；四项都有，这条路线才能标「做好",
+  "text": "任一项「没有」回第 5 小步改"
+ },
+ {
+  "source": "复核:任一项「没有」回第 5 步改；四项都有，这条路线才能标「做好",
+  "text": "四项都有，这条路线才能标「做好了」"
+ },
+ {
+  "source": "复核:[../reference/数据模板.md](../refe",
+  "text": "现在就按 `agenticapp-tool-workflow`「读写应用库」逐行写清：哪些固定读写由脚本做、哪些数据由 FA 按情况查、有没有应用后端回流"
+ },
+ {
+  "source": "复核:### 入口字段放哪",
+  "text": "## 入口字段放哪"
+ },
+ {
+  "source": "复核:写库语句包在 `if not ctx.dry_run:` 里",
+  "text": "冒泡时写库被 `ctx.dry_run` 跳过的写法见 `agenticapp-tool-workflow`「读写应用库」"
+ },
+ {
+  "source": "复核:只要求应用已部署成功，不要求上线",
+  "text": "实际跑和 Studio 在线预览只要部署成功，上线失败或他说这版先别上线时，验收照常做"
+ },
+ {
+  "source": "复核:| `BUSINESS_UI_NOT_DEPLOYED`（`",
+  "text": "| `BUSINESS_UI_NOT_DEPLOYED` | 还没有你部署成功的版本 | 先部署到 `success` 再跑 |"
+ },
+ {
+  "source": "复核:每条 TPE 最近一次 `verify(tpe_id, pr",
+  "text": "已部署时，读写应用库的条目有 `workspace` 实际跑的 `project_id`（新 SDK 应用为 `business_id`），对应 TPE 最近一次 verify（旧应用 `verify(tpe_id, project_id)`，新 SDK 应用 `verify(tpe_id, run_id=<BIZ- 号>)`）为 `passed`"
+ },
+ {
+  "source": "复核:reference/自动化.md",
+  "text": "它的运行记录不进工单，结单门收不到，所以不用于 ④ ⑤ 的验证，结果不作验收证据"
+ },
+ {
+  "source": "复核:应用自己的脚本、页面、数据格式、提示词问题自己改，不提交",
+  "text": "应用自己的脚本、页面、数据、提示词问题自己改"
+ },
+ {
+  "source": "复核:⑤ 上线或本次会话结束时和功能诉求汇总成一条",
+  "text": "不即时提交，绕法记进开发记录"
+ },
+ {
+  "source": "复核:新建前先 `query_dev_feedback` 查本人未",
+  "text": "**先查再建**：`query_dev_feedback` 查本人没关闭的反馈"
+ },
+ {
+  "source": "复核:隔几分钟重试一次，仍失败就提交",
+  "text": "5xx、服务不可用、鉴权或计费报错先隔几分钟重试一次，仍失败再提交"
+ },
+ {
+  "source": "复核:此时汇总成一条提交，没有就不提",
+  "text": "读不到的花费和本轮绕过的平台问题、功能诉求汇总成一条提交（入口「报错和平台问题」），编号写进上线结果；没有就不提"
+ },
+ {
+  "source": "复核:都按 `SKILL.md` 和 `stages/` 执行，和",
+  "text": "五段的顺序、每段确认什么、④ 怎么验收、⑤ 做到哪一步，都按入口和各段 Skill 做，和其他宿主相同"
+ },
+ {
+  "source": "复核:「Studio 宿主」",
+  "text": "工具列表里有 `studio_write_proposal` 时，同时加载 `agenticapp-host-studio`"
+ },
+ {
+  "source": "复核:这一段只交 PRD 这一份文档（Studio 下是开发文档 ",
+  "text": "这一段只交 PRD 这一份"
+ },
+ {
+  "source": "复核:开发者回「确认这一版」之前，工作区最多标到 G2，不建业务资",
+  "text": "**只查不建**：开发者确认这一版之前，工作区最多标到 G2，不建业务资产、不写编排脚本、不建表、不部署"
+ },
+ {
+  "source": "复核:开发者回「确认这一版」之前，工作区最多标到 G2，不建业务资",
+  "text": "开工建的工单和工作区、能力试用包不算「建」"
+ },
+ {
+  "source": "复核:Studio 下读到这一版的确认",
+  "text": "开发者确认了当前这一版 PRD（Studio 下读回这一版已确认）"
+ },
+ {
+  "source": "复核:Studio 下写成开发文档「方案」，另交与验收条目一致的 ",
+  "text": "| ② 方案 | 写成开发文档「方案」，另交与验收条目一致的 `acceptance.json`"
+ },
+ {
+  "source": "复核:Studio 下读到当前这一版方案的确认",
+  "text": "开发者确认了当前这一版整版方案（Studio 下读回这一版已确认）"
+ },
+ {
+  "source": "复核:Studio 下上线结果写进开发文档「验收报告」最后一节",
+  "text": "Studio 宿主下上线结果写进开发文档「验收报告」最后一节，按 `agenticapp-host-studio`「验收报告」保存新的一版"
+ },
+ {
+  "source": "复核:Studio 下桌面入口已在跑当前工程的开发服务时直接用它，",
+  "text": "Studio 宿主下桌面入口已在跑当前工程的开发服务时直接用它，不另起、不停掉（见 `agenticapp-host-studio`）"
+ },
+ {
+  "source": "复核:宿主提供的受限检查能力的机器结果可以作补充，和你在本机版上的",
+  "text": "宿主提供的检查工具的机器结果可以作补充，和你在演示版上的操作分开记，不能代替页面条目的演示版操作"
+ },
+ {
+  "source": "复核:**演示**：桌面入口管理当前工程的开发服务，你只准备工程与",
+  "text": "| 演示预览与演示版 | 桌面入口管理当前工程的开发服务：你只准备工程与依赖，不另起后台服务"
+ },
+ {
+  "source": "复核:`studio.acceptance.json` 与方案的 ",
+  "text": "工程里的 `studio.acceptance.json` 与它验收范围一致，格式按宿主和脚手架合同，不自行增减条目"
+ },
+ {
+  "source": "复核:stages/2-方案.md",
+  "text": "只有脚本步骤的应用也建一条最小路线，只作平台要求的挂载依赖，不为纯数据管理应用虚构额外业务流程"
+ },
+ {
+  "source": "复核:Studio 宿主的演示见同一文件「Studio 宿主」",
+  "text": "两个预览的区别见 `agenticapp-tool-workspace`「演示预览与在线预览」，Studio 宿主下的演示按 `agenticapp-host-studio`"
+ },
+ {
+  "source": "复核:已确认的 PRD 和方案什么时候出新一版，见 [../PRD",
+  "text": "已确认的 PRD 和方案什么时候出新一版，按 `agenticapp-stage-1-requirements` 的版本与确认规则"
+ },
+ {
+  "source": "复核:要上线的修订 ④ 和 ⑤ 每次都做",
+  "text": "**要上线的修订，④ 和 ⑤ 每次都做**：④ 加载 `agenticapp-stage-4-acceptance`，改完部署、直接上线，只验受影响的条目，再加一条完整主流程，照模板交验收报告"
+ },
+ {
+  "source": "复核:`business_ui_automation(bubble",
+  "text": "`business_ui_automation(action=\"bubble\")` 按自动化入口跑一次"
+ },
+ {
+  "source": "复核:「到点真触发」另列一条，按下面的表记「未测」",
+  "text": "冒泡的 `run_id` 与结果"
+ },
+ {
+  "source": "复核:「到点真触发」另列一条，按下面的表记「未测」",
+  "text": "「到点真触发」另列一条记「未测」"
+ },
+ {
+  "source": "复核:结论只有四种：通过 / 没通过 / 好不好你说了算 / 未测",
+  "text": "结论只有四种：**通过 / 没通过 / 好不好你说了算 / 未测**"
+ },
+ {
+  "source": "复核:到点真触发按 ④「2.4 逐条判定」记「未测」，上线结果单列",
+  "text": "有自动化：处理逻辑在开发工作集里冒泡跑一次符合 PRD"
+ },
+ {
+  "source": "复核:到点真触发按 ④「2.4 逐条判定」记「未测」，上线结果单列",
+  "text": "到点真触发记「未测」"
+ },
+ {
+  "source": "复核:到点真触发怎么记见 [../stages/4-试用验收.md",
+  "text": "到点真触发要发布后才有，④ 记「未测」（`agenticapp-stage-4-acceptance`）"
+ },
+ {
+  "source": "复核:「下一步」写答完这一轮还剩哪几块要问、按现在的树估计还要几轮",
+  "text": "每轮交接消息的「下一步」写答完这一轮还剩哪几块要问、估计还要几轮"
+ },
+ {
+  "source": "复核:答完这一轮就问完了的，写明这一轮答完不再出题",
+  "text": "这一轮答完就问完的，写明不再出题，接着写 PRD"
+ },
+ {
+  "source": "复核:写出 1 积分折多少元、每个选项约合多少元（数字取自 [..",
+  "text": "写出 1 积分 = 0.01 元、每个选项约合多少元（不写「按平台计价额度折算」这类没有数字的话）"
+ },
+ {
+  "source": "复核:1 元 = 100 积分（1 积分 = 0.01 元）",
+  "text": "只按积分计费，1 元 = 100 积分"
+ },
+ {
+  "source": "复核:怎么改见 [../design/开发文档/制作进度.md](",
+  "text": "每出一版有没通过的条目，制作进度在同一条回复里跟着更新"
+ },
+ {
+  "source": "复核:后来改过的按最新一条（[PRD.md](PRD.md)「版本",
+  "text": "**上限** = 入口「花费」定的数，后来改过按最新的"
+ },
+ {
+  "source": "复核:「正在做」只用于发完这条你在同一条回复里还接着做的消息",
+  "text": "「正在做」只用于发完你在同一条回复里还接着做的消息"
+ },
+ {
+  "source": "复核:「正在做」只用于发完这条你在同一条回复里还接着做的消息",
+  "text": "每次回复的最后一条第一行写【段名 → 等你确认 / 卡住了 / 已完成】，答话写在这一行下面，只回答一个问题、只说一句收尾的也一样"
+ },
+ {
+  "source": "复核:Studio 宿主下另写一条「在 Studio 里打开看各页",
+  "text": "Studio 宿主下另写一条「在 Studio 里打开看各页面」，④ 记「未测」（Studio 窗口）"
+ },
+ {
+  "source": "复核:Studio 宿主下另写一条「在 Studio 里打开看各页",
+  "text": "其他宿主不写这一条"
+ },
+ {
+  "source": "复核:另外哪几类必须各写一条也见同一节",
+  "text": "**写验收条目**"
+ },
+ {
+  "source": "复核:截图你自己看一遍：文字被挤成一字一行或被遮住",
+  "text": "| 截图生成了就行 | 自己看一遍：文字挤成一字一行、被遮住、翻页或切换入口不在、首屏被空记录占满，都记「没通过」 |"
+ },
+ {
+  "source": "复核:只用于 ② 在 Studio 宿主下另写的「在 Studio",
+  "text": "依赖 Studio 里的真实窗口（只用于 Studio 宿主下 ② 单独写的「在 Studio 里打开看各页面」那一条）"
+ },
+ {
+  "source": "复核:「建、校验和上线 TPE」",
+  "text": "## 建、校验和上线 TPE"
+ },
+ {
+  "source": "复核:「assemble 怎么用」",
+  "text": "## assemble 怎么用"
+ },
+ {
+  "source": "复核:「冒泡与实际跑能证明什么」",
+  "text": "# 冒泡与实际跑能证明什么"
+ },
+ {
+  "source": "复核:**一项调一次**",
+  "text": "写失败不挡交付：错误原文记进本段阶段文档，接着做，不重试"
+ },
+ {
+  "source": "复核:**只写不读**",
+  "text": "只写不读：接续、修订照旧按工作区里的阶段文档和工单 checkpoint 定位"
+ },
+ {
+  "source": "复核:#### 演示预览为空",
+  "text": "## 演示预览与在线预览"
+ },
+ {
+  "source": "复核:开发者本人和使用者从 GoalfyMax 打开这个应用",
+  "text": "**怎么打开**：发布后开发者和使用者从 GoalfyMax 打开这个应用，或从目录、分享打开"
+ },
+ {
+  "source": "复核:入口是工作台「在线预览」",
+  "text": "部署成功后，Studio 右栏「在线预览」；上线后也能在发布管理页「预览」里看"
+ },
+ {
+  "source": "复核:上线后、发布前，正式入口仍打不开（开发者本人也一样）",
+  "text": "正式入口和到点自动运行在发布后才能用，你自己也一样"
+ },
+ {
+  "source": "复核:浏览器边界的红线在 [../SKILL.md](../SKI",
+  "text": "浏览器边界的红线见入口「红线」，这里写具体做法"
+ },
+ {
+  "source": "复核:依赖平台登录身份、真实宿主桥接的部分本机版上看到的不作证据",
+  "text": "依赖平台登录身份、真实宿主桥接的部分，演示版上看到的不作证据，按 `agenticapp-stage-4-acceptance` 的「未测」表记"
+ },
+ {
+  "source": "复核:先 `business_ui_manage(action=\"",
+  "text": "不表示应用被下线 | `business_ui_manage(action=\"get\")` 核对，没部署成功就重新部署再请他重开"
+ },
+ {
+  "source": "复核:在当前草稿行重新 `ship` 到 `success` 再请",
+  "text": "没部署成功就重新部署再请他重开"
+ },
+ {
+  "source": "复核:`ship` 已成功仍打不开，才按平台问题报",
+  "text": "部署成功仍打不开才按平台问题报"
+ },
+ {
+  "source": "复核:测不了的不请开发者代测",
+  "text": "| 不代测 | 验收由你做，不请开发者在任何页面替你试"
+ },
+ {
+  "source": "复核:测不了的不请开发者代测",
+  "text": "测不了的记「未测」写原因 |"
+ },
+ {
+  "source": "复核:| 本机版起不来，按「本机版页面验收」修过仍不行 | 「本机",
+  "text": "| 演示版起不来，按「演示版页面验收」修过仍不行 | 「演示版跑不起来」，加做过的处理和错误原文 | 页面上的操作没确认过 |"
+ },
+ {
+  "source": "复核:仍起不来的按 ④「2.4 逐条判定」记「未测」",
+  "text": "仍起不来的记「未测」，原因写「演示版跑不起来」，加做过的处理和错误原文"
+ },
+ {
+  "source": "复核:本机版能测的条目都要测",
+  "text": "演示版能看的部分拆成一条照常测，其余部分结论「未测」、后三列写「无」"
+ },
+ {
+  "source": "复核:证据写部署编号与实际跑的 `project_id` 或「本机版",
+  "text": "「已验证」每条用 `data-evidence` 写证据（部署编号、实际跑的项目编号、「演示版」或在工作区跑的命令）"
+ },
+ {
+  "source": "复核:有「未测」为 `partial`",
+  "text": "报告发出后写 G6"
+ },
+ {
+  "source": "复核:有「未测」为 `partial`",
+  "text": "有未测或没通过 `partial`，`completion` 逐条写这些条目与原因"
+ },
+ {
+  "source": "复核:制作进度.md",
+  "text": "# 制作进度：数据说明与完整样例"
+ },
+ {
+  "source": "11-07 用户决定：先别上线、先别放时工单开着",
+  "text": "| 他说过这版先别上线或先别放 | 工单开着，先保存到云端（第 7 步）再结束回复，等他改口"
+ },
+ {
+  "source": "复核:上线的是 ④ 已部署成功的最新草稿",
+  "text": "部署成功就按「上线」上线并读回"
+ },
+ {
+  "source": "11-07 用户决定：收尾后修改",
+  "text": "分不清时只问是哪个应用，回答前不改任何应用"
+ },
+ {
+  "source": "复核:同意：部署到 `success`，按 ④「2.3 工作集实际跑",
+  "text": "按 ④ 第 3–5 步补测依赖已部署版本的条目，结果更新进报告"
+ },
+ {
+  "source": "复核:原因在你能改的东西里（应用代码、场景包配置、数据）：不问开发",
+  "text": "同一条最多改 3 轮"
+ },
+ {
+  "source": "11-07 用户决定：收尾后修改",
+  "text": "**他明确要改才开工**"
+ },
+ {
+  "source": "11-07 用户决定：收尾后修改",
+  "text": "拿不准他是要改还是在问时按问题处理，答完问一句要不要改"
+ },
+ {
+  "source": "11-07 用户决定：破坏性改动先确认",
+  "text": "开工前用业务话列出删掉什么、哪些已有数据受影响、正在用的人会看到什么变化，他明确同意才开工"
+ },
+ {
+  "source": "复核:| 操作步骤、截图文件路径或断言原文、打开过的本机路由；",
+  "text": "| 操作步骤、截图路径或断言原文、打开过的演示版路由 |"
+ },
+ {
+  "source": "复核:每条「通过」都有 2.4 要的证据，「全部条目」里后三列都填",
+  "text": "每条「通过」都有你自己取得的证据，报告「全部条目」表的后三列都填了"
+ },
+ {
+  "source": "复核:有一条不满足：G6 记 `failed`，不交报告",
+  "text": "有一条不满足：阶段记录 G6 写 `failed`，回第 3、4 步补齐，这时不交报告"
+ },
+ {
+  "source": "11-07 用户决定：结单两支",
+  "text": "他不回话：工单一直开着，不写豁免"
+ },
+ {
+  "source": "11-07 用户决定：上线不彩排，彩排在发布闸门",
+  "text": "开发者发布时平台在临时库彩排，上线不彩排"
+ },
+ {
+  "source": "复核:这一段不再请开发者确认什么，也不请他发布、不等发布",
+  "text": "这一段不请他发布，也不等发布"
+ },
+ {
+  "source": "复核:「要你做的」不写「请你发布」，也不等开发者回「发布了」再结单",
+  "text": "「要你做的」不写「请你发布」，也不等他回「发布了」再结单"
+ },
+ {
+  "source": "复核:`stage_name` 写成「正在处理本次任务」「正在执行",
+  "text": "「正在处理本次任务」「正在执行」这类泛词让人看不出在做什么"
+ },
+ {
+  "source": "复核:- 每个 `tool()` 后机械发一次事件。",
+  "text": "事件只在使用者能分辨的业务步骤开始和结束时发，不在每个 `tool()` 后机械发一次"
+ },
+ {
+  "source": "复核:只换品牌色、圆角不算满足开发者的风格要求",
+  "text": "只换品牌色和圆角不算满足他的风格要求"
+ },
+ {
+  "source": "复核:自写或大改时保住平台行为，不是外观",
+  "text": "自写或大改时保住的是平台行为：照样经下面的 hook 和组件接平台"
+ },
+ {
+  "source": "复核:### 读写应用库",
+  "text": "## 读写应用库"
+ },
+ {
+  "source": "复核:挂不上时按 [报错对照.md](报错对照.md) 排查，取数",
+  "text": "挂不上时按 [编排报错对照.md](编排报错对照.md) 排查，取数方式保持由 FA 自己查"
+ },
+ {
+  "source": "复核:要模型决定查什么的取数，没给 FA 挂工具，改成把素材全从入",
+  "text": "要模型决定查什么的才交给挂了工具的业务 FA"
+ },
+ {
+  "source": "复核:- 让 FA 用 `mode=\"writer\"` 直接写库。",
+  "text": "FA 只用 `mode=\"reader\"` 查"
+ },
+ {
+  "source": "复核:- 让 FA 用 `mode=\"writer\"` 直接写库。",
+  "text": "写库一律由脚本按 FA 的输出执行固定 SQL"
+ },
+ {
+  "source": "复核:### shell 步骤的成败",
+  "text": "## shell 步骤的成败"
+ },
+ {
+  "source": "复核:编辑协作者不 `finalize` 应用，⑤ 改为提请属主上",
+  "text": "编辑协作者不 `finalize` 应用"
+ },
+ {
+  "source": "复核:编辑协作者不 `finalize` 应用，⑤ 改为提请属主上",
+  "text": "前提：草稿部署成功"
+ },
+ {
+  "source": "复核:编辑协作者不 `finalize` 应用，⑤ 改为提请属主上",
+  "text": "前提：草稿部署成功；④ 的验收报告已交；基线没有过期。有没通过且改不了的条目时不提请"
+ },
+ {
+  "source": "复核:`connect` **必须**显式带 `mode=\"rea",
+  "text": "`connect` 必须显式带 `mode=\"reader\"`：不带时缺省是写连接"
+ },
+ {
+  "source": "复核:再自己上线这一层（`finalize_asset_versi",
+  "text": "3. 自己上线这一层：`finalize_asset_version_online`，场景包用 `scene_package_manage(action=\"finalize\")`"
+ },
+ {
+  "source": "复核:`extract` 被基线类错误拒绝时按 [报错对照.md]",
+  "text": "`extract` 被 `TEMPLATE_BASELINE_REQUIRED`、`TEMPLATE_BASELINE_CHANGED` 拒绝时按 `agenticapp-tool-data-template` 的常见错误处理"
+ },
+ {
+  "source": "复核:### 协作相关报错",
+  "text": "# 协作相关报错"
+ },
+ {
+  "source": "复核:④ 和属主一样由你按 [../stages/4-试用验收.m",
+  "text": "**④ 和属主一样由你逐条测**（`agenticapp-stage-4-acceptance`）"
+ },
+ {
+  "source": "复核:部署授权按 [../SKILL.md](../SKILL.m",
+  "text": "部署按入口「红线」"
+ },
+ {
+  "source": "复核:只有协作者身份才看得到的表现记「未测」",
+  "text": "只有协作者身份才看得到的表现、充值相关的页面条目记「未测」（平台登录身份）"
+ },
+ {
+  "source": "复核:只有协作者身份才看得到的表现，按 [../stages/4-",
+  "text": "协作者的 ④ 里，充值相关的页面条目和只有协作者身份才看得到的表现，按 `agenticapp-stage-4-acceptance` 记「未测」（平台登录身份）"
+ },
+ {
+  "source": "复核:`editor` 在 2.3 改为提请属主上线",
+  "text": "`editor` 多一步提请，见第 2 步"
+ },
+ {
+  "source": "复核:做法、说法与报错见 [../reference/多人协作.m",
+  "text": "`editor` 报告交出后按 `agenticapp-role-collab`「提请属主上线」直接提请，不用协作者再说一句"
+ },
+ {
+  "source": "复核:开发者明确同意后才带 `confirm_collaborat",
+  "text": "他明确同意后才带 `confirm_collaborator_change=true` 执行"
+ },
+ {
+  "source": "复核:开发者明确同意后才带 `confirm_collaborat",
+  "text": "没有这个确认时工具只返回待确认提示，不会写入"
+ },
+ {
+  "source": "复核:**必须**显式带 `collaboration_busin",
+  "text": "为协作应用新建或克隆资产时，必须显式带 `collaboration_business_ui_id=<应用家族 ID>`"
+ },
+ {
+  "source": "复核:给已有模板出新版本时传 `template_id`，并带 `",
+  "text": "给已有模板出新版本时 `extract` 传 `template_id`，并带 `expected_base_version`"
+ },
+ {
+  "source": "复核:开始改结构前先从 `inspect`（或 `open`、`c",
+  "text": "开始改结构前先从 `inspect`（或 `open`、`connect` 的返回）读出模板当前的 `template_version`，原样填入"
+ },
+ {
+  "source": "复核:抽出模板版本、挂到应用并绑工作集，见 [../referen",
+  "text": "按 `agenticapp-tool-data-template`"
+ },
+ {
+  "source": "复核:用新的 `template_version` 作为 `exp",
+  "text": "用新的 `template_version` 作 `expected_base_version` 重新 `extract`"
+ },
+ {
+  "source": "复核:协作者看属主名下资产的版本一律用 `get_asset`",
+  "text": "看属主名下资产的版本一律用 `get_asset`"
+ },
+ {
+  "source": "复核:等开发者指明释放哪个",
+  "text": "把返回里的占用明细和每个释放选项的影响用业务话给开发者看，等他指明释放哪个、怎么释放"
+ },
+ {
+  "source": "复核:等开发者指明释放哪个",
+  "text": "下线、删除由他决定，你不自己做，也不原样重试"
+ },
+ {
+  "source": "复核:刚 deploy 成功、之后没有换挂也没有改场景包时出现，是",
+  "text": "草稿刚部署成功、之后没换挂也没改场景包时出现，是平台对草稿的误报，不再重复部署，照常往下走"
+ },
+ {
+  "source": "复核:照他的原话列成编号清单",
+  "text": "照他的原话编号记进 G6，每处标「已改，已验证」「已改，未验证（原因）」或「没改（原因）」"
+ },
+ {
+  "source": "复核:找出用到同一份数据或同一个判断的其他页面和路线一起核对",
+  "text": "改一处时，把用到同一份数据或同一个判断的其他页面和路线一起核对"
+ },
+ {
+  "source": "复核:要加 PRD 没写的业务条件",
+  "text": "**要改到 PRD 没写的业务条件**（多一道核对、加启用开关、额外限制）：这是要的东西变了，回 ① 确认，不在实现里自己加"
+ },
+ {
+  "source": "复核:部署的必须是本机测过的那份",
+  "text": "部署的必须是在演示版上测过的那一份"
+ },
+ {
+  "source": "复核:部署的必须是本机测过的那份",
+  "text": "之后又改了代码或挂载，先重测受影响的条目再打包"
+ },
+ {
+  "source": "复核:## 三件套与阶段标记",
+  "text": "退回到前一段：把那一段和之后各段已标 `passed` 的项改回 `in_progress` 或 `not_started`"
+ },
+ {
+  "source": "复核:没拿到成功回执不往下写 G7、不结单",
+  "text": "没拿到成功回执不结单"
+ },
+ {
+  "source": "复核:不用单独上线场景包、上线应用或发布来排查",
+  "text": "也不靠单独上线场景包或发布来排查"
+ },
+ {
+  "source": "复核:都显式传 `publish_mode=\"staged\"`",
+  "text": "制作中建、改 TPE 和场景包一律传 `publish_mode=\"staged\"`"
+ },
+ {
+  "source": "复核:都显式传 `publish_mode=\"staged\"`",
+  "text": "返回里提示上线场景包的不照做"
+ },
+ {
+  "source": "复核:`otpe_manage(action=\"online\")`",
+  "text": "`otpe_manage(action=\"online\")` 只启用这条 TPE，照常做"
+ },
+ {
+  "source": "复核:进度在做的过程中发出，不攒到 ④",
+  "text": "进度在做的过程中发，不攒到 ④"
+ },
+ {
+  "source": "复核:进度在做的过程中发出，不攒到 ④",
+  "text": "③ 的最后一条进度也按 `agenticapp-stage-3-build` 第 4 步的时刻发"
+ },
+ {
+  "source": "复核:已按 2.3 发过 ③ 的最后一条进度",
+  "text": "开发者确认方案后，回复的第一段正文就是第一版进度：「【③ 制作 → 正在做】」"
+ },
+ {
+  "source": "复核:每个失败条目都按条目造出一次失败看表现，报告写明失败是怎么造",
+  "text": "PRD 里每个「做不成怎么办」，按条目造一次失败看页面表现，报告写明失败是怎么造出来的"
+ },
+ {
+  "source": "复核:工具列表里没有 `business_ui_stage` 时，",
+  "text": "工具列表里没有 `business_ui_stage`：把这三件事写进阶段文档和工单 checkpoint"
+ },
+ {
+  "source": "复核:Studio 下用 `studio_read_creatio",
+  "text": "| 接续 | 用 `studio_read_creation` 读开发文档"
+ },
+ {
+  "source": "复核:做到哪一段以 `workspace.json` 为准，没有工",
+  "text": "走到哪以 `workspace.json` 为准，没有工作区的从 ① 开始"
+ },
+ {
+  "source": "复核:Studio 下包括只有方案记录、没有 PRD 记录的",
+  "text": "只有方案记录、没有 PRD 记录的算没有 PRD"
+ },
+ {
+  "source": "复核:Studio 下按 PRD（`documentType=pr",
+  "text": "先补成 PRD 差异版按 `documentType=prd` 交，请开发者确认一次"
+ },
+ {
+  "source": "复核:G6 既没有 ④ 验收报告、也没有开发者确认上线或确认预览的",
+  "text": "接续时：阶段文档 G6 里没有 ④ 的验收报告的，算 ④ 没验收"
+ },
+ {
+  "source": "复核:算 ④ 未验收，接到 ④ 或 ⑤ 时按 ④ 验收",
+  "text": "算 ④ 没验收，先加载 `agenticapp-stage-4-acceptance` 验收"
+ },
+ {
+  "source": "复核:开发者此前在在线预览里确认过的 G6 结论照旧保留，不重测",
+  "text": "G6 里已有的结论照旧保留，不重测"
+ },
+ {
+  "source": "复核:开发者说「可以上线」后才上线",
+  "text": "部署成功就上线，验收后再部署也直接上线，不问"
+ },
+ {
+  "source": "复核:改好后再传一次",
+  "text": "先检查压缩包里的文件和路径，改好再传一次"
+ },
+ {
+  "source": "复核:第二次还失败的，不写 G7、不结单",
+  "text": "第二次还失败：不结单，把两次的报错原文告诉开发者，按入口「报错和平台问题」提交"
+ },
+ {
+  "source": "复核:见 [编排脚本.md](编排脚本.md)「文件产物」",
+  "text": "（[事件契约与文件产物.md](事件契约与文件产物.md)「文件产物」）"
+ },
+ {
+  "source": "main 7097179 FK-1382",
+  "text": "写着 `(skipped)` 的题是开发者点了「跳过·你来判断」，算他对这一题说「你看着办」"
+ },
+ {
+  "source": "main 7097179 FK-1382",
+  "text": "事实题照那里回「你定」的一条，下一轮再问一次"
+ },
+ {
+  "source": "main d8cd5b8 R-553",
+  "text": "被跳过不算答了，也不算同意，下一轮接着问"
+ },
+ {
+  "source": "main 5414960 D-3956",
+  "text": "冒泡里没人确认，平台自动走路线唯一的终态动作并结束"
+ },
+ {
+  "source": "main 0c11b7e D-3956",
+  "text": "`review_action_key` 只有场景包路线接受（新 SDK 应用不收），传了就按路线声明校验，不符会让冒泡失败"
+ },
+ {
+  "source": "FB-1411 预算不限",
+  "text": "花费上限题回「不限」「随便」「你看着办」：不算没有上限。按推荐值定成具体积分数"
+ },
+ {
+  "source": "FK-500 多业务归属",
+  "text": "合在一份里还是分开管；预算、内容、结果各归哪一条"
+ },
+ {
+  "source": "FK-474 FK-381 样式回退",
+  "text": "开发者确认过的页面样子（哪个页面、什么排法"
+ },
+ {
+  "source": "FK-1257 不对开发者说实际跑",
+  "text": "「冒泡」「桩」「部署」「本机」「本地」"
+ },
+ {
+  "source": "FB-1431 方向题不替他选",
+  "text": "开发者只回「是」「你说呢」「都行」都不算定"
+ },
+ {
+  "source": "I-398 别问了不代答事实题",
+  "text": "方向题和事实题这些只有他知道的事没答的，不替他编"
+ },
+ {
+  "source": "FK-1233.4 上限自报也说明",
+  "text": "开发者一开始就自己报了数字的不用再出题"
+ },
+ {
+  "source": "FK-1233.9 FK-1233.10 冲突验收",
+  "text": "时间类的按时段有没有重叠算，不只比开始时间是否相同"
+ },
+ {
+  "source": "FB-1411 第一次只跑一份",
+  "text": "第一次实际跑只跑一份最小的例子"
+ },
+ {
+  "source": "FB-1411 重跑前写根因",
+  "text": "写不出根因的不重跑，先查"
+ },
+ {
+  "source": "FK-1233.13 条目外也算未测",
+  "text": "条目之外的没验证的事，包括报告和交接里顺口说的「还不确定」，都列进「未测」并算进条数"
+ },
+ {
+  "source": "FK-1233.13 线上页面未测",
+  "text": "「在线预览里的页面我打不开」"
+ },
+ {
+  "source": "11-04 用户决定：确认减到三次",
+  "text": "方案（修订时是这次改动）确认前不放到在线预览；确认后到 ④ 直接放，不再问"
+ },
+ {
+  "source": "11-07 用户决定：确认减到两次",
+  "text": "一个应用要他确认两次：需求文档、方案"
+ },
+ {
+  "source": "11-04 用户决定：演示预览告知不等待",
+  "text": "「页面做好了，演示预览里能看，想改样子直接在上面改或告诉我，我接着往下做。」"
+ },
+ {
+  "source": "FK-1257 入口禁用词",
+  "text": "写每条消息时都不说「冒泡」「桩」「部署」「本机」「本地」「在我机器上」「这台机器」「端口」「容器」「无头浏览器」「后端」「路由」「工单」「施工」「彩排」「演练」「FA」「TPE」"
+ },
+ {
+  "source": "I-398 笼统的话不算确认",
+  "text": "「行」「嗯」「看着行吧」「差不多」「先这样」「你看着办」「别问了，直接做」，说清确认后会发生什么，再问一次"
+ },
+ {
+  "source": "FB-1375 新路花费查法",
+  "text": "新 SDK 应用用带 `business_id` 的 `wait` / `status` 读本次执行的 `cost_credits`，**禁止**拿按 `project_id` 查到的隐藏项目累计当本次"
+ },
+ {
+  "source": "Studio 现状 11-04",
+  "text": "「演示预览」操作的是工作区里当前真实的工程"
+ },
+ {
+  "source": "FK-1478 截图失败的说法",
+  "text": "不说「不影响使用」「只影响缩略图」"
+ },
+ {
+  "source": "11-07 用户决定：只在必须问时问",
+  "text": "只在必须问开发者时停下问：缺只有他能给的东西（授权、密钥、业务事实）"
+ },
+ {
+  "source": "11-07 用户决定：开发者只看三样",
+  "text": "② 确认后开发者只看制作进度、验收报告和两个预览（Studio「在线预览」、发布管理页「预览」）"
+ },
+ {
+  "source": "11-07 用户决定：结单两支",
+  "text": "直接收尾，从第 2 步做到结单，不等回话"
+ },
+ {
+  "source": "11-07 用户决定：结单两支",
+  "text": "先做第 7 步保存到云端，再问"
+ },
+ {
+  "source": "11-07 用户决定：返工不回滚",
+  "text": "已上线的版本留着，不回滚、不下线"
+ },
+ {
+  "source": "11-07 用户决定：属主有待处理提请不等回答",
+  "text": "告诉他谁提请了什么，不等回答，接着上线自己这一版"
+ },
+ {
+  "source": "11-07 用户决定：收尾后修改，已结单工单不用续作参数",
+  "text": "已结单的 write 工单不能再写，也不接受这个参数，新建 write 工单，在 `task_description` 写明承接自哪张工单"
+ },
+ {
+  "source": "D-4036 新路执行编号作幂等键",
+  "text": "幂等键由三段拼成：`ctx.business_id`（本次执行编号，重试时不变）、本步标识（脚本里写死的步骤名或消息类型，同一应用内不重复）、本步要发送的对象"
+ },
+ {
+  "source": "D-4036 同一步给同一对象发多条",
+  "text": "再拼上这条消息对应的业务记录编号（如订单号），否则后几条会被当成重复跳过"
+ },
+ {
+  "source": "D-4036 修正路线幂等键",
+  "text": "修正路线与上一趟同属一次执行，再拼上 `ctx.previous_delivery` 的 `previous_runtime_id`"
+ },
+ {
+  "source": "D-4036 单条冒泡与旧应用没有执行编号",
+  "text": "单条冒泡里 `ctx.business_id` 是 `None`，幂等键写在 `if not ctx.dry_run:` 里拼；旧应用里它也是 `None`，不能用它作幂等键"
+ },
+ {
+  "source": "D-4036 跨执行冲突",
+  "text": "不同执行的 `ctx.business_id` 不同，跨执行的冲突不能只靠它"
+ },
+ {
+  "source": "D-4036 新路花费读本次执行",
+  "text": "新 SDK 应用读本次执行的，**禁止**把项目累计当本次"
+ },
+ {
+  "source": "D-4036 隐藏项目累计不当工单花费",
+  "text": "隐藏项目可能被多张工单、在线预览和自动化共用，**禁止**当本次花费，也**禁止**当工单花费"
+ },
+ {
+  "source": "D-4036 新路分不到单步",
+  "text": "整次执行只有这一个花钱的步骤时用整次执行的数，否则保留估算并注明分不到单步"
+ },
+ {
+  "source": "T-5072 cost_excludes 来源写法",
+  "text": "「至少 N 积分（不含 X）」，X 写 `cost_excludes` 里列出的来源"
+ },
+ {
+  "source": "T-5072 合计有不完整读数写至少 N",
+  "text": "合计（「这一阶段」「一共」）里只要有一条读数 `cost_partial=true`、带不含的来源或没读到，就写「至少 N」"
+ },
+ {
+  "source": "T-5072 重读不到用当时读数，没读到不算 0",
+  "text": "重读不到的运行（例如旧应用冒泡的隐藏验证项目 2 小时后被回收）用当时记下的读数；当时也没读到的才算「没读到」，不算 0"
+ },
+ {
+  "source": "T-5072 和上限比用下限 N，沙盒多看步数和时长",
+  "text": "累计 N 只加读到的数，和上限比（含 80% 停）也用这个 N；新 SDK 应用的 N 不含沙盒，沙盒用得多的应用同时看步数和运行时长止损"
+ },
+ {
+  "source": "T-5072 冒泡止损新路盯本次执行费用",
+  "text": "积分新 SDK 应用盯冒泡结果里本次执行的 `cost_credits`，读不到就看步数和运行时长"
+ },
+ {
+  "source": "D-4030 授权候选先挂路线再查",
+  "text": "必须先用 `business_ui_manage(action=\"update\", workflow_orchestration=..., tpe_ids=[...])` 挂好路线再查候选，不需要部署"
+ },
+ {
+  "source": "D-4030 来源缺失按 metadata 处理",
+  "text": "`metadata.reason=authorization_source_missing`，表示版本还没挂路线（也没挂场景包），按 `metadata.next_action` 先挂再查，禁止当成授权策略变化去重读草稿"
+ },
+ {
+  "source": "R-485/T-4959",
+  "text": "信息架构，三项各带一句业务理由：导航项与顺序（按使用者完成业务的顺序）、主工作区（打开应用先看到的那一块）、信息优先级（同一屏里先看什么）"
+ },
+ {
+  "source": "R-485/T-4959",
+  "text": "说「你看着办」或没说过的，由你按这个业务的使用顺序和每天最先要处理的事写出来，不写「按默认」"
+ },
+ {
+  "source": "R-485/T-4959",
+  "text": "先按信息架构定导航、主工作区和信息优先级，再选预置件"
+ },
+ {
+  "source": "R-485/T-4959",
+  "text": "导航、主工作区、信息优先级和方案信息架构一致，逐项写得出为什么符合这个业务"
+ },
+ {
+  "source": "R-485/T-4959",
+  "text": "只换了品牌色和圆角、或沿用起始应用布局又说不出业务理由的，记「没通过」"
+ },
+ {
+  "source": "R-679 返回阻断只结束本节点",
+  "text": "返回阻断只结束本节点，下游照常派发"
+ },
+ {
+  "source": "R-679 要停整条路线按契约业务阻断写法",
+  "text": "要停整条路线，按[多编排型TPE契约-入口映射交互与介入.md](多编排型TPE契约-入口映射交互与介入.md)「业务阻断怎么写」选交接或抛错"
+ },
+ {
+  "source": "R-679 新 SDK 应用只能脚本抛错",
+  "text": "旧流程用成功后交接或脚本抛错，新 SDK 应用只能脚本抛错"
+ },
+ {
+  "source": "R-679 写库失败只结束本节点",
+  "text": "这只结束本节点，多节点路线里下游照常派发；要停整条路线就抛错"
+ },
+ {
+  "source": "R-679 门禁先裁业务状态",
+  "text": "上游 FA 返回非成功状态（如 `needs_input`、`blocked`）时，脚本内不再往下做，也不原样重试"
+ },
+ {
+  "source": "R-679 跳过规则已不再支持",
+  "text": "路线保存或上线被拒，提示中途表单的跳过规则已不再支持"
+ },
+ {
+  "source": "I-866 shell 文本按内容取行",
+  "text": "只要文本时按内容取需要的行，不按位置切（不写 `lines[1:-1]`、`len(lines)-2`），外壳行也不算坏数据"
+ },
+ {
+  "source": "I-866 命令输出末尾必须有换行",
+  "text": "命令输出末尾必须有换行，声明 `_output` 时也一样"
+ },
+ {
+  "source": "I-866 失败时保住最后一行",
+  "text": "确实要保住失败时的最后一行，写 `( 命令 ); rc=$?; echo; (exit $rc)`，不能写 `exit $rc`"
+ },
+ {
+  "source": "FB-1594 新 SDK 路线冒泡可带文件",
+  "text": "入口要读文件时带 `workspace_files`（先 `file_to_url(purpose=\"tool_test_fixture\")` 上传，`formdata_pointer` 指向 `workflow_input` 里的空文件字段）"
+ },
+ {
+  "source": "FB-1825 带文件冒泡结果不明不重发",
+  "text": "带文件发起失败或超时（回执 `next_action=\"ask_developer\"`）时不要直接重发"
+ },
+ {
+  "source": "D-4150 新建反馈标题与五段",
+  "text": "`content` 固定五段：`## 要完成什么`（业务目标）、`## 操作经过`（在哪个应用或页面做了哪些操作）、`## 看到什么`（现象，报错原文放这里）、`## 预期`（本来应该怎样）、`## 影响`（卡住了什么、影响谁）"
+ },
+ {
+  "source": "D-4150 附件传不过去整次失败",
+  "text": "任何一项传不过去，整次提交失败（`ATTACHMENT_FAILED`），反馈没有写入：修正后原样重试，不改成只传正文"
+ },
+ {
+  "source": "FK-2001 新 SDK 真跑 verify 传 BIZ- 执行号",
+  "text": "新 SDK 应用的实际跑改传这次实际跑返回的执行号：`verify(tpe_id, run_id=<business_id，BIZ- 开头>)`，只按这一次执行判定"
+ },
+ {
+  "source": "FK-2001 WRT- 运行号换成所属 BIZ- 号",
+  "text": "`WRT-` 运行号定位不了执行，传它所属的 `BIZ-` 号"
+ },
+ {
+  "source": "FK-2001 needs_bubble 不说明脚本有问题",
+  "text": "实际跑执行还在运行或停在交付审阅时同样返回 `needs_bubble`，不说明脚本有问题"
+ },
+ {
+  "source": "FK-2001 ④ 真跑补证据传 business_id",
+  "text": "（新 SDK 应用传这次实际跑的 `business_id`：`verify(tpe_id, run_id=<BIZ- 号>)`）"
+ },
+ {
+  "source": "FK-2001 ④ 执行没结束先处理审阅再复核",
+  "text": "停在交付审阅时返回 `needs_bubble`、`next_action=wait`，这说明执行没有结束，不说明脚本有问题"
+ },
+ {
+  "source": "FK-2001 ④ 证据表 business_id（原 4-试用验收.md 第 1 处）",
+  "text": "这次实际跑的 `project_id`（新 SDK 应用为 `business_id`）、`workflow_trace` 里对应步骤的摘要"
+ },
+ {
+  "source": "FK-2001 新 SDK 路线对照表验收证据",
+  "text": "| 验收报告的运行证据 | `otpe_manage(action=\"verify\", tpe_id, project_id)` | 传这次实际跑的执行号：`verify(tpe_id, run_id=<business_id>)`"
+ },
+ {
+  "source": "D-4133 迁移细节以插件自带的迁移指南为准",
+  "text": "重新拉脚手架拿到 SDK 5 模板时由 `agenticapp-tool-workspace` 的 [升级任务.md](../../agenticapp-tool-workspace/references/升级任务.md) 执行，动作和测试以插件自带的迁移指南为准"
+ },
+ {
+  "source": "D-4133 换 5.0 模板后按指南 when 判断",
+  "text": "是否适用由你按每份指南的 `applies_to.when` 自己判断"
+ },
+ {
+  "source": "D-4133 版本错误：修 bug 照常继续",
+  "text": "本次不升级、不手工迁移，按平台问题报；修 bug 照常继续"
+ },
+ {
+  "source": "FK-2017 反馈关闭后先读处理结论",
+  "text": "先读 `query_dev_feedback` 返回的 `conclusions`"
+ },
+ {
+  "source": "FK-2017 只凭状态不能说已解决",
+  "text": "只凭状态不能说已解决"
+ },
+ {
+  "source": "FK-2017 核对是否用上修复",
+  "text": "核对本应用是否已用上修复"
+ },
+ {
+  "source": "FK-2017 汇报四件事分开写",
+  "text": "反馈是否已关闭、修复是否已发布、本应用是否已用上修复、原来失败的场景是否已验证通过"
+ },
+ {
+  "source": "FK-2017 关闭后不追加，新提 blocked 反馈",
+  "text": "新提一条 `blocking=\"blocked\"` 的反馈，按上面「怎么报」第 2 条带 `title`、`attribution` 和五段正文，正文写原反馈编号、它的处理结论和这次复现的证据"
+ },
+ {
+  "source": "FK-2017 升级 Skill 走建单被拒的方法",
+  "text": "要求升级本 Skill 的，按下面「建工单被拒」`SCENE_SKILL_UPGRADE_REQUIRED` 的方法升级 Skill，不做脚手架升级"
+ },
+ {
+  "source": "FK-2050 真跑付费工具前读预览付费同意",
+  "text": "真跑含付费工具的路线前，先调 `business_ui_manage(action=\"consent_status\", business_ui_id)` 读开发者本人在预览范围的付费同意状态（只读）"
+ },
+ {
+  "source": "FK-2050 点同意不算代测",
+  "text": "点同意是开发者本人的授权动作，不算入口红线里的「不代测」"
+ },
+ {
+  "source": "FK-2050 未测原因",
+  "text": "「预览还没有付费同意：」加 `pending_tools` 里的工具名"
+ },
+ {
+  "source": "FK-2051 db() 按 column_types 解码 JSON 列",
+  "text": "json_cols = {c for c, t in zip(cols, types) if t in (\"JSON\", \"JSONB\")}"
+ },
+ {
+  "source": "FK-2051 不经 db() 读 JSON 列先 json.loads",
+  "text": "否则报 `'str' object has no attribute 'get'`"
+ },
+ {
+  "source": "FK-2051 输出目录直接接文件名",
+  "text": "out = f\"{ctx.output_dir}结果.xlsx\""
+ },
+ {
+  "source": "FK-2051 输出目录先去掉末尾斜杠",
+  "text": "out = ctx.output_dir.rstrip(\"/\") + \"/结果.xlsx\""
+ },
+ {
+  "source": "FK-2051 脚本自判失败带错误码和预期、实际值",
+  "text": "必须带错误码和预期、实际值"
+ }
+]
