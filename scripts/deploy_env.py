@@ -142,30 +142,11 @@ def _checkout_pinned_release(pinned: str) -> tuple[str, str, bool]:
     return version, pinned, False
 
 
-def prepare_release_branch(branch: str, codeup_url: str) -> tuple[str, str, bool]:
-    """锁定当天 release 分支的最新提交，供发版流水线直接部署 PRE。
-
-    release 分支不切生产版本、不打 tag、不推 main；部署阶段会走非 main 的环境渠道，
-    因此只登记本次 PRE 版本且不抬版本线。生产阶段仍由 ``deploy`` 的非 main 门禁拒绝。
-    """
-    if not re.fullmatch(r"release/\d{4}-\d{2}-\d{2}-pm", branch):
-        raise DeployError("发版流水线只运行 main 或 release/YYYY-MM-DD-pm")
-    remote_ref = f"refs/remotes/codeup/{branch}"
-    git("fetch", "-q", codeup_url, f"+refs/heads/{branch}:{remote_ref}")
-    sha = git("rev-parse", "HEAD")
-    if sha != git("rev-parse", remote_ref):
-        raise DeployError(f"本次检出的不是 Codeup {branch} 最新提交，请重新运行流水线")
-    return manifest_version(REPO_ROOT), sha, False
-
-
 def release_only(branch: str) -> dict[str, str]:
-    """发版流水线「准备发版」：锁定 main 发布提交，或当天 release 的 PRE 来源提交。"""
-    branch = branch.removeprefix("refs/heads/").strip()
-    codeup_url = required_env("CODEUP_PUSH_URL")
-    if branch == "main":
-        version, sha, released = ensure_main_release(codeup_url)
-    else:
-        version, sha, released = prepare_release_branch(branch, codeup_url)
+    """发版流水线「准备发版」：在 main 最新提交上发版或沿用，把发布提交写进 Flow 变量 USER_COMMIT。"""
+    if branch.removeprefix("refs/heads/").strip() != "main":
+        raise DeployError("发版流水线只运行 main")
+    version, sha, released = ensure_main_release(required_env("CODEUP_PUSH_URL"))
     flow_env = os.environ.get("FLOW_ENV", "").strip()
     if flow_env:
         with open(flow_env, "a", encoding="utf-8") as handle:
@@ -314,7 +295,7 @@ def main() -> int:
     parser.add_argument("--branch", default=os.environ.get("CI_COMMIT_REF_NAME", ""), help="部署的 Codeup 分支")
     parser.add_argument("--build-number", type=int, default=int(os.environ.get("BUILD_NUMBER") or 0))
     parser.add_argument("--release-only", action="store_true",
-                        help="准备 main 发布提交，或锁定当天 release 分支的 PRE 来源提交，并写入 Flow 变量")
+                        help="只在 main 上发版或沿用版本，并把发布提交写进 Flow 变量 USER_COMMIT（发版流水线第一步）")
     args = parser.parse_args()
     if args.release_only:
         try:
