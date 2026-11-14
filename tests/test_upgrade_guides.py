@@ -83,6 +83,13 @@ def test_shipped_guides_are_valid_and_cover_studio_migration():
     assert (GUIDES / "README.md").is_file()
 
 
+def test_storage_diagnostics_guide_supersedes_interaction_evidence():
+    result = ug.candidates(GUIDES, [])
+    by_did = {item["did"]: item for item in result["guides"]}
+    assert by_did["D-4267"]["replaces"] == ["D-4009", "D-4139"]
+    assert {"D-4009", "D-4139"}.isdisjoint(by_did)
+
+
 def test_d3962_manual_edit_ban_only_applies_after_upgrade_script():
     """陈汶君 !120 评审：「不要手工改」只管跑了升级脚本的；旧路手工迁移要拷贝固定层清单、按第 11 步补版本记录。"""
     _, headers = ug.load_guides(GUIDES)
@@ -96,10 +103,10 @@ def test_d3962_manual_edit_ban_only_applies_after_upgrade_script():
 def test_shipped_guides_are_in_release_manifest_and_both_platforms():
     manifest = json.loads((ROOT / "skill-release.json").read_text(encoding="utf-8"))
     for path in sorted(GUIDES.iterdir()):
-        relative = f"upgrade-guides/{path.name}"
+        relative = f"business-app-creator/upgrade-guides/{path.name}"
         assert relative in manifest["source_files"] and relative in manifest["checksums"], relative
         for platform in ("claude-code", "codex"):
-            copy = ROOT / platform / "skills" / "business-app-creator" / relative
+            copy = ROOT / platform / "skills" / relative
             assert copy.read_bytes() == path.read_bytes(), (platform, relative)
     for platform in ("claude-code", "codex"):
         copy = ROOT / platform / "skills" / "business-app-creator" / "scripts" / "upgrade_guides.py"
@@ -388,10 +395,9 @@ def test_invalid_guide_blocks_release_check(tmp_path):
         shutil.copytree(ROOT / name, tmp_path / name)
     for name in ("skill-release.json", "pyproject.toml", "uv.lock", "README.md"):
         shutil.copy2(ROOT / name, tmp_path / name)
-    skill_root = tmp_path / "skills" / "business-app-creator"
-    (skill_root / "upgrade-guides" / "D-9999.md").write_bytes(guide("D-9998"))
+    (tmp_path / "skills" / "business-app-creator" / "upgrade-guides" / "D-9999.md").write_bytes(guide("D-9998"))
     with pytest.raises(release.ReleaseError, match="升级指南不合规"):
-        release.check_release(skill_root)
+        release.check_release(tmp_path / "skills" / "agenticapp-creator")
 
 
 # ==================== 只取适用 SDK 5.x 的指南（A3） ====================

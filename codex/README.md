@@ -2,7 +2,7 @@
 
 把一段业务流程做成 GoalfyMax 上可以直接交给用户用的智能应用，并诊断、优化、迭代已有的智能应用。智能应用是主要产物，场景包是它下面的能力资产。
 
-本插件同时安装经过审计的 `business-app-creator` MCP 和同名 Skill，连接生产环境：
+本插件同时安装经过审计的 `business-app-creator` MCP 和入口 Skill `agenticapp-creator`，连接生产环境：
 
 `https://business-app-creator-mcp.qa.goalfyai.cn/mcp`
 
@@ -76,7 +76,7 @@ Agent 也不得在后续回复中复述。
 
 在新会话中确认：
 
-1. `business-app-creator` 插件与 Skill 已加载
+1. `business-app-creator` 插件与入口 Skill `agenticapp-creator` 已加载
 2. `business-app-creator` MCP 工具已就绪（如 `task_manager`、`list_assets`）
 3. 执行一次只读请求，例如「列出我能访问的场景包」，能正常返回
 

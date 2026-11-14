@@ -1,8 +1,8 @@
 # Business App Creator Skills
 
-本仓库提供制作和维护 GoalfyMax 智能应用的统一 Skill `business-app-creator` 与 MCP 连接配置。
+本仓库提供制作和维护 GoalfyMax 智能应用的一组 Skill（入口 `agenticapp-creator` 加 19 个平级 Skill，随插件 `business-app-creator` 安装）与 MCP 连接配置。
 
-制作入口、对象关系和合同来源见 [Skill](skills/business-app-creator/SKILL.md)，贡献与生成规则见 [CONTRIBUTING](CONTRIBUTING.md)。
+制作入口、对象关系和合同来源见 [Skill](skills/agenticapp-creator/SKILL.md)，贡献与生成规则见 [CONTRIBUTING](CONTRIBUTING.md)。
 
 ## 支持的平台
 
@@ -39,7 +39,7 @@ Agent 会创建只读工单，逐层检查提示词、工具契约、编排配�
 ## 这个仓库包含什么
 
 ```
-skills/         business-app-creator/ 是唯一源：入口、五段制作流程、任务路由与按需参考
+skills/         唯一源：入口 agenticapp-creator/ 与五段、任务、平台对象等 19 个平级 Skill 目录
 claude-code/    Claude Code 插件目录：安装文档 + Skill 副本
 codex/          Codex 插件目录：安装文档 + Skill 副本
 docs/           各平台快速上手
@@ -79,3 +79,18 @@ scripts/        构建与发布工具
 ## 许可
 
 [Apache License 2.0](LICENSE)。使用 GoalfyMax 服务另受其服务条款约束。
+
+## 流水线 OA 登记
+
+部署成功后，`scripts/notify_oa.py` 单独登记本次运行。OA 超时只把登记记为待补，
+不会把已经成功的物理部署改成失败；流水线输出 `oa_registration`，原运行回执保存在
+`${PROJECT_DIR}/.oa-release-callbacks/`。流水线工作区可能被回收，应保存待补回执供追查。
+
+需要补登记时，在包含本脚本的检出中使用回执里的原流水线、运行号和阶段执行：
+
+```bash
+PIPELINE_ID=5333330 BUILD_NUMBER=47 python3 scripts/notify_oa.py --stage pre
+```
+
+此命令只重发登记事件，不运行部署。`pending` 表示尚未登记成功，应按原因核对 OA；
+`registered` 表示已登记或原事件已处理。实际流水线仍需采用更新后的 YAML 才会生效。

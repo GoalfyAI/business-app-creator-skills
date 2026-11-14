@@ -103,7 +103,7 @@ MCP 连接只有重启后才生效，重启前无法验证。**逐字输出**下
 
 用户确认重启后，**由你自己验证**，不要让用户去检查任何东西：
 
-1. 确认 `business-app-creator` 插件与 Skill 已加载
+1. 确认 `business-app-creator` 插件与它带的入口 Skill `agenticapp-creator` 已加载
 2. 确认你的工具列表里有 `business-app-creator` 的 MCP 工具（如 `task_manager`、`list_assets`）
 3. 用 `list_assets` 做一次只读请求作为自检——**禁止**为了测试连通性去创建、修改或删除任何资产
 
@@ -161,7 +161,7 @@ claude plugin marketplace add "https://github.com/GoalfyAI/business-app-creator-
 
 ### 第 2 步：确认新版本已生效
 
-搜索已安装的 `skills/business-app-creator/SKILL.md`，从 description 读出 `[skill-version:...]`。
+搜索已安装的 `skills/agenticapp-creator/SKILL.md`（入口 Skill 以前叫 `business-app-creator`，升级后只看新名字），从 description 读出 `[skill-version:...]`。
 **不要凭记忆拼装安装路径**——路径里有连续同名层级和中间版本目录。命中多份时取版本目录
 最高或最近修改的那份。
 
