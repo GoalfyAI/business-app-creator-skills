@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20261030-e23fde",
   "skill_name": "agenticapp-creator",
-  "version": "v20261114-c7d142",
-  "package_version": "2.0.54-pre.51",
+  "version": "v20261114-437a3e",
+  "package_version": "2.0.54-pre.52",
   "mcp_endpoint": "https://business-app-creator-mcp.pre.goalfyai.cn/mcp",
-  "released_at": "2026-11-14T06:56:55Z",
-  "update_reason": "PRE 版，来自 release/2026-11-14-pm 5c164acc0（build 51）",
+  "released_at": "2026-11-14T07:51:02Z",
+  "update_reason": "PRE 版，来自 release/2026-11-14-pm d71ae6c4b（build 52）",
   "source_files": [
     "agenticapp-creator/SKILL.md",
     "agenticapp-creator/agents/openai.yaml",
@@ -185,11 +185,12 @@
     "business-app-creator/upgrade-guides/D-4155.md",
     "business-app-creator/upgrade-guides/D-4240.md",
     "business-app-creator/upgrade-guides/D-4267.md",
+    "business-app-creator/upgrade-guides/D-4290.md",
     "business-app-creator/upgrade-guides/README.md",
     "business-app-creator/upgrade-guides/schema.json"
   ],
   "checksums": {
-    "agenticapp-creator/SKILL.md": "dabb0c9df72f8fc2678f096d8eddc9b016cd3582d870204f771feb54e4b1a0cb",
+    "agenticapp-creator/SKILL.md": "89787da305f16f94df9ce729f82eced3fc5ff08fdeed006db9694cef0b3b2ede",
     "agenticapp-creator/agents/openai.yaml": "917bcbe5180619545f063f18a1f90df917fc02bf44ac5accc5d903f8244d1654",
     "agenticapp-creator/references/平台对象与用词.md": "2c46747200bfb0670151a12dd407cc1873c4ae5d485aab309d4f2afa2fffdda9",
     "agenticapp-creator/references/平台问题怎么报.md": "6d4c1df2434af3403968c7255b9011176e96926cf8b671c87f454ee36f9ff0d3",
@@ -367,6 +368,7 @@
     "business-app-creator/upgrade-guides/D-4155.md": "1aa8a4cd804375b308977d53b7c457f8c5488c77dc833790daa64eb18a6d64c3",
     "business-app-creator/upgrade-guides/D-4240.md": "e2e959603ce63b896ef9e2f2485988503691ce5207bf6eacf429f83eb8f7a04f",
     "business-app-creator/upgrade-guides/D-4267.md": "7c3c8ce5bcf2d386f2069d5133ca43111da314bcf32727f5844a83c173af259c",
+    "business-app-creator/upgrade-guides/D-4290.md": "58f56c8ea8b30fd03f2f419c690533849dcad8d2237abbee1265be6897970e3c",
     "business-app-creator/upgrade-guides/README.md": "2336118e4b91e9194bbc5d2c81ab0402aa0f51591387ee46af840e651d0afedc",
     "business-app-creator/upgrade-guides/schema.json": "adf96530163cc804df7ac9ac4d77b1008447029f08a624be90181f7309dab7e2"
   }
