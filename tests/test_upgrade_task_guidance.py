@@ -468,3 +468,36 @@ def test_v565_round14_wrap_up_fills_version_record_when_script_skipped(read_skil
     assert "应用根有目标模板的 `scaffold-fixed-layer.json`" in wrap_up
     assert "从目标模板根目录拷贝 `scaffold-fixed-layer.json`" in wrap_up
     assert "`upgrades` 最后一条不是本次 `from`→`to` 时才追加" in wrap_up
+
+
+def test_d4245_identify_app_before_upgrade(read_skill):
+    """D-4245（R-756 任务 2）：《升级》开始前先报当前工程是哪个应用，再按四种情况分流；原 1～5 条编号不变。"""
+    upgrade = read_skill(UPGRADE)
+    prepare = upgrade.split("## 先读什么", 1)[1].split("## 从哪一段进", 1)[0]
+    gate, numbered = prepare.split("\n1. 工单：", 1)
+    assert gate.strip().startswith("**前置判断：先认清当前工程是哪个应用。**")
+    assert not any(line[:1].isdigit() for line in gate.strip().splitlines())
+    for number in range(2, 6):
+        assert f"\n{number}. " in numbered, number
+    assert "5. 没做完的升级与中断后接续" in numbered
+    for fact in (
+        "先按本节第 5 条处理没做完的升级，再做下面的判断",
+        "读应用根的 `app.json`（`id`、名称）和 `WORKSPACE.md` 的 `business_ui_id`",
+        "「当前工程：<名称>，平台编号 <编号>」；没有编号就说还没建成平台应用",
+        "应用根是 Git 根（`git rev-parse --show-toplevel` 等于应用根）",
+        "除模板基线提交（「chore(scaffold): 模板基线」，作者 `goalfy-agent`）外，其余提交改动的文件都只在 `scaffold-release.json` 和 `docs/upgrade/` 下",
+        "开工记录、以前升级的失败记录都算非业务提交",
+        "`git status --porcelain` 为空",
+        "已是平台应用、本地有代码：照常执行本任务",
+        "只说明当前工程还没开工、不用升级，要用最新模板就在 Studio 新建一个工程",
+        "不改任何文件，不写升级记录，不回滚",
+        "从闸门进来的（开工时 `download_template` 返回 `upgrade_required=true`、部署报 `SCAFFOLD_UPGRADE_REQUIRED`）不适用这一条",
+        "没有平台编号，但已经有业务代码：照常升级，第 6 步的规则不变",
+        "「要先建好应用身份才能完成这次升级」，不当作平台故障",
+        '先用 `business_ui_manage(action="list")` 查开发者名下的应用、对上名称',
+        "查不到就问是哪个",
+        "请开发者在 Studio 打开那个应用的工程，本地没有它的代码时先从平台取回线上版本再升级",
+        "**禁止**在当前工程里替它升级",
+    ):
+        assert fact in gate, fact
+    assert "自动用最新模板" not in upgrade

@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20261030-e23fde",
   "skill_name": "agenticapp-creator",
-  "version": "v20261114-437a3e",
-  "package_version": "2.0.54-pre.52",
+  "version": "v20261114-29318f",
+  "package_version": "2.0.54-pre.53",
   "mcp_endpoint": "https://business-app-creator-mcp.pre.goalfyai.cn/mcp",
-  "released_at": "2026-11-14T07:51:02Z",
-  "update_reason": "PRE 版，来自 release/2026-11-14-pm d71ae6c4b（build 52）",
+  "released_at": "2026-11-14T08:16:18Z",
+  "update_reason": "PRE 版，来自 release/2026-11-14-pm e280312af（build 53）",
   "source_files": [
     "agenticapp-creator/SKILL.md",
     "agenticapp-creator/agents/openai.yaml",
@@ -190,7 +190,7 @@
     "business-app-creator/upgrade-guides/schema.json"
   ],
   "checksums": {
-    "agenticapp-creator/SKILL.md": "89787da305f16f94df9ce729f82eced3fc5ff08fdeed006db9694cef0b3b2ede",
+    "agenticapp-creator/SKILL.md": "66dae5c35c7c35789e2d83ba29196329d54c33922288e02c927dfe6c64cc5d74",
     "agenticapp-creator/agents/openai.yaml": "917bcbe5180619545f063f18a1f90df917fc02bf44ac5accc5d903f8244d1654",
     "agenticapp-creator/references/平台对象与用词.md": "2c46747200bfb0670151a12dd407cc1873c4ae5d485aab309d4f2afa2fffdda9",
     "agenticapp-creator/references/平台问题怎么报.md": "6d4c1df2434af3403968c7255b9011176e96926cf8b671c87f454ee36f9ff0d3",
@@ -346,7 +346,7 @@
     "agenticapp-tool-workspace/references/三件套与阶段标记.md": "1777ab2bda7546c376896edd5ca06e28596b1fd6d86a5dd884a219a4c44b375d",
     "agenticapp-tool-workspace/references/云端保存与换机.md": "78a1eea8878cbe3cfe2ec737a58bfc716daddc68607eaa559d6d9882c63c0ae4",
     "agenticapp-tool-workspace/references/初始化与接续细则.md": "f8a8310f23f375a7265961ddcda4728029d1ff56dd3b00ded867f077bad368b8",
-    "agenticapp-tool-workspace/references/升级任务.md": "fc8600e06c3aab1083f6ac5331cddf5c7e1a7867269f4cb58d0108349688ef31",
+    "agenticapp-tool-workspace/references/升级任务.md": "2055c72b67b2096bc6c7c51c512379b43411ce1d034d821feff66bbb1ad0fd5b",
     "agenticapp-tool-workspace/references/升级手册模板.md": "67ddcf2b7200af2d97428ac88dfd2b64f8d09bdfe356214118b614483f203577",
     "agenticapp-tool-workspace/references/命令行宿主.md": "99c2f98fc5bc283960726232622fef0467e7691ffb5d4dca920cd9f910d54bfe",
     "agenticapp-tool-workspace/references/方案页怎么改.md": "cc14c19601f1b3ac610cc8f6cad72892155995abe60f3b9f0ca5a17e9bbcd450",
