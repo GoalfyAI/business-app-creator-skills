@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20261030-e23fde",
   "skill_name": "agenticapp-creator",
-  "version": "v20261114-cecfb0",
-  "package_version": "2.0.54-pre.50",
+  "version": "v20261114-c7d142",
+  "package_version": "2.0.54-pre.51",
   "mcp_endpoint": "https://business-app-creator-mcp.pre.goalfyai.cn/mcp",
-  "released_at": "2026-11-14T06:31:09Z",
-  "update_reason": "PRE 版，来自 release/2026-11-14-pm 5c164acc0（build 50）",
+  "released_at": "2026-11-14T06:56:55Z",
+  "update_reason": "PRE 版，来自 release/2026-11-14-pm 5c164acc0（build 51）",
   "source_files": [
     "agenticapp-creator/SKILL.md",
     "agenticapp-creator/agents/openai.yaml",
@@ -189,7 +189,7 @@
     "business-app-creator/upgrade-guides/schema.json"
   ],
   "checksums": {
-    "agenticapp-creator/SKILL.md": "4cc073ffc07ccd511527919d98f45ff4d9e5adb5e53f8e443e04c0bc2a505529",
+    "agenticapp-creator/SKILL.md": "dabb0c9df72f8fc2678f096d8eddc9b016cd3582d870204f771feb54e4b1a0cb",
     "agenticapp-creator/agents/openai.yaml": "917bcbe5180619545f063f18a1f90df917fc02bf44ac5accc5d903f8244d1654",
     "agenticapp-creator/references/平台对象与用词.md": "2c46747200bfb0670151a12dd407cc1873c4ae5d485aab309d4f2afa2fffdda9",
     "agenticapp-creator/references/平台问题怎么报.md": "6d4c1df2434af3403968c7255b9011176e96926cf8b671c87f454ee36f9ff0d3",
