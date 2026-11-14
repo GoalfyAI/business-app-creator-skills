@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20261030-e23fde",
   "skill_name": "agenticapp-creator",
-  "version": "v20261114-1e6ea4",
-  "package_version": "2.0.54-qa.42",
+  "version": "v20261114-7cd693",
+  "package_version": "2.0.54-qa.43",
   "mcp_endpoint": "https://business-app-creator-mcp.qa.goalfyai.cn/mcp",
-  "released_at": "2026-11-14T06:50:53Z",
-  "update_reason": "QA 版，来自 feat/T5153-FB1411-四处条文/main 8e80293e9（build 42）",
+  "released_at": "2026-11-14T09:34:47Z",
+  "update_reason": "QA 版，来自 feat/T5153-FB1411-四处条文/main 506688bbc（build 43）",
   "source_files": [
     "agenticapp-creator/SKILL.md",
     "agenticapp-creator/agents/openai.yaml",
@@ -188,9 +188,9 @@
     "business-app-creator/upgrade-guides/schema.json"
   ],
   "checksums": {
-    "agenticapp-creator/SKILL.md": "2b3f771935ca45091634a473c9da1c13e19b16c4f246fc23cc764213a62cd904",
+    "agenticapp-creator/SKILL.md": "b1fb7e1c47f5ee2b9ecfb8a5ea4121debcced26cb2a9b83da14676528704b152",
     "agenticapp-creator/agents/openai.yaml": "40708751e0ec46463910ad433f198d9647de99e0ddca0e58c02a281b08b3501c",
-    "agenticapp-creator/references/平台对象与用词.md": "2e79de62b88016477be516d89ae006edb8cf6c8d3f8b80cc5fda191fbbdaa4ba",
+    "agenticapp-creator/references/平台对象与用词.md": "0613b42ee68cc4873c3b910e8124528b3664e28fe0c3876469286285e75fa78d",
     "agenticapp-creator/references/平台问题怎么报.md": "6d4c1df2434af3403968c7255b9011176e96926cf8b671c87f454ee36f9ff0d3",
     "agenticapp-creator/references/开工细则.md": "e62da4e4772f66c6bcf29d79cf06f66585932e34dd49b8d17c3c1805301051c8",
     "agenticapp-creator/references/提问与交接.md": "60c831818af21f2d9cec483ef239e3e13a7454525ae0454c90e5ece74b57d3ad",
@@ -338,7 +338,7 @@
     "agenticapp-tool-workflow/references/编排示例-端到端-应用与验收.md": "b6b9e63b171c3d06ff87da105cc6c849dee2716f11d21f7f3240dbc9de29731c",
     "agenticapp-tool-workflow/references/编排示例索引.md": "2460a0378eabe61895202c014d1509ba33ec7b870abd5f4e6b2d98709d5de82b",
     "agenticapp-tool-workflow/references/脚本骨架与失败出口.md": "7c653466dedb3815aa727c698f1f714b33cae835f8ec8bb91b2dfbdf4cbc4541",
-    "agenticapp-tool-workflow/references/读写应用库与反读自查.md": "3489a9ca2e01e3e34910b843d327be0ffb1213a3a5f02970eabfe03bbbc16aa6",
+    "agenticapp-tool-workflow/references/读写应用库与反读自查.md": "dad595bd1d118f7639eaaac148aa9a38372d12997a34e04337219097fa12d905",
     "agenticapp-tool-workflow/references/读长期数据集.md": "f17658b443ae7ef3f75df8df277e95d50bd0fa3f6bdbbdd0fd38dca48fa99dc4",
     "agenticapp-tool-workspace/SKILL.md": "76f45e0ffc6e7e31d71ef92dadd83815b602897bf5ca11da5ad8d524b493f573",
     "agenticapp-tool-workspace/references/三件套与阶段标记.md": "1777ab2bda7546c376896edd5ca06e28596b1fd6d86a5dd884a219a4c44b375d",
