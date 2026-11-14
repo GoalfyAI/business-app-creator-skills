@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20261030-e23fde",
   "skill_name": "agenticapp-creator",
-  "version": "v20261113-1971fd",
-  "package_version": "2.0.54-pre.47",
+  "version": "v20261114-cecfb0",
+  "package_version": "2.0.54-pre.50",
   "mcp_endpoint": "https://business-app-creator-mcp.pre.goalfyai.cn/mcp",
-  "released_at": "2026-11-13T13:54:14Z",
-  "update_reason": "PRE 版，来自 main 1d3fda97d（build 47）",
+  "released_at": "2026-11-14T06:31:09Z",
+  "update_reason": "PRE 版，来自 release/2026-11-14-pm 5c164acc0（build 50）",
   "source_files": [
     "agenticapp-creator/SKILL.md",
     "agenticapp-creator/agents/openai.yaml",
@@ -183,12 +183,13 @@
     "business-app-creator/upgrade-guides/D-4122.md",
     "business-app-creator/upgrade-guides/D-4139.md",
     "business-app-creator/upgrade-guides/D-4155.md",
+    "business-app-creator/upgrade-guides/D-4240.md",
     "business-app-creator/upgrade-guides/D-4267.md",
     "business-app-creator/upgrade-guides/README.md",
     "business-app-creator/upgrade-guides/schema.json"
   ],
   "checksums": {
-    "agenticapp-creator/SKILL.md": "9d834e4d57902f121cdaba45ad2bfa87cf90b79ed5ee75512a4730190656c906",
+    "agenticapp-creator/SKILL.md": "4cc073ffc07ccd511527919d98f45ff4d9e5adb5e53f8e443e04c0bc2a505529",
     "agenticapp-creator/agents/openai.yaml": "917bcbe5180619545f063f18a1f90df917fc02bf44ac5accc5d903f8244d1654",
     "agenticapp-creator/references/平台对象与用词.md": "2c46747200bfb0670151a12dd407cc1873c4ae5d485aab309d4f2afa2fffdda9",
     "agenticapp-creator/references/平台问题怎么报.md": "6d4c1df2434af3403968c7255b9011176e96926cf8b671c87f454ee36f9ff0d3",
@@ -273,7 +274,7 @@
     "agenticapp-tool-frontend/SKILL.md": "d8cd49ae58a0ac0fc747cd67d4066be2b9500e710bc011b523452d2bb92f90b4",
     "agenticapp-tool-frontend/references/SDK与预置件.md": "350b8bf4750d7055de19bceddc9b1b3dcbe4baae04b556a9d21e8bf10153f447",
     "agenticapp-tool-frontend/references/业务文案.md": "f5505776f2946cf79b4fdd133cd20c16d9e772dc77326803a303f426b4d0a305",
-    "agenticapp-tool-frontend/references/业务页面.md": "8a78de32af3ac24c9ecfa225a6913f1680c7e5fab57eb1ee190d2e1486f288dd",
+    "agenticapp-tool-frontend/references/业务页面.md": "034e2e2630d0adf3ceb0df97d67aaf64043304d98a2846824eac51e12a929a46",
     "agenticapp-tool-frontend/references/数据管理页生成器.md": "0c3bb43367fb17fd8d90b6c92699af354fc0ac0fa3d7c80249a51013b9a0cd54",
     "agenticapp-tool-frontend/references/界面风格与参考网站.md": "6bffd9d01d3920e6bbe5ea2c8396672b7ea1e73657fb7e379e7b261c413b3356",
     "agenticapp-tool-frontend/references/首屏与导航.md": "7455e7dc656ba8d904844106c8e18933f1993cd7efc6430e8da6e5380a91b4ef",
@@ -364,6 +365,7 @@
     "business-app-creator/upgrade-guides/D-4122.md": "31a6be294083dc4c0422bfd9f12139c2e1ecd14e5f55322ffdd045be72a5c31a",
     "business-app-creator/upgrade-guides/D-4139.md": "063ba3939ce28a021858fffaa4b69cf0b400c99db06d2eb02ec7d21015906c22",
     "business-app-creator/upgrade-guides/D-4155.md": "1aa8a4cd804375b308977d53b7c457f8c5488c77dc833790daa64eb18a6d64c3",
+    "business-app-creator/upgrade-guides/D-4240.md": "e2e959603ce63b896ef9e2f2485988503691ce5207bf6eacf429f83eb8f7a04f",
     "business-app-creator/upgrade-guides/D-4267.md": "7c3c8ce5bcf2d386f2069d5133ca43111da314bcf32727f5844a83c173af259c",
     "business-app-creator/upgrade-guides/README.md": "2336118e4b91e9194bbc5d2c81ab0402aa0f51591387ee46af840e651d0afedc",
     "business-app-creator/upgrade-guides/schema.json": "adf96530163cc804df7ac9ac4d77b1008447029f08a624be90181f7309dab7e2"

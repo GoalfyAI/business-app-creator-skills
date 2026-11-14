@@ -93,10 +93,8 @@ stages:
               run: |
                 set -euo pipefail
                 # OA 反查云效运行真实性与分支，不需要令牌；HeadCommit 取本次运行的 USER_COMMIT
-                curl -sS --fail --retry 5 --retry-delay 3 --retry-connrefused --max-time 30 -X POST \
-                  -H 'Content-Type: application/json' \
-                  -d "{\"pipeline_id\":\"${PIPELINE_ID}\",\"run_id\":${BUILD_NUMBER},\"stage\":\"pre\"}" \
-                  https://oa.goalfyai.cn/internal/v1/deploy-reviews/flow-webhook
+                cd "${PROJECT_DIR}"
+                python3 scripts/notify_oa.py --stage pre
   stage_approve_pre:
     name: PRE审批
     needs:
@@ -143,7 +141,5 @@ stages:
             with:
               run: |
                 set -euo pipefail
-                curl -sS --fail --retry 5 --retry-delay 3 --retry-connrefused --max-time 30 -X POST \
-                  -H 'Content-Type: application/json' \
-                  -d "{\"pipeline_id\":\"${PIPELINE_ID}\",\"run_id\":${BUILD_NUMBER},\"stage\":\"prod\"}" \
-                  https://oa.goalfyai.cn/internal/v1/deploy-reviews/flow-webhook
+                cd "${PROJECT_DIR}"
+                python3 scripts/notify_oa.py --stage prod
