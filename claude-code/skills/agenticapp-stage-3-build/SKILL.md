@@ -39,7 +39,7 @@ description: 第 ③ 段制作。方案已确认、应用还没做完时加载�
    3. 数据页：用生成器一条命令生成。加载 `agenticapp-tool-workspace`。做成：`gen:pages` 没有被拒。
    4. 前端页面。加载 `agenticapp-tool-frontend`。做成：`npm --prefix frontend run check` 警告清零。
    5. 后端接口：按 `agenticapp-tool-workspace`。
-   6. 外部平台授权、充值（加载 `agenticapp-tool-integration`）：PRD 列了，或挂好路线后查到的授权候选不为空，就要做。自动化（加载 `agenticapp-tool-automation`）：PRD 列了才做。
+   6. 外部平台授权、充值（加载 `agenticapp-tool-integration`）：PRD 列了，或挂好路线后查到的授权候选不为空，就要做。新建的应用查到候选后读授权摘要，补进方案「运行条件」（`agenticapp-tool-integration`「读授权摘要」）。自动化（加载 `agenticapp-tool-automation`）：PRD 列了才做。
    7. 在工作区跑：`check`、`verify` 和前端测试全绿；③ 不部署。
 4. **边做边发进度**。③ 里工具调用之间的每段回复正文都是开发者要看的，用中文写，而且只有两种：带进度表的「【③ 制作 → 正在做】」，或者什么都不写。想写一句「……做好了」「……建好了」「……跑通了」「……放到在线预览了」「……出了问题 / 解决了」「正在做……」时，不发这一句，把它写成「刚做完」，下面接进度表，作为一条「【③ 制作 → 正在做】」发出去；没有格子变就不写正文，直接接着调工具。写进思考里的开发者看不到，不算。怎么写见 [references/制作进度怎么写.md](references/制作进度怎么写.md)，模板见 [assets/进度消息.md](assets/进度消息.md)。做成：下面这些工具成功返回之后，紧接着的那段回复正文都是一条带进度表的「【③ 制作 → 正在做】」：`business_ui_manage` 挂路线或改编排、`dataset_template_workspace` 建好存数据、`business_ui_bundle` 放到在线预览、`Agent` 交回；③ 里没有不带表的一句话正文。
 5. **偏离方案时按下面的判断处理**，属于入口「不多等」的停下来问，其余自己改完继续。
@@ -87,6 +87,7 @@ description: 第 ③ 段制作。方案已确认、应用还没做完时加载�
 - `business_ui_id` 已建、数据模板版本已挂到应用、开发工作集已绑定；新 SDK 应用的编排与 `tpe_ids` 已挂到应用草稿（没挂的占位草稿不能部署）；
 - 应用根 `npm run verify` 全绿，业务文案已由实际页面和动作使用；
 - 累计花费没超过上限，或超出部分开发者已选过。
+- 查到授权候选的新建应用：授权摘要已补进方案「运行条件」，并已告诉开发者 ④ 放到在线预览后先在在线预览里授权，再验授权条目。
 
 ## 出问题
 

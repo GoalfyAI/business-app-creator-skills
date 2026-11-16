@@ -87,7 +87,7 @@ description: 调用 create_toolset、*_tool_group、create_auth_card 前必须�
 
 ## 外部平台授权与充值
 
-PRD 写了「外部平台授权」或充值，或者 ③ 建好应用、挂好路线（旧写法应用挂好场景包）后 `business_ui_manage(action="list_authorization_candidates")` 返回的候选不为空，就要做：保存开发者确认的选择、查充值开通状态；页面经 `sdk.authorization` / `sdk.payment` 接入；④ 交报告前再核一遍。做成：候选不为空时选择已保存、页面有授权入口；授权在预览里没真正打通的，报告里那几条记「未测」并写明要账户持有人在预览里授权一次。调用、页面规则、应用自管外部登录和交报告前核对见 [references/外部平台授权与充值.md](references/外部平台授权与充值.md)。
+PRD 写了「外部平台授权」或充值，或者 ③ 建好应用、挂好路线（旧写法应用挂好场景包）后 `business_ui_manage(action="list_authorization_candidates")` 返回的候选不为空，就要做：保存开发者确认的选择、查充值开通状态；页面经 `sdk.authorization` / `sdk.payment` 接入；④ 交报告前再核一遍。做成：候选不为空时选择已保存、页面有授权入口；查到候选后用 `business_ui_manage(action="authorization_status")` 读授权摘要（已有应用在 ①，新建的应用在 ③），结果写进方案「运行条件」。④ 授权条目怎么验见 `agenticapp-stage-4-acceptance` 证据与未测的「外部平台授权条目」。读授权摘要、调用、页面规则、应用自管外部登录和交报告前核对见 [references/外部平台授权与充值.md](references/外部平台授权与充值.md)。
 
 ## 配置写法
 

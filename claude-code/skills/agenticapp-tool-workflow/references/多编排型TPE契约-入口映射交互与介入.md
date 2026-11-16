@@ -39,14 +39,14 @@
 当前节点 mapping source 只有：
 
 - `user_input`：路线 `input_schema` 已校验输入；
-- `node_output`：当前节点依赖祖先的真实编排型 TPE `TaskPoint.output.data`；
+- `node_output`：当前节点直接依赖（列在 `depends_on` 里）的真实编排型 TPE `TaskPoint.output.data`；
 - `scene_config`：当前路线对象中的固定配置。
 
-mapping rule 只声明 `source/node_id/path/transform`。`node_output` 必须提供 `node_id`，且来源节点位于依赖祖先链。路径使用当前 Hub 支持的确定性 JSON Path；transform 只使用 `enum_map`、`default`、`pick`。自然语言抽取和复杂计算放入独立编排型 TPE，不发明表达式、条件 DSL 或第四种 source。
+mapping rule 只声明 `source/node_id/path/transform`。`node_output` 必须提供 `node_id`，且来源节点是当前节点的直接依赖，读非直接依赖的上游保存被拒。路径使用当前 Hub 支持的确定性 JSON Path；transform 只使用 `enum_map`、`default`、`pick`。自然语言抽取和复杂计算放入独立编排型 TPE，不发明表达式、条件 DSL 或第四种 source。
 
 Hub 保存时校验 target 字段存在、每个下游 required 由普通 mapping 或合法中途交互提供、路径能在路线 input/上游 output/scene_config 中解析、基础类型兼容。根据 Hub 返回的路线、节点、字段和路径错误修改原对象后整体重提，不复制第二套 validator。
 
-跨节点文件的上游 `output_schema` 与下游 `input_schema` 都使用 `format:"workspace-file-path"`，值保持真实 `/workspace` 绝对路径，不用 transform，不传 URL、base64 或构建期路径。来源型数据继续传递 [单编排型 TPE 制作契约](单编排型TPE契约-脚本Schema与事件.md) 声明的 claim-evidence 对象，不能在节点接缝只保留 summary、丢失证据引用。
+跨节点文件的上游 `output_schema` 与下游 `input_schema` 都使用 `format:"workspace-file-path"`，值保持真实 `/workspace` 绝对路径，不用 transform，不传 URL、base64 或构建期路径。来源型数据的每条结论都带上它的证据引用（来源编号或链接），与 [单编排型 TPE 制作契约](单编排型TPE契约-工具文件失败与验证.md) WF-SINGLE-09 一致，不能在节点接缝只保留 summary、丢失证据引用。
 
 ## WF-MULTI-06 中途 `business_interaction`
 
