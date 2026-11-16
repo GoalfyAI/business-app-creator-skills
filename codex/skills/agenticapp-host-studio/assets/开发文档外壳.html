@@ -426,16 +426,11 @@ if(graph)guard(graph.closest('.section'),'流程图',function(){
  var nodes=$$('.node',graph),panel=$('#node-panel'),current=0;
  function edgesSpec(){try{return JSON.parse($('#graph-edges').textContent)}catch(e){return []}}
  var spec=edgesSpec();
- function draw(){var svg=$('svg.edges',graph);if(!svg)return;
-  /* 每条回环占一条自己的横向通道，底部留白随回环条数增加 */
-  var loopCount=spec.filter(function(e){return e.loop}).length,lane=16,laneNo=0,sameTarget={},targetLoops={};
-  spec.forEach(function(e){if(e.loop)targetLoops[e.to]=(targetLoops[e.to]||0)+1});
-  graph.style.paddingBottom=(34+Math.max(0,loopCount-1)*lane)+'px';
-  var g=graph.getBoundingClientRect();if(!g.width)return;var out='';
+ function draw(){var svg=$('svg.edges',graph);if(!svg)return;var g=graph.getBoundingClientRect();if(!g.width)return;var out='';
   spec.forEach(function(e){var a=$('.node[data-node="'+e.from+'"]',graph),b=$('.node[data-node="'+e.to+'"]',graph);if(!a||!b)return;
    var ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect();
    var ax=ra.left-g.left,ay=ra.top-g.top,bx=rb.left-g.left,by=rb.top-g.top,d;
-   if(e.loop){var gy=g.height-8-laneNo++*lane,sameNo=sameTarget[e.to]||0,gx=Math.max(2,bx-10-(targetLoops[e.to]-1-sameNo)*4);sameTarget[e.to]=sameNo+1;d='M'+(ax+ra.width/2)+' '+(ay+ra.height)+' V'+gy+' H'+gx+' V'+(by+rb.height/2)+' H'+bx;
+   if(e.loop){var gy=g.height-8,gx=Math.max(2,bx-10);d='M'+(ax+ra.width/2)+' '+(ay+ra.height)+' V'+gy+' H'+gx+' V'+(by+rb.height/2)+' H'+bx;
     out+='<path class="loop" data-a="'+e.from+'" data-b="'+e.to+'" d="'+d+'" marker-end="url(#arrow)"/>';
     if(e.label)out+='<text x="'+(gx+6)+'" y="'+(gy-4)+'">'+e.label.replace(/[<&]/g,'')+'</text>';return}
    else if(bx>=ax+ra.width-2){var mx=ax+ra.width+(bx-ax-ra.width)/2;d='M'+(ax+ra.width)+' '+(ay+ra.height/2)+' H'+mx+' V'+(by+rb.height/2)+' H'+bx;}

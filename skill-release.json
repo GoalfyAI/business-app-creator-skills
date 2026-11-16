@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20261030-e23fde",
   "skill_name": "agenticapp-creator",
-  "version": "v20261116-20a619",
-  "package_version": "2.0.57-qa.49",
+  "version": "v20261116-e1855b",
+  "package_version": "2.0.57-qa.50",
   "mcp_endpoint": "https://business-app-creator-mcp.qa.goalfyai.cn/mcp",
-  "released_at": "2026-11-16T07:18:33Z",
-  "update_reason": "QA 版，来自 fix/FB2100-loop-label-overlap bb37170e9（build 49）",
+  "released_at": "2026-11-16T07:20:43Z",
+  "update_reason": "QA 版，来自 feat/T5203-补齐读长文档规范/main 0afd260ac（build 50）",
   "source_files": [
     "agenticapp-creator/SKILL.md",
     "agenticapp-creator/agents/openai.yaml",
@@ -191,7 +191,7 @@
     "business-app-creator/upgrade-guides/schema.json"
   ],
   "checksums": {
-    "agenticapp-creator/SKILL.md": "f18ec4ad419e15cb433bb6829c3e80aca623c0f5612e28f4658af6dc69da0d2b",
+    "agenticapp-creator/SKILL.md": "a05c04d29806ac3e9efbeebd301a00363895cd1324fd2edbbe07b192967496a8",
     "agenticapp-creator/agents/openai.yaml": "40708751e0ec46463910ad433f198d9647de99e0ddca0e58c02a281b08b3501c",
     "agenticapp-creator/references/平台对象与用词.md": "0613b42ee68cc4873c3b910e8124528b3664e28fe0c3876469286285e75fa78d",
     "agenticapp-creator/references/平台问题怎么报.md": "6d4c1df2434af3403968c7255b9011176e96926cf8b671c87f454ee36f9ff0d3",
@@ -200,7 +200,7 @@
     "agenticapp-creator/references/红线的边界与原因.md": "a6ab4c9f6a6269ee3a25071a655af8525a986f241ddda8b73748de94951267d7",
     "agenticapp-host-studio/SKILL.md": "7d189720a2dfb5c267a9b4a2f7633b6e4b396b15b0566a4e1fd70fe07577eb14",
     "agenticapp-host-studio/assets/制作进度数据.md": "b8ea725a81a70614a6638476aa5cab51dce2526611e7ec7961fea11adb278faa",
-    "agenticapp-host-studio/assets/开发文档外壳.html": "6820d3acceb491bfe3092beaa945e6a87ce434fa3bd79c68226db9c5d68f7071",
+    "agenticapp-host-studio/assets/开发文档外壳.html": "8ca4d906f2dc89f10ae8b74b3c98b6ba9141fe8ac7d73ec089f80a793a0b118c",
     "agenticapp-host-studio/assets/方案数据.md": "3e3c95c4718ef7895305db199f8fde5d19a91dca87a895fbb9edca681c8d3867",
     "agenticapp-host-studio/assets/需求说明数据.md": "2199d554e51fb48450309d7ae44bbe6255dd801f7c3fe9817d701d89595e5364",
     "agenticapp-host-studio/assets/验收报告数据.md": "5d9cf9cfa57b02686d6a539cd9b860787f33e617df2fd8a0b24e9f5c8c61fce9",
