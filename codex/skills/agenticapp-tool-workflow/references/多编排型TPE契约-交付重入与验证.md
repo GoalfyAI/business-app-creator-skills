@@ -21,7 +21,7 @@
       "type": "user_gate",
       "allowed_actions": [
         {"action_key": "accept", "kind": "complete_business"},
-        {"action_key": "ask_agent", "kind": "agent_gate"},
+        {"action_key": "reject", "kind": "fail_business"},
         {
           "action_key": "revise",
           "kind": "start_orchestration",
@@ -39,6 +39,7 @@
 - output Schema、mapping、具体统计和 Workspace 文件检查未通过时，不冻结 Delivery。
 - `review.type` 只能是 `user_gate` 或 `agent_gate`；`allowed_actions` 非空，`action_key` 唯一。
 - 当前 Hub action kind 接受 `complete_business`、`fail_business`、`agent_gate`、`start_orchestration`。
+- 旧流程的 `user_gate` 不支持转交 Agent：Hub 能保存 `kind:"agent_gate"` 动作，但 Runtime 不下发这个按钮，点了也不受理（`ORCH_DELIVERY_TRANSFER_UNSUPPORTED`）。不声明这种按钮，要给使用者结束出口时用 `fail_business`（如 `reject`「结束本次流程」）；存量 `user_gate` 上的 `agent_gate` 按钮在修订时换成 `fail_business`。整条路线由 Agent 收尾是 `review.type="agent_gate"`，不受此限。
 - `complete_business`、`fail_business` 和 `agent_gate` 不携带 `orchestration_id/form_id`。
 - `start_orchestration` 指向同一 2.0 对象中存在的路线，并携带与目标 `entry.form_id` 完全一致的 `form_id`。
 - `fail_business` 用于最终 Gate 明确拒绝当前 Delivery：当前 Runtime 保持 `succeeded`，Business 写入结构化失败原因并进入 `failed`；它不需要再次核验已拒绝的 Delivery。
@@ -86,7 +87,7 @@
 - [ ] 每条路线名称、描述、入口和适用条件可被 SA/用户理解；
 - [ ] 所有节点编排型 TPE 已挂载、Schema 完整且通过单体验收；
 - [ ] 入口 mapping 覆盖路线 required，入口节点无依赖，图无环且全部可达；
-- [ ] `node_output` 只读取依赖祖先，路径、基础类型、文件 format 和证据对象一致；
+- [ ] `node_output` 只读取直接依赖，路径、基础类型、文件 format 和证据对象一致；
 - [ ] 中途表单只写尚未派发的下游字段，不承担路线切换；
 - [ ] 节点 `sa_handoff` 位置正确，指令和判断标准可验证；
 - [ ] 每条路线有一个 Delivery 与合法 Review；
