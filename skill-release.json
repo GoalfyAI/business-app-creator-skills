@@ -2,10 +2,10 @@
   "scaffold_min_required_version": "v20261030-e23fde",
   "skill_name": "agenticapp-creator",
   "version": "v20261116-7203e1",
-  "package_version": "2.0.58-pre.61",
+  "package_version": "2.0.58-pre.62",
   "mcp_endpoint": "https://business-app-creator-mcp.pre.goalfyai.cn/mcp",
-  "released_at": "2026-11-16T09:48:01Z",
-  "update_reason": "PRE 版，来自 main 000092e1a（build 61）",
+  "released_at": "2026-11-16T09:54:41Z",
+  "update_reason": "PRE 版，来自 main 000092e1a（build 62）",
   "source_files": [
     "agenticapp-creator/SKILL.md",
     "agenticapp-creator/agents/openai.yaml",
