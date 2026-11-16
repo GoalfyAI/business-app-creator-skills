@@ -106,7 +106,7 @@ Runtime `succeeded` 只表示当前路线已生成并冻结 Delivery，不代表
           "type": "user_gate",
           "allowed_actions": [
             {"action_key": "accept", "kind": "complete_business"},
-            {"action_key": "ask_agent", "kind": "agent_gate"},
+            {"action_key": "reject", "kind": "fail_business"},
             {
               "action_key": "revise",
               "kind": "start_orchestration",
@@ -160,7 +160,7 @@ Runtime `succeeded` 只表示当前路线已生成并冻结 Delivery，不代表
           "type": "user_gate",
           "allowed_actions": [
             {"action_key": "accept", "kind": "complete_business"},
-            {"action_key": "ask_agent", "kind": "agent_gate"}
+            {"action_key": "reject", "kind": "fail_business"}
           ]
         }
       }

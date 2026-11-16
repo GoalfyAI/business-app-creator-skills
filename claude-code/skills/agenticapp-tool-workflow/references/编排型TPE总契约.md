@@ -56,7 +56,7 @@
 - Fast Agent：一个自包含的推理子任务；编排型 TPE 可在某一步调用它。
 - 运行时 Agent：需要理解自然语言、临场选择路线、补充搜索、与用户交互或根据上下文恢复失败的环节。
 
-一条稳定线性阶段使用单条编排型 TPE；一条路线内的固定扇出、扇入和跨阶段依赖使用无环 DAG；不同候选路线、改稿和重做使用 2.0 多路线对象以及新的 Runtime。制作期可知的用户值放路线入口；上游成功后才需要的结构化用户补参使用 `business_interaction`；明确的节点成功边界需要 Agent 检查或处理时使用节点 `sa_handoff`；最终接受、请 Agent 审阅或启动另一条路线由 `delivery.review.allowed_actions` 表达。
+一条稳定线性阶段使用单条编排型 TPE；一条路线内的固定扇出、扇入和跨阶段依赖使用无环 DAG；不同候选路线、改稿和重做使用 2.0 多路线对象以及新的 Runtime。制作期可知的用户值放路线入口；上游成功后才需要的结构化用户补参使用 `business_interaction`；明确的节点成功边界需要 Agent 检查或处理时使用节点 `sa_handoff`；最终接受、结束本次流程或启动另一条路线由 `delivery.review.allowed_actions` 表达；整条路线由 Agent 收尾用 `delivery.review.type="agent_gate"`。
 
 `sa_handoff` 不是数据节点，`decision_criteria.resume/stop` 是制作期判断标准，不是前端业务 action。Agent 不自由修改图或已完成结果。需要临场规划的整条路径交给普通 Task Agent；会改变路线的判断等待当前 Delivery 后使用 `start_orchestration` 创建新 Runtime，不在 DAG 内画回边。
 
