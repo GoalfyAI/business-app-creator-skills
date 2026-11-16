@@ -30,6 +30,7 @@ description: 开工、接续、升级脚手架，或调用 business_ui_stage、w
    - `upgrade_required=true`：先按「脚手架升级」升级再继续。
    - `upgrade_recommended=true`：可以继续，开发记录写「建议升级脚手架版本」，下一次部署前按「脚手架升级」升级。
    - 达到必须线就继续，不必每次升到最新。
+   - `known=false`（版本未登记）：**禁止**改版本串；按 [references/脚手架版本与升级.md](references/脚手架版本与升级.md)「版本未登记」判断，只有模板基线提交的新建应用换成这次返回的最新模板，有业务提交的应用按平台问题报。
 4. 新建时校验下载包 `sha256`，用 `tar -xzf <包> -C <应用目录>` 解到本应用的独立目录，不加 `--strip-components`。做成：`scaffold-release.json` 等在应用目录第一层，它的 `version` 与返回的 `version` 相同。
 5. 清单带 `guide_baseline` 时按 [references/脚手架版本与升级.md](references/脚手架版本与升级.md)「新建与存量」判定并删掉它；新建应用在下一节 `scaffold:init` 之后、`npm run setup` 之前判定。
 

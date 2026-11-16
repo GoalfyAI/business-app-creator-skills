@@ -80,7 +80,7 @@ description: 第 ① 段需求确认。还没有确认过的需求文档时加�
 |---|---|
 | 开发者说不清要什么 | 按 [references/按轮问.md](references/按轮问.md)「从开发者给的东西开始」探讨方向，给两三个具体做法让他选 |
 | 取样报参数错、路径不存在 | `agenticapp-tool-integration`「工具取样」：核对文件参数收 URL 还是 `/workspace` 路径，再取一次 |
-| 工具要使用者各自授权 | `agenticapp-tool-integration`「授权卡」，记进 G2，② 写进方案「运行条件」。已有应用（修订）查完授权候选后调 `business_ui_manage(action="authorization_status")` 读授权摘要，结果一并记进 G2、写进「运行条件」；新建的应用 ① 还没有应用，不调，③ 挂好路线后再读（`agenticapp-tool-integration`「读授权摘要」） |
+| 工具要使用者各自授权 | `agenticapp-tool-integration`「授权卡」，记进 G2，② 写进方案「运行条件」。已有应用（修订）查完授权候选后调 `business_ui_manage(action="authorization_status")` 读授权摘要，结果一并记进 G2、写进「运行条件」；新建的应用 ① 还没有应用，不调，③ 挂好路线后再读（`agenticapp-tool-integration`「读授权摘要」）。对开发者说和写进 G2 时，全局、本应用预览、本应用正式三处都写，没有记录的写「没有」；新路应用没授权的条目验收记「没通过 · 没授权」，旧路（挂场景包）记未测 |
 | 分享来的资产搜不到、受限或脱敏 | `agenticapp-tool-integration`「分享来的工具组」，结论写进 PRD，确认 PRD 时一并确认 |
 | 核实发现关键功能做不到 | 当轮写进「能不能做」，出替代选择题（换做法 / 改范围 / 等平台） |
 | 开发者只想讨论、暂不开发 | 直接在对话里回答；讨论落到具体应用时，至少写出交付物的最小草案 |
