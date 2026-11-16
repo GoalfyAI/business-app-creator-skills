@@ -89,7 +89,7 @@
  },
  {
   "source": "test_scene_creator_release.py:1121",
-  "text": "开头只用这四个取值：页面操作、用测试数据跑、查库、脚本检查"
+  "text": "开头只用这五个取值：页面操作、用测试数据跑、在线预览用真实数据跑、查库、脚本检查"
  },
  {
   "source": "test_scene_creator_release.py:1124",
