@@ -584,15 +584,8 @@ function buildAcceptance(p, d, base, upgrade) {
   const c = common(p, d, 'acceptance');
   const hasHistory = isObj(d) && Object.hasOwn(d, 'historicalSummary');
   if (hasHistory && !upgrade) p.add('data.historicalSummary', '只用于升级旧开发文档');
-  const summary = hasHistory ? text(p, d, 'historicalSummary', 'data') : '';
-  if (hasHistory && !Object.hasOwn(d, 'items')) {
-    if (['paths', 'extra_untested', 'launch'].some(key => Object.hasOwn(d, key)))
-      p.add('data.historicalSummary', '历史验收记录缺失时只填写可核实的历史情况');
-    return [head(c, '04 / 验收报告', '验收报告', '查看应用的交付情况和使用范围。')
-      + '<section class="section"><div class="section-head"><h2>交付情况</h2></div>'
-      + `<p>${e(summary)}</p></section>` + foot(c), []];
-  }
-  const its = items(p, d, 'items', 'data');
+  const summary = hasHistory ? text(p, d, 'historicalSummary', 'data', true, 240) : '';
+  const its = items(p, d, 'items', 'data', !hasHistory);
   const byId = new Map(), shotsAll = [];
   const counts = Object.fromEntries(RESULTS.map(r => [r, 0]));
   const rows = [];
@@ -659,12 +652,14 @@ function buildAcceptance(p, d, base, upgrade) {
   });
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
   const out = [head(c, '04 / 验收报告', '验收报告', hasHistory ? summary : '按业务路径看每一步走没走通，结论都有依据。')];
-  const stat = (cls, n, lbl) => `<div class="stat-card ${cls}" data-filter="${cls}"><p>${lbl}</p><strong>${n}</strong><p class="go">查看详情 →</p></div>`;
-  out.push('<div class="stats">' + stat('fail', counts['没通过'], '没通过') + stat('pass', counts['通过'], '通过')
-    + stat('judge', counts['好不好你说了算'], '要你判断') + stat('untested', counts['未测'], '未测')
-    + `</div><p style="margin-top:10px">共 ${total} 条：没通过 ${counts['没通过']} · 通过 ${counts['通过']} · 要你判断 ${counts['好不好你说了算']} · 未测 ${counts['未测']}。${e(text(p, d, 'impact', 'data', !hasHistory))}</p>`
-    + allItems(rows, counts, total));
-  const paths = items(p, d, 'paths', 'data', !hasHistory);
+  if (total) {
+    const stat = (cls, n, lbl) => `<div class="stat-card ${cls}" data-filter="${cls}"><p>${lbl}</p><strong>${n}</strong><p class="go">查看详情 →</p></div>`;
+    out.push('<div class="stats">' + stat('fail', counts['没通过'], '没通过') + stat('pass', counts['通过'], '通过')
+      + stat('judge', counts['好不好你说了算'], '要你判断') + stat('untested', counts['未测'], '未测')
+      + `</div><p style="margin-top:10px">共 ${total} 条：没通过 ${counts['没通过']} · 通过 ${counts['通过']} · 要你判断 ${counts['好不好你说了算']} · 未测 ${counts['未测']}。${e(text(p, d, 'impact', 'data', !hasHistory))}</p>`
+      + allItems(rows, counts, total));
+  }
+  const paths = items(p, d, 'paths', 'data', !hasHistory || total === 0);
   const plist = [], pflows = [];
   const shown = new Set();
   paths.forEach((pa, i) => {

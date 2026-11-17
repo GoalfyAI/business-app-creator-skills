@@ -185,16 +185,37 @@ def test_document_upgrade_without_original_acceptance(tmp_path: Path) -> None:
     plan = (proposal_path.parent / "index.html").read_text(encoding="utf-8")
     assert "录入进货批次" in plan and "原可执行验收清单未留存" not in plan
 
-    acceptance_path = _prepare(tmp_path, "acceptance", {
+    data = {
         "app": "批次管理", "version": 1, "updated": "2026-11-16 15:00",
         "historicalSummary": "正式版已上线，来源为应用上线状态。",
-    })
+    }
+    acceptance_path = _prepare(tmp_path, "acceptance", data)
     assert _build("acceptance", acceptance_path).returncode == 1
+    summary_only = historical("acceptance", acceptance_path)
+    assert summary_only.returncode == 1 and "data.paths" in summary_only.stdout
+
+    data["paths"] = [{
+        "name": "录入后查看批次",
+        "detail": "记录食材批次并查看到期日。",
+        "nodes": [
+            {"title": "录入批次", "state": "unknown", "note": "在批次页填写食材和入库日期。"},
+            {"title": "查看到期日", "state": "unknown", "note": "在列表查看该批次的到期日。"},
+        ],
+        "links": ["保存后在列表查找批次"],
+    }]
+    data["historicalSummary"] = "旧报告全文" * 50
+    acceptance_path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    too_long = historical("acceptance", acceptance_path)
+    assert too_long.returncode == 1 and "data.historicalSummary" in too_long.stdout
+
+    data["historicalSummary"] = "正式版已上线，来源为应用上线状态。"
+    acceptance_path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
     saved = historical("acceptance", acceptance_path)
     assert saved.returncode == 0, saved.stdout
     body = (acceptance_path.parent / "index.html").read_text(encoding="utf-8").split("</main>")[0]
-    assert "历史验收记录未留存" not in body and "正式版已上线" in body and "交付情况" in body
-    assert "stats\">" not in body and 'class="path-flow"' not in body
+    assert "正式版已上线" in body and "业务路径检查" in body
+    assert 'class="path-flow"' in body and 'class="pnode unknown"' in body
+    assert 'class="stats"' not in body and "逐条看全部" not in body and "交付情况</h2>" not in body
 
 
 def test_document_upgrade_preserves_partial_acceptance_records(tmp_path: Path) -> None:
