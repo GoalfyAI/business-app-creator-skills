@@ -139,6 +139,53 @@ def test_main_deploy_passes_pinned_user_commit(steps, monkeypatch):
     assert steps[0] == ("release", "c" * 40)
 
 
-def test_release_only_refuses_non_main(steps):
-    with pytest.raises(deploy_env.DeployError, match="只运行 main"):
+def test_release_only_accepts_pm_release_branch_without_publishing(steps, monkeypatch, tmp_path):
+    flow_env = tmp_path / "flow.env"
+    monkeypatch.setenv("FLOW_ENV", str(flow_env))
+    monkeypatch.setattr(
+        deploy_env,
+        "prepare_release_branch",
+        lambda branch, url: ("v20261114-bbbbbb", "b" * 40, False),
+    )
+
+    summary = deploy_env.release_only("release/2026-11-14-pm")
+
+    assert summary == {
+        "version": "v20261114-bbbbbb",
+        "source_sha": "b" * 40,
+        "released": "False",
+    }
+    assert flow_env.read_text().splitlines() == [
+        f"USER_COMMIT={'b' * 40}",
+        "SKILL_VERSION=v20261114-bbbbbb",
+    ]
+
+
+def test_prepare_release_branch_requires_remote_latest(monkeypatch):
+    calls = []
+
+    def fake_git(*args, **kwargs):
+        calls.append(args)
+        if args[:2] == ("rev-parse", "HEAD"):
+            return "c" * 40
+        if args[:2] == ("rev-parse", "refs/remotes/codeup/release/2026-11-14-pm"):
+            return "c" * 40
+        return ""
+
+    monkeypatch.setattr(deploy_env, "git", fake_git)
+    monkeypatch.setattr(deploy_env, "manifest_version", lambda root: "v20261114-cccccc")
+
+    assert deploy_env.prepare_release_branch(
+        "release/2026-11-14-pm", "https://codeup.example/repo.git"
+    ) == ("v20261114-cccccc", "c" * 40, False)
+    assert calls[0] == (
+        "fetch",
+        "-q",
+        "https://codeup.example/repo.git",
+        "+refs/heads/release/2026-11-14-pm:refs/remotes/codeup/release/2026-11-14-pm",
+    )
+
+
+def test_release_only_refuses_other_non_main(steps):
+    with pytest.raises(deploy_env.DeployError, match="main 或 release/YYYY-MM-DD-pm"):
         deploy_env.release_only("feat/x")

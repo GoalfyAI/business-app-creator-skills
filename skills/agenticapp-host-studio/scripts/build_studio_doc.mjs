@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 const USAGE = `把 Studio 开发文档的数据生成 index.html，生成前逐条校验。
 
 用法：
-  node build_studio_doc.mjs <prd|proposal|progress|acceptance> <data.json> [-o 输出文件]
+  node build_studio_doc.mjs <prd|proposal|progress|acceptance> <data.json> [-o 输出文件] [--document-upgrade]
   node build_studio_doc.mjs shot <index.html> <应用的 frontend 目录>   # 400px、900px 各截一张图到同目录 .shots/，报页面脚本错误
   node build_studio_doc.mjs extract <index.html> <目录>   # 从保存过的一版取回 data.json（方案连同 Demo 文件）写进目录
   node build_studio_doc.mjs verify <index.html>   # 保存前核对：是脚本生成的、生成后没被改过
@@ -328,7 +328,7 @@ function injectPins(src, where, p) {
   return [out, found];
 }
 
-function buildProposal(p, d, base) {
+function buildProposal(p, d, base, upgrade) {
   const c = common(p, d, 'proposal');
   const prdV = get(d, 'prd_version');
   if (!Number.isInteger(prdV)) p.add('data.prd_version', '写依据的需求说明版本号（整数）');
@@ -445,7 +445,7 @@ function buildProposal(p, d, base) {
     + `${jump}${featHtml.join('')}</section>`);
 
   // 验收条目只校验、不显示：页面上不出现，随 acceptance.json 一起保存
-  const acc = items(p, d, 'acceptance', 'data');
+  const acc = items(p, d, 'acceptance', 'data', !upgrade || isFile(join(base, 'acceptance.json')));
   const ids = new Set();
   acc.forEach((a, i) => {
     const w = `acceptance[${i}]`;
@@ -466,7 +466,7 @@ function buildProposal(p, d, base) {
     }
     if (plan !== undefined)
       for (const cr of list(get(plan, 'crud') || [])) if (!ids.has(str(get(cr, 'id')))) p.add('acceptance.json', `crud 里的 ${str(get(cr, 'id'))} 在验收条目里找不到同编号的一条`);
-  } else {
+  } else if (!upgrade) {
     p.add('acceptance.json', '方案要和 data.json 放在同一目录下的 acceptance.json 一起保存（格式见 studio_write_proposal 的说明）');
   }
   out.push(foot(c));
@@ -485,7 +485,7 @@ function featureDone(f) {
 }
 
 /** 时间轴下面折叠的「交付范围与待明确条件」：原型里制作进度只有摘要、时间轴和这一块。 */
-function journalSide(p, d, feats) {
+function journalSide(p, d, feats, upgrade) {
   const word = { done: '做好了', doing: '在做', todo: '没开始' };
   let rows = feats.filter(isObj).map(f => `<div class="dependency">${e(get(f, 'name'))}<small>${word[featureDone(f)]} · 后台 ${e(get(f, 'backend'))} · 页面 ${e(get(f, 'page'))} · 存数据 ${e(get(f, 'data'))}</small></div>`).join('');
   const diffs = items(p, d, 'diffs', 'data', false);
@@ -497,16 +497,17 @@ function journalSide(p, d, feats) {
     text(p, x, 'affects', `pending[${i}]`);
   });
   if (pend.length) out += '<section><h3>仍需明确的条件</h3>' + pend.map(x => `<div class="dependency">${e(get(x, 'what'))}<small>影响：${e(get(x, 'affects'))}</small></div>`).join('') + '</section>';
-  return `<details class="journal-side"><summary>交付范围与待明确条件</summary>${out}</details>`;
+  return `<details class="journal-side"><summary>${upgrade && !pend.length ? '交付范围' : '交付范围与待明确条件'}</summary>${out}</details>`;
 }
 
-function buildProgress(p, d) {
+function buildProgress(p, d, upgrade) {
   const c = common(p, d, 'progress');
   const feats = items(p, d, 'features', 'data');
   feats.forEach((f, i) => {
     const w = `features[${i}]`;
     text(p, f, 'name', w);
-    if (!BACKEND_STATES.includes(get(f, 'backend'))) p.add(`${w}.backend`, '只写：' + BACKEND_STATES.join(' / '));
+    if (!BACKEND_STATES.includes(get(f, 'backend')) && !(upgrade && get(f, 'backend') === '做好了'))
+      p.add(`${w}.backend`, '只写：' + BACKEND_STATES.join(' / ') + (upgrade ? ' / 做好了' : ''));
     for (const key of ['page', 'data']) if (!CELL_STATES.includes(get(f, key))) p.add(`${w}.${key}`, '只写：' + CELL_STATES.join(' / '));
   });
   const states = feats.map(featureDone);
@@ -520,7 +521,7 @@ function buildProgress(p, d) {
     p.add('data.events', '写了卡住了，就要在时间轴上有一条 blocked 事件，detail 写卡在哪、影响哪个功能、谁在处理、什么时候能继续');
   const label = { working: '制作中', done: '都做完了', blocked: '卡住了' }[state] || '';
   const notReal = feats.filter(f => ['做好了，只用模拟数据试过', '做好了，等在线预览时实际跑'].includes(get(f, 'backend'))).length;
-  let caveat = notReal ? `其中 ${notReal} 个的后台还没用真实数据跑过。` : '';
+  let caveat = !upgrade && notReal ? `其中 ${notReal} 个的后台还没用真实数据跑过。` : '';
   caveat += '做好了不等于验收通过，验收结果看验收报告。';
   const now = get(d, 'now') || {};
   const nxt = get(d, 'next') || {};
@@ -541,7 +542,7 @@ function buildProgress(p, d) {
         + '整份卡住时另把 data.state 写成 blocked。不要因为这里报错就手写 index.html');
     const tmRaw = get(ev, 'time');
     const tm = truthy(tmRaw) ? str(tmRaw) : '';
-    if (['done', 'doing', 'blocked'].includes(st) && !/^(\d{2}-\d{2} )?\d{2}:\d{2}$/.test(tm))
+    if (['done', 'doing', 'blocked'].includes(st) && (!upgrade || tm) && !/^(\d{2}-\d{2} )?\d{2}:\d{2}$/.test(tm))
       p.add(`${w}.time`, '做过的事写实际时间（14:20 或 11-05 14:20），从工作记录里取，不估');
     const subs = list(get(ev, 'steps') || []).map((s, j) => {
       const sst = get(s, 'status');
@@ -553,13 +554,13 @@ function buildProgress(p, d) {
     const tag = { done: '<span class="tag">做完了</span>', doing: '<span class="tag warn">在做</span>', todo: '<span class="tag unknown">没开始</span>',
       blocked: '<span class="tag fail">受阻</span>' }[st] || '';
     const subHtml = subs.length ? `<details${['doing', 'blocked'].includes(st) ? ' open' : ''}><summary>${subs.length} 个小步骤</summary>${subs.join('')}</details>` : '';
-    return `<article class="event ${e(st)}"><time>${e(tm || '—')}</time><div class="track"><span class="mark">${mark}</span></div>`
+    return `<article class="event ${e(st)}"><time>${e(tm || (upgrade ? '' : '—'))}</time><div class="track"><span class="mark">${mark}</span></div>`
       + `<div class="body"><h3>${e(text(p, ev, 'title', w))} ${tag}</h3><p>${e(text(p, ev, 'detail', w))}</p>${subHtml}</div></article>`;
   });
   out.push('<section class="section"><div class="section-head"><h2>制作时间轴</h2><span><button type="button" data-play="progress">▶ 回放</button> '
     + '<button type="button" data-stop="progress">停止</button></span></div>'
     + `<div class="timeline">${evHtml.join('')}</div><p class="muted" style="font-size:12px">回放只按上面已有的记录走一遍。</p>`
-    + journalSide(p, d, feats) + '</section>');
+    + journalSide(p, d, feats, upgrade) + '</section>');
   out.push(foot(c));
   return out.join('');
 }
@@ -572,15 +573,25 @@ function allItems(rows, counts, total) {
   const sorted = order.flatMap(r => rows.filter(x => x.res === r));
   const filters = [['all', `全部 ${total}`], ...order.map(r => [RESULT_CLASS[r], `${r === '好不好你说了算' ? '要你判断' : r} ${counts[r]}`])];
   const lis = sorted.map(x => `<li class="all-row" data-r="${RESULT_CLASS[x.res]}"><div class="all-top"><b>${e(x.title)}</b>`
-    + `<span class="all-tag ${RESULT_CLASS[x.res]}">${e(x.label)}</span></div>${kv(x.pairs)}</li>`).join('');
+    + `<span class="all-tag ${RESULT_CLASS[x.res]}">${e(x.label)}</span></div>${kv(x.pairs)}${x.shots || ''}</li>`).join('');
   return `<details class="all-items"><summary><span>逐条看全部 ${total} 条</span><span class="all-hint">点上面的数字只看那一类</span></summary>`
     + '<div class="all-filter" role="group" aria-label="按结论筛选">'
     + filters.map(([f, t], i) => `<button type="button" data-filter="${f}" aria-pressed="${i === 0}">${e(t)}</button>`).join('')
     + `</div><p class="all-count" aria-live="polite"></p><ol class="all-list">${lis}</ol></details>`;
 }
 
-function buildAcceptance(p, d, base) {
+function buildAcceptance(p, d, base, upgrade) {
   const c = common(p, d, 'acceptance');
+  const hasHistory = isObj(d) && Object.hasOwn(d, 'historicalSummary');
+  if (hasHistory && !upgrade) p.add('data.historicalSummary', '只用于升级旧开发文档');
+  const summary = hasHistory ? text(p, d, 'historicalSummary', 'data') : '';
+  if (hasHistory && !Object.hasOwn(d, 'items')) {
+    if (['paths', 'extra_untested', 'launch'].some(key => Object.hasOwn(d, key)))
+      p.add('data.historicalSummary', '历史验收记录缺失时只填写可核实的历史情况');
+    return [head(c, '04 / 验收报告', '验收报告', '查看应用的交付情况和使用范围。')
+      + '<section class="section"><div class="section-head"><h2>交付情况</h2></div>'
+      + `<p>${e(summary)}</p></section>` + foot(c), []];
+  }
   const its = items(p, d, 'items', 'data');
   const byId = new Map(), shotsAll = [];
   const counts = Object.fromEntries(RESULTS.map(r => [r, 0]));
@@ -628,7 +639,9 @@ function buildAcceptance(p, d, base) {
       ['证据', get(it, 'evidence', '')], ['为什么没测', whyUntested]];
     records.set(iid, `<span class="item-record"><b>${e(title)}</b> <span class="result-${resCls}">${e(label)}</span>${kv(pairs)}`
       + (shotHtml ? `<span class="shots">${shotHtml}</span>` : '') + '</span>');
-    rows.push({ res, title, label: res === '好不好你说了算' ? '要你判断' : label, pairs: pairs.filter(([k]) => k !== '证据') });
+    rows.push({ res, title, label: res === '好不好你说了算' ? '要你判断' : label,
+      pairs: hasHistory ? pairs : pairs.filter(([k]) => k !== '证据'),
+      shots: hasHistory && shotHtml ? `<span class="shots">${shotHtml}</span>` : '' });
   });
   items(p, d, 'extra_untested', 'data', false).forEach((x, i) => {
     const w = `extra_untested[${i}]`;
@@ -645,13 +658,13 @@ function buildAcceptance(p, d, base) {
     counts['未测'] += 1;
   });
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
-  const out = [head(c, '04 / 验收报告', '验收报告', '按业务路径看每一步走没走通，结论都有依据。')];
+  const out = [head(c, '04 / 验收报告', '验收报告', hasHistory ? summary : '按业务路径看每一步走没走通，结论都有依据。')];
   const stat = (cls, n, lbl) => `<div class="stat-card ${cls}" data-filter="${cls}"><p>${lbl}</p><strong>${n}</strong><p class="go">查看详情 →</p></div>`;
   out.push('<div class="stats">' + stat('fail', counts['没通过'], '没通过') + stat('pass', counts['通过'], '通过')
     + stat('judge', counts['好不好你说了算'], '要你判断') + stat('untested', counts['未测'], '未测')
-    + `</div><p style="margin-top:10px">共 ${total} 条：没通过 ${counts['没通过']} · 通过 ${counts['通过']} · 要你判断 ${counts['好不好你说了算']} · 未测 ${counts['未测']}。${e(text(p, d, 'impact', 'data'))}</p>`
+    + `</div><p style="margin-top:10px">共 ${total} 条：没通过 ${counts['没通过']} · 通过 ${counts['通过']} · 要你判断 ${counts['好不好你说了算']} · 未测 ${counts['未测']}。${e(text(p, d, 'impact', 'data', !hasHistory))}</p>`
     + allItems(rows, counts, total));
-  const paths = items(p, d, 'paths', 'data');
+  const paths = items(p, d, 'paths', 'data', !hasHistory);
   const plist = [], pflows = [];
   const shown = new Set();
   paths.forEach((pa, i) => {
@@ -695,8 +708,8 @@ function buildAcceptance(p, d, base) {
     pflows.push(`<div class="path-flow" data-path="${i}"><div class="path-title"><b>${e(name)}</b><span class="tag ${tagCls}">${NODE_STATES[overall]}</span></div>`
       + `${nHtml.join('')}<div class="evidence-box"><p>${detail}</p></div><div class="path-detail-src" hidden><p>${detail}</p><small class="muted">点任意一步看依据。</small></div></div>`);
   });
-  for (const iid of byId.keys()) if (!shown.has(iid)) p.add('data.paths', `条目 ${iid} 没挂到任何一步上，页面上看不到它；写进它验证的那一步的 items`);
-  out.push('<section class="section"><div class="section-head"><h2>业务路径检查</h2><span><button type="button" data-play="paths">▶ 回放这条路径</button> '
+  if (!hasHistory) for (const iid of byId.keys()) if (!shown.has(iid)) p.add('data.paths', `条目 ${iid} 没挂到任何一步上，页面上看不到它；写进它验证的那一步的 items`);
+  if (paths.length) out.push('<section class="section"><div class="section-head"><h2>业务路径检查</h2><span><button type="button" data-play="paths">▶ 回放这条路径</button> '
     + '<button type="button" data-stop="paths">停止</button></span></div>'
     + `<div class="checks"><div class="path-list">${plist.join('')}</div><div>${pflows.join('')}</div></div>`
     + '<p class="muted" style="font-size:12px;margin-top:8px">回放只按已有的验收记录走一遍，不是重新测试。</p></section>');
@@ -784,10 +797,10 @@ function shot(index, frontend) {
   return run.status ?? 2;
 }
 
-const MARK_RE = /<meta name="studio-doc" content="(prd|proposal|progress|acceptance);sha256=([0-9a-f]{64})">/;
+const MARK_RE = /<meta name="studio-doc" content="(prd|proposal|progress|acceptance);(?:format=2;)?sha256=([0-9a-f]{64})">/;
 
 /** 生成标记：页面其余部分的 sha256。手写或手改过的页面对不上。 */
-const marker = (docType, page) => `<meta name="studio-doc" content="${docType};sha256=${sha256(page)}">`;
+const marker = (docType, page) => `<meta name="studio-doc" content="${docType};format=2;sha256=${sha256(page)}">`;
 
 function verify(index) {
   const page = readFileSync(index, 'utf8');
@@ -822,12 +835,12 @@ export function main(argv) {
     return 1;
   }
   const p = new Problems();
-  const base = dirname(dataPath);
+  const base = dirname(dataPath), upgrade = argv.includes('--document-upgrade');
   let body, demos = '', shots = [];
   if (docType === 'prd') body = buildPrd(p, data);
-  else if (docType === 'proposal') [body, demos] = buildProposal(p, data, base);
-  else if (docType === 'progress') body = buildProgress(p, data);
-  else [body, shots] = buildAcceptance(p, data, base);
+  else if (docType === 'proposal') [body, demos] = buildProposal(p, data, base, upgrade);
+  else if (docType === 'progress') body = buildProgress(p, data, upgrade);
+  else [body, shots] = buildAcceptance(p, data, base, upgrade);
   scanWords(p, data, 'data');
   for (const [key, whereTo] of Object.entries(MOVED_KEYS[docType] || {}))
     if (isObj(data) && Object.hasOwn(data, key)) p.add(`data.${key}`, `这一项不在${DOC_NAMES[docType]}里显示，删掉：${whereTo}`);
@@ -859,7 +872,7 @@ export function main(argv) {
   page = replaceFirst(page, '<head>', '<head>' + marker(docType, page));
   writeFileSync(outPath, page, 'utf8');
   const outDir = dirname(outPath);
-  const files = ['index.html', ...(docType === 'proposal' ? ['acceptance.json'] : []), ...shots];
+  const files = ['index.html', ...(docType === 'proposal' && (!upgrade || isFile(join(base, 'acceptance.json'))) ? ['acceptance.json'] : []), ...shots];
   const size = files.reduce((n, f) => n + (isFile(join(outDir, f)) ? statSync(join(outDir, f)).size : 0), 0);
   console.log(`已生成 ${outPath}（${Math.floor(Buffer.byteLength(page, 'utf8') / 1024)} KB）`);
   console.log('studio_write_proposal 的 files 放：' + files.join('、') + `（合计 ${Math.floor(size / 1024)} KB，上限 8 MB）`);

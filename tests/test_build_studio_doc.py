@@ -164,3 +164,72 @@ def test_progress_and_acceptance_reject_old_blocks(tmp_path: Path) -> None:
     data["paths"][1]["nodes"][1]["items"] = []
     out = _build("acceptance", _prepare(tmp_path, "acceptance", data)).stdout
     assert "data.costs" in out and "条目 5 没挂到任何一步上" in out
+
+
+def test_document_upgrade_without_original_acceptance(tmp_path: Path) -> None:
+    proposal = _sample("proposal")
+    proposal.pop("acceptance")
+    proposal_path = _prepare(tmp_path, "proposal", proposal)
+    (proposal_path.parent / "acceptance.json").unlink()
+    assert _build("proposal", proposal_path).returncode == 1
+
+    def historical(doc_type: str, path: Path) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            ["node", str(SCRIPT), doc_type, str(path), "--document-upgrade"],
+            capture_output=True, text=True, check=False,
+        )
+
+    saved = historical("proposal", proposal_path)
+    assert saved.returncode == 0, saved.stdout
+    assert "files 放：index.html（" in saved.stdout
+    plan = (proposal_path.parent / "index.html").read_text(encoding="utf-8")
+    assert "录入进货批次" in plan and "原可执行验收清单未留存" not in plan
+
+    acceptance_path = _prepare(tmp_path, "acceptance", {
+        "app": "批次管理", "version": 1, "updated": "2026-11-16 15:00",
+        "historicalSummary": "正式版已上线，来源为应用上线状态。",
+    })
+    assert _build("acceptance", acceptance_path).returncode == 1
+    saved = historical("acceptance", acceptance_path)
+    assert saved.returncode == 0, saved.stdout
+    body = (acceptance_path.parent / "index.html").read_text(encoding="utf-8").split("</main>")[0]
+    assert "历史验收记录未留存" not in body and "正式版已上线" in body and "交付情况" in body
+    assert "stats\">" not in body and 'class="path-flow"' not in body
+
+
+def test_document_upgrade_preserves_partial_acceptance_records(tmp_path: Path) -> None:
+    data = _sample("acceptance")
+    data["items"] = data["items"][:1]
+    data["items"][0]["evidence"] = "归档回执 710 的结果"
+    data.pop("paths")
+    data.pop("impact")
+    data.pop("extra_untested", None)
+    data["historicalSummary"] = "批次录入已交付，可以查看自动算出的到期日。"
+    data_path = _prepare(tmp_path, "acceptance", data)
+    assert _build("acceptance", data_path).returncode == 1
+    run = subprocess.run(
+        ["node", str(SCRIPT), "acceptance", str(data_path), "--document-upgrade"],
+        capture_output=True, text=True, check=False,
+    )
+    assert run.returncode == 0, run.stdout
+    body = (data_path.parent / "index.html").read_text(encoding="utf-8").split("</main>")[0]
+    assert 'acceptance;format=2;sha256=' in body
+    assert "部分历史验收记录未留存" not in body and "归档回执 710 的结果" in body
+    assert "逐条看全部 1 条" in body and 'class="path-flow"' not in body
+
+
+def test_document_upgrade_keeps_progress_without_inventing_times_or_trials(tmp_path: Path) -> None:
+    data = _sample("progress")
+    data["events"][0].pop("time")
+    data["features"][1]["backend"] = "做好了"
+    data.pop("pending")
+    data_path = _prepare(tmp_path, "progress", data)
+    assert _build("progress", data_path).returncode == 1
+    run = subprocess.run(
+        ["node", str(SCRIPT), "progress", str(data_path), "--document-upgrade"],
+        capture_output=True, text=True, check=False,
+    )
+    assert run.returncode == 0, run.stdout
+    body = (data_path.parent / "index.html").read_text(encoding="utf-8").split("</main>")[0]
+    assert '<time></time>' in body and '开始制作' in body
+    assert '后台 做好了 ·' in body and '交付范围与待明确条件' not in body
