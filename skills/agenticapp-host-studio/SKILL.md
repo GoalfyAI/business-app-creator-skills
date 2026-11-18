@@ -13,6 +13,10 @@ description: Studio 宿主的做法。工具列表里有 studio_write_proposal �
 - 用：Studio 宿主下写、更新、保存需求说明（PRD）、方案、制作进度、验收报告；登记开发者的确认；按轮问发表单。
 - 不用：文档里写什么（每段的内容规则）——按当前段的 Skill；非 Studio 宿主写方案页——按 `agenticapp-tool-workspace`。
 
+## 升级开发文档
+
+Studio 右栏发来的「请升级本会话的开发文档」只按 [references/升级开发文档.md](references/升级开发文档.md) 执行。日常写文档照下文。
+
 ## 四份开发文档
 
 Studio 第三栏「开发文档」有四份，代替方案页：

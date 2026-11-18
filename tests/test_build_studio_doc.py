@@ -164,3 +164,93 @@ def test_progress_and_acceptance_reject_old_blocks(tmp_path: Path) -> None:
     data["paths"][1]["nodes"][1]["items"] = []
     out = _build("acceptance", _prepare(tmp_path, "acceptance", data)).stdout
     assert "data.costs" in out and "条目 5 没挂到任何一步上" in out
+
+
+def test_document_upgrade_without_original_acceptance(tmp_path: Path) -> None:
+    proposal = _sample("proposal")
+    proposal.pop("acceptance")
+    proposal_path = _prepare(tmp_path, "proposal", proposal)
+    (proposal_path.parent / "acceptance.json").unlink()
+    assert _build("proposal", proposal_path).returncode == 1
+
+    def historical(doc_type: str, path: Path) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            ["node", str(SCRIPT), doc_type, str(path), "--document-upgrade"],
+            capture_output=True, text=True, check=False,
+        )
+
+    saved = historical("proposal", proposal_path)
+    assert saved.returncode == 0, saved.stdout
+    assert "files 放：index.html（" in saved.stdout
+    plan = (proposal_path.parent / "index.html").read_text(encoding="utf-8")
+    assert "录入进货批次" in plan and "原可执行验收清单未留存" not in plan
+
+    data = {
+        "app": "批次管理", "version": 1, "updated": "2026-11-16 15:00",
+        "historicalSummary": "正式版已上线，来源为应用上线状态。",
+    }
+    acceptance_path = _prepare(tmp_path, "acceptance", data)
+    assert _build("acceptance", acceptance_path).returncode == 1
+    summary_only = historical("acceptance", acceptance_path)
+    assert summary_only.returncode == 1 and "data.paths" in summary_only.stdout
+
+    data["paths"] = [{
+        "name": "录入后查看批次",
+        "detail": "记录食材批次并查看到期日。",
+        "nodes": [
+            {"title": "录入批次", "state": "unknown", "note": "在批次页填写食材和入库日期。"},
+            {"title": "查看到期日", "state": "unknown", "note": "在列表查看该批次的到期日。"},
+        ],
+        "links": ["保存后在列表查找批次"],
+    }]
+    data["historicalSummary"] = "旧报告全文" * 50
+    acceptance_path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    too_long = historical("acceptance", acceptance_path)
+    assert too_long.returncode == 1 and "data.historicalSummary" in too_long.stdout
+
+    data["historicalSummary"] = "正式版已上线，来源为应用上线状态。"
+    acceptance_path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    saved = historical("acceptance", acceptance_path)
+    assert saved.returncode == 0, saved.stdout
+    body = (acceptance_path.parent / "index.html").read_text(encoding="utf-8").split("</main>")[0]
+    assert "正式版已上线" in body and "业务路径检查" in body
+    assert 'class="path-flow"' in body and 'class="pnode unknown"' in body
+    assert 'class="stats"' not in body and "逐条看全部" not in body and "交付情况</h2>" not in body
+
+
+def test_document_upgrade_preserves_partial_acceptance_records(tmp_path: Path) -> None:
+    data = _sample("acceptance")
+    data["items"] = data["items"][:1]
+    data["items"][0]["evidence"] = "归档回执 710 的结果"
+    data.pop("paths")
+    data.pop("impact")
+    data.pop("extra_untested", None)
+    data["historicalSummary"] = "批次录入已交付，可以查看自动算出的到期日。"
+    data_path = _prepare(tmp_path, "acceptance", data)
+    assert _build("acceptance", data_path).returncode == 1
+    run = subprocess.run(
+        ["node", str(SCRIPT), "acceptance", str(data_path), "--document-upgrade"],
+        capture_output=True, text=True, check=False,
+    )
+    assert run.returncode == 0, run.stdout
+    body = (data_path.parent / "index.html").read_text(encoding="utf-8").split("</main>")[0]
+    assert 'acceptance;format=2;sha256=' in body
+    assert "部分历史验收记录未留存" not in body and "归档回执 710 的结果" in body
+    assert "逐条看全部 1 条" in body and 'class="path-flow"' not in body
+
+
+def test_document_upgrade_keeps_progress_without_inventing_times_or_trials(tmp_path: Path) -> None:
+    data = _sample("progress")
+    data["events"][0].pop("time")
+    data["features"][1]["backend"] = "做好了"
+    data.pop("pending")
+    data_path = _prepare(tmp_path, "progress", data)
+    assert _build("progress", data_path).returncode == 1
+    run = subprocess.run(
+        ["node", str(SCRIPT), "progress", str(data_path), "--document-upgrade"],
+        capture_output=True, text=True, check=False,
+    )
+    assert run.returncode == 0, run.stdout
+    body = (data_path.parent / "index.html").read_text(encoding="utf-8").split("</main>")[0]
+    assert '<time></time>' in body and '开始制作' in body
+    assert '后台 做好了 ·' in body and '交付范围与待明确条件' not in body
