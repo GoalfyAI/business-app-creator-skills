@@ -24,11 +24,12 @@ assert PROD_SPEC and PROD_SPEC.loader
 prod_release_module = importlib.util.module_from_spec(PROD_SPEC)
 PROD_SPEC.loader.exec_module(prod_release_module)
 
-# 随 Skill 发布的脚本：Studio 表单卡片、开发文档生成与用户反馈报告（路径相对 skills/）。
+# 随 Skill 发布的脚本：Studio 表单卡片、开发文档生成、用户反馈报告与方案段声明文件（路径相对 skills/）。
 SHIPPED_SCRIPTS = (
     "agenticapp-host-studio/scripts/studio_card.mjs",
     "agenticapp-host-studio/scripts/build_studio_doc.mjs",
     "agenticapp-task-user-feedback/scripts/feedback_report.mjs",
+    "agenticapp-stage-2-plan/scripts/declaration.mjs",
 )
 
 
