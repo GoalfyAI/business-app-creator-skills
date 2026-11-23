@@ -326,8 +326,10 @@ export function check(decl) {
   if (isObj(decl.app)) gapSpots.push({ entity: '应用', item: '', field: 'users', text: decl.app.users, where: '谁来用' });
   if (isNone(decl.resourceControls)) gapSpots.push({ entity: '资源控制点', item: '', field: 'none', text: decl.resourceControls.none, where: '数据怎么分', vague: true });
   if (isNone(decl.automations)) gapSpots.push({ entity: '自动任务', item: '', field: 'none', text: decl.automations.none, where: '自动任务' });
-  tables.forEach((o, i) => { if (isNone(o.partition)) gapSpots.push({ entity: '数据表', item: tag(o, i), field: 'partition.none', text: o.partition.none, where: `「${o.name}」怎么分`, vague: true }); });
-  taskflows.forEach((o, i) => { if (isNone(o.scope)) gapSpots.push({ entity: 'TaskFlow', item: tag(o, i), field: 'scope.none', text: o.scope.none, where: `「${o.name}」限不限范围`, vague: true }); });
+  // 整个应用都不分（资源控制点是 none）时，落差只在使用对象和资源控制点各说一次；表和 TaskFlow 上不再逐个列，免得同一件事列好几遍
+  const appWideNone = isNone(decl.resourceControls);
+  if (!appWideNone) tables.forEach((o, i) => { if (isNone(o.partition)) gapSpots.push({ entity: '数据表', item: tag(o, i), field: 'partition.none', text: o.partition.none, where: `「${o.name}」怎么分`, vague: true }); });
+  if (!appWideNone) taskflows.forEach((o, i) => { if (isNone(o.scope)) gapSpots.push({ entity: 'TaskFlow', item: tag(o, i), field: 'scope.none', text: o.scope.none, where: `「${o.name}」限不限范围`, vague: true }); });
   for (const s of gapSpots) {
     if (blank(s.text)) continue;
     const gap = parseGap(s.text);
@@ -337,7 +339,7 @@ export function check(decl) {
     }
     const miss = ['要的', '做不到', '替代'].filter(k => blank(gap[k]));
     if (miss.length) { M(s.entity, s.item, `${s.field} 写了落差，但缺：${miss.join('、')}`, `三段写全：「${GAP_FORMAT}」`); continue; }
-    N(s.entity, s.item, `${s.field} 写了一处做不到的落差`, '确认单会列出它；交接消息里点出来，请开发者定接受替代还是改需求', `${s.where}：你要的是${gap['要的']}；现在做不到的是${gap['做不到']}；替代做法是${gap['替代']}。请定：接受这个替代，还是改需求。`);
+    N(s.entity, s.item, `${s.field} 写了一处做不到的落差`, '确认单会列出它，交接消息里点出来', `${s.where}：你要的是${gap['要的']}；现在做不到的是${gap['做不到']}；替代做法是${gap['替代']}。这是按你之前定的写的；确认这一版就是接受它，不对直接说。`);
   }
 
   // 请留意：只在引用能对上时才有意义，按已定义的东西算
@@ -473,6 +475,8 @@ export function confirm(decl) {
 }
 
 const CATEGORIES = ['功能', '工具', '权限', '自动任务'];
+// 取数的和发出去的工具都用这一句判
+const TOOL_EXPECT = '调用成功，不是模拟、不是报错：取数的拿到真实数据，不是空的；发出去的在接收的地方看得到';
 const expectDone = t => (t.doneWhen === FIXED_DONE ? `${FIXED_DONE}：拿到数据并显示出来，没有报错` : `完成标准：${t.doneWhen}`);
 
 /** 走查项清单：{ items: [{ id, category, how, expect }], counts, total }。编号由标识组成，声明不变就不变。 */
@@ -507,7 +511,7 @@ export function walkthrough(decl) {
     add(`功能-${t.key}-做不成`, '功能', `发起「${t.name}」，造一次做不成，从这几种里选能造出来的：${ways.join('；')}`, '结果是未完成并带原因，原因写明使用者下一步该做什么；已有数据没有被改坏', { taskflow: t.key });
   }
   for (const t of decl.taskflows) for (const tool of t.uses.tools) {
-    add(`工具-${t.key}-${tool}`, '工具', `用真实参数调用一次「${tool}」（「${t.name}」用到的）`, '返回真实数据：不是空、不是模拟数据、不是报错', { taskflow: t.key, tool });
+    add(`工具-${t.key}-${tool}`, '工具', `用真实参数调用一次「${tool}」（「${t.name}」用到的）`, TOOL_EXPECT, { taskflow: t.key, tool });
   }
   for (const role of decl.roles) for (const t of decl.taskflows) {
     const can = role.permissions.includes(t.permission);

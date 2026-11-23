@@ -204,9 +204,40 @@ class DeclarationCheckTests(unittest.TestCase):
         self.assertIn("你要的是两个区域的主管各看各的线索", gaps[0]["plain"])
         self.assertIn("替代做法是每个区域的主管各装一份", gaps[0]["plain"])
         text = node_call(SCRIPT, "confirm", self.decl)
-        self.assertIn("数据怎么分：你要的是两个区域的主管各看各的线索", text.split("## 需要你留意的")[1])
+        notes = text.split("## 需要你留意的")[1]
+        self.assertIn("数据怎么分：你要的是两个区域的主管各看各的线索", notes)
+        # 替代在 ① 定过：陈述加出口，不再请他另选一次
+        self.assertIn("这是按你之前定的写的；确认这一版就是接受它，不对直接说。", notes)
+        self.assertNotIn("请定", notes)
+        self.assertEqual(gaps[0]["fix"], "确认单会列出它，交接消息里点出来")
         self.decl["app"]["users"] = "要的：销售和主管分开用；做不到：平台没有团队；"
         self.assertIn("缺：替代", "\n".join(problems(check(self.decl))))
+
+    def test_gap_listed_once_when_whole_app_is_not_split(self):
+        gap = "要的：区域主管只看本区域的线索；做不到：不能按区域分权限；替代：主管各装一份"
+        self.decl["app"]["users"] = "要的：销售和主管都在应用里；做不到：平台没有团队；替代：主管一人用"
+        self.decl["resourceControls"] = {"none": gap}
+        for table in self.decl["tables"]:
+            table["partition"] = {"none": gap}
+        for flow in self.decl["taskflows"]:
+            flow["scope"] = {"none": "平台上每人一份，只有主管一人用"}
+        result = check(self.decl)
+        self.assertTrue(result["ok"], result["must"])
+        self.assertEqual(sorted(x["entity"] for x in result["notice"]), ["应用", "资源控制点"])
+        notes = node_call(SCRIPT, "confirm", self.decl).split("## 需要你留意的")[1]
+        self.assertEqual(notes.count("你要的是"), 2)
+        # 表上三段缺一段也不再逐个查：整个应用不分时这里只要业务上的一句话
+        self.decl["tables"][0]["partition"] = {"none": "要的：分开；做不到：不能"}
+        self.assertTrue(check(self.decl)["ok"])
+
+    def test_gap_on_one_table_is_listed_when_app_is_split(self):
+        self.decl["tables"].append({"key": "contracts", "name": "合同", "description": "成交后的合同",
+                                    "partition": {"none": "要的：合同也按区域分开看；做不到：合同要全公司财务统一看，按区域分了财务看不全；替代：合同不分区域，只有主管能看"}})
+        tf(self.decl, "assignLead")["uses"]["reads"].append("contracts")
+        result = check(self.decl)
+        self.assertTrue(result["ok"], result["must"])
+        self.assertEqual([x["entity"] for x in result["notice"] if "落差" in x["problem"]], ["数据表"])
+        self.assertIn("「合同」怎么分：你要的是合同也按区域分开看", node_call(SCRIPT, "confirm", self.decl))
 
     def test_platform_only_reason_is_noticed(self):
         self.decl["resourceControls"] = {"none": "平台上每个使用者用自己的一份数据，不需要划分"}
@@ -279,7 +310,9 @@ class DeclarationOutputTests(unittest.TestCase):
         self.assertIn("写「跟进记录」、「线索」时被拒", items["功能-logFollowup-做不成"]["how"])
         self.assertIn(FIXED, items["功能-leadPage-listLeads"]["expect"])
         self.assertIn("线索的负责人改成选定的销售", items["功能-leadPage-assignLead"]["expect"])
-        self.assertIn("返回真实数据", items["工具-dailyDigest-钉钉工作通知"]["expect"])
+        # 发消息这类工具不返回数据：预期同时说清取数的和发出去的怎么判
+        self.assertIn("发出去的在接收的地方看得到", items["工具-dailyDigest-钉钉工作通知"]["expect"])
+        self.assertIn("取数的拿到真实数据", items["工具-dailyDigest-钉钉工作通知"]["expect"])
         self.assertIn("主管在钉钉收到早报", items["自动任务-morningDigest-立即"]["expect"])
         self.assertIn("手动触发", items["自动任务-morningDigest-立即"]["how"])
         self.assertIn("该区域的销售主管", items["自动任务-morningDigest-到点"]["expect"])
