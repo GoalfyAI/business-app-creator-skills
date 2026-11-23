@@ -14,6 +14,16 @@ const isObj = v => v !== null && typeof v === 'object' && !Array.isArray(v);
 const blank = v => typeof v !== 'string' || !v.trim();
 const hasCJK = s => typeof s === 'string' && /[㐀-鿿]/.test(s);
 const PERMISSION = /^[^.\s]+\.[^.\s]+$/;
+// 还没问清的占位字样；「」里的原样算业务话（例如状态叫「待确认」）
+const PLACEHOLDER = /待开发者回答|待定|待确认|待补|TODO|TBD|同上|暂无/i;
+// 落差的固定写法：三段都在，用「；」隔开，顺序不限
+export const GAP_FORMAT = '要的：…；做不到：…；替代：…';
+/** 认落差：含「做不到：」才算；返回三段，缺的为空串。不是落差返回 null。 */
+export function parseGap(text) {
+  if (typeof text !== 'string' || !/做不到[：:]/.test(text)) return null;
+  const part = k => (new RegExp(`(?:^|[；;])\\s*${k}[：:]([^；;]*)`).exec(text)?.[1] || '').trim();
+  return { 要的: part('要的'), 做不到: part('做不到'), 替代: part('替代') };
+}
 const isNone = v => isObj(v) && Object.hasOwn(v, 'none');
 
 // 每类实体的中文名、字段与中文标签。字段顺序就是检查时列缺项的顺序。
@@ -288,6 +298,48 @@ export function check(decl) {
     for (const c of listOf(o.calls)) if (!blank(c) && !tfByKey.has(c)) M('页面', t, `调用的 TaskFlow「${c}」不存在`, '改成 taskflows 里已有的标识，或先声明这个 TaskFlow');
   });
 
+  // 占位字样：值里写着「待开发者回答」这类话，等于还没问清，不能算填了
+  const holes = new Map();
+  const walk = (v, path, entity, item) => {
+    if (typeof v === 'string') {
+      if (PLACEHOLDER.test(v.replace(/「[^」]*」/g, ''))) {
+        const k = `${entity}\u0000${item}`;
+        if (!holes.has(k)) holes.set(k, { entity, item, fields: [] });
+        const f = path.join('.');
+        const head = path.find(x => typeof x === 'string' && LABEL[x]) || path[0];
+        const label = `${LABEL[head] || head}（${f}）`;
+        if (!holes.get(k).fields.includes(label)) holes.get(k).fields.push(label);
+      }
+    } else if (Array.isArray(v)) v.forEach(x => walk(x, path, entity, item));
+    else if (isObj(v)) for (const [k, x] of Object.entries(v)) walk(x, [...path, k], entity, item);
+  };
+  if (isObj(decl.app)) walk(decl.app, [], '应用', '');
+  for (const list of ['roles', 'resourceControls', 'tables', 'taskflows', 'automations', 'pages']) {
+    const v = decl[list];
+    if (Array.isArray(v)) v.forEach((o, i) => walk(o, [], ENTITY[list], tag(o, i)));
+    else if (isObj(v)) walk(v, [list], ENTITY[list], '');
+  }
+  for (const h of holes.values()) M(h.entity, h.item, `这几项写的是占位字样（如「待开发者回答」「待定」）：${h.fields.join('、')}`, '这一项还没问清：先问开发者，答完再填');
+
+  // 落差：开发者要的现有平台做不到，按「要的：…；做不到：…；替代：…」写在不适用的原因或使用对象里
+  const gapSpots = [];
+  if (isObj(decl.app)) gapSpots.push({ entity: '应用', item: '', field: 'users', text: decl.app.users, where: '谁来用' });
+  if (isNone(decl.resourceControls)) gapSpots.push({ entity: '资源控制点', item: '', field: 'none', text: decl.resourceControls.none, where: '数据怎么分', vague: true });
+  if (isNone(decl.automations)) gapSpots.push({ entity: '自动任务', item: '', field: 'none', text: decl.automations.none, where: '自动任务' });
+  tables.forEach((o, i) => { if (isNone(o.partition)) gapSpots.push({ entity: '数据表', item: tag(o, i), field: 'partition.none', text: o.partition.none, where: `「${o.name}」怎么分`, vague: true }); });
+  taskflows.forEach((o, i) => { if (isNone(o.scope)) gapSpots.push({ entity: 'TaskFlow', item: tag(o, i), field: 'scope.none', text: o.scope.none, where: `「${o.name}」限不限范围`, vague: true }); });
+  for (const s of gapSpots) {
+    if (blank(s.text)) continue;
+    const gap = parseGap(s.text);
+    if (gap === null) {
+      if (s.vague && /平台/.test(s.text) && /每人|每个人|每个使用者|一份/.test(s.text)) N(s.entity, s.item, `${s.field} 只写了平台怎么做，看不出开发者原本要不要分开管`, `开发者要的就是不分，写清业务上的原因；要分而做不到，改写成「${GAP_FORMAT}」`, `${s.where}这里只写了平台现在怎么做，没写你原本要的是什么；如果你原本要分开管，告诉我，我把做不到的地方和替代做法写清楚。`);
+      continue;
+    }
+    const miss = ['要的', '做不到', '替代'].filter(k => blank(gap[k]));
+    if (miss.length) { M(s.entity, s.item, `${s.field} 写了落差，但缺：${miss.join('、')}`, `三段写全：「${GAP_FORMAT}」`); continue; }
+    N(s.entity, s.item, `${s.field} 写了一处做不到的落差`, '确认单会列出它；交接消息里点出来，请开发者定接受替代还是改需求', `${s.where}：你要的是${gap['要的']}；现在做不到的是${gap['做不到']}；替代做法是${gap['替代']}。请定：接受这个替代，还是改需求。`);
+  }
+
   // 请留意：只在引用能对上时才有意义，按已定义的东西算
   const nameOf = (map, k) => (map.get(k)?.name && !blank(map.get(k).name) ? map.get(k).name : k);
   const tableByKey = new Map(tables.filter(o => !blank(o.key)).map(o => [o.key, o]));
@@ -399,7 +451,7 @@ export function confirm(decl) {
     out.push(
       `### ${t.name}`, '',
       `- 做什么：${t.summary}`,
-      `- 做到什么算完成：${t.doneWhen}`,
+      `- 做到什么算完成：${t.doneWhen === FIXED_DONE ? '查到并显示出来就算完成' : t.doneWhen}`,
       `- 从哪里发起：${from.length ? join(from) : '目前没有地方能发起'}`,
       `- 会用到的外部工具：${t.uses.tools.length ? join(t.uses.tools.map(x => `「${x}」`)) : '不用'}`,
       `- 交给模型判断的：${t.uses.agents.length ? join(t.uses.agents.map(x => `「${x}」`)) : '没有'}`,
@@ -428,40 +480,52 @@ export function walkthrough(decl) {
   requireOk(decl);
   const tfs = tfIndex(decl);
   const rcs = new Map((Array.isArray(decl.resourceControls) ? decl.resourceControls : []).map(x => [x.key, x]));
+  const tables = new Map(decl.tables.map(x => [x.key, x]));
   const autos = Array.isArray(decl.automations) ? decl.automations : [];
   const items = [];
-  const add = (id, category, how, expect) => items.push({ id, category, how, expect });
+  // refs 记这一项涉及哪些对象（标识），impact 与 diff 据此挑出要重走的项
+  const add = (id, category, how, expect, refs) => items.push({ id, category, how, expect, refs });
+  // 从页面发起的功能项用第一个能做这件事的角色去做；这一项走通就证明了这个角色能做，权限里不再单列
+  const firstRole = t => decl.roles.find(r => r.permissions.includes(t.permission));
+  const proven = new Set();
 
   for (const p of decl.pages) for (const k of p.calls) {
-    const t = tfs.get(k);
-    add(`功能-${p.key}-${k}`, '功能', `在「${p.name}」页面发起一次「${t.name}」`, expectDone(t));
+    const t = tfs.get(k), who = firstRole(t);
+    proven.add(`${who.key}:${k}`);
+    add(`功能-${p.key}-${k}`, '功能', `以「${who.name}」的身份，在「${p.name}」页面发起一次「${t.name}」`, expectDone(t), { page: p.key, taskflow: k, role: who.key });
   }
-  for (const x of autos) {
-    const t = tfs.get(x.call);
-    add(`功能-${x.key}-${t.key}`, '功能', `由自动任务「${x.name}」发起一次「${t.name}」（手动触发）`, expectDone(t));
-  }
+  const tableNames = ks => ks.map(k => `「${tables.get(k).name}」`).join('、');
   for (const t of decl.taskflows) {
     if (t.effect !== 'write' && !t.uses.tools.length) continue;
-    add(`功能-${t.key}-做不成`, '功能', `发起「${t.name}」，造一次做不成（${t.uses.tools.length ? '让用到的工具返回失败、' : ''}输入缺必要信息或依赖的数据不存在）`, '结果是未完成并带原因，原因写明使用者下一步该做什么；已有数据没有被改坏');
+    const ways = [
+      ...t.uses.tools.map(x => `让「${x}」返回失败`),
+      ...t.uses.agents.map(x => `让「${x}」给不出结果`),
+      ...(t.uses.reads.length ? [`${tableNames(t.uses.reads)}里没有要用的那一行`] : []),
+      ...(t.uses.writes.length ? [`写${tableNames(t.uses.writes)}时被拒`] : []),
+      '输入缺必要信息',
+    ];
+    add(`功能-${t.key}-做不成`, '功能', `发起「${t.name}」，造一次做不成，从这几种里选能造出来的：${ways.join('；')}`, '结果是未完成并带原因，原因写明使用者下一步该做什么；已有数据没有被改坏', { taskflow: t.key });
   }
   for (const t of decl.taskflows) for (const tool of t.uses.tools) {
-    add(`工具-${t.key}-${tool}`, '工具', `用真实参数调用一次「${tool}」（「${t.name}」用到的）`, '返回真实数据：不是空、不是模拟数据、不是报错');
+    add(`工具-${t.key}-${tool}`, '工具', `用真实参数调用一次「${tool}」（「${t.name}」用到的）`, '返回真实数据：不是空、不是模拟数据、不是报错', { taskflow: t.key, tool });
   }
   for (const role of decl.roles) for (const t of decl.taskflows) {
     const can = role.permissions.includes(t.permission);
-    add(`权限-${role.key}-${t.key}`, '权限', `以「${role.name}」的身份发起「${t.name}」`, can ? '能做' : '被拒绝');
+    if (can && proven.has(`${role.key}:${t.key}`)) continue;
+    add(`权限-${role.key}-${t.key}`, '权限', `以「${role.name}」的身份发起「${t.name}」`, can ? '能做' : '被拒绝', { role: role.key, taskflow: t.key });
   }
   for (const t of decl.taskflows) {
     if (isNone(t.scope)) continue;
     for (const [rk, field] of Object.entries(t.scope)) {
       const rc = rcs.get(rk);
-      const who = decl.roles.find(r => r.permissions.includes(t.permission));
-      add(`权限-${t.key}-${rk}-越界`, '权限', `用「${who.name}」身份、只被授权一个「${rc.name}」，发起「${t.name}」，输入里的 ${field} 填另一个「${rc.name}」`, `取不到：被拒绝或返回空，不出现另一个「${rc.name}」的数据，也不改它的数据`);
+      const who = firstRole(t);
+      add(`权限-${t.key}-${rk}-越界`, '权限', `用「${who.name}」身份、只被授权一个「${rc.name}」，发起「${t.name}」，输入里的 ${field} 填另一个「${rc.name}」`, `取不到：被拒绝或返回空，不出现另一个「${rc.name}」的数据，也不改它的数据`, { taskflow: t.key, resourceControl: rk, role: who.key });
     }
   }
   for (const x of autos) {
     const t = tfs.get(x.call);
-    add(`自动任务-${x.key}`, '自动任务', `让「${x.name}」到点（${x.schedule}）或手动触发跑一次`, `跑了一次「${t.name}」，结果对照${expectDone(t)}；没做完时通知到${x.notifyOnIncomplete}`);
+    add(`自动任务-${x.key}-立即`, '自动任务', `立即运行一次「${x.name}」（手动触发），让它做一次「${t.name}」`, `结果对照${expectDone(t)}`, { automation: x.key, taskflow: t.key });
+    add(`自动任务-${x.key}-到点`, '自动任务', `等「${x.name}」到点（${x.schedule}）自动运行一次，并让这一次做不成`, `到点自己开始了，没有人手动触发；没做完时通知到了${x.notifyOnIncomplete}`, { automation: x.key, taskflow: t.key });
   }
   const counts = Object.fromEntries(CATEGORIES.map(c => [c, items.filter(i => i.category === c).length]));
   return { items, counts, total: items.length };
@@ -483,17 +547,324 @@ export function walkthroughMarkdown(result) {
   return out.join('\n') + '\n';
 }
 
+// ---------------------------------------------------------------- impact 与 diff
+
+const TYPES = ['角色', '权限点', '资源控制点', '数据表', '工具', 'Agent', 'TaskFlow', '页面', '自动任务'];
+const AFFECTED_TYPES = ['数据表', 'TaskFlow', '页面', '自动任务', '角色'];
+const uniq = xs => [...new Set(xs)];
+const nid = (type, key) => `${type}:${key}`;
+
+/** 把声明整理成对象表与依赖关系。权限点、工具、Agent 没有单独的项，按出现过的字符串算一个对象。 */
+function model(decl) {
+  const arr = v => (Array.isArray(v) ? v : []);
+  const roles = decl.roles, tfs = decl.taskflows, tables = decl.tables, pages = decl.pages;
+  const rcs = arr(decl.resourceControls), autos = arr(decl.automations);
+  const objs = new Map();
+  const put = (type, key, name, extra = {}) => { if (!objs.has(nid(type, key))) objs.set(nid(type, key), { type, key, name, ...extra }); };
+  roles.forEach(o => put('角色', o.key, o.name, { about: `能做的权限点：${o.permissions.join('、')}` }));
+  rcs.forEach(o => put('资源控制点', o.key, o.name, { about: o.description }));
+  tables.forEach(o => put('数据表', o.key, o.name, { about: o.description }));
+  tfs.forEach(o => put('TaskFlow', o.key, o.name, { about: o.summary }));
+  pages.forEach(o => put('页面', o.key, o.name, { about: o.summary }));
+  autos.forEach(o => put('自动任务', o.key, o.name, { about: `${o.schedule}，指向 ${o.call}` }));
+  uniq([...roles.flatMap(r => r.permissions), ...tfs.map(t => t.permission)]).forEach(p => put('权限点', p, p));
+  uniq(tfs.flatMap(t => t.uses.tools)).forEach(x => put('工具', x, x));
+  uniq(tfs.flatMap(t => t.uses.agents)).forEach(x => put('Agent', x, x));
+
+  const scoped = t => (isNone(t.scope) ? [] : Object.keys(t.scope));
+  const canDo = (r, t) => r.permissions.includes(t.permission);
+  const tfIds = list => list.map(t => nid('TaskFlow', t.key));
+  // 谁依赖它：改了它，这些跟着受影响
+  const dependents = id => {
+    const { type, key } = objs.get(id);
+    switch (type) {
+      case '数据表': return tfIds(tfs.filter(t => t.uses.reads.includes(key) || t.uses.writes.includes(key)));
+      case '工具': return tfIds(tfs.filter(t => t.uses.tools.includes(key)));
+      case 'Agent': return tfIds(tfs.filter(t => t.uses.agents.includes(key)));
+      case '资源控制点': return [...tables.filter(b => !isNone(b.partition) && b.partition.by === key).map(b => nid('数据表', b.key)), ...tfIds(tfs.filter(t => scoped(t).includes(key)))];
+      case '权限点': return [...tfIds(tfs.filter(t => t.permission === key)), ...roles.filter(r => r.permissions.includes(key)).map(r => nid('角色', r.key))];
+      case 'TaskFlow': {
+        const t = tfs.find(x => x.key === key);
+        return [...pages.filter(p => p.calls.includes(key)).map(p => nid('页面', p.key)), ...autos.filter(a => a.call === key).map(a => nid('自动任务', a.key)), ...roles.filter(r => canDo(r, t)).map(r => nid('角色', r.key))];
+      }
+      case '页面': {
+        const p = pages.find(x => x.key === key);
+        return roles.filter(r => tfs.some(t => p.calls.includes(t.key) && canDo(r, t))).map(r => nid('角色', r.key));
+      }
+      default: return [];
+    }
+  };
+  // 它用到的：和 dependents 合起来就是直接连着的
+  const uses = id => {
+    const { type, key } = objs.get(id);
+    switch (type) {
+      case '数据表': { const b = tables.find(x => x.key === key); return isNone(b.partition) ? [] : [nid('资源控制点', b.partition.by)]; }
+      case 'TaskFlow': {
+        const t = tfs.find(x => x.key === key);
+        return [...uniq([...t.uses.reads, ...t.uses.writes]).map(k => nid('数据表', k)), ...t.uses.tools.map(k => nid('工具', k)), ...t.uses.agents.map(k => nid('Agent', k)), nid('权限点', t.permission), ...scoped(t).map(k => nid('资源控制点', k))];
+      }
+      case '页面': return pages.find(x => x.key === key).calls.map(k => nid('TaskFlow', k));
+      case '自动任务': return [nid('TaskFlow', autos.find(x => x.key === key).call)];
+      case '角色': { const r = roles.find(x => x.key === key); return [...r.permissions.map(p => nid('权限点', p)), ...tfIds(tfs.filter(t => canDo(r, t)))]; }
+      default: return [];
+    }
+  };
+  const relation = (a, b) => {
+    const [x, y] = [objs.get(a), objs.get(b)];
+    const pair = x.type === 'TaskFlow' && y.type === '数据表' ? [x, y] : y.type === 'TaskFlow' && x.type === '数据表' ? [y, x] : null;
+    if (!pair) return '';
+    const t = tfs.find(o => o.key === pair[0].key);
+    const r = t.uses.reads.includes(pair[1].key), w = t.uses.writes.includes(pair[1].key);
+    return r && w ? '读、写' : w ? '写' : '读';
+  };
+  return { objs, dependents, uses, relation };
+}
+
+/** 按标识或中文名称找对象；可写成「类:对象」限定类别。返回 { match } 或 { candidates }。 */
+export function resolve(decl, target) {
+  const { objs } = model(decl);
+  const all = [...objs.values()];
+  let type = null, text = String(target).trim();
+  const m = /^([^:：]+)[:：](.+)$/.exec(text);
+  if (m && TYPES.includes(m[1])) [type, text] = [m[1], m[2]];
+  const pool = type ? all.filter(o => o.type === type) : all;
+  const hits = pool.filter(o => o.key === text || o.name === text);
+  if (hits.length === 1) return { match: hits[0] };
+  const candidates = hits.length ? hits : pool.filter(o => o.key.includes(text) || o.name.includes(text));
+  return { duplicate: hits.length > 1, candidates: candidates.map(o => ({ type: o.type, key: o.key, name: o.name })) };
+}
+
+const labelOf = o => (o.key === o.name ? `「${o.name}」` : `「${o.name}」（${o.key}）`);
+const plainOf = o => `「${o.name}」`;
+
+/** 沿依赖向外走一遍：返回直接连着的、受影响的（按类）以及受影响对象的 id 集合。 */
+// 页面只在它本身是改动对象时才往外走到角色：页面因为其中一件事变了而受影响时，能不能用这一页的角色不变。
+function spread(mdl, roots) {
+  const seen = new Set(roots), queue = [...roots];
+  const next = id => (mdl.objs.get(id).type === '页面' && !roots.includes(id) ? [] : mdl.dependents(id));
+  while (queue.length) for (const d of next(queue.shift())) if (!seen.has(d)) { seen.add(d); queue.push(d); }
+  return seen;
+}
+
+// 要重走的项：涉及受影响 TaskFlow 的全部项；页面、自动任务、角色只在它本身就是改动对象时，才把涉及它的项都算上。
+// 只因为页面上的另一件事变了，这一页其余的事不用重走。
+function rewalkOf(decl, affected, roots) {
+  const tf = k => k !== undefined && affected.has(nid('TaskFlow', k));
+  const root = (type, k) => k !== undefined && roots.has(nid(type, k));
+  return walkthrough(decl).items.filter(i => tf(i.refs.taskflow) || root('页面', i.refs.page) || root('自动任务', i.refs.automation) || root('角色', i.refs.role)).map(i => i.id);
+}
+
+const groupBy = (mdl, ids, types) => Object.fromEntries(types.map(t => [t, ids.filter(id => mdl.objs.get(id).type === t)]).filter(([, v]) => v.length));
+
+/** 改某个对象之前看它连着什么、谁依赖它。target 是标识、中文名称或「类:对象」。 */
+export function impact(decl, target) {
+  requireOk(decl);
+  const r = resolve(decl, target);
+  if (!r.match) {
+    const list = r.candidates.map(c => `${c.type}:${c.key}（${c.name}）`).join('、');
+    if (!r.candidates.length) throw new ValueError(`声明里找不到「${target}」，写标识或中文名称`);
+    throw new ValueError(`${r.duplicate ? `「${target}」有重名` : `声明里没有正好叫「${target}」的，相近的有`}：${list}。用「类:标识」写明是哪一个，例如 ${r.candidates[0].type}:${r.candidates[0].key}`);
+  }
+  const mdl = model(decl), o = r.match, id = nid(o.type, o.key);
+  const direct = uniq([...mdl.uses(id), ...mdl.dependents(id)]).filter(x => x !== id);
+  const affected = spread(mdl, [id]);
+  const rest = [...affected].filter(x => x !== id);
+  const show = ids => ids.map(x => { const ob = mdl.objs.get(x), rel = mdl.relation(id, x); return { type: ob.type, key: ob.key, name: ob.name, relation: rel }; });
+  const byType = (ids, types) => Object.fromEntries(Object.entries(groupBy(mdl, ids, types)).map(([k, v]) => [k, show(v)]));
+  const aff = byType(rest, AFFECTED_TYPES);
+  const plainParts = AFFECTED_TYPES.filter(t => aff[t]).map(t => `${aff[t].length} ${{ 数据表: '份数据', TaskFlow: '件事', 页面: '个页面', 自动任务: '个自动任务', 角色: '个角色' }[t]}（${aff[t].map(x => plainOf(x)).join('、')}）`);
+  return {
+    target: { type: o.type, key: o.key, name: o.name, about: o.about || '' },
+    direct: byType(direct, TYPES),
+    affected: aff,
+    rewalk: rewalkOf(decl, affected, new Set([id])),
+    plain: plainParts.length ? `改${plainOf(o)}会波及 ${plainParts.join('、')}。` : `改${plainOf(o)}不会波及别的页面、自动任务和角色。`,
+  };
+}
+
+const items = list => list.map(x => (x.relation ? `「${x.name}」（${x.key}，${x.relation}）` : labelOf(x))).join('、');
+
+/** impact 结果的 Markdown。 */
+export function impactMarkdown(r) {
+  const t = r.target;
+  const out = [`# 影响范围：${t.type}${labelOf(t)}`, ''];
+  if (t.about) out.push(`- 是什么：${t.about}`, '');
+  out.push('## 直接连着', '');
+  const d = Object.entries(r.direct);
+  out.push(...(d.length ? d.map(([k, v]) => `- ${k}：${items(v)}`) : ['没有。']), '');
+  out.push('## 沿依赖受影响', '');
+  const a = Object.entries(r.affected);
+  out.push(...(a.length ? a.map(([k, v]) => `- ${k}：${items(v)}`) : ['没有。']), '');
+  out.push('给开发者的一句话：' + r.plain, '');
+  out.push(`## 改完要重走的走查项（${r.rewalk.length} 项）`, '', ...(r.rewalk.length ? r.rewalk.map(x => `- ${x}`) : ['没有。']));
+  return out.join('\n') + '\n';
+}
+
+// diff：按标识比对两份声明
+const ENTITY_FIELDS = { roles: FIELDS.roles, resourceControls: FIELDS.resourceControls, tables: FIELDS.tables, taskflows: FIELDS.taskflows, automations: FIELDS.automations, pages: FIELDS.pages };
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const fmt = v => (typeof v === 'string' ? v : Array.isArray(v) && v.every(x => typeof x === 'string') ? (v.length ? v.join('、') : '空') : JSON.stringify(v));
+
+/** 一处改动给开发者看的话：不出现标识和英文字段名。 */
+function plainChange(kind, field, c, ctx) {
+  const { oldD, newD } = ctx;
+  const nm = (d, list, k) => (Array.isArray(d[list]) ? d[list].find(x => x.key === k)?.name : undefined) ?? '';
+  const names = (d, list, ks) => ks.map(k => `「${nm(d, list, k)}」`).join('、');
+  const addDel = (o, n, show) => {
+    const add = n.filter(x => !o.includes(x)), del = o.filter(x => !n.includes(x));
+    return [add.length ? `加上${show(add, newD)}` : '', del.length ? `去掉${show(del, oldD)}` : ''].filter(Boolean).join('，');
+  };
+  const quote = xs => xs.map(x => `「${x}」`).join('、');
+  const scopeText = (d, s) => (isNone(s) ? `不按范围限制（${s.none}）` : `按${Object.keys(s).map(k => `「${nm(d, 'resourceControls', k)}」`).join('、')}限制`);
+  const partText = (d, p) => (isNone(p) ? `不分开（${p.none}）` : `按「${nm(d, 'resourceControls', p.by)}」分开`);
+  const rolesFor = (d, perm) => d.roles.filter(r => r.permissions.includes(perm)).map(r => `「${r.name}」`).join('、') || '没有角色';
+  const tfsFor = (d, perms) => d.taskflows.filter(t => perms.includes(t.permission)).map(t => `「${t.name}」`);
+  switch (field) {
+    case 'name': return `名称从「${c.from}」改成「${c.to}」`;
+    case 'summary': case 'description': return `说明改成：${c.to}`;
+    case 'doneWhen': return `完成标准从「${c.from}」改成「${c.to}」`;
+    case 'effect': return c.to === 'write' ? '从只读改成会改数据' : '从会改数据改成只读';
+    case 'permission': return `能做它的角色从 ${rolesFor(oldD, c.from)} 变成 ${rolesFor(newD, c.to)}`;
+    case 'scope': return `范围限制从${scopeText(oldD, c.from)}改成${scopeText(newD, c.to)}`;
+    case 'input': return '需要提供的信息有变化';
+    case 'output': return '产出有变化';
+    case 'uses.tools': return `用到的外部工具${addDel(c.from, c.to, xs => quote(xs))}`;
+    case 'uses.agents': return `交给模型判断的${addDel(c.from, c.to, xs => quote(xs))}`;
+    case 'uses.reads': return `读的数据${addDel(c.from, c.to, (xs, d) => names(d, 'tables', xs))}`;
+    case 'uses.writes': return `会改的数据${addDel(c.from, c.to, (xs, d) => names(d, 'tables', xs))}`;
+    case 'partition': return `从${partText(oldD, c.from)}改成${partText(newD, c.to)}`;
+    case 'permissions': {
+      const add = c.to.filter(x => !c.from.includes(x)), del = c.from.filter(x => !c.to.includes(x));
+      const a = tfsFor(newD, add), b = tfsFor(oldD, del);
+      return [a.length ? `现在能做${a.join('、')}` : add.length ? '多了一项还没有对应事情的权限' : '', b.length ? `不再能做${b.join('、')}` : del.length ? '少了一项没有对应事情的权限' : ''].filter(Boolean).join('，');
+    }
+    case 'schedule': return `触发时间从「${c.from}」改成「${c.to}」`;
+    case 'call': return `改成做「${nm(newD, 'taskflows', c.to)}」（原来做「${nm(oldD, 'taskflows', c.from)}」）`;
+    case 'notifyOnIncomplete': return `没做完时通知的人从「${c.from}」改成「${c.to}」`;
+    case 'calls': return `页面上能做的事${addDel(c.from, c.to, (xs, d) => names(d, 'taskflows', xs))}`;
+    default: return `${kind}有变化`;
+  }
+}
+
+const NOUN = { roles: '角色', resourceControls: '数据分开管的方式', tables: '数据', taskflows: '事', automations: '自动任务', pages: '页面' };
+const APP_PLAIN = { name: '应用名称', problem: '要解决的问题', users: '给谁用', doneWell: '做到什么算做好', scope: '这次做哪些、不做哪些', tradeoffs: '关键取舍' };
+
+/** 比对改前、改后两份声明：改了什么、影响到谁、走查项怎么走。两份都要先过 check。 */
+export function diff(oldD, newD) {
+  for (const [d, which] of [[oldD, '改前的一份'], [newD, '改后的一份']]) {
+    const r = check(d);
+    if (!r.ok) throw new ValueError(`${which}声明还有 ${r.must.length} 条必须改，先跑 check 改完：\n` + formatCheck(r));
+  }
+  const changes = [], plain = [];
+  for (const f of FIELDS.app) if (!same(oldD.app[f], newD.app[f])) {
+    changes.push({ entity: '应用', kind: '修改', key: '', name: newD.app.name, fields: [{ field: f, label: LABEL[f], from: oldD.app[f], to: newD.app[f] }] });
+    plain.push(`${APP_PLAIN[f]}改成：${newD.app[f]}`);
+  }
+  const roots = { old: [], new: [] };
+  const typeOf = { roles: '角色', resourceControls: '资源控制点', tables: '数据表', taskflows: 'TaskFlow', automations: '自动任务', pages: '页面' };
+  for (const [list, fields] of Object.entries(ENTITY_FIELDS)) {
+    const arr = d => (Array.isArray(d[list]) ? d[list] : []);
+    const o = new Map(arr(oldD).map(x => [x.key, x])), n = new Map(arr(newD).map(x => [x.key, x]));
+    const entity = ENTITY[list], type = typeOf[list];
+    for (const [k, x] of n) if (!o.has(k)) {
+      changes.push({ entity, kind: '新增', key: k, name: x.name, fields: [] });
+      plain.push(`新增${NOUN[list] === '事' ? '一件事' : NOUN[list]}「${x.name}」${x.summary ? `：${x.summary}` : x.description ? `：${x.description}` : ''}`);
+      roots.new.push(nid(type, k));
+    }
+    for (const [k, x] of o) if (!n.has(k)) {
+      changes.push({ entity, kind: '删除', key: k, name: x.name, fields: [] });
+      plain.push(`去掉${NOUN[list] === '事' ? '一件事' : NOUN[list]}「${x.name}」`);
+      roots.old.push(nid(type, k));
+    }
+    for (const [k, x] of n) {
+      const y = o.get(k);
+      if (!y) continue;
+      const fs = [];
+      for (const f of fields) {
+        if (f === 'key') continue;
+        if (f === 'uses') { for (const u of FIELDS.uses) if (!same(y.uses[u], x.uses[u])) fs.push({ field: `uses.${u}`, label: LABEL[u], from: y.uses[u], to: x.uses[u] }); continue; }
+        if (!same(y[f], x[f])) fs.push({ field: f, label: LABEL[f], from: y[f], to: x[f] });
+      }
+      if (!fs.length) continue;
+      changes.push({ entity, kind: '修改', key: k, name: x.name, fields: fs });
+      const said = fs.map(c => plainChange('这一项', c.field, c, { oldD, newD })).filter(Boolean);
+      // 只改了划分列这类实现细节，开发者那边不用写
+      if (said.some(s => s !== '这一项有变化')) plain.push(`「${x.name}」${said.filter(s => s !== '这一项有变化').join('；')}`);
+      // 角色的权限点增减会让对应的权限项预期变化，在「预期变了」里列出，不另把那几件事整件重走
+      if (list !== 'roles') roots.new.push(nid(type, k));
+      else roots.roleOnly = [...(roots.roleOnly || []), nid(type, k)];
+    }
+  }
+  for (const [list, none] of [['resourceControls', '不按范围分开管'], ['automations', '没有自动任务']]) {
+    if (isNone(oldD[list]) !== isNone(newD[list])) changes.push({ entity: ENTITY[list], kind: '修改', key: '', name: '', fields: [{ field: list, label: ENTITY[list], from: oldD[list], to: newD[list] }] });
+    if (isNone(newD[list]) && !isNone(oldD[list])) plain.push(`改成${none}：${newD[list].none}`);
+  }
+
+  // 影响到谁：新的一份里沿依赖往外走；删掉的对象在旧的一份里走
+  const mNew = model(newD), mOld = model(oldD);
+  const affNew = spread(mNew, roots.new.filter(id => mNew.objs.has(id)));
+  const affOld = spread(mOld, roots.old.filter(id => mOld.objs.has(id)));
+  const reach = {};
+  for (const [m, set] of [[mNew, new Set([...affNew, ...(roots.roleOnly || [])])], [mOld, affOld]]) for (const id of set) {
+    const ob = m.objs.get(id);
+    if (!AFFECTED_TYPES.includes(ob.type)) continue;
+    (reach[ob.type] ||= new Map()).set(ob.key, { type: ob.type, key: ob.key, name: ob.name });
+  }
+  const affected = Object.fromEntries(AFFECTED_TYPES.filter(t => reach[t]).map(t => [t, [...reach[t].values()]]));
+  // 旧的一份里受影响、新的一份里还在的，也算进新的一份要重走的范围
+  const inNew = new Set([...affNew, ...[...affOld].filter(id => mNew.objs.has(id))]);
+
+  const wOld = walkthrough(oldD), wNew = walkthrough(newD);
+  const oldMap = new Map(wOld.items.map(i => [i.id, i])), newMap = new Map(wNew.items.map(i => [i.id, i]));
+  const added = wNew.items.filter(i => !oldMap.has(i.id)).map(i => i.id);
+  const removed = wOld.items.filter(i => !newMap.has(i.id)).map(i => i.id);
+  const changed = wNew.items.filter(i => oldMap.has(i.id) && (oldMap.get(i.id).expect !== i.expect || oldMap.get(i.id).how !== i.how)).map(i => i.id);
+  const fixed = new Set([...added, ...changed]);
+  const rewalk = rewalkOf(newD, inNew, new Set(roots.new)).filter(id => !fixed.has(id));
+  const untouched = wNew.items.filter(i => !fixed.has(i.id) && !rewalk.includes(i.id)).map(i => i.id);
+  return {
+    changes,
+    plain,
+    affected,
+    walkthrough: { added, removed, changed, rewalk, untouched, total: wNew.total },
+  };
+}
+
+/** diff 结果的 Markdown。 */
+export function diffMarkdown(r) {
+  const out = ['# 声明改动', '', '## 改了什么', ''];
+  if (!r.changes.length) out.push('两份一样，没有改动。');
+  for (const c of r.changes) {
+    const who = c.key ? `「${c.name}」（${c.key}）` : c.name ? `「${c.name}」` : '';
+    const ent = (/^[A-Za-z]/.test(c.entity) ? ' ' : '') + c.entity;
+    if (c.kind !== '修改') { out.push(`- ${c.kind}${ent}${who}`); continue; }
+    out.push(`- 修改${ent}${who}：` + c.fields.map(f => `${f.label}（${f.field}）从「${fmt(f.from)}」改成「${fmt(f.to)}」`).join('；'));
+  }
+  out.push('', '可直接放进更新说明的文字：', '', ...(r.plain.length ? r.plain.map(s => `- ${s}。`) : ['- 这次没有改动应用的结构。']), '');
+  out.push('## 影响到谁', '');
+  const a = Object.entries(r.affected);
+  out.push(...(a.length ? a.map(([k, v]) => `- ${k}：${v.map(labelOf).join('、')}`) : ['没有。']), '');
+  const w = r.walkthrough;
+  const list = (title, ids) => [`- ${title}（${ids.length} 项）：${ids.length ? ids.join('、') : '没有'}`];
+  out.push('## 走查项', '', ...list('新增的', w.added), ...list('消失的', w.removed), ...list('预期或做法变了的', w.changed), ...list('因受影响要重走的', w.rewalk));
+  out.push(`- 不受影响，可不重走：${w.untouched.length} 项`, '', `改后共 ${w.total} 项，这次要走 ${w.added.length + w.changed.length + w.rewalk.length} 项。`);
+  return out.join('\n') + '\n';
+}
+
 const USAGE = `用法：
   node declaration.mjs init <declaration.json>          生成空模板（文件已存在则拒绝）
   node declaration.mjs check <declaration.json> [--json]  检查；有「必须改」时退出码 1
   node declaration.mjs confirm <declaration.json>         输出给开发者看的确认单（Markdown）
-  node declaration.mjs walkthrough <declaration.json> [--json]  输出走查项清单`;
+  node declaration.mjs walkthrough <declaration.json> [--json]  输出走查项清单
+  node declaration.mjs impact <declaration.json> <对象> [--json]  改之前看这个对象连着什么、谁依赖它；对象写标识、中文名称或「类:标识」
+  node declaration.mjs diff <改前.json> <改后.json> [--json]   改之后比对两份：改了什么、影响到谁、走查项怎么走`;
 
 export function main(argv) {
   const json = argv.includes('--json');
   const args = argv.filter(x => x !== '--json');
-  const [cmd, path] = args;
-  if (!['init', 'check', 'confirm', 'walkthrough'].includes(cmd) || !path || args.length !== 2) {
+  const [cmd, path, second] = args;
+  const want = ['impact', 'diff'].includes(cmd) ? 3 : 2;
+  if (!['init', 'check', 'confirm', 'walkthrough', 'impact', 'diff'].includes(cmd) || args.length !== want) {
     process.stderr.write(USAGE + '\n');
     return 2;
   }
@@ -503,12 +874,29 @@ export function main(argv) {
       process.stdout.write(`已生成空模板：${path}。逐项填写后运行 check。\n`);
       return 0;
     }
-    let decl;
-    try {
-      decl = load(path);
-    } catch (e) {
-      if (e.code === 'ENOENT') throw new ValueError(`找不到 ${path}；先用 init 生成模板`);
-      throw e;
+    const read = p => {
+      try {
+        return load(p);
+      } catch (e) {
+        if (e.code === 'ENOENT') throw new ValueError(`找不到 ${p}；先用 init 生成模板`);
+        throw e;
+      }
+    };
+    if (cmd === 'diff') {
+      const [a, b] = [read(path), read(second)];
+      for (const [d, p] of [[a, path], [b, second]]) {
+        const r = check(d);
+        if (!r.ok) throw new ValueError(`${p} 还有 ${r.must.length} 条必须改，先跑 check 改完：\n` + formatCheck(r));
+      }
+      const r = diff(a, b);
+      process.stdout.write(json ? JSON.stringify(r, null, 2) + '\n' : diffMarkdown(r));
+      return 0;
+    }
+    const decl = read(path);
+    if (cmd === 'impact') {
+      const r = impact(decl, second);
+      process.stdout.write(json ? JSON.stringify(r, null, 2) + '\n' : impactMarkdown(r));
+      return 0;
     }
     if (cmd === 'check') {
       const r = check(decl);

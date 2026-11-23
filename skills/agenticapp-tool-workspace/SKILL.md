@@ -49,6 +49,7 @@ description: 开工、接续、升级脚手架，或调用 business_ui_stage、w
 1. 先读工作区：三件套（`current_stage`、`business_ui_id`、阶段标记）、`docs/stages/` 当前阶段的文档、方案页 `status`。走到哪以 `workspace.json` 为准，没有工作区的从 ① 开始。工作区里缺失或换了机器才从云端取，见 [references/云端保存与换机.md](references/云端保存与换机.md)。
 2. 照上一节核脚手架版本（先处理没做完的升级，低于必须线先按「脚手架升级」升级）；缺的工作区文件用 `npm run scaffold:repair -- --app-name "<应用名>"` 补，保留已有事实；再 `setup`、`doctor`。做成：`doctor` 没有 `FAIL`。
 3. 协作者工作区里没有工程、已有应用（先看 `role`）、没有 PRD 的应用怎么接，读 [references/初始化与接续细则.md](references/初始化与接续细则.md)「接续」。
+4. 应用根有 `declaration.json` 的，读阶段文档和代码之前，先读它并跑 `agenticapp-stage-2-plan` 的 `declaration.mjs confirm` 看全局：有哪些 TaskFlow、各从哪里发起、数据表、工具、角色；`confirm` 被拒说明上次改到一半，`check` 列出的就是要接着补的。要找某件事在哪里实现，先用 `declaration.mjs impact` 定到 TaskFlow，再按施工单去找路线或接口，不从通读代码开始。声明只说明结构，进度和当时的取舍仍看阶段文档与工单。没有声明文件的应用跳过这一步。
 
 ## 工作区文件
 

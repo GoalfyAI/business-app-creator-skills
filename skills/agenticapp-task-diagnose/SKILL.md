@@ -25,6 +25,7 @@ description: 只查原因、不改应用。开发者说「效果差」「报错�
    - 应用名用 `business_ui_manage(action="list")` 解析出应用 ID（`business_ui_id`）；项目用 `project_id`。
    - 按项目实际挂载的版本诊断，不按最新版本猜。
    - 只读协作者查属主的预览项目，用 `get` 返回的 `data.owner_preview_projects`。
+   - 应用根有 `declaration.json` 的，读代码之前按这个顺序：先定出问题的是声明里哪个 TaskFlow、从哪个入口发起；跑 `agenticapp-stage-2-plan` 的 `declaration.mjs impact` 看它用到的工具、读写的表、谁能做（只读声明文件，不算改动）；再核对当前上线的是哪个版本、这个 TaskFlow 对应的路线或接口（施工单里写着）在不在线上版本里；然后把失败的那一次运行对上去：走到哪一步、调了哪个工具；最后才读代码。没有声明文件的应用照下面第 2 步起做。
 2. **先广后深看运行**：
    1. `get_project_execution_logs(action="summary", project_id)` 看总体：卡在哪一步、是失败还是在等待；
    2. `get_project_execution_logs(action="workflow_trace", project_id)` 看每一步的输入输出与失败类别（新 SDK 应用再带上 `business_id`，只看这一次执行）；
@@ -52,6 +53,7 @@ description: 只查原因、不改应用。开发者说「效果差」「报错�
 ## 之后怎么走
 
 - **制作侧问题**：开发者同意修复后，新建 write 工单并传 `continued_from_task_id`，加载 `agenticapp-task-revise`，从归属所在的那一段接上。不提平台反馈。
+- **原因是声明写错，或声明与实现对不上**：报告的建议修法写明要改声明；转修订后按修订改 `declaration.json`，不只改代码。
 - **平台侧问题**：按入口「报错和平台问题」报；报告里引用反馈编号时写回执里的 `code` 原样（如 `FB-801`）。
 - **只读协作者**：报告照常交给开发者，告诉他自己能查看哪些内容；不转修订，也不自己改。他要改应用时告诉他：改动要请属主或编辑协作者做，可以请属主把他升为编辑协作者后再按修订改，或者把报告交给属主或编辑协作者去改。
 
