@@ -1,11 +1,11 @@
 {
   "scaffold_min_required_version": "v20261030-e23fde",
   "skill_name": "agenticapp-creator",
-  "version": "v20261124-4a4615",
-  "package_version": "2.0.60-qa.59",
+  "version": "v20261124-f28e21",
+  "package_version": "2.0.60-qa.60",
   "mcp_endpoint": "https://business-app-creator-mcp.qa.goalfyai.cn/mcp",
-  "released_at": "2026-11-24T02:52:09Z",
-  "update_reason": "QA 版，来自 qa/main 60467cdb6（build 59）",
+  "released_at": "2026-11-24T04:09:54Z",
+  "update_reason": "QA 版，来自 docs/fb2158-mail-attachment 453d1c923（build 60）",
   "source_files": [
     "agenticapp-creator/SKILL.md",
     "agenticapp-creator/agents/openai.yaml",
@@ -192,7 +192,7 @@
     "business-app-creator/upgrade-guides/schema.json"
   ],
   "checksums": {
-    "agenticapp-creator/SKILL.md": "2464ff452800df17ef78ec0e988dddae6d0163a51f82effa1ed3f6996291cb4e",
+    "agenticapp-creator/SKILL.md": "866295dca59f389a4867d84ab80f00f64eb1f11f6143452e257fba15d268e53d",
     "agenticapp-creator/agents/openai.yaml": "40708751e0ec46463910ad433f198d9647de99e0ddca0e58c02a281b08b3501c",
     "agenticapp-creator/references/平台对象与用词.md": "0613b42ee68cc4873c3b910e8124528b3664e28fe0c3876469286285e75fa78d",
     "agenticapp-creator/references/平台问题怎么报.md": "6d4c1df2434af3403968c7255b9011176e96926cf8b671c87f454ee36f9ff0d3",
@@ -222,7 +222,7 @@
     "agenticapp-ref-experience/references/授权同步台账.md": "ba81ab08570db25e63f39ac031d827d3526a0bd1ffd0d8e1a473f17ca2adf560",
     "agenticapp-ref-experience/references/账号运营诊断.md": "d6268414d9f06f9a808df039cf8d0b41971f6e273ec524d8ee16ac9215151f8d",
     "agenticapp-ref-platform-limits/SKILL.md": "f3b4da2662dcde7143018a75362f36c2a95e60a8ff65788edd9a91851acb389d",
-    "agenticapp-ref-platform-limits/references/定性边界.md": "234bbe5d3e3c212edc740bddcd6309d17966f0c1fb66d0838530173c4fa8a65b",
+    "agenticapp-ref-platform-limits/references/定性边界.md": "0b0c5fd03f60c2ee47e7b521d8bf62b2ebe3f3d3ca08791eb7963a4bc1f71fd8",
     "agenticapp-ref-platform-limits/references/已知数字.md": "ee0307ed3dc2a84ac536f3693ec84ad702113e31220f1b7c75deb1a85ae9b166",
     "agenticapp-ref-platform-limits/references/还没有数字的项.md": "2bb74cb957735486dd101f3ffa409a887a7209e07f797400ddd2a94eb885906d",
     "agenticapp-role-collab/SKILL.md": "ac27fe2d2df54666a81bf705d96a13d30f130a0cb8977797c1c96f827c56828a",
@@ -306,7 +306,7 @@
     "agenticapp-tool-workflow/references/事件契约与文件产物.md": "66b2903795510e61ffef41f74766ab19ef0435a9ef4ba78ffdc2870484a5ecc3",
     "agenticapp-tool-workflow/references/冒泡与实际跑能证明什么.md": "190e1a83e0d4912ca8ef08bb9f174ebec06da7a7458d014505f62cf808975157",
     "agenticapp-tool-workflow/references/制作反例集.md": "f7714c2249a070c0b04ab321deceef9847bdce09030bc3b977de949d901baaa6",
-    "agenticapp-tool-workflow/references/单编排型TPE契约-工具文件失败与验证.md": "9df4050916924942b89d1bc35433ac71aa2d31f9aec0bab324cf59b77c59332d",
+    "agenticapp-tool-workflow/references/单编排型TPE契约-工具文件失败与验证.md": "68fcd678e03aa00a354a56c729c33e969f0d8f029fd25f0c2ff70d8a5b30afe9",
     "agenticapp-tool-workflow/references/单编排型TPE契约-脚本Schema与事件.md": "0e90540fa6a714a7af45791ece99e9e41d2f41906f6f2b08ad4d369c505855e4",
     "agenticapp-tool-workflow/references/各动作细则.md": "a5da7d14b3fe68a5e2e60cb2fd4fcc48d3e001ede98a401bb29841e94d4f4ca7",
     "agenticapp-tool-workflow/references/场景包Battle检查.md": "7559180a770ae0a34fdaf0d0660e5baaaa5afbf523da591266c08581cf865585",
