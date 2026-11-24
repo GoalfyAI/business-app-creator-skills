@@ -35,7 +35,7 @@
 
 - 不得对已结构化 FA 结果重复 `json.loads`，也不得对 parallel/pipeline 结果二次执行。
 - shell 必须使用正确 action，并以退出码判断失败；不能从包含命令回显的文本里搜索 `OK/MISSING` 猜结果。
-- send_email 等工具参数必须符合真实 Schema，不能把 dict 传入要求 string 的字段。
+- send_email 等工具参数必须符合真实 Schema，不能把 dict 传入要求 string 的字段。Max 默认的 `file`、`shell`、`send_email` 属于平台自带工具，`get_asset` 查不到，预览也不校验它们的参数；`send_email` 的参数以《单编排型TPE契约-工具文件失败与验证》的「send_email 的参数与限制」为准。
 - input 示例必须真的满足 input_schema；复杂面板字段若不稳定，应使用清晰字符串格式并在脚本解析。
 
 ## 冒泡轨迹
